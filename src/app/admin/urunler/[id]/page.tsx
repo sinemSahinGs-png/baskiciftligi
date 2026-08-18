@@ -11,6 +11,8 @@ import {
   getAdminCatalogOverview,
   getAdminProductById,
 } from "@/domain/catalog/admin-repository";
+import { requireAdmin } from "@/lib/auth/session";
+import { canManageCatalog, canViewInternalCost } from "@/lib/catalog/authorization";
 
 export const metadata: Metadata = {
   title: "Ürün düzenle",
@@ -22,9 +24,10 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [product, catalog] = await Promise.all([
+  const [product, catalog, viewer] = await Promise.all([
     getAdminProductById(id),
     getAdminCatalogOverview(),
+    requireAdmin(),
   ]);
 
   if (!product) {
@@ -60,6 +63,8 @@ export default async function EditProductPage({
         initialValues={productToAdminForm(product)}
         categories={catalog.categories}
         collections={catalog.collections}
+        canWrite={canManageCatalog(viewer.role)}
+        canViewCost={canViewInternalCost(viewer.role)}
       />
     </>
   );

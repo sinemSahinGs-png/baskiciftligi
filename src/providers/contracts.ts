@@ -161,14 +161,20 @@ export interface ExternalModelSummary {
   title: string;
   creatorName: string;
   creatorUsername?: string;
+  creatorUrl?: string;
   sourceUrl: string;
   thumbnailUrl?: string;
   licenseLabel?: string;
+  licenseUrl?: string;
   attributionText: string;
+  attributionRequired?: boolean;
   permissionStatus: ExternalModelPermissionStatus;
   isPurchasable: boolean;
+  automaticManufacturingAllowed?: boolean;
   description?: string;
   likeCount?: number;
+  collectCount?: number;
+  fileCount?: number;
   imageUrls?: string[];
 }
 

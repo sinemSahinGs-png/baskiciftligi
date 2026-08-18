@@ -13,15 +13,25 @@ import type {
   ProductMedia,
   ProductVariant,
 } from "@/domain/catalog/types";
+import { extraCatalogFieldsFromMetadata } from "@/domain/catalog/catalog-fields";
+import { resolveCategoryCoverUrl } from "@/lib/catalog/category-cover";
+import {
+  formatObjectPosition,
+  resolveCategoryImagePresentation,
+} from "@/lib/catalog/category-image";
+import { assertUniqueSlug } from "@/lib/catalog/slug";
+import { catalogMediaPublicUrl } from "@/lib/catalog/media-url";
 import { isDevelopmentDemoMode, isSupabaseConfigured } from "@/lib/env";
 import {
   loadDemoCatalog,
   removeDemoCategory,
   removeDemoProduct,
+  saveDemoCatalog,
   upsertDemoCategory,
   upsertDemoProduct,
 } from "@/lib/demo/catalog-store";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getViewer } from "@/lib/auth/session";
 import type {
   CategoryFormInput,
   ProductFormInput,
@@ -70,6 +80,12 @@ interface AdminProductRow {
     external_url: string | null;
     alt_text: string | null;
     position: number;
+    role?: string | null;
+    object_position?: string | null;
+    mobile_object_position?: string | null;
+    mime_type?: string | null;
+    media_type?: string | null;
+    variant_id?: string | null;
   }> | null;
   product_categories:
     | Array<{
@@ -91,6 +107,25 @@ interface AdminCategoryRow {
   image_url: string | null;
   status: AdminCategory["status"];
   position: number;
+  seo_title?: string | null;
+}
+
+function categoryPresentationFields(input?: {
+  eyebrow?: string | null;
+  imageFit?: string | null;
+  imageScale?: number | null;
+  objectPosition?: string | null;
+}) {
+  const presentation = resolveCategoryImagePresentation(input);
+  return {
+    eyebrow: input?.eyebrow?.trim() || "Koleksiyon",
+    imageFit: presentation.fit,
+    imageScale: presentation.scale,
+    objectPosition: formatObjectPosition(
+      presentation.positionX,
+      presentation.positionY,
+    ),
+  };
 }
 
 interface AdminCollectionRow {
@@ -156,8 +191,11 @@ function mapDatabaseProduct(row: AdminProductRow): Product {
       id: variant.id,
       name: variant.title,
       sku: variant.sku,
+      barcode: variant.barcode || undefined,
       colorName: stringMetadata(attributes, "color_name") || undefined,
       colorHex: stringMetadata(attributes, "color_hex") || undefined,
+      material: stringMetadata(attributes, "material") || undefined,
+      sizeLabel: stringMetadata(attributes, "size_label") || undefined,
       priceAdjustmentMinor: numberMetadata(
         attributes,
         "price_adjustment_minor",
@@ -169,16 +207,26 @@ function mapDatabaseProduct(row: AdminProductRow): Product {
   });
   const media: ProductMedia[] = [...(row.product_images ?? [])]
     .sort((a, b) => a.position - b.position)
-    .map((image, index) => ({
-      id: image.id,
-      type: "image" as const,
-      url:
-        image.external_url ??
-        (image.storage_path ? `/${image.storage_path.replace(/^\/+/, "")}` : ""),
-      alt: image.alt_text ?? row.name,
-      position: image.position,
-      ...parseMediaPresentation(metadata, index),
-    }))
+    .map((image, index) => {
+      const presentation = parseMediaPresentation(metadata, index);
+      return {
+        id: image.id,
+        type: image.media_type === "video" ? ("video" as const) : ("image" as const),
+        url:
+          image.external_url ??
+          (image.storage_path ? catalogMediaPublicUrl(image.storage_path) : ""),
+        alt: image.alt_text ?? row.name,
+        position: image.position,
+        role: (image.role as ProductMedia["role"] | undefined) ?? presentation.role,
+        objectPosition: image.object_position ?? presentation.objectPosition,
+        mobileObjectPosition:
+          image.mobile_object_position ?? presentation.mobileObjectPosition,
+        isolated: presentation.isolated,
+        variantId: image.variant_id,
+        storagePath: image.storage_path,
+        mimeType: image.mime_type ?? undefined,
+      };
+    })
     .filter((image) => Boolean(image.url));
   const rawBadges = metadata.badges;
   const badges = Array.isArray(rawBadges)
@@ -188,7 +236,9 @@ function mapDatabaseProduct(row: AdminProductRow): Product {
       )
     : [];
   const kind =
-    metadata.kind === "ready_stock" ? "ready_stock" : "made_to_order";
+    metadata.kind === "ready_stock" || metadata.kind === "hybrid"
+      ? metadata.kind
+      : "made_to_order";
 
   return {
     id: row.id,
@@ -235,6 +285,7 @@ function mapDatabaseProduct(row: AdminProductRow): Product {
     seoDescription: row.seo_description ?? row.short_description ?? "",
     publishedAt: row.published_at,
     isDemo: false,
+    ...extraCatalogFieldsFromMetadata(metadata),
   };
 }
 
@@ -253,7 +304,7 @@ async function listSupabaseProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, name, slug, short_description, description, status, base_price_minor, compare_at_price_minor, currency, metadata, seo_title, seo_description, published_at, product_variants(id, sku, title, barcode, status, price_minor, attributes, is_default, position, inventory_levels(on_hand_quantity, reserved_quantity)), product_images(id, storage_path, external_url, alt_text, position), product_categories(categories(slug)), collection_products(collections(slug))",
+      "id, name, slug, short_description, description, status, base_price_minor, compare_at_price_minor, currency, metadata, seo_title, seo_description, published_at, product_variants(id, sku, title, barcode, status, price_minor, attributes, is_default, position, inventory_levels(on_hand_quantity, reserved_quantity)), product_images(id, storage_path, external_url, alt_text, position, role, object_position, mobile_object_position, mime_type, media_type, variant_id), product_categories(categories(slug)), collection_products(collections(slug))",
     )
     .order("updated_at", { ascending: false });
 
@@ -293,7 +344,10 @@ async function listSupabaseCategories(): Promise<AdminCategory[]> {
     name: category.name,
     slug: category.slug,
     description: category.description ?? "",
-    imageUrl: category.image_url ?? "",
+    imageUrl: resolveCategoryCoverUrl(category.slug, category.image_url),
+    ...categoryPresentationFields({
+      eyebrow: category.seo_title,
+    }),
     status: category.status,
     position: category.position,
     productCount: counts.get(category.id) ?? 0,
@@ -326,7 +380,8 @@ async function demoOverview(): Promise<AdminCatalogOverview> {
       name: category.name,
       slug: category.slug,
       description: category.description,
-      imageUrl: category.imageUrl,
+      imageUrl: resolveCategoryCoverUrl(category.slug, category.imageUrl),
+      ...categoryPresentationFields(category),
       status: "published",
       position: category.position,
       productCount: snapshot.products.filter((product) =>
@@ -348,7 +403,7 @@ export async function getAdminCatalogOverview(): Promise<AdminCatalogOverview> {
 
   if (!isSupabaseConfigured) {
     return {
-      mode: "supabase",
+      mode: "unconfigured",
       products: [],
       categories: [],
       collections: [],
@@ -389,7 +444,7 @@ export async function getAdminProductById(
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, name, slug, short_description, description, status, base_price_minor, compare_at_price_minor, currency, metadata, seo_title, seo_description, published_at, product_variants(id, sku, title, barcode, status, price_minor, attributes, is_default, position, inventory_levels(on_hand_quantity, reserved_quantity)), product_images(id, storage_path, external_url, alt_text, position), product_categories(categories(slug)), collection_products(collections(slug))",
+      "id, name, slug, short_description, description, status, base_price_minor, compare_at_price_minor, currency, metadata, seo_title, seo_description, published_at, product_variants(id, sku, title, barcode, status, price_minor, attributes, is_default, position, inventory_levels(on_hand_quantity, reserved_quantity)), product_images(id, storage_path, external_url, alt_text, position, role, object_position, mobile_object_position, mime_type, media_type, variant_id), product_categories(categories(slug)), collection_products(collections(slug))",
     )
     .eq("id", productId)
     .maybeSingle();
@@ -403,8 +458,11 @@ function productFromInput(input: ProductFormInput, productId: string): Product {
     id: variant.id ?? `demo-variant-${randomUUID()}`,
     name: variant.name,
     sku: variant.sku,
+    barcode: variant.barcode || undefined,
     colorName: variant.colorName || undefined,
     colorHex: variant.colorHex || undefined,
+    material: variant.material || undefined,
+    sizeLabel: variant.sizeLabel || undefined,
     priceAdjustmentMinor: variant.priceAdjustmentMinor,
     inventoryQuantity: variant.inventoryQuantity,
     isActive: variant.isActive,
@@ -443,6 +501,9 @@ function productFromInput(input: ProductFormInput, productId: string): Product {
       objectPosition: media.objectPosition || undefined,
       mobileObjectPosition: media.mobileObjectPosition || undefined,
       isolated: media.isolated,
+      variantId: media.variantId || undefined,
+      storagePath: media.storagePath || undefined,
+      mimeType: media.mimeType || undefined,
     })),
     presentation: {
       stagePreset: isStagePreset(input.stagePreset)
@@ -455,6 +516,22 @@ function productFromInput(input: ProductFormInput, productId: string): Product {
     variants,
     badges: input.badges,
     featured: input.featured,
+    vatRateBps: input.vatRateBps,
+    inventoryPolicy: input.inventoryPolicy,
+    materialCode: input.materialCode,
+    materialSummary: input.materialSummary,
+    weightGrams: input.weightGrams,
+    widthMm: input.widthMm,
+    depthMm: input.depthMm,
+    heightMm: input.heightMm,
+    personalizationEnabled: input.personalizationEnabled,
+    personalizationFields: input.personalizationFields,
+    sortOrder: input.sortOrder,
+    canonicalUrl: input.canonicalUrl || undefined,
+    searchVisible: input.searchVisible,
+    noindex: input.noindex,
+    modelName: input.modelName || undefined,
+    themeStyle: input.themeStyle || undefined,
     seoTitle: input.seoTitle || input.name,
     seoDescription: input.seoDescription || input.shortDescription,
     publishedAt: input.publishedAt || null,
@@ -467,6 +544,12 @@ async function saveDemoProduct(input: ProductFormInput): Promise<Product> {
   const productId = input.id ?? `demo-product-${randomUUID()}`;
   const slugOwner = snapshot.products.find(
     (product) => product.slug === input.slug && product.id !== productId,
+  );
+
+  assertUniqueSlug(
+    input.slug,
+    snapshot.products.map((product) => ({ id: product.id, slug: product.slug })),
+    productId,
   );
 
   if (slugOwner) {
@@ -634,9 +717,43 @@ async function replaceProductAssignments(
   }
 }
 
+async function writeCatalogAudit(
+  action: string,
+  productId: string,
+  metadata: Record<string, unknown> = {},
+) {
+  const supabase = await requiredSupabase();
+  const result = await supabase.rpc("write_catalog_audit", {
+    audit_action: action,
+    audit_product_id: productId,
+    audit_metadata: metadata,
+  });
+
+  if (result.error) {
+    console.error("[catalog audit]", result.error.message);
+  }
+}
+
 async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
   const supabase = await requiredSupabase();
+  const viewer = await getViewer();
+  const actorId =
+    viewer?.id &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      viewer.id,
+    )
+      ? viewer.id
+      : null;
   const productId = input.id ?? randomUUID();
+  const existing = await supabase
+    .from("products")
+    .select("id, status, base_price_minor")
+    .eq("id", productId)
+    .maybeSingle();
+  assertDatabaseResult(existing.error, "Mevcut ürün okunamadı");
+  const created = !existing.data;
+  const previousPrice = existing.data?.base_price_minor ?? null;
+  const previousStatus = existing.data?.status ?? null;
   const productResult = await supabase.from("products").upsert(
     {
       id: productId,
@@ -649,6 +766,35 @@ async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
       base_price_minor: input.priceMinor,
       compare_at_price_minor: input.compareAtPriceMinor,
       currency: "TRY",
+      tax_rate_bps: input.vatRateBps ?? 2000,
+      sku: input.sku,
+      barcode: input.barcode || null,
+      featured: input.featured,
+      bestseller: input.badges.includes("bestseller"),
+      new_arrival: input.badges.includes("new"),
+      limited: input.badges.includes("limited"),
+      sort_order: input.sortOrder ?? 0,
+      product_stage_preset: input.stagePreset || null,
+      stage_object_position: input.objectPosition || null,
+      stage_mobile_object_position: input.mobileObjectPosition || null,
+      made_to_order: input.kind !== "ready_stock",
+      inventory_policy: input.inventoryPolicy ?? "deny",
+      production_lead_time_min_days: input.productionLeadTimeMinDays,
+      production_lead_time_max_days: input.productionLeadTimeMaxDays,
+      material_summary: input.materialSummary || null,
+      weight_grams: input.weightGrams,
+      width_mm: input.widthMm,
+      depth_mm: input.depthMm,
+      height_mm: input.heightMm,
+      personalization_enabled: input.personalizationEnabled ?? false,
+      personalization_instructions: input.personalizationFields ?? [],
+      canonical_url: input.canonicalUrl || null,
+      search_visible: input.searchVisible ?? true,
+      archived_at:
+        input.status === "archived" ? new Date().toISOString() : null,
+      updated_by: actorId,
+      ...(created ? { created_by: actorId } : {}),
+      cost_price_minor: input.costPriceMinor ?? null,
       metadata: {
         kind: input.kind,
         sku: input.sku,
@@ -661,6 +807,21 @@ async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
         object_position: input.objectPosition || null,
         mobile_object_position: input.mobileObjectPosition || null,
         isolated: input.isolated ?? null,
+        inventory_policy: input.inventoryPolicy ?? "deny",
+        material_code: input.materialCode || null,
+        material_summary: input.materialSummary || null,
+        weight_grams: input.weightGrams ?? null,
+        width_mm: input.widthMm ?? null,
+        depth_mm: input.depthMm ?? null,
+        height_mm: input.heightMm ?? null,
+        personalization_enabled: input.personalizationEnabled ?? false,
+        personalization_fields: input.personalizationFields ?? [],
+        sort_order: input.sortOrder ?? 0,
+        canonical_url: input.canonicalUrl || null,
+        search_visible: input.searchVisible ?? true,
+        noindex: input.noindex ?? false,
+        model_name: input.modelName || null,
+        theme_style: input.themeStyle || null,
         media: serializeMediaPresentation(
           input.media.map((media, index) => ({
             id: media.id ?? String(index),
@@ -713,7 +874,6 @@ async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
     product_id: productId,
     sku: variant.sku,
     title: variant.name,
-    barcode: index === 0 && input.barcode ? input.barcode : null,
     status: variant.isActive
       ? input.status === "active"
         ? "active"
@@ -728,8 +888,18 @@ async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
     attributes: {
       color_name: variant.colorName || null,
       color_hex: variant.colorHex || null,
+      material: variant.material || null,
+      size_label: variant.sizeLabel || null,
       price_adjustment_minor: variant.priceAdjustmentMinor,
     },
+    price_adjustment_minor: variant.priceAdjustmentMinor,
+    color_name: variant.colorName || null,
+    color_hex: variant.colorHex || null,
+    size_label: variant.sizeLabel || null,
+    material: variant.material || null,
+    active: variant.isActive,
+    sort_order: index,
+    barcode: variant.barcode || (index === 0 && input.barcode ? input.barcode : null),
     is_default: index === 0,
     position: index,
   }));
@@ -760,17 +930,26 @@ async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
     "Birincil görsel işareti temizlenemedi",
   );
 
-  const imageRows = input.media.map((media, index) => ({
-    id: media.id ?? randomUUID(),
-    product_id: productId,
-    variant_id: null,
-    storage_path: null,
-    external_url: media.url,
-    alt_text: media.alt,
-    position: index,
-    is_primary: index === 0,
-    is_public: true,
-  }));
+  const imageRows = input.media.map((media, index) => {
+    const storagePath = media.storagePath || null;
+    return {
+      id: media.id ?? randomUUID(),
+      product_id: productId,
+      variant_id: media.variantId || null,
+      storage_path: storagePath,
+      external_url: storagePath ? null : media.url,
+      alt_text: media.alt,
+      position: index,
+      is_primary: media.role === "cover" || media.role === "primary" || index === 0,
+      is_public: true,
+      media_type: media.role === "video" ? "video" : "image",
+      mime_type: media.mimeType || null,
+      role: media.role ?? null,
+      object_position: media.objectPosition || null,
+      mobile_object_position: media.mobileObjectPosition || null,
+      sort_order: index,
+    };
+  });
 
   if (imageRows.length) {
     const imageUpsert = await supabase
@@ -822,6 +1001,32 @@ async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
     throw new Error("Ürün yazıldı ancak yeniden okunamadı.");
   }
 
+  const auditAction = created
+    ? "product_created"
+    : input.status === "archived"
+      ? "product_archived"
+      : previousStatus !== "active" && input.status === "active"
+        ? "product_published"
+        : previousStatus === "active" && input.status !== "active"
+          ? "product_unpublished"
+          : "product_updated";
+  await writeCatalogAudit(auditAction, productId, {
+    status: input.status,
+    slug: input.slug,
+    price_minor: input.priceMinor,
+  });
+
+  if (
+    !created &&
+    previousPrice !== null &&
+    Number(previousPrice) !== input.priceMinor
+  ) {
+    await writeCatalogAudit("price_changed", productId, {
+      from_minor: previousPrice,
+      to_minor: input.priceMinor,
+    });
+  }
+
   return saved;
 }
 
@@ -850,7 +1055,7 @@ export async function archiveAdminProduct(productId: string): Promise<void> {
   const supabase = await requiredSupabase();
   const productResult = await supabase
     .from("products")
-    .update({ status: "archived" })
+    .update({ status: "archived", archived_at: new Date().toISOString() })
     .eq("id", productId);
   assertDatabaseResult(productResult.error, "Ürün arşivlenemedi");
 
@@ -859,6 +1064,7 @@ export async function archiveAdminProduct(productId: string): Promise<void> {
     .update({ status: "archived" })
     .eq("product_id", productId);
   assertDatabaseResult(variantResult.error, "Varyantlar arşivlenemedi");
+  await writeCatalogAudit("product_archived", productId);
 }
 
 export async function deleteAdminProduct(productId: string): Promise<void> {
@@ -943,8 +1149,12 @@ async function saveDemoCategory(
     name: input.name,
     slug: input.slug,
     description: input.description,
-    imageUrl: input.imageUrl || existing?.imageUrl || "",
-    eyebrow: existing?.eyebrow ?? "Koleksiyon",
+    imageUrl: input.imageUrl || existing?.imageUrl || `/demo/categories/${input.slug}.png`,
+    eyebrow: input.eyebrow?.trim() || existing?.eyebrow || "Koleksiyon",
+    imageFit: input.imageFit,
+    imageScale: input.imageScale,
+    objectPosition:
+      input.objectPosition || existing?.objectPosition || "50% 50%",
     isFeatured: existing?.isFeatured ?? false,
     position: input.position,
     isDemo: true,
@@ -956,6 +1166,7 @@ async function saveDemoCategory(
     slug: category.slug,
     description: category.description,
     imageUrl: category.imageUrl,
+    ...categoryPresentationFields(category),
     status: input.status,
     position: category.position,
     productCount: snapshot.products.filter((product) =>
@@ -983,6 +1194,7 @@ async function saveSupabaseCategory(
       slug: input.slug,
       description: input.description || null,
       image_url: input.imageUrl || null,
+      seo_title: input.eyebrow?.trim() || null,
       status: input.status,
       position: input.position,
       published_at:
@@ -1000,6 +1212,12 @@ async function saveSupabaseCategory(
     slug: input.slug,
     description: input.description,
     imageUrl: input.imageUrl,
+    ...categoryPresentationFields({
+      eyebrow: input.eyebrow,
+      imageFit: input.imageFit,
+      imageScale: input.imageScale,
+      objectPosition: input.objectPosition,
+    }),
     status: input.status,
     position: input.position,
     productCount: 0,
@@ -1060,5 +1278,277 @@ export async function getAdminCatalogSummary(): Promise<AdminCatalogSummary> {
       (product) => product.variants,
     ).filter((variant) => variant.isActive && variant.inventoryQuantity <= 5)
       .length,
+  };
+}
+
+export type BulkCatalogAction =
+  | "publish"
+  | "unpublish"
+  | "archive"
+  | "feature"
+  | "unfeature"
+  | "assign-category";
+
+export async function bulkUpdateAdminProducts(input: {
+  ids: string[];
+  action: BulkCatalogAction;
+  categorySlug?: string;
+}): Promise<{ updated: number }> {
+  const uniqueIds = [...new Set(input.ids)].slice(0, 100);
+  if (!uniqueIds.length) {
+    return { updated: 0 };
+  }
+
+  for (const id of uniqueIds) {
+    const product = await getAdminProductById(id);
+    if (!product) {
+      continue;
+    }
+
+    if (input.action === "publish") {
+      await saveAdminProduct({
+        ...productToWritable(product),
+        status: "active",
+        publishedAt: product.publishedAt || new Date().toISOString(),
+      });
+    } else if (input.action === "unpublish") {
+      await saveAdminProduct({
+        ...productToWritable(product),
+        status: "draft",
+      });
+    } else if (input.action === "archive") {
+      await archiveAdminProduct(id);
+    } else if (input.action === "feature") {
+      await saveAdminProduct({ ...productToWritable(product), featured: true });
+    } else if (input.action === "unfeature") {
+      await saveAdminProduct({ ...productToWritable(product), featured: false });
+    } else if (input.action === "assign-category" && input.categorySlug) {
+      const slugs = product.categorySlugs.includes(input.categorySlug)
+        ? product.categorySlugs
+        : [...product.categorySlugs, input.categorySlug];
+      await saveAdminProduct({
+        ...productToWritable(product),
+        categorySlugs: slugs,
+      });
+    }
+  }
+
+  return { updated: uniqueIds.length };
+}
+
+export async function importDemoCatalogProducts(): Promise<{
+  importedCount: number;
+  skippedCount: number;
+}> {
+  const { demoProducts } = await import("@/domain/catalog/demo-data");
+  const { mergeDemoProductImport } = await import("@/domain/catalog/demo-import");
+
+  if (isDevelopmentDemoMode) {
+    const snapshot = await loadDemoCatalog();
+    const merged = mergeDemoProductImport(snapshot.products, demoProducts);
+    snapshot.products = merged.products;
+    await saveDemoCatalog(snapshot);
+    return {
+      importedCount: merged.importedCount,
+      skippedCount: merged.skippedCount,
+    };
+  }
+
+  const existing = await listAdminProducts();
+  const existingSlugs = new Set(existing.map((product) => product.slug));
+  const { products, importedCount, skippedCount } = mergeDemoProductImport(
+    existing,
+    demoProducts,
+  );
+  let written = 0;
+  for (const product of products) {
+    if (!product.id.startsWith("imported-demo-") || existingSlugs.has(product.slug)) {
+      continue;
+    }
+    await saveAdminProduct({
+      ...productToWritable(product),
+      id: undefined,
+      sku: product.sku,
+    });
+    written += 1;
+  }
+
+  return {
+    importedCount: written || importedCount,
+    skippedCount,
+  };
+}
+
+export async function importAdminProductsFromCsv(
+  rows: Array<{
+    name: string;
+    slug: string;
+    sku: string;
+    barcode: string;
+    category: string;
+    description: string;
+    priceMinor: number;
+    vatRateBps: number;
+    stock: number;
+    material: string;
+    color: string;
+    status: string;
+  }>,
+): Promise<{ upserted: number; skipped: number }> {
+  const existing = await listAdminProducts();
+  const bySku = new Map(
+    existing.map((product) => [product.sku.toLocaleLowerCase("tr-TR"), product]),
+  );
+  let upserted = 0;
+  let skipped = 0;
+
+  for (const row of rows) {
+    const status =
+      row.status === "active" ||
+      row.status === "draft" ||
+      row.status === "archived" ||
+      row.status === "scheduled"
+        ? row.status
+        : null;
+    if (!status) {
+      skipped += 1;
+      continue;
+    }
+
+    const current = bySku.get(row.sku.toLocaleLowerCase("tr-TR"));
+    const base = current
+      ? productToWritable(current)
+      : {
+          ...productToWritable({
+            id: crypto.randomUUID(),
+            name: row.name,
+            slug: row.slug,
+            shortDescription: row.description.slice(0, 320) || `${row.name} ürünü.`,
+            description:
+              row.description.length >= 20
+                ? row.description
+                : `${row.description} Detaylı ürün açıklaması yönetim panelinden tamamlanmalıdır.`,
+            status: "draft",
+            kind: "made_to_order" as const,
+            priceMinor: row.priceMinor,
+            compareAtPriceMinor: null,
+            currency: "TRY" as const,
+            sku: row.sku,
+            barcode: row.barcode,
+            inventoryQuantity: row.stock,
+            productionLeadTimeDays: { min: 2, max: 5 },
+            categorySlugs: row.category ? [row.category] : [],
+            collectionSlugs: [],
+            media: [],
+            variants: [
+              {
+                id: crypto.randomUUID(),
+                name: row.color || "Standart",
+                sku: row.sku,
+                colorName: row.color || undefined,
+                priceAdjustmentMinor: 0,
+                inventoryQuantity: row.stock,
+                isActive: true,
+              },
+            ],
+            badges: [],
+            featured: false,
+            seoTitle: row.name,
+            seoDescription: row.description.slice(0, 320),
+            publishedAt: status === "active" ? new Date().toISOString() : null,
+            isDemo: false,
+          }),
+          id: undefined,
+        };
+
+    await saveAdminProduct({
+      ...base,
+      name: row.name,
+      slug: row.slug,
+      sku: row.sku,
+      barcode: row.barcode,
+      description:
+        row.description.length >= 20 ? row.description : base.description,
+      shortDescription:
+        row.description.slice(0, 320).length >= 10
+          ? row.description.slice(0, 320)
+          : base.shortDescription,
+      priceMinor: row.priceMinor,
+      vatRateBps: row.vatRateBps,
+      status,
+      publishedAt:
+        status === "active"
+          ? base.publishedAt || new Date().toISOString()
+          : base.publishedAt ?? "",
+      categorySlugs: row.category
+        ? Array.from(new Set([...(base.categorySlugs ?? []), row.category]))
+        : base.categorySlugs,
+      materialCode:
+        row.material === "PLA" ||
+        row.material === "PETG" ||
+        row.material === "TPU" ||
+        row.material === "ASA" ||
+        row.material === "ABS" ||
+        row.material === "Resin" ||
+        row.material === "Other"
+          ? row.material
+          : base.materialCode,
+    });
+    upserted += 1;
+  }
+
+  return { upserted, skipped };
+}
+
+function productToWritable(product: Product): ProductFormInput {
+  return {
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    shortDescription: product.shortDescription,
+    description: product.description,
+    status: product.status,
+    kind: product.kind,
+    priceMinor: product.priceMinor,
+    compareAtPriceMinor: product.compareAtPriceMinor,
+    sku: product.sku,
+    barcode: product.barcode ?? "",
+    productionLeadTimeMinDays: product.productionLeadTimeDays.min,
+    productionLeadTimeMaxDays: product.productionLeadTimeDays.max,
+    categorySlugs: product.categorySlugs,
+    collectionSlugs: product.collectionSlugs,
+    featured: product.featured,
+    stagePreset: product.presentation?.stagePreset ?? "",
+    objectPosition: product.presentation?.objectPosition ?? "",
+    mobileObjectPosition: product.presentation?.mobileObjectPosition ?? "",
+    isolated: product.presentation?.isolated ?? false,
+    badges: product.badges,
+    publishedAt: product.publishedAt ?? "",
+    seoTitle: product.seoTitle,
+    seoDescription: product.seoDescription,
+    media: product.media.map((media, index) => ({
+      id: media.id,
+      url: media.url,
+      alt: media.alt,
+      position: index,
+      role: media.role,
+      objectPosition: media.objectPosition ?? "",
+      mobileObjectPosition: media.mobileObjectPosition ?? "",
+      isolated: media.isolated,
+      storagePath: media.storagePath ?? undefined,
+    })),
+    variants: product.variants.map((variant) => ({
+      id: variant.id,
+      name: variant.name,
+      sku: variant.sku,
+      barcode: variant.barcode ?? "",
+      colorName: variant.colorName ?? "",
+      colorHex: variant.colorHex ?? "",
+      material: variant.material ?? "",
+      sizeLabel: variant.sizeLabel ?? "",
+      priceAdjustmentMinor: variant.priceAdjustmentMinor,
+      inventoryQuantity: variant.inventoryQuantity,
+      isActive: variant.isActive,
+    })),
   };
 }

@@ -38,14 +38,20 @@ Repository'yi Vercel'e bağlayın; install/build adımları sırasıyla `npm ci`
 `npm run build` olmalıdır. Lockfile kullanılmalı, Node LTS sürümü staging
 build'iyle doğrulanıp project setting'de sabitlenmelidir.
 
-Phase 1 production environment:
+Production environment:
 
 ```dotenv
-NEXT_PUBLIC_SITE_URL=https://octostudio.example
+NEXT_PUBLIC_SITE_URL=https://baskiciftligi.com
 NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<public-anon-key>
 ALLOW_DEMO_ADMIN_MUTATIONS=false
 ```
+
+Supabase Auth (when configured):
+
+- Site URL: `https://baskiciftligi.com`
+- Redirect allow-list: `https://baskiciftligi.com/**`
+- Do not add `localhost` or wildcard Vercel preview URLs to the production Auth project.
 
 İsteğe bağlı public iletişim alanları:
 
@@ -94,19 +100,23 @@ OrcaSlicer, PrusaSlicer, CuraEngine veya STEP converter çalıştırılmaz**.
 Serverless katman ileride yalnız upload metadata doğrular, private object'i
 kaydeder ve queue job üretir.
 
-## Phase 4 worker hedefi
+## Slicer worker container hosting
 
-Worker, Docker destekleyen uzun ömürlü bir ortamda çalışacaktır:
+The Next.js site may run on Vercel. `apps/slicer-worker` must not be deployed
+as a Vercel Function. Host the existing Dockerfile later on Railway, Render,
+Fly.io, Cloud Run, or a VPS after authorization.
 
-- Railway, Render, Fly.io;
-- yönetilen container/queue platformu;
-- veya patch/backup/monitoring sorumluluğu tanımlı bir VPS.
+Documented worker shape:
 
-Aktivasyon öncesi gerekenler: immutable container image, lisans incelemesi,
-queue ve dead-letter policy, concurrency/resource limit, private dosya için kısa
-ömürlü erişim, `SLICER_WEBHOOK_SECRET` ile imzalı sonuç, idempotent job ID,
-scratch disk temizliği, timeout/retry, health/metrics ve FDM/SLA için ayrı
-strategy. Vercel Cron temizlik veya enqueue yapabilir; slicing yapamaz.
+- Health: `GET /health` on port `8788` (or `PORT`)
+- Non-root user `slicer` (uid 10001)
+- Authenticated polling via `SLICER_WORKER_SECRET`; no public slice endpoint
+- Temp files under `/tmp/slicer-jobs`, deleted after each job
+- Graceful shutdown on SIGTERM/SIGINT
+- Suggested size: 2 vCPU / 4 GB RAM, 8 GB if concurrent jobs are enabled
+
+Until `SLICER_WORKER_URL` is a hosted HTTPS origin, the public site must show
+automatic quoting as unavailable.
 
 ## Production gate
 
@@ -116,3 +126,4 @@ strategy. Vercel Cron temizlik veya enqueue yapabilir; slicing yapamaz.
 - Database backup, restore denemesi ve migration sorumlusu tanımlı.
 - Error monitoring ve erişim logu retention'ı tanımlı.
 - Sonraki faz entegrasyonları UI'da “aktif” gösterilmiyor.
+- Yayına alma merkezi ve katalog göçü: [yayina-alma.md](./yayina-alma.md).

@@ -1,7 +1,5 @@
-"use client";
-
 import { ProductCard } from "@/components/catalog/product-card";
-import { StaggerGrid } from "@/components/motion/stagger-grid";
+import { StaggerGrid, StaggerItem } from "@/components/motion/stagger-grid";
 import type { Product } from "@/domain/catalog/types";
 import { cn } from "@/lib/utils";
 
@@ -22,23 +20,21 @@ export function CatalogGrid({
     <StaggerGrid
       key={resultKey}
       as="ul"
+      data-catalog-grid=""
       className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-10 md:grid-cols-3 xl:grid-cols-4"
     >
       {products.map((product, index) => (
-        <li
+        <StaggerItem
+          as="li"
           key={product.id}
-          data-motion-item="idle"
-          className={cn(
-            "motion-item min-w-0",
-            featuredFirst && index === 0 && "md:col-span-1",
-          )}
+          className={cn("min-w-0", featuredFirst && index === 0 && "md:col-span-1")}
         >
           <ProductCard
             product={product}
             priority={index < priorityCount}
             featured={featuredFirst && index === 0}
           />
-        </li>
+        </StaggerItem>
       ))}
     </StaggerGrid>
   );

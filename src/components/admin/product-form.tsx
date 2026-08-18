@@ -16,13 +16,11 @@ import {
   useFieldArray,
   useForm,
   useWatch,
+  type Resolver,
 } from "react-hook-form";
 import {
-  ArrowDown,
-  ArrowUp,
   ExternalLink,
   Eye,
-  GripVertical,
   ImagePlus,
   LoaderCircle,
   Plus,
@@ -33,6 +31,8 @@ import {
 import { toast } from "sonner";
 
 import { saveProductAction } from "@/app/admin/actions";
+import { ProductMediaManager } from "@/components/admin/product-media-manager";
+import { ProductStage } from "@/components/catalog/product-stage";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,16 +40,20 @@ import type {
   AdminCategory,
   AdminCollection,
 } from "@/domain/catalog/admin-types";
+import { slugifyTurkish } from "@/lib/catalog/slug";
 import { formatMoney } from "@/lib/money";
 import {
   productFormSchema,
   type ProductFormInput,
 } from "@/lib/validation/catalog";
+import { isStagePreset } from "@/domain/visual/stages";
 
 interface ProductFormProps {
   initialValues: ProductFormInput;
   categories: AdminCategory[];
   collections: AdminCollection[];
+  canWrite?: boolean;
+  canViewCost?: boolean;
 }
 
 const inputClass =
@@ -58,19 +62,7 @@ const selectClass =
   "h-11 w-full rounded-xl border border-white/12 bg-[#11151a] px-3 text-sm outline-none focus:border-cyan";
 
 function slugify(value: string): string {
-  return value
-    .toLocaleLowerCase("tr-TR")
-    .replaceAll("ı", "i")
-    .replaceAll("ğ", "g")
-    .replaceAll("ü", "u")
-    .replaceAll("ş", "s")
-    .replaceAll("ö", "o")
-    .replaceAll("ç", "c")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 180);
+  return slugifyTurkish(value);
 }
 
 function FieldError({ message }: { message?: string }) {
@@ -219,6 +211,8 @@ export function ProductForm({
   initialValues,
   categories,
   collections,
+  canWrite = true,
+  canViewCost = false,
 }: ProductFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -236,12 +230,16 @@ export function ProductForm({
     setError,
     formState: { errors, isDirty },
   } = useForm<ProductFormInput>({
-    resolver: zodResolver(productFormSchema),
+    resolver: zodResolver(productFormSchema) as Resolver<ProductFormInput>,
     defaultValues: initialValues,
     mode: "onBlur",
   });
   const mediaFields = useFieldArray({ control, name: "media" });
   const variantFields = useFieldArray({ control, name: "variants" });
+  const personalizationFieldArray = useFieldArray({
+    control,
+    name: "personalizationFields",
+  });
   const watchedValues = useWatch({ control });
   const storageKey = useMemo(
     () => `octo-admin-product-draft:${initialValues.id ?? "new"}`,
@@ -251,6 +249,14 @@ export function ProductForm({
   const watchedStatus = watchedValues.status ?? "draft";
   const watchedPrice = watchedValues.priceMinor ?? 0;
   const watchedMedia = watchedValues.media ?? [];
+  const watchedStage = isStagePreset(watchedValues.stagePreset)
+    ? watchedValues.stagePreset
+    : "cobalt";
+  const coverMedia =
+    watchedMedia.find((item) => item?.role === "cover" || item?.role === "primary") ??
+    watchedMedia[0];
+  const hoverMedia = watchedMedia.find((item) => item?.role === "hover");
+  const mobileMedia = watchedMedia.find((item) => item?.role === "mobile");
   const watchedVariantCount = watchedValues.variants?.length ?? 0;
   const watchedStock =
     watchedValues.variants?.reduce(
@@ -332,19 +338,28 @@ export function ProductForm({
     toast.success("Tarayıcıdaki yerel taslak temizlendi.");
   }
 
-  function firstErrorMessage(errors: unknown): string | undefined {
-    if (!errors || typeof errors !== "object") {
+  const [formErrorSummary, setFormErrorSummary] = useState("");
+
+  function firstErrorMessage(errors: unknown, depth = 0): string | undefined {
+    if (!errors || typeof errors !== "object" || depth > 8) {
       return undefined;
     }
 
-    if ("message" in errors && typeof errors.message === "string") {
+    if (
+      "message" in errors &&
+      typeof errors.message === "string" &&
+      errors.message.length > 0
+    ) {
       return errors.message;
     }
 
-    for (const value of Object.values(errors as Record<string, unknown>)) {
-      const nested = firstErrorMessage(value);
+    for (const [key, value] of Object.entries(errors as Record<string, unknown>)) {
+      if (key === "ref" || key === "types") {
+        continue;
+      }
+      const nested = firstErrorMessage(value, depth + 1);
       if (nested) {
-        return nested;
+        return `${key}: ${nested}`;
       }
     }
 
@@ -354,6 +369,10 @@ export function ProductForm({
   function submit(values: ProductFormInput) {
     const normalized: ProductFormInput = {
       ...values,
+      compareAtPriceMinor:
+        values.compareAtPriceMinor && values.compareAtPriceMinor > 0
+          ? values.compareAtPriceMinor
+          : null,
       media: values.media.map((media, index) => ({
         ...media,
         position: index,
@@ -376,12 +395,8 @@ export function ProductForm({
       reset({ ...normalized, id: result.id });
       setDraftMessage("Sunucu kaydı güncel. Yerel taslak temizlendi.");
       toast.success(result.message);
-
-      if (!initialValues.id) {
-        router.push(`/admin/urunler/${result.id}`);
-      } else {
-        router.refresh();
-      }
+      router.push(`/admin/urunler/${result.id}`);
+      router.refresh();
     });
   }
 
@@ -391,9 +406,10 @@ export function ProductForm({
     <form
       id="admin-product-form"
       onSubmit={handleSubmit(submit, (formErrors) => {
-        toast.error(
-          firstErrorMessage(formErrors) ?? "Ürün bilgilerini kontrol edin.",
-        );
+        const message =
+          firstErrorMessage(formErrors) ?? "Ürün bilgilerini kontrol edin.";
+        setFormErrorSummary(message);
+        toast.error(message);
       })}
       noValidate
     >
@@ -433,7 +449,7 @@ export function ProductForm({
           )}
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || !canWrite}
             className="inline-flex min-h-10 items-center gap-2 rounded-full bg-cyan px-5 text-sm font-bold text-ink transition-colors hover:bg-[#63e2ff] disabled:pointer-events-none disabled:opacity-50"
           >
             {pending ? (
@@ -445,6 +461,16 @@ export function ProductForm({
           </button>
         </div>
       </div>
+
+      {formErrorSummary ? (
+        <div
+          className="mb-5 rounded-2xl border border-destructive/25 bg-destructive/5 p-4 text-sm text-destructive"
+          role="alert"
+          data-testid="admin-form-error"
+        >
+          {formErrorSummary}
+        </div>
+      ) : null}
 
       {errors.root?.message ? (
         <div
@@ -523,11 +549,73 @@ export function ProductForm({
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="modelName">İç model adı</Label>
+                <Input
+                  id="modelName"
+                  {...register("modelName")}
+                  className={inputClass}
+                  placeholder="Atölye / üretim adı"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="themeStyle">Tema / stil</Label>
+                <Input
+                  id="themeStyle"
+                  {...register("themeStyle")}
+                  className={inputClass}
+                  placeholder="ör. minimal, endüstriyel"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="kind">Üretim modeli</Label>
                 <select id="kind" {...register("kind")} className={selectClass}>
                   <option value="ready_stock">Hazır stok</option>
                   <option value="made_to_order">Sipariş üzerine üretim</option>
+                  <option value="hybrid">Hibrit (stok + sipariş üzerine)</option>
                 </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="materialCode">Malzeme</Label>
+                <select
+                  id="materialCode"
+                  {...register("materialCode")}
+                  className={selectClass}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setValue("materialCode", value as ProductFormInput["materialCode"], {
+                      shouldDirty: true,
+                    });
+                    if (value === "PLA" && !watchedValues.materialSummary) {
+                      setValue(
+                        "materialSummary",
+                        "3D üretim teknolojisiyle PLA plastik malzemeden özenle üretilmiştir.",
+                        { shouldDirty: true },
+                      );
+                    }
+                  }}
+                >
+                  <option value="">Seçilmedi</option>
+                  <option value="PLA">PLA</option>
+                  <option value="PETG">PETG</option>
+                  <option value="TPU">TPU</option>
+                  <option value="ASA">ASA</option>
+                  <option value="ABS">ABS</option>
+                  <option value="Resin">Reçine</option>
+                  <option value="Other">Diğer</option>
+                </select>
+                <p className="text-xs leading-5 text-muted-foreground">
+                  Malzeme cümlesi yalnızca seçildiğinde kaydedilir; varsayılan olarak kalın yazılmaz.
+                </p>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="materialSummary">Malzeme açıklaması</Label>
+                <Textarea
+                  id="materialSummary"
+                  {...register("materialSummary")}
+                  rows={3}
+                  className="min-h-24 rounded-xl border-white/12 bg-black/20 px-3 py-3 font-normal"
+                />
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -630,6 +718,99 @@ export function ProductForm({
                 />
                 <FieldError
                   message={errors.productionLeadTimeMaxDays?.message}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="vatRateBps">KDV (baz puan)</Label>
+                <Input
+                  id="vatRateBps"
+                  type="number"
+                  min={0}
+                  max={10000}
+                  {...register("vatRateBps", { valueAsNumber: true })}
+                  className={inputClass}
+                />
+                <p className="text-xs text-muted-foreground">
+                  2000 = %20. Para birimi TRY.
+                </p>
+              </div>
+              {canViewCost ? (
+                <div className="space-y-2">
+                  <Label htmlFor="costPriceMinor">Maliyet (yalnız yönetici)</Label>
+                  <Controller
+                    control={control}
+                    name="costPriceMinor"
+                    render={({ field }) => (
+                      <MinorUnitInput
+                        id="costPriceMinor"
+                        value={field.value ?? null}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        allowEmpty
+                      />
+                    )}
+                  />
+                </div>
+              ) : null}
+              <div className="space-y-2">
+                <Label htmlFor="inventoryPolicy">Stok politikası</Label>
+                <select
+                  id="inventoryPolicy"
+                  {...register("inventoryPolicy")}
+                  className={selectClass}
+                >
+                  <option value="deny">Stok bitince satışı durdur</option>
+                  <option value="continue">Stok bitince satmaya devam et</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="weightGrams">Ağırlık (g)</Label>
+                <Input
+                  id="weightGrams"
+                  type="number"
+                  min={0}
+                  {...register("weightGrams", { valueAsNumber: true })}
+                  className={inputClass}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="widthMm">Genişlik (mm)</Label>
+                <Input
+                  id="widthMm"
+                  type="number"
+                  min={0}
+                  {...register("widthMm", { valueAsNumber: true })}
+                  className={inputClass}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="depthMm">Derinlik (mm)</Label>
+                <Input
+                  id="depthMm"
+                  type="number"
+                  min={0}
+                  {...register("depthMm", { valueAsNumber: true })}
+                  className={inputClass}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="heightMm">Yükseklik (mm)</Label>
+                <Input
+                  id="heightMm"
+                  type="number"
+                  min={0}
+                  {...register("heightMm", { valueAsNumber: true })}
+                  className={inputClass}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sortOrder">Vitrin sıra numarası</Label>
+                <Input
+                  id="sortOrder"
+                  type="number"
+                  min={0}
+                  {...register("sortOrder", { valueAsNumber: true })}
+                  className={inputClass}
                 />
               </div>
             </div>
@@ -790,129 +971,64 @@ export function ProductForm({
                   placeholder="50% 30%"
                 />
               </div>
+              <div className="grid gap-4 md:col-span-2 lg:grid-cols-2">
+                <div>
+                  <p className="mb-2 text-xs font-semibold text-muted-foreground">
+                    Masaüstü kart önizlemesi
+                  </p>
+                  <ProductStage
+                    stage={watchedStage}
+                    src={coverMedia?.url}
+                    alt={coverMedia?.alt || watchedName || "Ürün"}
+                    hoverSrc={hoverMedia?.url}
+                    mobileSrc={mobileMedia?.url}
+                    isolated={Boolean(watchedValues.isolated)}
+                    objectPosition={
+                      watchedValues.objectPosition || coverMedia?.objectPosition
+                    }
+                    mobileObjectPosition={
+                      watchedValues.mobileObjectPosition ||
+                      coverMedia?.mobileObjectPosition
+                    }
+                    ratio="standard"
+                    className="rounded-2xl"
+                  />
+                </div>
+                <div className="mx-auto w-full max-w-[18rem]">
+                  <p className="mb-2 text-xs font-semibold text-muted-foreground">
+                    Mobil kart önizlemesi
+                  </p>
+                  <ProductStage
+                    stage={watchedStage}
+                    src={mobileMedia?.url || coverMedia?.url}
+                    alt={coverMedia?.alt || watchedName || "Ürün"}
+                    isolated={Boolean(watchedValues.isolated)}
+                    objectPosition={
+                      watchedValues.mobileObjectPosition ||
+                      watchedValues.objectPosition ||
+                      "50% 30%"
+                    }
+                    ratio="standard"
+                    className="rounded-2xl"
+                  />
+                </div>
+              </div>
             </div>
           </FormSection>
 
           <FormSection
-            title="Medya URL’leri"
-            description="Bu fazda dosya yükleme yoktur. HTTPS URL veya mevcut kök yolu ekleyin ve sıralayın."
+            title="Medya yöneticisi"
+            description="Kapak, hover, galeri ve ölçü görsellerini yükleyin, sıralayın ve rol atayın. SVG kabul edilmez."
           >
-            <div className="space-y-4">
-              {mediaFields.fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="rounded-2xl border border-white/10 bg-black/15 p-4"
-                >
-                  <input
-                    type="hidden"
-                    {...register(`media.${index}.id`)}
-                  />
-                  <input
-                    type="hidden"
-                    value={index}
-                    {...register(`media.${index}.position`, {
-                      valueAsNumber: true,
-                    })}
-                  />
-                  <div className="mb-4 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                      <GripVertical className="size-4" aria-hidden="true" />
-                      Görsel {index + 1}
-                    </div>
-                    <div className="flex gap-1">
-                      <button
-                        type="button"
-                        onClick={() => mediaFields.move(index, index - 1)}
-                        disabled={index === 0}
-                        className="grid size-8 place-items-center rounded-full border border-white/10 disabled:opacity-30"
-                        aria-label={`Görsel ${index + 1} yukarı taşı`}
-                      >
-                        <ArrowUp className="size-3.5" aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => mediaFields.move(index, index + 1)}
-                        disabled={index === mediaFields.fields.length - 1}
-                        className="grid size-8 place-items-center rounded-full border border-white/10 disabled:opacity-30"
-                        aria-label={`Görsel ${index + 1} aşağı taşı`}
-                      >
-                        <ArrowDown className="size-3.5" aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => mediaFields.remove(index)}
-                        className="grid size-8 place-items-center rounded-full border border-destructive/20 text-destructive"
-                        aria-label={`Görsel ${index + 1} kaldır`}
-                      >
-                        <Trash2 className="size-3.5" aria-hidden="true" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor={`media-${index}-role`}>Görsel rolü</Label>
-                      <select
-                        id={`media-${index}-role`}
-                        {...register(`media.${index}.role`)}
-                        className={inputClass}
-                      >
-                        <option value="primary">Ana görsel</option>
-                        <option value="hover">Hover</option>
-                        <option value="mobile">Mobil kırpım</option>
-                        <option value="gallery">Galeri</option>
-                        <option value="video">Video</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`media-${index}-object`}>
-                        Object position
-                      </Label>
-                      <Input
-                        id={`media-${index}-object`}
-                        {...register(`media.${index}.objectPosition`)}
-                        className={inputClass}
-                        placeholder="50% 40%"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`media-${index}-url`}>Görsel URL</Label>
-                      <Input
-                        id={`media-${index}-url`}
-                        {...register(`media.${index}.url`)}
-                        className={inputClass}
-                        placeholder="https://… veya /demo/…"
-                      />
-                      <FieldError message={errors.media?.[index]?.url?.message} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`media-${index}-alt`}>
-                        Alternatif metin
-                      </Label>
-                      <Input
-                        id={`media-${index}-alt`}
-                        {...register(`media.${index}.alt`)}
-                        className={inputClass}
-                      />
-                      <FieldError message={errors.media?.[index]?.alt?.message} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() =>
-                  mediaFields.append({
-                    url: "",
-                    alt: watchedName || "Ürün görseli",
-                    position: mediaFields.fields.length,
-                  })
-                }
-                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-dashed border-cyan/35 px-4 text-sm font-semibold text-cyan hover:bg-cyan/5"
-              >
-                <ImagePlus className="size-4" aria-hidden="true" />
-                URL ekle
-              </button>
-            </div>
+            <ProductMediaManager
+              productId={initialValues.id ?? "new-product"}
+              fields={mediaFields.fields}
+              mediaArray={mediaFields}
+              register={register}
+              setValue={setValue}
+              watchedName={watchedName}
+              errors={errors.media as never}
+            />
           </FormSection>
 
           <FormSection
@@ -934,15 +1050,26 @@ export function ProductForm({
                       Varyant {index + 1}
                       {index === 0 ? " · varsayılan" : ""}
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => variantFields.remove(index)}
-                      disabled={variantFields.fields.length === 1}
-                      className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-destructive/20 px-3 text-xs font-semibold text-destructive disabled:opacity-30"
-                    >
-                      <Trash2 className="size-3.5" aria-hidden="true" />
-                      Kaldır
-                    </button>
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => variantFields.move(index, index - 1)}
+                        disabled={index === 0}
+                        className="grid size-8 place-items-center rounded-full border border-white/10 disabled:opacity-30"
+                        aria-label={`Varyant ${index + 1} yukarı`}
+                      >
+                        Yukarı
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => variantFields.remove(index)}
+                        disabled={variantFields.fields.length === 1}
+                        className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-destructive/20 px-3 text-xs font-semibold text-destructive disabled:opacity-30"
+                      >
+                        <Trash2 className="size-3.5" aria-hidden="true" />
+                        Kaldır
+                      </button>
+                    </div>
                   </div>
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     <div className="space-y-2">
@@ -965,6 +1092,14 @@ export function ProductForm({
                       />
                       <FieldError
                         message={errors.variants?.[index]?.sku?.message}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`variant-${index}-barcode`}>Barkod</Label>
+                      <Input
+                        id={`variant-${index}-barcode`}
+                        {...register(`variants.${index}.barcode`)}
+                        className={inputClass}
                       />
                     </div>
                     <div className="space-y-2">
@@ -1004,6 +1139,22 @@ export function ProductForm({
                       />
                       <FieldError
                         message={errors.variants?.[index]?.colorHex?.message}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`variant-${index}-size`}>Beden / ölçü</Label>
+                      <Input
+                        id={`variant-${index}-size`}
+                        {...register(`variants.${index}.sizeLabel`)}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`variant-${index}-material`}>Varyant malzemesi</Label>
+                      <Input
+                        id={`variant-${index}-material`}
+                        {...register(`variants.${index}.material`)}
+                        className={inputClass}
                       />
                     </div>
                     <div className="space-y-2">
@@ -1049,6 +1200,7 @@ export function ProductForm({
                   variantFields.append({
                     name: `Seçenek ${variantFields.fields.length + 1}`,
                     sku: "",
+                    barcode: "",
                     colorName: "",
                     colorHex: "",
                     priceAdjustmentMinor: 0,
@@ -1060,6 +1212,145 @@ export function ProductForm({
               >
                 <Plus className="size-4" aria-hidden="true" />
                 Varyant ekle
+              </button>
+            </div>
+          </FormSection>
+
+          <FormSection
+            title="Kişiselleştirme"
+            description="Müşteri sepete eklerken dolduracağı alanlar. Sunucu tekrar doğrular."
+          >
+            <label className="mb-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 p-4">
+              <input
+                type="checkbox"
+                {...register("personalizationEnabled")}
+                className="mt-0.5 size-4 accent-cyan"
+              />
+              <span>
+                <span className="block text-sm font-semibold">
+                  Kişiselleştirme açık
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  Metin, isim, tarih veya yönetici tanımlı alanlar.
+                </span>
+              </span>
+            </label>
+            <div className="space-y-4">
+              {personalizationFieldArray.fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="rounded-2xl border border-white/10 bg-black/15 p-4"
+                >
+                  <input
+                    type="hidden"
+                    {...register(`personalizationFields.${index}.id`)}
+                  />
+                  <div className="mb-4 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => personalizationFieldArray.remove(index)}
+                      className="text-xs font-semibold text-destructive"
+                    >
+                      Alanı kaldır
+                    </button>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor={`pers-${index}-label`}>Etiket</Label>
+                      <Input
+                        id={`pers-${index}-label`}
+                        {...register(`personalizationFields.${index}.label`)}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`pers-${index}-type`}>Tür</Label>
+                      <select
+                        id={`pers-${index}-type`}
+                        {...register(`personalizationFields.${index}.type`)}
+                        className={selectClass}
+                      >
+                        <option value="text">Özel metin</option>
+                        <option value="initials">Baş harfler</option>
+                        <option value="name">İsim</option>
+                        <option value="date">Tarih</option>
+                        <option value="color">Renk seçimi</option>
+                        <option value="custom">Yönetici alanı</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`pers-${index}-placeholder`}>
+                        Yer tutucu
+                      </Label>
+                      <Input
+                        id={`pers-${index}-placeholder`}
+                        {...register(
+                          `personalizationFields.${index}.placeholder`,
+                        )}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`pers-${index}-help`}>Yardım metni</Label>
+                      <Input
+                        id={`pers-${index}-help`}
+                        {...register(`personalizationFields.${index}.helpText`)}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`pers-${index}-min`}>Asgari uzunluk</Label>
+                      <Input
+                        id={`pers-${index}-min`}
+                        type="number"
+                        min={0}
+                        {...register(
+                          `personalizationFields.${index}.minLength`,
+                          { valueAsNumber: true },
+                        )}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`pers-${index}-max`}>Azami uzunluk</Label>
+                      <Input
+                        id={`pers-${index}-max`}
+                        type="number"
+                        min={1}
+                        {...register(
+                          `personalizationFields.${index}.maxLength`,
+                          { valueAsNumber: true },
+                        )}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                  <label className="mt-4 flex cursor-pointer items-center gap-2 text-xs font-semibold text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      {...register(`personalizationFields.${index}.required`)}
+                      className="size-4 accent-cyan"
+                    />
+                    Zorunlu alan
+                  </label>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() =>
+                  personalizationFieldArray.append({
+                    id: crypto.randomUUID(),
+                    type: "text",
+                    label: "Kişisel metin",
+                    placeholder: "",
+                    required: false,
+                    helpText: "",
+                  })
+                }
+                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-dashed border-cyan/35 px-4 text-sm font-semibold text-cyan hover:bg-cyan/5"
+              >
+                <Plus className="size-4" aria-hidden="true" />
+                Kişiselleştirme alanı ekle
               </button>
             </div>
           </FormSection>
@@ -1077,7 +1368,8 @@ export function ProductForm({
                   className={selectClass}
                 >
                   <option value="draft">Taslak</option>
-                  <option value="active">Aktif</option>
+                  <option value="scheduled">Planlandı</option>
+                  <option value="active">Yayında</option>
                   <option value="archived">Arşiv</option>
                 </select>
               </div>
@@ -1114,6 +1406,10 @@ export function ProductForm({
                   className={inputClass}
                   placeholder="Boşsa ürün adı kullanılır"
                 />
+                <p className="text-xs text-muted-foreground">
+                  {(watchedValues.seoTitle ?? "").length}/60 önerilen karakter.
+                  Daha uzun metin kaydedilir.
+                </p>
                 <FieldError message={errors.seoTitle?.message} />
               </div>
               <div className="space-y-2 md:col-span-2">
@@ -1125,8 +1421,37 @@ export function ProductForm({
                   className="min-h-28 rounded-xl border-white/12 bg-black/20 px-3 py-3"
                   placeholder="Boşsa kısa açıklama kullanılır"
                 />
+                <p className="text-xs text-muted-foreground">
+                  {(watchedValues.seoDescription ?? "").length}/160 önerilen
+                  karakter. Daha uzun metin kaydedilir.
+                </p>
                 <FieldError message={errors.seoDescription?.message} />
               </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="canonicalUrl">Canonical URL</Label>
+                <Input
+                  id="canonicalUrl"
+                  {...register("canonicalUrl")}
+                  className={inputClass}
+                  placeholder="https://…"
+                />
+              </div>
+              <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-muted-foreground">
+                <input
+                  type="checkbox"
+                  {...register("searchVisible")}
+                  className="size-4 accent-cyan"
+                />
+                Aramada görünsün
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-muted-foreground">
+                <input
+                  type="checkbox"
+                  {...register("noindex")}
+                  className="size-4 accent-cyan"
+                />
+                noindex (taslak / gizli)
+              </label>
             </div>
           </FormSection>
         </div>

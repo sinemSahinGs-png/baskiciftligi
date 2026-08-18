@@ -78,6 +78,24 @@ describe("server cart pricing", () => {
     expect(result.totalMinor).toBe(FREE_SHIPPING_THRESHOLD_MINOR);
   });
 
+  it("rejects archived or unpublished products and unknown variants", () => {
+    const archived = structuredClone(demoProducts[0]);
+    archived.status = "archived";
+    const archivedResult = priceCart(
+      [{ productId: archived.id, variantId: archived.variants[0]?.id, quantity: 1 }],
+      [archived],
+    );
+    expect(archivedResult.lines[0].isAvailable).toBe(false);
+    expect(archivedResult.totalMinor).toBe(0);
+
+    const product = demoProducts[0];
+    const missingVariant = priceCart(
+      [{ productId: product.id, variantId: "deleted-variant", quantity: 1 }],
+      [product],
+    );
+    expect(missingVariant.lines[0].isAvailable).toBe(false);
+  });
+
   it("rejects invalid quantities before calculating money", () => {
     expect(() =>
       priceCart([{ productId: demoProducts[0].id, quantity: 1.5 }], demoProducts),

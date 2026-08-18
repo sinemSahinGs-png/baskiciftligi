@@ -15,7 +15,7 @@ import {
 interface ProductActionsProps {
   id: string;
   name: string;
-  status: "draft" | "active" | "archived";
+  status: "draft" | "scheduled" | "active" | "archived";
   afterDelete?: "list" | "refresh";
   showEdit?: boolean;
 }

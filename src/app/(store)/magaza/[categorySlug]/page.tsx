@@ -7,17 +7,15 @@ import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
 import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ProductStage } from "@/components/catalog/product-stage";
-import { ClipReveal } from "@/components/motion/clip-reveal";
 import { PageMasthead } from "@/components/motion/page-masthead";
-import { ParallaxMedia } from "@/components/motion/parallax-media";
+import { MediaReveal } from "@/components/motion/media-reveal";
 import { RevealHeading } from "@/components/motion/reveal-words";
-import { StaggerGrid } from "@/components/motion/stagger-grid";
+import { StaggerGrid, StaggerItem } from "@/components/motion/stagger-grid";
 import {
   absoluteSiteUrl,
   serializeJsonLd,
 } from "@/components/catalog/structured-data";
 import { siteConfig } from "@/config/site";
-import { demoCategories } from "@/domain/catalog/demo-data";
 import {
   categoryAfterword,
   relatedCategorySlugs,
@@ -30,8 +28,9 @@ import {
 import { stageClass, stageForCategory } from "@/domain/visual/stages";
 import { cn } from "@/lib/utils";
 
-export function generateStaticParams() {
-  return demoCategories.map((category) => ({
+export async function generateStaticParams() {
+  const categories = await listCategories();
+  return categories.map((category) => ({
     categorySlug: category.slug,
   }));
 }
@@ -190,23 +189,23 @@ export default async function CategoryPage(
             ) : null}
           </div>
           {category.imageUrl ? (
-            <ParallaxMedia className="min-h-56 rounded-xl">
+            <MediaReveal className="min-h-56 rounded-xl">
               <ProductStage
                 stage={stage}
                 src={category.imageUrl}
                 alt=""
-                isolated={category.imageUrl.endsWith("heykel.svg")}
+                isolated={false}
                 sizes="(min-width: 1024px) 36vw, 100vw"
                 className="min-h-56 rounded-xl"
               />
-            </ParallaxMedia>
+            </MediaReveal>
           ) : null}
         </div>
       </header>
 
       <section
         aria-labelledby="category-products-heading"
-        className="shell pt-10 sm:pt-14"
+        className="shell pt-8 sm:pt-10"
       >
         <div className="mb-7 flex flex-wrap items-end justify-between gap-3">
           <RevealHeading
@@ -219,7 +218,7 @@ export default async function CategoryPage(
         </div>
 
         {products.length > 0 ? (
-          <CatalogGrid products={products} priorityCount={3} featuredFirst />
+          <CatalogGrid products={products} priorityCount={3} />
         ) : (
           <EmptyState
             icon={<PackageOpen aria-hidden="true" className="size-5" />}
@@ -231,7 +230,7 @@ export default async function CategoryPage(
       </section>
 
       {related.length > 0 ? (
-        <section className="shell mt-20" aria-labelledby="ilgili-kategoriler">
+        <section className="shell mt-12" aria-labelledby="ilgili-kategoriler">
           <RevealHeading
             as="h2"
             id="ilgili-kategoriler"
@@ -242,8 +241,7 @@ export default async function CategoryPage(
             {related.map((item) => {
               const relatedStage = stageForCategory(item.slug);
               return (
-                <li key={item.id} data-motion-item="idle" className="motion-item">
-                  <ClipReveal variant="left">
+                <StaggerItem as="li" key={item.id}>
                   <Link
                     href={`/magaza/${item.slug}`}
                     className={cn(
@@ -261,8 +259,7 @@ export default async function CategoryPage(
                     <p className="text-xs opacity-70">{item.eyebrow}</p>
                     <p className="mt-2 font-heading text-xl font-bold">{item.name}</p>
                   </Link>
-                  </ClipReveal>
-                </li>
+                </StaggerItem>
               );
             })}
           </StaggerGrid>

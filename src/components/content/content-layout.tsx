@@ -115,9 +115,10 @@ export function ContentPage({
 
       <div
         className={cn(
-          "shell pb-24 sm:pb-32",
+          "shell pb-12 sm:pb-16",
           width === "reading" && "max-w-5xl",
         )}
+        data-visual-landmark
       >
         {children}
       </div>

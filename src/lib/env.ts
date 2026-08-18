@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { parseStrictEnvBoolean } from "@/lib/env-boolean";
+
 const emptyToUndefined = (value: unknown) => (value === "" ? undefined : value);
 
 const publicMediaUrl = z.union([
@@ -54,7 +56,7 @@ const parsed = publicEnvSchema.safeParse({
 
 if (!parsed.success && process.env.NODE_ENV !== "test") {
   console.warn(
-    "[Octo Studio] Public environment configuration is invalid:",
+    "[Baskı Çiftliği] Public environment configuration is invalid:",
     parsed.error.flatten().fieldErrors,
   );
 }
@@ -67,3 +69,9 @@ export const isSupabaseConfigured = Boolean(
 
 export const isDevelopmentDemoMode =
   process.env.NODE_ENV === "development" && !isSupabaseConfigured;
+
+export const catalogPersistenceConfigured = isSupabaseConfigured;
+
+export const allowProductionDemoImport = parseStrictEnvBoolean(
+  process.env.ALLOW_PRODUCTION_DEMO_IMPORT,
+);

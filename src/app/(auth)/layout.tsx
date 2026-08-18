@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 
 import { Logo } from "@/components/site/logo";
+import { SiteFooter } from "@/components/site/site-footer";
 import { siteConfig } from "@/config/site";
 
 const assurances = [
@@ -27,7 +28,7 @@ export default function AuthLayout({
       </header>
       <main
         id="ana-icerik"
-        className="shell grid items-center gap-12 py-12 lg:grid-cols-2 lg:py-20"
+        className="shell grid items-start gap-12 py-10 lg:grid-cols-2 lg:items-center lg:py-12"
       >
         <section className="relative hidden max-w-lg overflow-hidden rounded-xl bg-midnight p-8 text-light-text lg:block">
           <p className="text-sm text-cyan">{siteConfig.tagline}</p>
@@ -45,6 +46,7 @@ export default function AuthLayout({
         </section>
         <section className="flex justify-center lg:justify-end">{children}</section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

@@ -18,9 +18,27 @@ export interface ThingiverseThing {
   default_image?: { url?: string };
   creator?: ThingiverseUser;
   license?: string;
+  license_url?: string;
   description?: string;
   like_count?: number;
+  collect_count?: number;
+  is_private?: boolean;
   is_nsfw?: boolean;
+  file_count?: number;
+  files_url?: string;
+}
+
+export interface ThingiverseFile {
+  id?: number;
+  name?: string;
+  size?: number;
+  url?: string;
+  public_url?: string;
+  download_url?: string;
+  direct_url?: string;
+  thumbnail?: string;
+  formatted_size?: string;
+  date?: string;
 }
 
 export interface ThingiverseClientError {

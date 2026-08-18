@@ -201,8 +201,8 @@ export function CatalogFilters({
   );
 
   return (
-    <div>
-      <div className="sticky top-16 z-20 -mx-4 flex flex-wrap items-center justify-between gap-3 border-b border-hairline bg-porcelain/95 px-4 py-3 backdrop-blur-sm lg:static lg:mx-0 lg:bg-transparent lg:px-0 lg:py-4 lg:backdrop-blur-none">
+    <div className="min-w-0">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline py-3 lg:static lg:py-4">
         <p className="text-sm font-semibold text-ink-secondary">
           {productCount} ürün
         </p>
@@ -300,7 +300,7 @@ export function CatalogFilters({
         ) : null}
       </AnimatePresence>
 
-      <nav aria-label="Kategoriler" className="mt-4 -mx-1 overflow-x-auto pb-2 lg:hidden">
+      <nav aria-label="Kategoriler" className="mt-3 max-w-full min-w-0 overflow-x-auto pb-2 lg:hidden">
         <ul className="flex min-w-max gap-2 px-1">
           <li>
             <Link

@@ -22,7 +22,13 @@ export function ProductInfo({ product }: { product: Product }) {
     {
       id: "uretim",
       title: "Üretim",
-      body: `${product.kind === "made_to_order" ? "Siparişe göre üretilir." : "Hazır stoktan gönderilir."} Tahmini hazırlık ${product.productionLeadTimeDays.min}–${product.productionLeadTimeDays.max} iş günüdür. Küçük yüzey farklılıkları katmanlı üretimin parçasıdır.`,
+      body: `${
+        product.kind === "made_to_order"
+          ? "Siparişe göre üretilir."
+          : product.kind === "hybrid"
+            ? "Hazır stok varsa gönderilir, aksi halde siparişe göre üretilir."
+            : "Hazır stoktan gönderilir."
+      } Tahmini hazırlık ${product.productionLeadTimeDays.min}–${product.productionLeadTimeDays.max} iş günüdür. Küçük yüzey farklılıkları katmanlı üretimin parçasıdır.`,
     },
     {
       id: "bakim",

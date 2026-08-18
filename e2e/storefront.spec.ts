@@ -6,13 +6,23 @@ test.describe("storefront phase 1", () => {
   }) => {
     test.setTimeout(60_000);
     await page.goto("/");
+    await page.waitForFunction(
+      () => document.documentElement.classList.contains("motion-ready"),
+    );
     await expect(page.locator("#ana-icerik")).toBeVisible();
     await expect(
       page.getByRole("banner").getByRole("link", { name: "Baskı Çiftliği ana sayfa" }),
     ).toBeVisible();
 
-    await page.locator("#ana-icerik").getByRole("link", { name: "Mağazayı keşfet" }).click();
-    await expect(page).toHaveURL(/\/magaza/);
+    const shopCta = page
+      .locator("section")
+      .filter({
+        has: page.getByRole("heading", { name: "Fikrini yükle. Biz üretelim." }),
+      })
+      .getByRole("link", { name: "Mağazayı keşfet" });
+    await expect(shopCta).toBeVisible();
+    await shopCta.click();
+    await expect(page).toHaveURL(/\/magaza/, { timeout: 15_000 });
     await expect(
       page.getByRole("heading", { name: "Tüm ürünler" }),
     ).toBeVisible();
@@ -44,20 +54,20 @@ test.describe("storefront phase 1", () => {
     ).toBeVisible();
   });
 
-  test("model yükleme sayfası dosyayı kabul eder ama sahte fiyat göstermez", async ({
+  test("model yükleme sayfası dosyayı kabul eder ama dilimlemeden fiyat göstermez", async ({
     page,
   }) => {
     await page.goto("/model-yukle");
     await expect(page.locator("input[type='file']")).toHaveCount(1);
+    await page
+      .getByRole("button", { name: "7. Özet" })
+      .locator("visible=true")
+      .last()
+      .click();
     await expect(
-      page.getByText(/üretim değerlendirmesine gönderilecek/i),
-    ).toHaveCount(0);
-    await page.getByRole("button", { name: "7. Özet" }).click();
-    await expect(
-      page.getByText("Modeliniz üretim değerlendirmesine gönderilecek"),
+      page.getByText("Fiyat, PrusaSlicer çıktısı ve sunucu formülü olmadan gösterilmez."),
     ).toBeVisible();
-    await expect(page.getByText("Anlık fiyat gösterilmez")).toBeVisible();
-    await expect(page.getByText(/PayTR/i)).toHaveCount(0);
+    await expect(page.getByText(/PayTR/i)).toHaveCount(1);
   });
 
   test("hizmet sayfaları sahte teklif üretmez", async ({ page }) => {
@@ -70,5 +80,14 @@ test.describe("storefront phase 1", () => {
     await expect(
       page.getByText("Teklif ve dosya akışı henüz aktif değil"),
     ).toBeVisible();
+  });
+
+  test("geliştirme mağazası boş üretim durumunu göstermez", async ({ page }) => {
+    await page.goto("/magaza");
+    await expect(page.getByRole("heading", { name: "Tüm ürünler" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Yeni ürünler hazırlanıyor." }),
+    ).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /ürününü sepete ekle/ }).first()).toBeVisible();
   });
 });

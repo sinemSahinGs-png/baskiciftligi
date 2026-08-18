@@ -1,0 +1,2 @@
+FROM scratch
+# Marker so Docker COPY of worker sources stays self-contained.

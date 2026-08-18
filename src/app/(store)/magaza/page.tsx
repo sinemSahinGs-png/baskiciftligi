@@ -4,6 +4,7 @@ import Link from "next/link";
 import { SearchX } from "lucide-react";
 
 import { FoundryGrid } from "@/components/brand/foundry-grid";
+import { EmptyCatalogState } from "@/components/catalog/empty-catalog-state";
 import { CatalogFilters } from "@/components/catalog/catalog-filters";
 import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { CatalogSearch } from "@/components/catalog/catalog-search";
@@ -11,9 +12,7 @@ import { CategoryWorlds } from "@/components/catalog/category-worlds";
 import { RecentlyViewed } from "@/components/catalog/recently-viewed";
 import { ProductStage } from "@/components/catalog/product-stage";
 import { PriceDisplay } from "@/components/commerce/price-display";
-import { ClipReveal } from "@/components/motion/clip-reveal";
 import { PageMasthead } from "@/components/motion/page-masthead";
-import { RevealHeading } from "@/components/motion/reveal-words";
 import { siteConfig } from "@/config/site";
 import {
   listCategories,
@@ -61,6 +60,8 @@ export default async function StorePage(props: PageProps<"/magaza">) {
       query.minPriceMinor ||
       query.maxPriceMinor,
   );
+  const isGenuinelyEmpty =
+    !hasActiveFilters && page.total === 0 && recentPool.length === 0;
 
   return (
     <main id="ana-icerik" className="pb-20">
@@ -93,33 +94,35 @@ export default async function StorePage(props: PageProps<"/magaza">) {
         </div>
       </header>
 
-      {!hasActiveFilters ? (
-        <section className="shell pt-8 sm:pt-10" aria-labelledby="magaza-dunyalar">
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <RevealHeading
-              as="h2"
+      {!hasActiveFilters && !isGenuinelyEmpty ? (
+        <section className="shell pt-5 sm:pt-8" aria-labelledby="magaza-dunyalar">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <h2
               id="magaza-dunyalar"
-              text="Kategori dünyaları"
               className="font-heading text-2xl font-bold sm:text-3xl"
-            />
+            >
+              Kategori dünyaları
+            </h2>
             <p className="text-sm text-ink-secondary">{recentPool.length} ürün vitrinde</p>
           </div>
-          <CategoryWorlds categories={categories} products={recentPool} />
+          <CategoryWorlds categories={categories} products={recentPool} limit={8} />
         </section>
       ) : null}
 
       {!activeCollection && !hasActiveFilters && featuredProducts.length > 0 ? (
-        <section className="shell pt-10" aria-labelledby="magaza-koleksiyon">
-          <RevealHeading
-            as="h2"
+        <section
+          className="shell hidden pt-8 lg:block"
+          aria-labelledby="magaza-koleksiyon"
+        >
+          <h2
             id="magaza-koleksiyon"
-            text="Öne çıkan koleksiyon"
             className="font-heading text-2xl font-bold sm:text-3xl"
-          />
+          >
+            Öne çıkan koleksiyon
+          </h2>
           <div className="mt-6 grid gap-3 lg:grid-cols-12">
             {featuredProducts[0] ? (
               <article className="lg:col-span-7">
-                <ClipReveal variant="left" className="rounded-xl">
                 <ProductStage
                   stage={stageForCategory(featuredProducts[0].categorySlugs[0])}
                   src={featuredProducts[0].media[0]?.url}
@@ -146,13 +149,11 @@ export default async function StorePage(props: PageProps<"/magaza">) {
                     />
                   </div>
                 </ProductStage>
-                </ClipReveal>
               </article>
             ) : null}
             <div className="grid gap-3 lg:col-span-5">
               {featuredProducts.slice(1).map((product) => (
                 <article key={product.id}>
-                  <ClipReveal variant="up" className="rounded-lg">
                   <ProductStage
                     stage={stageForCategory(product.categorySlugs[0])}
                     src={product.media[0]?.url}
@@ -177,7 +178,6 @@ export default async function StorePage(props: PageProps<"/magaza">) {
                       />
                     </div>
                   </ProductStage>
-                  </ClipReveal>
                 </article>
               ))}
             </div>
@@ -185,8 +185,17 @@ export default async function StorePage(props: PageProps<"/magaza">) {
         </section>
       ) : null}
 
-      <div className="shell grid gap-10 pt-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <aside className="lg:sticky lg:top-24 lg:h-fit">
+      {isGenuinelyEmpty ? (
+        <section className="shell pt-8" data-visual-landmark data-catalog-results>
+          <EmptyCatalogState />
+        </section>
+      ) : (
+        <>
+      <div
+        className="shell grid min-w-0 gap-5 pt-4 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-10 lg:pt-8"
+        data-visual-landmark
+      >
+        <aside className="min-w-0 lg:sticky lg:top-24 lg:h-fit">
           <Suspense fallback={<p className="text-sm text-ink-muted">Filtreler yükleniyor</p>}>
             <CatalogFilters
               categories={categories}
@@ -195,44 +204,16 @@ export default async function StorePage(props: PageProps<"/magaza">) {
             />
           </Suspense>
         </aside>
-        <section>
+        <section className="min-w-0" data-visual-landmark data-catalog-results>
           <h2 className="sr-only">Ürünler</h2>
           {page.items.length > 0 ? (
             <>
               {page.items.some((product) => product.isDemo) ? (
-                <p className="mb-6 text-sm text-ink-secondary">
+                <p className="mb-4 text-sm text-ink-secondary">
                   Demo etiketli ürünler vitrin içindir.
                 </p>
               ) : null}
-              <CatalogGrid
-                products={page.items.slice(0, 4)}
-                priorityCount={4}
-                featuredFirst
-              />
-              {!activeCollection && collections[0] ? (
-                <ClipReveal variant="left" className="my-10 overflow-hidden rounded-xl">
-                <div className="rounded-xl bg-violet px-6 py-8 text-light-text sm:px-10">
-                  <p className="text-sm font-semibold text-white/70">
-                    Koleksiyon
-                  </p>
-                  <p className="mt-2 font-heading text-3xl font-bold tracking-[-0.04em] sm:text-4xl">
-                    {collections[0].name}
-                  </p>
-                  <p className="mt-3 max-w-xl text-sm leading-6 text-white/80">
-                    {collections[0].description}
-                  </p>
-                  <Link
-                    href={`/magaza?koleksiyon=${collections[0].slug}`}
-                    className="mt-5 inline-flex min-h-11 items-center rounded-md bg-light-text px-4 text-sm font-bold text-dark-text"
-                  >
-                    Koleksiyonu aç
-                  </Link>
-                </div>
-                </ClipReveal>
-              ) : null}
-              {page.items.length > 4 ? (
-                <CatalogGrid products={page.items.slice(4)} />
-              ) : null}
+              <CatalogGrid products={page.items} priorityCount={4} />
               {page.pageCount > 1 ? (
                 <nav className="mt-10 flex gap-2" aria-label="Sayfalar">
                   {Array.from({ length: page.pageCount }, (_, index) => {
@@ -279,6 +260,8 @@ export default async function StorePage(props: PageProps<"/magaza">) {
         </section>
       </div>
       <RecentlyViewed products={recentPool} />
+        </>
+      )}
     </main>
   );
 }

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 export function PinnedStory({
   children,
   className,
-  heightClassName = "lg:h-[180vh]",
+  heightClassName = "h-[160vh]",
 }: {
   children: (progress: number) => ReactNode;
   className?: string;
@@ -17,6 +17,7 @@ export function PinnedStory({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const { allowPinned, reduced } = useScrollMotion();
+  const pin = allowPinned && !reduced;
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end end"],
@@ -24,21 +25,28 @@ export function PinnedStory({
   const [progress, setProgress] = useState(0);
 
   useMotionValueEvent(scrollYProgress, "change", (value) => {
-    setProgress(value);
+    if (!pin) {
+      return;
+    }
+    const rounded = Math.round(value * 20) / 20;
+    setProgress((current) => (current === rounded ? current : rounded));
   });
+
+  const shown = pin ? progress : 1;
 
   return (
     <div
       ref={ref}
-      className={cn(allowPinned && !reduced ? heightClassName : undefined, className)}
-      data-scroll-progress={progress.toFixed(2)}
+      className={cn(pin ? heightClassName : "static h-auto min-h-0", className)}
+      data-scroll-progress={shown.toFixed(2)}
+      data-pinned={pin ? "true" : "false"}
     >
       <div
         className={cn(
-          allowPinned && !reduced && "lg:sticky lg:top-24 lg:h-[calc(100svh-6rem)]",
+          pin ? "sticky top-24 h-[calc(100svh-6rem)]" : "static h-auto min-h-0",
         )}
       >
-        {children(reduced || !allowPinned ? 1 : progress)}
+        {children(shown)}
       </div>
     </div>
   );

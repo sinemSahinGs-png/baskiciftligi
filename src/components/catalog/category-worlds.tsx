@@ -1,5 +1,5 @@
 import { CategoryCard } from "@/components/catalog/category-card";
-import { StaggerGrid } from "@/components/motion/stagger-grid";
+import { StaggerGrid, StaggerItem } from "@/components/motion/stagger-grid";
 import type { Category, Product } from "@/domain/catalog/types";
 
 export function CategoryWorlds({
@@ -26,20 +26,20 @@ export function CategoryWorlds({
 
   return (
     <nav aria-label="Kategori dünyaları">
-      <StaggerGrid as="ul" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+      <StaggerGrid
+        as="ul"
+        className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-3 xl:grid-cols-4 max-md:[&>li:nth-child(n+5)]:hidden"
+      >
         {visible.map((category, index) => {
-          const product = products.find((item) =>
-            item.categorySlugs.includes(category.slug),
-          );
           return (
-            <li key={category.id} data-motion-item="idle" className="motion-item min-w-0">
+            <StaggerItem as="li" key={category.id} className="min-w-0">
               <CategoryCard
                 category={category}
                 index={index}
                 count={counts.get(category.slug)}
-                imageUrl={product?.media[0]?.url ?? category.imageUrl}
+                imageUrl={category.imageUrl}
               />
-            </li>
+            </StaggerItem>
           );
         })}
       </StaggerGrid>

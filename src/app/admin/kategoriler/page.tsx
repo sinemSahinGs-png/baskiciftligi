@@ -17,14 +17,16 @@ export default async function CategoriesPage() {
       <AdminPageHeader
         eyebrow="Katalog / Kategoriler"
         title="Kategori yönetimi"
-        description="Mağaza sınıflandırmasını düzenleyin. Ürün atanmış kategoriler veri bütünlüğünü korumak için silinemez."
+        description="Mağaza sınıflandırmasını, kapak fotoğrafını ve görselin vitrinde nasıl duracağını (ölçek, konum, kaplama) buradan düzenleyin. Ürün atanmış kategoriler veri bütünlüğünü korumak için silinemez."
       />
       {catalog.mode === "demo" ? (
         <div className="mb-5 flex items-start gap-3 rounded-2xl border border-warm/25 bg-warm/8 p-4 text-sm text-warm">
           <FlaskConical className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
           <p>
-            Demo modunda kategori adı, slug, açıklama, görsel URL ve sırası yerel
-            katalog dosyasına kaydedilir.
+            Demo modunda kategori kaydı yerel katalog dosyasına yazılır. Kapak
+            görseli yalnızca PNG’dir: dosyayı{" "}
+            <code>public/demo/categories/kategori-slug.png</code> olarak koyun
+            veya formdan yükleyin.
           </p>
         </div>
       ) : null}

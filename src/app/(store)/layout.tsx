@@ -9,24 +9,29 @@ import {
   listCategories,
   listProducts,
 } from "@/domain/catalog/repository";
+import { getSiteContent } from "@/domain/site/content-repository";
 
 export default async function StoreLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const [catalog, categories, products] = await Promise.all([
+  const [catalog, categories, products, content] = await Promise.all([
     getCatalogSnapshot(),
     listCategories(),
     listProducts({ limit: 24 }),
+    getSiteContent(),
   ]);
 
   return (
     <ShellAtmosphere>
       <AnnouncementBar announcements={catalog.announcements} />
       <SiteHeader categories={categories} products={products} />
-      <div className="min-h-[50svh] flex-1">{children}</div>
-      <SiteFooter />
+      <div className="min-h-0 grow-0">{children}</div>
+      <SiteFooter
+        heading={content.footerHeading}
+        description={content.footerDescription}
+      />
     </ShellAtmosphere>
   );
 }

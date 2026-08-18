@@ -3,10 +3,26 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { siteConfig } from "@/config/site";
+import {
+  canAccessLaunchCenter,
+  canManageCatalog,
+  canPublishCatalog,
+  canViewAdminCatalog,
+} from "@/lib/catalog/authorization";
+import {
+  hasAdminPasswordSession,
+  isLocalAdminPasswordEnabled,
+} from "@/lib/auth/admin-session";
 import { isDevelopmentDemoMode, isSupabaseConfigured } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export type AppRole = "customer" | "editor" | "admin";
+export type AppRole =
+  | "customer"
+  | "viewer"
+  | "editor"
+  | "catalog_manager"
+  | "admin"
+  | "owner";
 
 export interface Viewer {
   id: string;
@@ -76,14 +92,48 @@ export async function requireViewer(): Promise<Viewer> {
 }
 
 export async function requireAdmin(): Promise<Viewer> {
+  if (isLocalAdminPasswordEnabled() && !(await hasAdminPasswordSession())) {
+    redirect("/admin/giris");
+  }
+
   const viewer = await getViewer();
 
   if (!viewer) {
     redirect("/giris?next=/admin");
   }
 
-  if (viewer.role !== "admin" && viewer.role !== "editor") {
+  if (!canViewAdminCatalog(viewer.role)) {
     redirect("/");
+  }
+
+  return viewer;
+}
+
+export async function requireLaunchOperator(): Promise<Viewer> {
+  const viewer = await requireAdmin();
+
+  if (!canAccessLaunchCenter(viewer.role)) {
+    redirect("/admin");
+  }
+
+  return viewer;
+}
+
+export async function requireCatalogWriter(): Promise<Viewer> {
+  const viewer = await requireAdmin();
+
+  if (!canManageCatalog(viewer.role)) {
+    throw new Error("Bu işlem için katalog yazma yetkisi gerekir.");
+  }
+
+  return viewer;
+}
+
+export async function requireCatalogPublisher(): Promise<Viewer> {
+  const viewer = await requireCatalogWriter();
+
+  if (!canPublishCatalog(viewer.role)) {
+    throw new Error("Yayınlama yalnızca sahip veya yönetici içindir.");
   }
 
   return viewer;

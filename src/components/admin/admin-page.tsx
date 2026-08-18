@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 import { CheckCircle2, CircleDashed, LockKeyhole, Wrench } from "lucide-react";
 
-import { ThingiverseStatusPanel } from "@/components/admin/thingiverse-status-panel";
-
 interface AdminPageHeaderProps {
   eyebrow: string;
   title: string;
@@ -126,7 +124,6 @@ export function StagedAdminPage({
           )}
         </aside>
       </div>
-      {title === "Entegrasyonlar" ? <ThingiverseStatusPanel /> : null}
     </>
   );
 }

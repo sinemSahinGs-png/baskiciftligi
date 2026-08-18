@@ -1,6 +1,12 @@
 import { publicEnv } from "@/lib/env";
 
-const siteUrl = publicEnv.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+export const PRODUCTION_SITE_URL = "https://baskiciftligi.com";
+
+const siteUrl =
+  publicEnv.NEXT_PUBLIC_SITE_URL ??
+  (process.env.NODE_ENV === "production"
+    ? PRODUCTION_SITE_URL
+    : "http://localhost:3000");
 
 export const siteConfig = {
   name: "Baskı Çiftliği",
@@ -36,8 +42,7 @@ export const siteConfig = {
     secondaryCtaLabel: "Model yükle",
     videoUrl:
       publicEnv.NEXT_PUBLIC_HOME_HERO_VIDEO_URL ?? "/demo/hero/placeholder.mp4",
-    webmUrl:
-      publicEnv.NEXT_PUBLIC_HOME_HERO_WEBM_URL ?? "/demo/hero/placeholder.webm",
+    webmUrl: publicEnv.NEXT_PUBLIC_HOME_HERO_WEBM_URL,
     posterUrl:
       publicEnv.NEXT_PUBLIC_HOME_HERO_POSTER_URL ?? "/demo/hero/poster.jpg",
   },

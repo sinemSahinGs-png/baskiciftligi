@@ -83,21 +83,30 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full bg-midnight text-light-text">
         <JsonLd
-          data={{
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: siteConfig.name,
-            url: siteConfig.url,
-            ...(siteConfig.contact.email
-              ? { email: siteConfig.contact.email }
-              : {}),
-            address: {
-              "@type": "PostalAddress",
-              addressLocality: siteConfig.city,
-              addressCountry: "TR",
+          data={[
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: siteConfig.name,
+              url: siteConfig.url,
+              ...(siteConfig.contact.email
+                ? { email: siteConfig.contact.email }
+                : {}),
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: siteConfig.city,
+                addressCountry: "TR",
+              },
+              sameAs: Object.values(siteConfig.social).filter(Boolean),
             },
-            sameAs: Object.values(siteConfig.social).filter(Boolean),
-          }}
+            {
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: siteConfig.name,
+              url: siteConfig.url,
+              inLanguage: "tr-TR",
+            },
+          ]}
         />
         <a
           href="#ana-icerik"

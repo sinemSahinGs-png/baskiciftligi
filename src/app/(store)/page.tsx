@@ -22,6 +22,7 @@ import {
   listProducts,
 } from "@/domain/catalog/repository";
 import { faqItems } from "@/components/home/faq-data";
+import { getSiteContent } from "@/domain/site/content-repository";
 
 export const metadata: Metadata = {
   title: siteConfig.tagline,
@@ -35,10 +36,11 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [products, categories, materials] = await Promise.all([
+  const [products, categories, materials, content] = await Promise.all([
     listProducts(),
     listCategories(),
     listMaterials(),
+    getSiteContent(),
   ]);
 
   const faqJsonLd = {
@@ -56,7 +58,14 @@ export default async function HomePage() {
       <Hero />
       <FeaturedCollectionsSection products={products} categories={categories} />
       <FeaturedProductsSection products={products} />
-      <CategoriesSection categories={categories} products={products} />
+      <CategoriesSection
+        categories={categories}
+        products={products}
+        categoriesIntro={{
+          title: content.categoriesIntroTitle,
+          description: content.categoriesIntroDescription,
+        }}
+      />
       <ThreePathsSection />
       <UploadPromoSection />
       <PrintLibrarySection />

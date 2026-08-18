@@ -15,9 +15,15 @@ import type {
   ProductQuery,
   ProductVariant,
 } from "@/domain/catalog/types";
-import { isSupabaseConfigured } from "@/lib/env";
+import { productionVitrineSnapshot } from "@/lib/catalog/production-vitrine";
+import { resolveCategoryCoverUrl } from "@/lib/catalog/category-cover";
+import { catalogMediaPublicUrl } from "@/lib/catalog/media-url";
+import { resolveCatalogSource } from "@/lib/catalog/source";
+import { isPubliclyVisibleProduct } from "@/lib/catalog/visibility";
 import { loadDemoCatalog } from "@/lib/demo/catalog-store";
+import { isSupabaseConfigured } from "@/lib/env";
 import { createPublicSupabaseClient } from "@/lib/supabase/public";
+import { extraCatalogFieldsFromMetadata } from "@/domain/catalog/catalog-fields";
 import {
   parseMediaPresentation,
   parseProductPresentation,
@@ -107,7 +113,7 @@ function mapProduct(row: DatabaseProductRow): Product {
       url:
         item.external_url ??
         (item.storage_path
-          ? `/${item.storage_path.replace(/^\/+/, "")}`
+          ? catalogMediaPublicUrl(item.storage_path)
           : ""),
       alt: item.alt_text ?? row.name,
       position: item.position,
@@ -151,7 +157,10 @@ function mapProduct(row: DatabaseProductRow): Product {
     shortDescription: row.short_description ?? "",
     description: row.description ?? "",
     status: row.status,
-    kind: metadata.kind === "ready_stock" ? "ready_stock" : "made_to_order",
+    kind:
+      metadata.kind === "ready_stock" || metadata.kind === "hybrid"
+        ? metadata.kind
+        : "made_to_order",
     priceMinor: Number(row.base_price_minor),
     compareAtPriceMinor:
       row.compare_at_price_minor === null
@@ -189,6 +198,7 @@ function mapProduct(row: DatabaseProductRow): Product {
     seoDescription: row.seo_description ?? row.short_description ?? "",
     publishedAt: row.published_at,
     isDemo: metadata.demo === true,
+    ...extraCatalogFieldsFromMetadata(metadata),
   };
 }
 
@@ -206,7 +216,7 @@ async function loadSupabaseCatalog(): Promise<CatalogSnapshot> {
         .select(
           "id, slug, name, short_description, description, status, base_price_minor, compare_at_price_minor, currency, metadata, seo_title, seo_description, published_at, product_images(id, storage_path, external_url, alt_text, position), product_variants(id, title, sku, barcode, status, price_minor, attributes, is_default, position, inventory_levels(on_hand_quantity)), product_categories(categories(slug)), collection_products(collections(slug))",
         )
-        .eq("status", "active")
+        .in("status", ["active", "scheduled"])
         .lte("published_at", new Date().toISOString())
         .order("published_at", { ascending: false }),
       supabase
@@ -256,7 +266,10 @@ async function loadSupabaseCatalog(): Promise<CatalogSnapshot> {
       slug: row.slug,
       name: row.name,
       description: row.description ?? "",
-      imageUrl: row.image_url ?? "/demo/categories/dekorasyon.svg",
+      imageUrl: resolveCategoryCoverUrl(row.slug, row.image_url),
+      objectPosition: "50% 50%",
+      imageFit: "cover",
+      imageScale: 100,
       eyebrow: row.seo_title ?? "Koleksiyon",
       isFeatured: row.position <= 5,
       position: row.position,
@@ -380,11 +393,20 @@ const loadSupabaseCatalogCached = unstable_cache(
 );
 
 const getCatalogSnapshotCached = cache(async (): Promise<CatalogSnapshot> => {
-  if (isSupabaseConfigured) {
+  const source = resolveCatalogSource({
+    supabaseConfigured: isSupabaseConfigured,
+    nodeEnv: process.env.NODE_ENV,
+  });
+
+  if (source === "supabase") {
     return loadSupabaseCatalogCached();
   }
 
-  return loadDemoCatalog();
+  if (source === "development-demo") {
+    return loadDemoCatalog();
+  }
+
+  return productionVitrineSnapshot();
 });
 
 export async function getCatalogSnapshot(): Promise<CatalogSnapshot> {
@@ -402,7 +424,7 @@ export async function listProducts(query: ProductQuery = {}): Promise<Product[]>
     : (query.limit ?? Number.POSITIVE_INFINITY);
 
   return snapshot.products
-    .filter((product) => query.includeDrafts || product.status === "active")
+    .filter((product) => query.includeDrafts || isPubliclyVisibleProduct(product))
     .filter(
       (product) =>
         !query.category || product.categorySlugs.includes(query.category),
@@ -506,7 +528,7 @@ export async function getProductBySlug(
 ): Promise<Product | undefined> {
   const snapshot = await getCatalogSnapshot();
   return snapshot.products.find(
-    (product) => product.slug === slug && product.status === "active",
+    (product) => product.slug === slug && isPubliclyVisibleProduct(product),
   );
 }
 

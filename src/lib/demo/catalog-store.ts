@@ -9,23 +9,40 @@ import type {
   Category,
   Product,
 } from "@/domain/catalog/types";
+import { resolveCategoryCoverUrl } from "@/lib/catalog/category-cover";
 import { allowDemoAdminMutations } from "@/lib/env.server";
 
 const dataDirectory = path.join(process.cwd(), ".octo-data");
 const catalogFile = path.join(dataDirectory, "catalog.json");
 
+function withPngCategoryCovers(snapshot: CatalogSnapshot): CatalogSnapshot {
+  return {
+    ...snapshot,
+    categories: snapshot.categories.map((category) => ({
+      ...category,
+      imageUrl: resolveCategoryCoverUrl(category.slug, category.imageUrl),
+    })),
+  };
+}
+
 function baseSnapshot(): CatalogSnapshot {
-  return structuredClone(demoCatalogSnapshot);
+  return withPngCategoryCovers(structuredClone(demoCatalogSnapshot));
 }
 
 export async function loadDemoCatalog(): Promise<CatalogSnapshot> {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Yerel .octo-data/catalog.json üretimde okunmaz. Kalıcı katalog için Supabase yapılandırın.",
+    );
+  }
+
   if (process.env.NODE_ENV !== "development") {
     return baseSnapshot();
   }
 
   try {
     const contents = await readFile(catalogFile, "utf8");
-    return JSON.parse(contents) as CatalogSnapshot;
+    return withPngCategoryCovers(JSON.parse(contents) as CatalogSnapshot);
   } catch (error) {
     const code =
       error && typeof error === "object" && "code" in error

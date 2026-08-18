@@ -7,8 +7,7 @@ import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { ProductConfigurator } from "@/components/catalog/product-configurator";
 import { ProductGallery } from "@/components/catalog/product-gallery";
 import { ProductInfo } from "@/components/catalog/product-info";
-import { ClipReveal } from "@/components/motion/clip-reveal";
-import { MotionScope } from "@/components/motion/motion-scope";
+import { MediaReveal } from "@/components/motion/media-reveal";
 import { RevealCopy } from "@/components/motion/reveal-copy";
 import { RevealHeading } from "@/components/motion/reveal-words";
 import {
@@ -173,15 +172,15 @@ export default async function ProductPage(props: PageProps<"/urun/[slug]">) {
         />
 
         <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)] lg:gap-14">
-          <ClipReveal variant="up" className="min-w-0">
+          <MediaReveal className="min-w-0">
             <ProductGallery
               media={product.media}
               productName={product.name}
               stage={stage}
             />
-          </ClipReveal>
+          </MediaReveal>
 
-          <MotionScope className="lg:sticky lg:top-24">
+          <div className="lg:sticky lg:top-24">
             <div className="flex flex-wrap gap-2">
               {product.isDemo ? (
                 <span className="rounded-md bg-coral/15 px-3 py-1 text-xs font-semibold text-coral">
@@ -235,7 +234,7 @@ export default async function ProductPage(props: PageProps<"/urun/[slug]">) {
             <div className="mt-7">
               <ProductConfigurator product={product} />
             </div>
-          </MotionScope>
+          </div>
         </div>
 
         <div className="mt-16 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]">

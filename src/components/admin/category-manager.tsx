@@ -19,8 +19,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { SafeImage } from "@/components/media/safe-image";
 import type { AdminCategory } from "@/domain/catalog/admin-types";
+import {
+  categoryImageFitClass,
+  categoryImageStyle,
+  formatObjectPosition,
+  parseObjectPosition,
+  resolveCategoryImagePresentation,
+} from "@/lib/catalog/category-image";
 import type { CategoryFormInput } from "@/lib/validation/catalog";
+import { cn } from "@/lib/utils";
 
 interface CategoryManagerProps {
   categories: AdminCategory[];
@@ -30,7 +39,11 @@ const emptyCategory: CategoryFormInput = {
   name: "",
   slug: "",
   description: "",
+  eyebrow: "",
   imageUrl: "",
+  imageFit: "cover",
+  imageScale: 100,
+  objectPosition: "50% 50%",
   status: "published",
   position: 0,
 };
@@ -62,6 +75,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
   });
   const [slugEdited, setSlugEdited] = useState(false);
   const [formError, setFormError] = useState<string>();
+  const [coverError, setCoverError] = useState<string>();
 
   function resetForm() {
     setForm({
@@ -72,6 +86,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
     });
     setSlugEdited(false);
     setFormError(undefined);
+    setCoverError(undefined);
   }
 
   function edit(category: AdminCategory) {
@@ -80,13 +95,58 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
       name: category.name,
       slug: category.slug,
       description: category.description,
+      eyebrow: category.eyebrow,
       imageUrl: category.imageUrl,
+      imageFit: category.imageFit,
+      imageScale: category.imageScale,
+      objectPosition: category.objectPosition,
       status: category.status,
       position: category.position,
     });
     setSlugEdited(true);
     setFormError(undefined);
+    setCoverError(undefined);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function uploadCover(file: File) {
+    const slug = form.slug.trim() || slugify(form.name);
+    if (!slug) {
+      setCoverError("PNG yüklemek için önce kategori adını veya slug’ı girin.");
+      return;
+    }
+    if (file.type && file.type !== "image/png") {
+      setCoverError("Kategori kapağı yalnızca PNG kabul eder.");
+      return;
+    }
+
+    setCoverError(undefined);
+    const body = new FormData();
+    body.set("slug", slug);
+    body.set("file", file);
+
+    try {
+      const response = await fetch("/api/admin/category-cover", {
+        method: "POST",
+        body,
+      });
+      const payload = (await response.json()) as { url?: string; error?: string };
+      if (!response.ok || !payload.url) {
+        setCoverError(payload.error ?? "PNG yüklenemedi.");
+        return;
+      }
+      const coverUrl = payload.url;
+      setForm((current) => ({
+        ...current,
+        slug: current.slug || slug,
+        imageUrl: coverUrl,
+      }));
+      if (!slugEdited && !form.slug) {
+        setSlugEdited(true);
+      }
+    } catch {
+      setCoverError("PNG yüklenemedi.");
+    }
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -208,6 +268,59 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
             />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="category-eyebrow">Kısa etiket</Label>
+            <Input
+              id="category-eyebrow"
+              value={form.eyebrow ?? ""}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  eyebrow: event.target.value,
+                }))
+              }
+              placeholder="Koleksiyon"
+              className="h-11 rounded-xl border-white/12 bg-black/20 px-3"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="category-image-file">Kapak görseli (PNG)</Label>
+            <Input
+              id="category-image-file"
+              type="file"
+              accept="image/png,.png"
+              disabled={pending}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (file) {
+                  void uploadCover(file);
+                }
+              }}
+              className="h-11 rounded-xl border-white/12 bg-black/20 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-cyan file:px-3 file:py-1 file:text-xs file:font-semibold file:text-ink"
+            />
+            <p className="text-xs leading-5 text-muted-foreground">
+              Yalnızca PNG. Dosya{" "}
+              <code>
+                public/demo/categories/
+                {form.slug || "kategori-slug"}
+                .png
+              </code>{" "}
+              olarak kaydedilir. JPEG veya SVG kabul edilmez.
+            </p>
+            {coverError ? (
+              <p className="text-xs text-destructive" role="alert">
+                {coverError}
+              </p>
+            ) : null}
+            <CategoryCoverPreview form={form} />
+            <ImageFramingControls
+              form={form}
+              onChange={(patch) =>
+                setForm((current) => ({ ...current, ...patch }))
+              }
+            />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="category-image">Kapak görseli URL</Label>
             <Input
               id="category-image"
@@ -218,12 +331,9 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
                   imageUrl: event.target.value,
                 }))
               }
-              placeholder="https://… veya /demo/…"
+              placeholder="/demo/categories/ev-ve-dekorasyon.png"
               className="h-11 rounded-xl border-white/12 bg-black/20 px-3"
             />
-            <p className="text-xs leading-5 text-muted-foreground">
-              Dosya yükleme bu fazda yok; yalnızca URL kaydedilir.
-            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="category-position">Sıra</Label>
@@ -288,8 +398,25 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
                 key={category.id}
                 className="grid gap-4 p-5 md:grid-cols-[4rem_minmax(0,1fr)_auto] md:items-center"
               >
-                <div className="grid size-14 place-items-center rounded-2xl border border-white/10 bg-black/20 font-heading text-lg text-cyan">
-                  {category.position}
+                <div className="grid size-14 place-items-center overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+                  {category.imageUrl ? (
+                    <span className="relative size-full">
+                      <SafeImage
+                        src={category.imageUrl}
+                        alt=""
+                        fill
+                        sizes="56px"
+                        className={categoryImageFitClass(category.imageFit)}
+                        style={categoryImageStyle(
+                          resolveCategoryImagePresentation(category),
+                        )}
+                      />
+                    </span>
+                  ) : (
+                    <span className="font-heading text-lg text-cyan">
+                      {category.position}
+                    </span>
+                  )}
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -349,3 +476,140 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
     </div>
   );
 }
+
+function CategoryCoverPreview({ form }: { form: CategoryFormInput }) {
+  if (!form.imageUrl) {
+    return (
+      <div className="mt-2 grid aspect-[4/3] place-items-center rounded-xl border border-dashed border-white/12 bg-black/20 text-xs text-muted-foreground">
+        PNG yükleyince vitrin önizlemesi burada görünür.
+      </div>
+    );
+  }
+
+  const presentation = resolveCategoryImagePresentation(form);
+
+  return (
+    <div className="mt-2 overflow-hidden rounded-xl border border-white/10 bg-black/40">
+      <p className="px-3 py-2 text-[0.65rem] font-bold tracking-[0.12em] text-muted-foreground uppercase">
+        Vitrin önizlemesi
+      </p>
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <SafeImage
+          src={form.imageUrl}
+          alt=""
+          fill
+          sizes="420px"
+          className={categoryImageFitClass(presentation.fit)}
+          style={categoryImageStyle(presentation)}
+        />
+        <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
+        <span className="absolute inset-x-0 bottom-0 z-10 p-4">
+          <span className="block font-heading text-lg font-bold text-white">
+            {form.name || "Kategori adı"}
+          </span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ImageFramingControls({
+  form,
+  onChange,
+}: {
+  form: CategoryFormInput;
+  onChange: (patch: Partial<CategoryFormInput>) => void;
+}) {
+  const presentation = resolveCategoryImagePresentation(form);
+  const position = parseObjectPosition(form.objectPosition);
+
+  return (
+    <div className="space-y-4 rounded-xl border border-white/10 bg-black/20 p-4">
+      <p className="text-xs font-semibold">Görselin vitrinde duruşu</p>
+      <div className="grid grid-cols-2 gap-2">
+        {(
+          [
+            ["cover", "Kapla"],
+            ["contain", "Sığdır"],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => onChange({ imageFit: value })}
+            className={cn(
+              "min-h-10 rounded-full border px-3 text-xs font-semibold",
+              presentation.fit === value
+                ? "border-cyan bg-cyan text-ink"
+                : "border-white/12 text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <label className="block space-y-2 text-xs">
+        <span className="flex justify-between text-muted-foreground">
+          Ölçek
+          <span className="tabular text-foreground">{presentation.scale}%</span>
+        </span>
+        <input
+          type="range"
+          min={50}
+          max={200}
+          step={1}
+          value={presentation.scale}
+          onChange={(event) =>
+            onChange({ imageScale: Number(event.target.value) })
+          }
+          className="w-full accent-cyan"
+        />
+      </label>
+      <label className="block space-y-2 text-xs">
+        <span className="flex justify-between text-muted-foreground">
+          Yatay konum
+          <span className="tabular text-foreground">{position.x}%</span>
+        </span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={position.x}
+          onChange={(event) =>
+            onChange({
+              objectPosition: formatObjectPosition(
+                Number(event.target.value),
+                position.y,
+              ),
+            })
+          }
+          className="w-full accent-cyan"
+        />
+      </label>
+      <label className="block space-y-2 text-xs">
+        <span className="flex justify-between text-muted-foreground">
+          Dikey konum
+          <span className="tabular text-foreground">{position.y}%</span>
+        </span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={position.y}
+          onChange={(event) =>
+            onChange({
+              objectPosition: formatObjectPosition(
+                position.x,
+                Number(event.target.value),
+              ),
+            })
+          }
+          className="w-full accent-cyan"
+        />
+      </label>
+    </div>
+  );
+}
+

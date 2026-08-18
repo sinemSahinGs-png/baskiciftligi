@@ -2,6 +2,7 @@ import {
   displayKindForProduct,
   type CartLineDisplayKind,
 } from "@/domain/catalog/presentation";
+import { isPubliclyVisibleProduct } from "@/lib/catalog/visibility";
 import type { Product, ProductKind } from "@/domain/catalog/types";
 import { assertMinorUnits } from "@/lib/money";
 
@@ -9,6 +10,8 @@ export interface CartInputLine {
   productId: string;
   variantId?: string | null;
   quantity: number;
+  personalization?: Record<string, string>;
+  quoteId?: string;
 }
 
 export interface PricedCartLine {
@@ -28,6 +31,26 @@ export interface PricedCartLine {
   isDemo: boolean;
   kind: ProductKind | null;
   displayKind: CartLineDisplayKind;
+  quoteId?: string;
+  manufacturing?: {
+    source: "upload" | "thingiverse";
+    filename: string;
+    thingTitle: string | null;
+    selectedFileName: string | null;
+    dimensionsMm: { x: number; y: number; z: number } | null;
+    material: string;
+    color: string;
+    quality: string;
+    infillPercent: number;
+    supports: string;
+    estimatedDurationSeconds: number | null;
+    vatMinor: number;
+    netMinor: number;
+    reviewRequired: boolean;
+    quoteExpiresAt: string;
+    attributionText: string | null;
+    licenseLabel: string | null;
+  };
 }
 
 export interface CartPriceResult {
@@ -59,7 +82,7 @@ export function priceCart(
     const product = productById.get(input.productId);
     const key = `${input.productId}:${input.variantId ?? "default"}`;
 
-    if (!product || product.status !== "active") {
+    if (!product || !isPubliclyVisibleProduct(product)) {
       return {
         key,
         productId: input.productId,
@@ -93,10 +116,16 @@ export function priceCart(
     const unitPriceMinor = assertMinorUnits(
       product.priceMinor + (variant?.priceAdjustmentMinor ?? 0),
     );
+    const personalizationOk = personalizationSatisfied(
+      product,
+      input.personalization,
+    );
+    const allowsBackorder = product.inventoryPolicy === "continue";
     const isAvailable =
       (!requiresVariant || Boolean(variant)) &&
-      availableQuantity >= input.quantity &&
-      availableQuantity > 0;
+      personalizationOk &&
+      (allowsBackorder ||
+        (availableQuantity >= input.quantity && availableQuantity > 0));
 
     return {
       key,
@@ -139,4 +168,29 @@ export function priceCart(
     hasUnavailableItems: lines.some((line) => !line.isAvailable),
     pricedAt,
   };
+}
+
+function personalizationSatisfied(
+  product: Product,
+  values: Record<string, string> | undefined,
+): boolean {
+  if (!product.personalizationEnabled) {
+    return true;
+  }
+
+  return (product.personalizationFields ?? [])
+    .filter((field) => field.required)
+    .every((field) => {
+      const value = values?.[field.id]?.trim() ?? "";
+      if (!value) {
+        return false;
+      }
+      if (field.minLength && value.length < field.minLength) {
+        return false;
+      }
+      if (field.maxLength && value.length > field.maxLength) {
+        return false;
+      }
+      return true;
+    });
 }

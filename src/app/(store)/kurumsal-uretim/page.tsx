@@ -120,7 +120,7 @@ export default function CorporateProductionPage() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[linear-gradient(90deg,transparent,rgb(255_146_56/0.35))]"
         />
-        <div className="shell relative grid min-h-[28rem] items-end gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
+        <div className="shell relative grid items-end gap-8 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
           <div>
             <p className="text-sm text-orange">Kurumsal üretim</p>
             <h1 className="display-title mt-4">
@@ -148,7 +148,7 @@ export default function CorporateProductionPage() {
           </div>
           <div className="media-frame relative min-h-64 border border-white/10">
             <Image
-              src="/demo/categories/kurumsal.svg"
+              src="/demo/categories/kurumsal-promosyon.png"
               alt=""
               fill
               className="object-cover"
@@ -157,16 +157,21 @@ export default function CorporateProductionPage() {
         </div>
       </header>
 
-      <div className="shell py-16 sm:py-24">
-        <StatusNotice title="Teklif ve üretim kabulü manuel doğrulama gerektirir">
-          <p>
-            Aktif bir otomatik teklif, kapasite rezervasyonu veya bağlayıcı
-            termin oluşturulmaz. Proje ancak doğrulanmış iletişim, kapsam ve
-            yazılı onay sonrasında değerlendirmeye alınabilir.
-          </p>
-        </StatusNotice>
+      <div className="shell py-8 sm:py-12">
+        <section className="max-w-3xl" aria-labelledby="kurumsal-durum">
+          <h2 id="kurumsal-durum" className="sr-only">
+            Teklif durumu
+          </h2>
+          <StatusNotice title="Teklif ve üretim kabulü manuel doğrulama gerektirir">
+            <p>
+              Aktif bir otomatik teklif, kapasite rezervasyonu veya bağlayıcı
+              termin oluşturulmaz. Proje ancak doğrulanmış iletişim, kapsam ve
+              yazılı onay sonrasında değerlendirmeye alınabilir.
+            </p>
+          </StatusNotice>
+        </section>
 
-        <section className="section-space" aria-labelledby="yetenekler-baslik">
+        <section className="section-space-tight" aria-labelledby="yetenekler-baslik">
           <div id="yetenekler-baslik">
             <SectionHeading
               title="Kurumsal üretim yönleri"

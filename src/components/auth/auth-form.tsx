@@ -62,9 +62,9 @@ export function AuthForm({ mode, configured, nextPath }: AuthFormProps) {
           <AlertTitle>Hesap erişimi henüz yapılandırılmadı</AlertTitle>
           <AlertDescription>
             Bu ortamda Supabase Auth bağlantısı yok. Form gösterim amaçlıdır;
-            giriş veya kayıt işlemi yapılamaz. Yönetici demo alanı yalnızca yerel
-            geliştirmede <span className="font-mono text-foreground">/admin</span>{" "}
-            altında çalışır.
+            giriş veya kayıt işlemi yapılamaz. Yerel yönetici paneli{" "}
+            <span className="font-mono text-foreground">/admin/giris</span>{" "}
+            adresinden şifre ile açılır.
           </AlertDescription>
         </Alert>
       ) : null}

@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { isAdminLoginPath } from "@/lib/auth/admin-password";
 import { isDevelopmentDemoMode } from "@/lib/env";
 import { refreshSupabaseSession } from "@/lib/supabase/proxy";
 
@@ -8,7 +9,8 @@ export async function proxy(request: NextRequest) {
   const { response, user } = await refreshSupabaseSession(request);
   const pathname = request.nextUrl.pathname;
   const requiresSession =
-    pathname.startsWith("/hesabim") || pathname.startsWith("/admin");
+    pathname.startsWith("/hesabim") ||
+    (pathname.startsWith("/admin") && !isAdminLoginPath(pathname));
 
   if (requiresSession && !user && !isDevelopmentDemoMode) {
     const loginUrl = new URL("/giris", request.url);

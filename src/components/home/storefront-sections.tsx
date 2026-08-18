@@ -1,18 +1,23 @@
 import type { Route } from "next";
 import Link from "next/link";
 
+import { PackageOpen } from "lucide-react";
+
 import { FoundryGrid } from "@/components/brand/foundry-grid";
+import { EmptyCatalogState } from "@/components/catalog/empty-catalog-state";
+import { EmptyState } from "@/components/feedback/empty-state";
 import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { CategoryCard } from "@/components/catalog/category-card";
 import { ProductStage } from "@/components/catalog/product-stage";
 import { PriceDisplay } from "@/components/commerce/price-display";
 import { FaqSection } from "@/components/home/faq";
 import { SectionIntro } from "@/components/home/section-intro";
-import { ClipReveal } from "@/components/motion/clip-reveal";
+import { MediaReveal } from "@/components/motion/media-reveal";
 import { RevealBlock } from "@/components/motion/reveal-copy";
 import { ScrollSection, SectionAtmosphere } from "@/components/motion/scroll-section";
-import { StaggerGrid } from "@/components/motion/stagger-grid";
+import { StaggerGrid, StaggerItem } from "@/components/motion/stagger-grid";
 import { siteConfig } from "@/config/site";
+import { isDevelopmentDemoMode } from "@/lib/env";
 import type { Category, Product } from "@/domain/catalog/types";
 import {
   homepageCorporateOffers,
@@ -23,7 +28,6 @@ import {
   homepageShopCategorySlugs,
 } from "@/domain/home/homepage";
 import { stageForCategory, type StagePreset } from "@/domain/visual/stages";
-import { cn } from "@/lib/utils";
 
 export { ThreePathsSection } from "@/components/home/three-paths-section";
 export { UploadPromoSection } from "@/components/home/upload-promo-section";
@@ -57,7 +61,7 @@ export function FeaturedCollectionsSection({
   const [primary, ...rest] = cards;
 
   return (
-    <ScrollSection className="atmosphere-porcelain section-space-start relative overflow-hidden">
+    <section id="koleksiyon-sahneleri" className="atmosphere-porcelain section-space-start relative overflow-hidden scroll-mt-24">
       <SectionAtmosphere tone="cobalt" />
       <div className="shell relative">
         <SectionIntro
@@ -67,7 +71,7 @@ export function FeaturedCollectionsSection({
         <div className="grid gap-4 lg:grid-cols-12">
           {primary ? (
             <article className="group/card lg:col-span-7">
-              <ClipReveal variant="left" className="rounded-xl">
+              <MediaReveal className="rounded-xl">
                 <ProductStage
                   stage={stageForCategory(primary.slug)}
                   src={primary.product.media[0]?.url}
@@ -102,13 +106,13 @@ export function FeaturedCollectionsSection({
                     </Link>
                   </div>
                 </ProductStage>
-              </ClipReveal>
+              </MediaReveal>
             </article>
           ) : null}
           <div className="grid gap-4 lg:col-span-5">
-            {rest.map((item, index) => (
+            {rest.map((item) => (
               <article key={item.slug} className="group/card">
-                <ClipReveal variant={index === 0 ? "up" : "scale"} className="rounded-lg">
+                <MediaReveal className="rounded-lg">
                   <ProductStage
                     stage={stageForCategory(item.slug)}
                     src={item.product.media[0]?.url}
@@ -141,19 +145,18 @@ export function FeaturedCollectionsSection({
                       </Link>
                     </div>
                   </ProductStage>
-                </ClipReveal>
+                </MediaReveal>
               </article>
             ))}
           </div>
         </div>
       </div>
-    </ScrollSection>
+    </section>
   );
 }
 
 export function FeaturedProductsSection({ products }: { products: Product[] }) {
   const featured = products.filter((product) => product.featured).slice(0, 8);
-  const visible = featured.length > 0 ? featured : products.slice(0, 8);
 
   return (
     <section id="one-cikan-urunler" className="atmosphere-porcelain section-space-end scroll-mt-24">
@@ -163,12 +166,22 @@ export function FeaturedProductsSection({ products }: { products: Product[] }) {
           description="Her nesne kendi sahnesinde."
           action={{ href: "/magaza" as Route, label: "Tüm ürünleri gör" }}
         />
-        {visible.some((product) => product.isDemo) ? (
-          <p className="mb-6 text-sm text-ink-secondary">
-            Demo etiketli kayıtlar vitrin içindir; gerçek sipariş oluşturmaz.
+        {products.length === 0 ? (
+          <EmptyCatalogState />
+        ) : featured.length === 0 ? (
+          <p className="text-sm text-ink-secondary">
+            Öne çıkarılmış yayınlanmış ürün henüz yok.
           </p>
-        ) : null}
-        <CatalogGrid products={visible} priorityCount={2} featuredFirst />
+        ) : (
+          <>
+            {featured.some((product) => product.isDemo) ? (
+              <p className="mb-6 text-sm text-ink-secondary">
+                Demo etiketli kayıtlar vitrin içindir; gerçek sipariş oluşturmaz.
+              </p>
+            ) : null}
+            <CatalogGrid products={featured} priorityCount={2} featuredFirst />
+          </>
+        )}
       </div>
     </section>
   );
@@ -177,9 +190,11 @@ export function FeaturedProductsSection({ products }: { products: Product[] }) {
 export function CategoriesSection({
   categories,
   products,
+  categoriesIntro,
 }: {
   categories: Category[];
   products: Product[];
+  categoriesIntro?: { title: string; description: string };
 }) {
   const counts = new Map<string, number>();
   for (const product of products) {
@@ -195,27 +210,22 @@ export function CategoriesSection({
     <section className="atmosphere-porcelain section-space-tight">
       <div className="shell">
         <SectionIntro
-          title="Kategori dünyaları"
-          description="Her seçki kendi sahnesinde durur."
+          title={categoriesIntro?.title ?? "Kategori dünyaları"}
+          description={
+            categoriesIntro?.description ?? "Her seçki kendi sahnesinde durur."
+          }
         />
         <StaggerGrid className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
           {visible.map((category, index) => {
-            const product = products.find((entry) =>
-              entry.categorySlugs.includes(category.slug),
-            );
             return (
-              <div key={category.id} data-motion-item="idle" className="motion-item min-w-0">
+              <StaggerItem key={category.id} className="min-w-0">
                 <CategoryCard
                   category={category}
                   index={index}
                   count={counts.get(category.slug)}
-                  imageUrl={
-                    product?.media[0]?.url ??
-                    category.heroMediaUrl ??
-                    category.imageUrl
-                  }
+                  imageUrl={category.heroMediaUrl ?? category.imageUrl}
                 />
-              </div>
+              </StaggerItem>
             );
           })}
         </StaggerGrid>
@@ -237,10 +247,10 @@ export function PrintLibrarySection() {
           action={{ href: "/hazir-modeller" as Route, label: "Hazır modeller" }}
         />
         <StaggerGrid className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {homepagePrintLibrary.map((model) => (
-            <article key={model.id} data-motion-item="idle" className="motion-item flex flex-col">
-              <ClipReveal variant="up" className="rounded-lg">
-                <ProductStage
+          {isDevelopmentDemoMode ? (
+            homepagePrintLibrary.map((model) => (
+            <StaggerItem as="article" key={model.id} className="flex flex-col">
+              <ProductStage
                   stage="violet"
                   src={model.imageUrl}
                   alt=""
@@ -248,23 +258,31 @@ export function PrintLibrarySection() {
                   ratio="square"
                   className="rounded-lg"
                 />
-              </ClipReveal>
               <p className="mt-3 text-xs text-muted-light">
                 {model.creator} · {model.licenseLabel}
               </p>
               <h3 className="mt-1 text-lg font-semibold">{model.name}</h3>
-              <PriceDisplay
-                priceMinor={model.startingPriceMinor}
-                className="mt-1"
-              />
+              <p className="mt-1 text-sm text-muted-light">
+                Başlangıç fiyatı yok
+              </p>
               <Link
                 href={model.href}
                 className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline-offset-4 hover:underline"
               >
                 Üretim seçeneklerini belirle
               </Link>
-            </article>
-          ))}
+            </StaggerItem>
+            ))
+          ) : (
+            <StaggerItem as="div" className="xl:col-span-4">
+              <EmptyState
+                icon={<PackageOpen className="size-6" aria-hidden="true" />}
+                title="Hazır model koleksiyonu henüz yayınlanmadı"
+                description="Stüdyo modelleri ve lisanslı kayıtlar burada görünecek. Geliştirme demosu production vitrine taşınmaz."
+                action={{ href: "/hazir-modeller" as Route, label: "Hazır modeller" }}
+              />
+            </StaggerItem>
+          )}
         </StaggerGrid>
         <aside className="mt-10 border-t border-white/15 pt-6 text-sm text-muted-light">
           Thingiverse yalnız resmî API ile ayrı sekmede keşfedilir. Dış modeller
@@ -297,10 +315,10 @@ export function B2bSection() {
         </div>
         <StaggerGrid as="ul" className="grid gap-px bg-white/10 sm:grid-cols-2">
           {homepageCorporateOffers.map((item) => (
-            <li key={item.title} data-motion-item="idle" className="motion-item bg-carbon p-5">
+            <StaggerItem as="li" key={item.title} className="bg-carbon p-5">
               <h3 className="font-semibold">{item.title}</h3>
               <p className="mt-2 text-sm text-muted-light">{item.description}</p>
-            </li>
+            </StaggerItem>
           ))}
         </StaggerGrid>
       </div>
@@ -309,6 +327,9 @@ export function B2bSection() {
 }
 
 export function SocialProofSection() {
+  if (!isDevelopmentDemoMode) {
+    return null;
+  }
   return (
     <section className="atmosphere-lavender section-space-tight">
       <div className="shell">
@@ -349,12 +370,11 @@ export function GallerySection() {
         />
         <StaggerGrid className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {homepageGallery.map((item, index) => (
-            <figure
+            <StaggerItem
+              as="figure"
               key={item.id}
-              data-motion-item="idle"
-              className={cn("motion-item", index === 0 ? "col-span-2" : undefined)}
+              className={index === 0 ? "col-span-2" : undefined}
             >
-              <ClipReveal variant={index === 0 ? "left" : "up"} className="rounded-lg">
                 <ProductStage
                   stage={stages[index % stages.length]}
                   src={item.imageUrl}
@@ -367,8 +387,7 @@ export function GallerySection() {
                     <p className="text-sm font-semibold">{item.title}</p>
                   </figcaption>
                 </ProductStage>
-              </ClipReveal>
-            </figure>
+            </StaggerItem>
           ))}
         </StaggerGrid>
       </div>

@@ -12,10 +12,15 @@ import {
 
 const mediaRoles: MediaRole[] = [
   "primary",
+  "cover",
   "hover",
   "mobile",
   "gallery",
   "video",
+  "dimensions",
+  "detail",
+  "lifestyle",
+  "social",
 ];
 
 export function isMediaRole(value: unknown): value is MediaRole {
@@ -112,7 +117,8 @@ export function resolveProductVisual(product: Product): ProductVisual {
     (item) => item.type === "video" || item.role === "video",
   );
   const primary =
-    images.find((item) => item.role === "primary") ?? images[0];
+    images.find((item) => item.role === "cover" || item.role === "primary") ??
+    images[0];
   const hover =
     images.find((item) => item.role === "hover" && item.id !== primary?.id) ??
     images.find((item) => item.id !== primary?.id);

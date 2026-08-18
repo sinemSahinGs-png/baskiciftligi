@@ -12,6 +12,10 @@ interface SafeImageProps extends Omit<ImageProps, "src" | "alt"> {
   fallbackLabel?: string;
 }
 
+function isLocalMediaSrc(src: string) {
+  return src.startsWith("/catalog-media/") || src.startsWith("/demo/");
+}
+
 export function SafeImage({
   src,
   alt,
@@ -40,11 +44,20 @@ export function SafeImage({
     );
   }
 
+  const mediaSrc = src as string;
+
   return (
     <Image
-      src={src as string}
+      src={mediaSrc}
       alt={alt}
+      unoptimized={isLocalMediaSrc(mediaSrc)}
       onError={() => setFailed(true)}
+      onLoad={(event) => {
+        const image = event.currentTarget;
+        if (image.naturalWidth < 8 || image.naturalHeight < 8) {
+          setFailed(true);
+        }
+      }}
       className={className}
       {...props}
     />

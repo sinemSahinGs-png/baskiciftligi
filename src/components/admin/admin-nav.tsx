@@ -15,6 +15,7 @@ import {
   MessageSquareText,
   Package,
   PlugZap,
+  Rocket,
   Settings,
   ShoppingBag,
   Tags,
@@ -33,6 +34,7 @@ const navigationGroups = [
         icon: ChartNoAxesCombined,
         exact: true,
       },
+      { href: "/admin/yayina-alma", label: "Yayına alma", icon: Rocket },
       { href: "/admin/urunler", label: "Ürünler", icon: ShoppingBag },
       { href: "/admin/kategoriler", label: "Kategoriler", icon: Tags },
     ],
@@ -42,6 +44,7 @@ const navigationGroups = [
     items: [
       { href: "/admin/siparisler", label: "Siparişler", icon: Package },
       { href: "/admin/teklifler", label: "Teklifler", icon: FileText },
+      { href: "/admin/yazicilar", label: "Yazıcılar", icon: Boxes },
       { href: "/admin/yuklemeler", label: "Yüklemeler", icon: FileBox },
       { href: "/admin/musteriler", label: "Müşteriler", icon: Users },
       { href: "/admin/yorumlar", label: "Yorumlar", icon: MessageSquareText },

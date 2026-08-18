@@ -16,7 +16,7 @@ export default async function FavoritesPage() {
   const products = await listProducts();
 
   return (
-    <main id="ana-icerik" className="min-h-[70vh] bg-porcelain">
+    <main id="ana-icerik" className="bg-porcelain">
       <header className="border-b border-hairline bg-optical">
         <div className="shell py-10 sm:py-14">
           <PageMasthead
@@ -28,9 +28,9 @@ export default async function FavoritesPage() {
           />
         </div>
       </header>
-      <div className="shell py-10 sm:py-16">
+      <section className="shell py-10 sm:py-12" data-visual-landmark>
         <FavoritesView products={products} />
-      </div>
+      </section>
     </main>
   );
 }

@@ -7,7 +7,6 @@ import { Heart, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { FormSignal } from "@/components/brand/form-signal";
-import { ClipReveal } from "@/components/motion/clip-reveal";
 import { ProductStage } from "@/components/catalog/product-stage";
 import { PriceDisplay } from "@/components/commerce/price-display";
 import { resolveProductVisual } from "@/domain/catalog/media";
@@ -92,7 +91,6 @@ export function ProductCard({
 
   return (
     <article className="group/card flex h-full min-w-0 flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none max-md:transform-none md:hover:-translate-y-1.5">
-      <ClipReveal variant="up">
       <ProductStage
         stage={visual.stage}
         src={visual.primary?.url}
@@ -177,7 +175,6 @@ export function ProductCard({
           {layerComplete ? "Katman tamam" : "Sepete ekle"}
         </button>
       </ProductStage>
-      </ClipReveal>
 
       <div className="flex flex-1 flex-col pt-3">
         {availableVariants.length > 1 ? (

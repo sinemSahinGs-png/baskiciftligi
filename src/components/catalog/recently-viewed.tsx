@@ -60,7 +60,7 @@ export function RecentlyViewed({ products }: { products: Product[] }) {
   }
 
   return (
-    <section className="shell overflow-hidden py-16" aria-labelledby="son-gorulenler">
+    <section className="shell overflow-hidden py-10" aria-labelledby="son-gorulenler">
       <RevealHeading
         as="h2"
         id="son-gorulenler"

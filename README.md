@@ -2,11 +2,9 @@
 
 Octo Studio için premium, Türkçe, Supabase tabanlı e-ticaret ve özel 3D baskı platformu.
 
-Bu çalışma şu anda **Faz 1** kapsamındadır: tasarım sistemi, mağaza, ürün/kategori
-yönetimi, güvenli sunucu fiyatlamalı kalıcı sepet, Supabase Auth sınırları,
-PostgreSQL şeması/RLS ve yerel geliştirme modu. Ödeme, sipariş işleme, dosya
-yükleme, slicer ve Thingiverse entegrasyonları sonraki fazlardır; arayüzde etkin
-gibi gösterilmez.
+Bu çalışma **Faz 1 vitrin + Faz 2 üretim teklifi** kapsamındadır. PayTR hâlâ
+kapalıdır. Üretim teklifi yerel Docker PrusaSlicer işçisi ile çalışır; ayrıntı:
+`docs/manufacturing.md`.
 
 ## Gereksinimler
 
@@ -36,7 +34,8 @@ Gerçek Supabase kurulumu için:
    `NEXT_PUBLIC_SUPABASE_ANON_KEY` değerlerini doldurun.
 2. `supabase/migrations` dosyalarını sırayla uygulayın.
 3. `supabase/seed.sql` yalnızca demo verisine ihtiyacınız varsa çalıştırın.
-4. İlk yöneticiyi `docs/admin-setup.md` adımlarına göre atayın.
+3. `docker compose up --build slicer-worker` ile dilimleme işçisini açın
+4. İlk yöneticiyi `docs/admin-setup.md` adımlarına göre atayın
 
 Service-role, PayTR, Thingiverse ve slicer sırları hiçbir zaman
 `NEXT_PUBLIC_` değişkenlerinde tutulmaz.
@@ -75,15 +74,16 @@ Ayrıntılar:
 - `docs/deployment.md`
 - `docs/security-checklist.md`
 - `docs/testing.md`
+- `docs/manufacturing.md`
+- `docs/threat-model-manufacturing.md`
 - `docs/todo-external-services.md`
 
 ## Önemli üretim sınırları
 
 - PayTR Faz 2 tamamlanmadan ödeme alınmaz.
-- Müşteri modeli Faz 3 tamamlanmadan yüklenmez.
-- Slicer ikilileri Vercel fonksiyonlarında çalıştırılmaz; Faz 4'te ayrı,
-  uzun süre çalışan Docker worker kullanılır.
-- Thingiverse yalnızca resmi API ve doğrulanmış ticari izin akışıyla
-  etkinleştirilir. Scraping yapılmaz.
+- Özel üretim teklifi yerel Docker işçisi ve sunucu formülü ile çalışır; üretim
+  kalıcılığı Supabase + Storage olmadan “production ready” sayılmaz.
+- Slicer ikilileri Next.js istek işleyicisinde çalıştırılmaz.
+- Thingiverse yalnızca resmi API ile çağrılır. Scraping yapılmaz.
 - `supabase/seed.sql` içindeki ürünler demo verisidir; yorum, sipariş ve satış
   istatistiği uydurulmaz.

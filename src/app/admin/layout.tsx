@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   ExternalLink,
   FlaskConical,
@@ -8,9 +9,16 @@ import {
 } from "lucide-react";
 
 import { logoutAction } from "@/app/(auth)/actions";
+import { adminLogoutAction } from "@/app/admin/giris/actions";
 import { AdminMark, AdminNav } from "@/components/admin/admin-nav";
 import { siteConfig } from "@/config/site";
+import { isAdminLoginPath } from "@/lib/auth/admin-password";
+import { isLocalAdminPasswordEnabled } from "@/lib/auth/admin-session";
 import { requireAdmin } from "@/lib/auth/session";
+import {
+  productionFixtureWarning,
+  readProductionSafetyFlags,
+} from "@/lib/launch/production-flags";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +27,20 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  if (isAdminLoginPath(pathname)) {
+    return (
+      <div className="dark min-h-screen bg-[#090b0e] text-[#F6F3EC]">
+        {children}
+      </div>
+    );
+  }
+
   const viewer = await requireAdmin();
+  const fixtureWarning = productionFixtureWarning(readProductionSafetyFlags());
+  const logout = isLocalAdminPasswordEnabled()
+    ? adminLogoutAction
+    : logoutAction;
 
   return (
     <div className="dark min-h-screen bg-[#090b0e] text-[#F6F3EC]">
@@ -57,7 +78,7 @@ export default async function AdminLayout({
                 {viewer.role === "admin" ? "Yönetici" : "Editör"}
               </p>
             </div>
-            <form action={logoutAction}>
+            <form action={logout}>
               <button
                 type="submit"
                 className="grid size-10 place-items-center rounded-full border border-white/15 text-muted-foreground transition-colors hover:border-white/30 hover:text-foreground"
@@ -69,6 +90,14 @@ export default async function AdminLayout({
           </div>
         </div>
       </header>
+
+      {fixtureWarning ? (
+        <div className="border-b border-red-500/30 bg-red-500/10 px-4 py-2.5 sm:px-6">
+          <p className="mx-auto max-w-[110rem] text-sm text-red-200">
+            <strong>{fixtureWarning.title}.</strong> {fixtureWarning.body}
+          </p>
+        </div>
+      ) : null}
 
       {viewer.isDemo ? (
         <div className="border-b border-warm/25 bg-warm/8 px-4 py-2.5 sm:px-6">

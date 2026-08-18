@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Route } from "next";
 import { Search } from "lucide-react";
 
@@ -16,12 +16,11 @@ import {
 import { ThingiverseDiscovery } from "@/components/models/thingiverse-discovery";
 import type { ModelSource } from "@/components/models/model-source-badge";
 import { RevealHeading } from "@/components/motion/reveal-words";
-import { StaggerGrid } from "@/components/motion/stagger-grid";
-import { useScrollMotion } from "@/components/motion/scroll-motion-provider";
-import { useSafeInView } from "@/components/motion/use-safe-in-view";
+import { StaggerGrid, StaggerItem } from "@/components/motion/stagger-grid";
 import { siteConfig } from "@/config/site";
 import { announceStatus } from "@/lib/motion";
 import { useFavoritesStore } from "@/stores/favorites-store";
+import { isDevelopmentDemoMode } from "@/lib/env";
 import { cn } from "@/lib/utils";
 
 const trending = ["vazo", "masaüstü", "aydınlatma", "heykelsi"] as const;
@@ -34,6 +33,9 @@ const sourceTabs: Array<{ id: ModelSource | "all"; label: string; tone: string }
 ];
 
 function toCards(): ModelCardData[] {
+  if (!isDevelopmentDemoMode) {
+    return [];
+  }
   return octoDemoModels.map((model) => ({
     id: model.externalId,
     href: `/hazir-modeller/octo-demo/${model.externalId}` as Route,
@@ -53,10 +55,6 @@ export function ModelLibrary() {
   const modelIds = useFavoritesStore((state) => state.modelIds);
   const toggleModel = useFavoritesStore((state) => state.toggleModel);
   const hasHydrated = useFavoritesStore((state) => state.hasHydrated);
-  const searchRef = useRef<HTMLLabelElement>(null);
-  const { ready, reduced } = useScrollMotion();
-  const searchInView = useSafeInView(searchRef, { once: true, amount: 0.2 });
-  const searchState = reduced || !ready ? "visible" : searchInView ? "visible" : "idle";
 
   const cards = useMemo(() => toCards(), []);
   const categories = [...new Set(cards.map((card) => card.category))];
@@ -85,8 +83,7 @@ export function ModelLibrary() {
             className="display-title stack-title max-w-[16ch]"
           />
           <label
-            ref={searchRef}
-            data-motion-state={searchState}
+            data-motion-state="visible"
             className="relative mt-8 block max-w-2xl"
           >
             <span className="sr-only">Model ara</span>
@@ -117,9 +114,9 @@ export function ModelLibrary() {
         </div>
       </header>
 
-      <div className="shell relative py-10">
+      <section className="shell relative py-8 sm:py-10" data-visual-landmark data-model-library>
         <div role="tablist" aria-label="Model kaynakları">
-          <StaggerGrid className="flex gap-2 overflow-x-auto pb-2">
+          <StaggerGrid className="flex max-w-full min-w-0 gap-2 overflow-x-auto pb-2">
           {sourceTabs.map((tab) => (
             <button
               key={tab.id}
@@ -127,9 +124,8 @@ export function ModelLibrary() {
               role="tab"
               aria-selected={source === tab.id}
               onClick={() => setSource(tab.id)}
-              data-motion-item="idle"
               className={cn(
-                "motion-item min-h-11 shrink-0 rounded-md px-4 text-sm font-semibold",
+                "min-h-11 shrink-0 rounded-md px-4 text-sm font-semibold",
                 source === tab.id
                   ? tab.tone
                   : "border border-white/15 text-light-text",
@@ -174,6 +170,7 @@ export function ModelLibrary() {
         {source === "licensed" ? (
           <section className="mt-10 space-y-6">
             <EmptyState
+              compact
               icon={<Search aria-hidden="true" className="size-5" />}
               title="Lisanslı tasarımcı kataloğu henüz bağlı değil"
               description="Doğrulanmış ticari izinli modeller burada ayrı bir kaynak olarak listelenecek. Şu an satın alınabilir harici kayıt yok."
@@ -186,9 +183,13 @@ export function ModelLibrary() {
 
         {source === "all" || source === "owned" ? (
           visible.length > 0 ? (
-            <StaggerGrid as="ul" className="mt-10 grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
+            <StaggerGrid
+              as="ul"
+              data-model-results=""
+              className="mt-8 grid gap-6 sm:grid-cols-2 sm:gap-8 xl:grid-cols-3"
+            >
               {visible.map((model) => (
-                <li key={model.id} data-motion-item="idle" className="motion-item">
+                <StaggerItem as="li" key={model.id}>
                   <ModelCard
                     model={model}
                     isFavorite={hasHydrated && modelIds.includes(model.id)}
@@ -202,14 +203,22 @@ export function ModelLibrary() {
                       );
                     }}
                   />
-                </li>
+                </StaggerItem>
               ))}
             </StaggerGrid>
           ) : (
             <EmptyState
               icon={<Search aria-hidden="true" className="size-5" />}
-              title="Eşleşen model yok"
-              description="Aramayı veya kategori süzgecini sadeleştirmeyi dene."
+              title={
+                cards.length === 0
+                  ? "Hazır koleksiyon henüz yayınlanmadı"
+                  : "Eşleşen model yok"
+              }
+              description={
+                cards.length === 0
+                  ? "Stüdyo modelleri yayınlandığında burada görünür. Geliştirme demosu production’da listelenmez."
+                  : "Aramayı veya kategori süzgecini sadeleştirmeyi dene."
+              }
             />
           )
         ) : null}
@@ -226,7 +235,7 @@ export function ModelLibrary() {
             <ModelLibraryState id="missing-file" />
           </div>
         ) : null}
-      </div>
+      </section>
     </div>
   );
 }

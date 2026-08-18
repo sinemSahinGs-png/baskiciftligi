@@ -27,11 +27,7 @@ export function PageMasthead({
 }) {
   return (
     <div className={cn(className)}>
-      {eyebrow ? (
-        <p className="eyebrow" data-motion-line="visible">
-          <span className="motion-line">{eyebrow}</span>
-        </p>
-      ) : null}
+      {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
       <RevealHeading as={as} text={title} className={titleClassName} />
       {description ? (
         <RevealCopy text={description} className={descriptionClassName} />

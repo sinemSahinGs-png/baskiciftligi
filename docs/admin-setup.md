@@ -42,7 +42,7 @@ begin
   end if;
 
   update public.profiles
-  set role = 'admin'::public.app_role,
+  set role = 'owner'::public.app_role,
       is_active = true
   where id = target_user_id;
 end

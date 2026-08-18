@@ -2,10 +2,8 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 
-import { FormSignal } from "@/components/brand/form-signal";
 import { FoundryGrid } from "@/components/brand/foundry-grid";
 import { LicenseBadge } from "@/components/models/license-badge";
 import { ModelSourceBadge } from "@/components/models/model-source-badge";
@@ -29,6 +27,9 @@ export interface ModelCardData {
   sourceUrl?: string;
   popularityLabel?: string;
   verified?: boolean;
+  fileCount?: number;
+  attributionRequired?: boolean;
+  automaticManufacturingAllowed?: boolean;
 }
 
 const sourceStage: Record<ModelSource, string> = {
@@ -46,19 +47,6 @@ export function ModelCard({
   onFavorite?: () => void;
   isFavorite?: boolean;
 }) {
-  const hasThumbnail = Boolean(model.thumbnailUrl);
-  const [timedOut, setTimedOut] = useState(false);
-
-  useEffect(() => {
-    if (hasThumbnail) {
-      return;
-    }
-    const timer = window.setTimeout(() => setTimedOut(true), 2400);
-    return () => window.clearTimeout(timer);
-  }, [hasThumbnail]);
-
-  const previewReady = hasThumbnail || timedOut;
-
   const primaryLabel = "Modeli incele";
   const productionLabel = model.verified
     ? "Üretim seçeneklerini belirle"
@@ -82,7 +70,7 @@ export function ModelCard({
             className="object-contain p-6"
             fallbackLabel="Önizleme yok"
           />
-        ) : previewReady ? (
+        ) : (
           <div className="absolute inset-0 grid place-items-center px-4 text-center">
             <div>
               <p className="text-xs font-semibold opacity-70">{model.source}</p>
@@ -90,8 +78,6 @@ export function ModelCard({
               <p className="mt-1 text-xs opacity-65">3D önizleme bağlı değil</p>
             </div>
           </div>
-        ) : (
-          <FormSignal className="absolute top-1/2 left-1/2 size-10 -translate-x-1/2 -translate-y-1/2" />
         )}
         <div className="absolute top-3 left-3 z-10">
           <ModelSourceBadge source={model.source} />
@@ -124,6 +110,12 @@ export function ModelCard({
         <p className="mt-1 text-sm opacity-70">{model.creator}</p>
         {model.popularityLabel ? (
           <p className="mt-1 text-xs opacity-60">{model.popularityLabel}</p>
+        ) : null}
+        {typeof model.fileCount === "number" ? (
+          <p className="mt-1 text-xs opacity-60">{model.fileCount} yazdırılabilir dosya</p>
+        ) : null}
+        {model.attributionRequired ? (
+          <p className="mt-1 text-xs opacity-60">Atıf zorunlu</p>
         ) : null}
         <div className="mt-3 flex flex-wrap gap-2">
           <LicenseBadge label={model.license} />

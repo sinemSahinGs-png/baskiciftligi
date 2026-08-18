@@ -3,7 +3,6 @@
 import { faqItems } from "@/components/home/faq-data";
 import { RevealCopy } from "@/components/motion/reveal-copy";
 import { RevealHeading } from "@/components/motion/reveal-words";
-import { StaggerGrid } from "@/components/motion/stagger-grid";
 import {
   Accordion,
   AccordionContent,
@@ -22,14 +21,13 @@ export function FaqSection() {
             className="body-large mt-4 max-w-md"
           />
         </div>
-        <StaggerGrid>
+        <div>
           <Accordion className="border-t border-hairline">
             {faqItems.map((item, index) => (
               <AccordionItem
                 key={item.id}
                 value={item.id}
-                data-motion-item="idle"
-                className="motion-item border-hairline"
+                className="border-hairline"
               >
                 <AccordionTrigger className="rounded-none py-5 text-left text-base font-medium hover:no-underline">
                   <span className="pr-4">
@@ -45,7 +43,7 @@ export function FaqSection() {
               </AccordionItem>
             ))}
           </Accordion>
-        </StaggerGrid>
+        </div>
       </div>
     </section>
   );

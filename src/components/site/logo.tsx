@@ -29,7 +29,7 @@ export function Logo({ className, compact = false, inverted = false }: LogoProps
           inverted ? "bg-white/10" : "bg-midnight",
         )}
       >
-        <FormSignal tone="light" className="size-5 sm:size-6" spinning />
+        <FormSignal tone="light" className="size-5 sm:size-6" />
       </span>
       <span
         className={cn(

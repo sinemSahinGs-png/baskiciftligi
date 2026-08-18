@@ -21,6 +21,11 @@ import { SafeImage } from "@/components/media/safe-image";
 import { siteConfig } from "@/config/site";
 import type { Category, Product } from "@/domain/catalog/types";
 import { homepageShopCategorySlugs } from "@/domain/home/homepage";
+import {
+  categoryImageFitClass,
+  categoryImageStyle,
+  resolveCategoryImagePresentation,
+} from "@/lib/catalog/category-image";
 import { announceStatus, foundryEase } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { selectCartCount, useCartStore } from "@/stores/cart-store";
@@ -191,7 +196,12 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
                             alt=""
                             fill
                             sizes="56px"
-                            className="object-cover"
+                            className={categoryImageFitClass(
+                              resolveCategoryImagePresentation(category).fit,
+                            )}
+                            style={categoryImageStyle(
+                              resolveCategoryImagePresentation(category),
+                            )}
                           />
                         </span>
                         <span className="min-w-0 self-center">

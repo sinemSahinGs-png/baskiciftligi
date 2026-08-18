@@ -6,6 +6,7 @@ import { LicenseBadge } from "@/components/models/license-badge";
 import { ModelSourceBadge } from "@/components/models/model-source-badge";
 import { PermissionStatus } from "@/components/models/permission-status";
 import { SafeImage } from "@/components/media/safe-image";
+import { ThingiverseFilePicker } from "@/components/models/thingiverse-file-picker";
 import { ThingiverseReviewForm } from "@/components/models/thingiverse-review-form";
 import type { ExternalModelSummary } from "@/providers/contracts";
 
@@ -70,8 +71,28 @@ export function ThingiverseDetail({
                 Model ID {model.externalId}
               </p>
               <PermissionStatus
-                state={verified ? "verified" : "unverified"}
+                state={
+                  model.automaticManufacturingAllowed || verified
+                    ? "verified"
+                    : model.permissionStatus === "rejected"
+                      ? "not-permitted"
+                      : "unverified"
+                }
               />
+              {model.attributionRequired ? (
+                <p className="mt-3 text-xs leading-5 text-muted-light">
+                  Atıf zorunlu: {model.attributionText}
+                </p>
+              ) : (
+                <p className="mt-3 text-xs leading-5 text-muted-light">
+                  {model.attributionText}
+                </p>
+              )}
+              {typeof model.fileCount === "number" ? (
+                <p className="mt-2 text-xs text-muted-light">
+                  Yazdırılabilir dosya (API): {model.fileCount}
+                </p>
+              ) : null}
               <a
                 href={model.sourceUrl}
                 rel="noreferrer"
@@ -81,22 +102,34 @@ export function ThingiverseDetail({
                 Orijinal modeli görüntüle
               </a>
             </div>
-            {verified ? (
+            {verified || model.automaticManufacturingAllowed ? (
               <div className="rounded-xl border border-success/30 bg-success/10 p-5">
-                <p className="text-sm font-semibold">Ticari izin doğrulandı</p>
-                <Link
-                  href={"/model-yukle" as Route}
-                  className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-cobalt text-sm font-semibold text-light-text"
-                >
-                  Üretim seçeneklerini belirle
-                </Link>
+                <p className="text-sm font-semibold">
+                  Lisans eşlemesi otomatik üretime açık
+                </p>
+                <p className="mt-2 text-xs leading-5 text-muted-light">
+                  Bu, modelin kamuya açık olmasından çıkarılmaz. Yalnızca
+                  eşlenen lisans allow-list’ine dayanır.
+                </p>
+                <div className="mt-4">
+                  <ThingiverseFilePicker
+                    thingId={model.externalId}
+                    automaticAllowed
+                  />
+                </div>
               </div>
             ) : (
               <div className="rounded-xl border border-violet/35 bg-violet/12 p-5">
                 <p className="text-sm leading-6">
-                  Bu model görüntülenebilir ancak ücretli üretim izni henüz
-                  doğrulanmadı.
+                  Bu model görüntülenebilir ancak ücretli üretim izni otomatik
+                  kapıdan geçmez.
                 </p>
+                <div className="mt-4">
+                  <ThingiverseFilePicker
+                    thingId={model.externalId}
+                    automaticAllowed={false}
+                  />
+                </div>
                 <ThingiverseReviewForm
                   externalId={model.externalId}
                   title={model.title}

@@ -50,51 +50,45 @@ function toCard(item: ExternalModelSummary): ModelCardData {
     sourceUrl: item.sourceUrl,
     popularityLabel:
       typeof item.likeCount === "number"
-        ? `${item.likeCount} beğeni (API)`
+        ? `${item.likeCount} beğeni${typeof item.collectCount === "number" ? ` · ${item.collectCount} koleksiyon` : ""} (API)`
         : undefined,
     verified: item.isPurchasable,
+    fileCount: item.fileCount,
+    attributionRequired: item.attributionRequired,
+    automaticManufacturingAllowed: item.automaticManufacturingAllowed,
   };
 }
 
 export function ThingiverseDiscovery() {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [status, setStatus] = useState<ThingiverseIntegrationStatus | "loading">(
     "loading",
   );
   const [items, setItems] = useState<ModelCardData[]>([]);
   const [hasMore, setHasMore] = useState(false);
-
-  async function load(nextPage: number, nextQuery: string) {
-    setStatus("loading");
-    try {
-      const params = new URLSearchParams({ page: String(nextPage) });
-      if (nextQuery.trim()) {
-        params.set("q", nextQuery.trim());
-      }
-      const response = await fetch(`/api/models/thingiverse?${params.toString()}`, {
-        cache: "no-store",
-      });
-      const payload = (await response.json()) as {
-        status: ThingiverseIntegrationStatus;
-        items: ExternalModelSummary[];
-        hasMore: boolean;
-      };
-      setStatus(payload.status);
-      setItems((payload.items ?? []).map(toCard));
-      setHasMore(Boolean(payload.hasMore));
-    } catch {
-      setStatus("api_unavailable");
-      setItems([]);
-      setHasMore(false);
-    }
-  }
+  const [retryNonce, setRetryNonce] = useState(0);
 
   useEffect(() => {
-    let cancelled = false;
-    const params = new URLSearchParams({ page: "1" });
+    const timer = window.setTimeout(() => setDebouncedQuery(query), 400);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", String(page));
+    if (debouncedQuery.trim()) {
+      params.set("q", debouncedQuery.trim());
+    } else {
+      params.delete("q");
+    }
+    const nextUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", nextUrl);
     void fetch(`/api/models/thingiverse?${params.toString()}`, {
       cache: "no-store",
+      signal: controller.signal,
     })
       .then((response) => response.json())
       .then((payload: {
@@ -102,22 +96,20 @@ export function ThingiverseDiscovery() {
         items: ExternalModelSummary[];
         hasMore: boolean;
       }) => {
-        if (cancelled) {
-          return;
-        }
         setStatus(payload.status);
         setItems((payload.items ?? []).map(toCard));
         setHasMore(Boolean(payload.hasMore));
       })
-      .catch(() => {
-        if (!cancelled) {
-          setStatus("api_unavailable");
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
         }
+        setStatus("api_unavailable");
+        setItems([]);
+        setHasMore(false);
       });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    return () => controller.abort();
+  }, [page, debouncedQuery, retryNonce]);
 
   const copy =
     status !== "loading"
@@ -146,8 +138,9 @@ export function ThingiverseDiscovery() {
         className="flex flex-col gap-2 sm:flex-row"
         onSubmit={(event) => {
           event.preventDefault();
+          setStatus("loading");
           setPage(1);
-          void load(1, query);
+          setDebouncedQuery(query.trim());
         }}
       >
         <label className="sr-only" htmlFor="thingiverse-q">
@@ -169,11 +162,17 @@ export function ThingiverseDiscovery() {
       </form>
 
       {status === "loading" ? (
-        <div className="flex min-h-40 items-center justify-center">
-          <FormSignal spinning className="size-8" />
-        </div>
+        <ul className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3" aria-busy="true">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <li
+              key={index}
+              className="aspect-square animate-pulse rounded-lg bg-white/8"
+            />
+          ))}
+        </ul>
       ) : status !== "connected" ? (
         <EmptyState
+          compact
           icon={<FormSignal className="size-5" />}
           title={copy.title}
           description={copy.body}
@@ -205,9 +204,8 @@ export function ThingiverseDiscovery() {
             type="button"
             disabled={page <= 1 || status === "loading"}
             onClick={() => {
-              const next = Math.max(1, page - 1);
-              setPage(next);
-              void load(next, query);
+              setStatus("loading");
+              setPage((value) => Math.max(1, value - 1));
             }}
             className="min-h-11 rounded-md border border-white/15 px-3 text-sm font-semibold disabled:opacity-40"
           >
@@ -217,9 +215,8 @@ export function ThingiverseDiscovery() {
             type="button"
             disabled={!hasMore || status === "loading"}
             onClick={() => {
-              const next = page + 1;
-              setPage(next);
-              void load(next, query);
+              setStatus("loading");
+              setPage((value) => value + 1);
             }}
             className="min-h-11 rounded-md border border-white/15 px-3 text-sm font-semibold disabled:opacity-40"
           >
@@ -227,7 +224,10 @@ export function ThingiverseDiscovery() {
           </button>
           <button
             type="button"
-            onClick={() => void load(page, query)}
+            onClick={() => {
+              setStatus("loading");
+              setRetryNonce((value) => value + 1);
+            }}
             className="inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold"
           >
             <RefreshCw aria-hidden="true" className="size-4" />

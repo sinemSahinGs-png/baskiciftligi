@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
-import { useReducedMotion } from "motion/react";
 
 import { cn } from "@/lib/utils";
 
@@ -20,8 +19,8 @@ interface BackgroundVideoProps {
 
 const emptySubscribe = () => () => undefined;
 
-function canAutoplayVideo(reduceMotion: boolean | null) {
-  if (reduceMotion !== false || typeof navigator === "undefined") {
+function canAutoplayVideo() {
+  if (typeof navigator === "undefined") {
     return false;
   }
 
@@ -43,11 +42,10 @@ export function BackgroundVideo({
   className,
   overlayClassName,
 }: BackgroundVideoProps) {
-  const reduceMotion = useReducedMotion();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canPlayVideo = useSyncExternalStore(
     emptySubscribe,
-    () => canAutoplayVideo(reduceMotion),
+    canAutoplayVideo,
     () => false,
   );
 
@@ -57,7 +55,15 @@ export function BackgroundVideo({
       return;
     }
 
-    let visible = false;
+    const tryPlay = () => {
+      if (document.visibilityState === "visible") {
+        void video.play().catch(() => undefined);
+      } else {
+        video.pause();
+      }
+    };
+
+    let visible = true;
     const updatePlayback = () => {
       if (visible && document.visibilityState === "visible") {
         void video.play().catch(() => undefined);
@@ -71,14 +77,17 @@ export function BackgroundVideo({
         visible = Boolean(entry?.isIntersecting);
         updatePlayback();
       },
-      { threshold: 0.12, rootMargin: "80px 0px" },
+      { threshold: 0.01, rootMargin: "120px 0px" },
     );
 
     observer.observe(video);
+    video.addEventListener("canplay", tryPlay);
     document.addEventListener("visibilitychange", updatePlayback);
+    tryPlay();
 
     return () => {
       observer.disconnect();
+      video.removeEventListener("canplay", tryPlay);
       document.removeEventListener("visibilitychange", updatePlayback);
       video.pause();
     };
@@ -99,14 +108,14 @@ export function BackgroundVideo({
           loop
           playsInline
           autoPlay
-          preload="metadata"
+          preload="auto"
           poster={posterSrc}
           tabIndex={-1}
           aria-hidden="true"
           className="absolute inset-0 size-full object-cover"
         >
-          {webmSrc ? <source src={webmSrc} type="video/webm" /> : null}
           <source src={mp4Src} type="video/mp4" />
+          {webmSrc ? <source src={webmSrc} type="video/webm" /> : null}
         </video>
       ) : null}
       <div

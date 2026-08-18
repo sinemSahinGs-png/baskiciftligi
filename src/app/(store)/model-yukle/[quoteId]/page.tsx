@@ -1,10 +1,10 @@
-import { ContentPage, StatusNotice } from "@/components/content/content-layout";
+import { ContentPage } from "@/components/content/content-layout";
+import { QuoteJobStatus } from "@/components/configurator/quote-job-status";
 import { createPageMetadata } from "@/components/content/metadata";
 
 export const metadata = createPageMetadata({
   title: "Özel Üretim Teklif Durumu",
-  description:
-    "Phase 3 özel model teklif route’unun aktivasyon durumu. Herhangi bir teklif verisi okunmaz.",
+  description: "Sunucudaki gerçek teklif veya iş durumu. Sahte fiyat gösterilmez.",
   path: "/model-yukle",
   noIndex: true,
 });
@@ -17,41 +17,15 @@ export default async function QuoteStatusPage({
   params,
 }: QuoteStatusPageProps) {
   const { quoteId } = await params;
-  const referenceLabel =
-    quoteId.length >= 8
-      ? `${quoteId.slice(0, 4)}…${quoteId.slice(-4)}`
-      : "geçersiz / eksik";
 
   return (
     <ContentPage
       eyebrow="Teklif durumu"
-      title="Bu teklif route’u henüz veri okumuyor."
-      description="Phase 3 storage, model analizi ve quote repository aktif olmadığı için URL’deki değer bir teklif kaydının varlığını kanıtlamaz. Dosya, fiyat, müşteri veya üretim bilgisi gösterilmez."
-      status={{ label: "Phase 3 · Aktif değil", tone: "warning" }}
-      actions={[
-        {
-          href: "/model-yukle",
-          label: "Model yükleme durumuna dönün",
-          variant: "outline",
-        },
-        {
-          href: "/iletisim",
-          label: "İletişim durumunu görün",
-          variant: "outline",
-        },
-      ]}
+      title="Üretim işi"
+      description="Bu sayfa yalnızca oturumunuzdaki gerçek iş veya teklif kaydını okur."
       width="reading"
     >
-      <StatusNotice title="Doğrulanmamış URL referansı" tone="warning">
-        <p>
-          Adres çubuğundaki referans:{" "}
-          <code className="rounded bg-black/30 px-2 py-1 font-mono text-foreground">
-            {referenceLabel}
-          </code>
-          . Bu değer server tarafında aranmadı ve geçerli teklif olarak kabul
-          edilmedi.
-        </p>
-      </StatusNotice>
+      <QuoteJobStatus quoteId={quoteId} />
     </ContentPage>
   );
 }

@@ -54,6 +54,12 @@ export default async function AdminDashboardPage() {
         actions={
           <>
             <Link
+              href="/admin/yayina-alma"
+              className="inline-flex min-h-10 items-center rounded-full border border-white/15 px-4 text-sm font-semibold text-muted-foreground transition-colors hover:border-white/30 hover:text-foreground"
+            >
+              Yayına alma
+            </Link>
+            <Link
               href="/admin/kategoriler"
               className="inline-flex min-h-10 items-center rounded-full border border-white/15 px-4 text-sm font-semibold text-muted-foreground transition-colors hover:border-white/30 hover:text-foreground"
             >

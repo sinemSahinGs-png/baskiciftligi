@@ -2,11 +2,9 @@
 
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type FormEvent, useRef } from "react";
+import { type FormEvent } from "react";
 import { Search } from "lucide-react";
 
-import { useScrollMotion } from "@/components/motion/scroll-motion-provider";
-import { useSafeInView } from "@/components/motion/use-safe-in-view";
 import { cn } from "@/lib/utils";
 
 export function CatalogSearch({
@@ -20,10 +18,6 @@ export function CatalogSearch({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const urlQuery = searchParams.get("q") ?? "";
-  const ref = useRef<HTMLFormElement>(null);
-  const { ready, reduced } = useScrollMotion();
-  const inView = useSafeInView(ref, { once: true, amount: 0.2 });
-  const state = reduced || !ready ? "visible" : inView ? "visible" : "idle";
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,12 +35,7 @@ export function CatalogSearch({
   }
 
   return (
-    <form
-      ref={ref}
-      onSubmit={submit}
-      data-motion-state={state}
-      className={cn("relative", className)}
-    >
+    <form onSubmit={submit} data-motion-state="visible" className={cn("relative", className)}>
       <label htmlFor="catalog-search" className="sr-only">
         Ürün ara
       </label>
@@ -64,7 +53,7 @@ export function CatalogSearch({
         defaultValue={urlQuery}
         placeholder="Ürün, malzeme veya kullanım ara"
         className={cn(
-          "motion-search h-14 w-full rounded-md border pr-4 pl-12 text-base outline-none",
+          "h-14 w-full rounded-md border pr-4 pl-12 text-base outline-none",
           tone === "light"
             ? "border-white/20 bg-white/10 text-light-text placeholder:text-white/55"
             : "border-hairline bg-elevated text-dark-text placeholder:text-ink-muted",

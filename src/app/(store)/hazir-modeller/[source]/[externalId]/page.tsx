@@ -36,15 +36,16 @@ type ExternalModelPageProps = {
 };
 
 export function generateStaticParams() {
+  const thingiverseStatus = [{ source: "thingiverse", externalId: "durum" }];
+  if (process.env.NODE_ENV === "production") {
+    return thingiverseStatus;
+  }
   return [
     ...octoDemoModels.map((model) => ({
       source: "octo-demo",
       externalId: model.externalId,
     })),
-    {
-      source: "thingiverse",
-      externalId: "durum",
-    },
+    ...thingiverseStatus,
   ];
 }
 
@@ -195,6 +196,9 @@ export default async function ExternalModelPage({
   }
 
   if (source !== "octo-demo") {
+    notFound();
+  }
+  if (process.env.NODE_ENV === "production") {
     notFound();
   }
 

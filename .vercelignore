@@ -1,0 +1,14 @@
+.next
+node_modules
+.octo-data
+test-results
+playwright-report
+coverage
+.git
+e2e
+*.pem
+.env
+.env.local
+.env.*.local
+apps/slicer-worker
+docker-compose.yml

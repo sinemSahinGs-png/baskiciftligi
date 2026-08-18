@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function CartPage() {
   return (
-    <main id="ana-icerik" className="min-h-[70vh] bg-porcelain">
+    <main id="ana-icerik" className="bg-porcelain">
       <header className="border-b border-hairline bg-optical">
         <div className="shell py-10 sm:py-14">
           <PageMasthead
@@ -25,9 +25,9 @@ export default function CartPage() {
           />
         </div>
       </header>
-      <div className="shell py-10 sm:py-16">
+      <section className="shell py-10 sm:py-12" data-visual-landmark>
         <CartView />
-      </div>
+      </section>
     </main>
   );
 }

@@ -35,7 +35,10 @@ THINGIVERSE_API_BASE_URL=https://api.thingiverse.com
 ```
 
 Belgelenmiş uç noktalar: `GET /popular?page=`, `GET /search/{term}?page=`,
-`GET /things/{id}`, `GET /things/{id}/images`. Web’deki `posted_after=all-time`
+`GET /things/{id}`, `GET /things/{id}/images`, `GET /things/{id}/files`.
+Dosya indirme yalnız API’nin döndürdüğü `download_url` / `direct_url`
+üzerinden, `api.thingiverse.com` ve `cdn.thingiverse.com` (ve
+`*.thingiverse.com`) allow-list’i ile yapılır. Web’deki `posted_after=all-time`
 ve `license=public` süzgeçleri resmî API parametresi olarak belgelenmediği için
 uygulanmaz. Varsayılan keşif `GET /popular` ile Things listeler; sayfa 1’den
 başlar ve kullanıcı sayfalar arasında gezer.

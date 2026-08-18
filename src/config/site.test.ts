@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { siteConfig } from "@/config/site";
+import { PRODUCTION_SITE_URL, siteConfig } from "@/config/site";
 
 describe("siteConfig brand", () => {
   it("uses Baskı Çiftliği as the customer-facing name", () => {
@@ -38,5 +38,11 @@ describe("siteConfig brand", () => {
       "Modelini seç, dosyanı yükle; biz üretelim.",
     );
     expect(siteConfig.hero.headline).toBe("Fikrini yükle. Biz üretelim.");
+  });
+
+  it("canonical production URL is the apex Baskı Çiftliği domain", () => {
+    expect(PRODUCTION_SITE_URL).toBe("https://baskiciftligi.com");
+    expect(new URL(PRODUCTION_SITE_URL).hostname).toBe("baskiciftligi.com");
+    expect(PRODUCTION_SITE_URL).not.toMatch(/localhost|vercel\.app|octostudio|somut/i);
   });
 });

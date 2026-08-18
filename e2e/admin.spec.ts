@@ -1,12 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+import { openAdmin } from "./admin-session";
+
 test.describe("admin phase 1", () => {
   test.skip(({ isMobile }) => isMobile, "Yönetim paneli masaüstü formuna bağlıdır.");
 
   test("demo modunda ürün çoğaltıp yayınlar", async ({ page }) => {
-    test.setTimeout(60_000);
+    test.setTimeout(90_000);
 
-    await page.goto("/admin/urunler");
+    await openAdmin(page, "/admin/urunler");
     await expect(
       page.getByRole("heading", { name: "Ürün yönetimi" }),
     ).toBeVisible();
@@ -53,8 +55,18 @@ test.describe("admin phase 1", () => {
     ).toBeVisible();
   });
 
+  test("yayına alma merkezi sır sızdırmaz", async ({ page }) => {
+    await openAdmin(page, "/admin/yayina-alma");
+    await expect(page.getByRole("heading", { level: 1, name: "Yayına alma" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Canlı sistemi kontrol et" }),
+    ).toBeVisible();
+    const body = await page.locator("body").innerText();
+    expect(body).not.toMatch(/sk_live_[A-Za-z0-9]+|postgres:\/\/[^:]+:|eyJ[A-Za-z0-9_-]{20,}\./i);
+  });
+
   test("sipariş operasyonu sahte kayıt göstermez", async ({ page }) => {
-    await page.goto("/admin/siparisler");
+    await openAdmin(page, "/admin/siparisler");
     await expect(
       page.getByRole("heading", { name: "Sipariş operasyonu" }),
     ).toBeVisible();

@@ -4,18 +4,21 @@ export const motionDuration = {
   fast: 0.18,
   medium: 0.32,
   page: 0.42,
-  reveal: 0.58,
+  reveal: 0.72,
+  media: 0.9,
+  card: 0.7,
 } as const;
 
 export const motionViewport = {
   amount: 0.2,
-  margin: "0px 0px -12% 0px",
+  margin: "0px 0px -8% 0px",
 } as const;
 
 export const motionStagger = {
   word: 0.048,
-  item: 0.055,
+  item: 0.08,
   column: 0.09,
+  rowMax: 0.25,
 } as const;
 
 export function splitMotionWords(text: string) {
@@ -28,6 +31,16 @@ export function splitMotionLines(text: string) {
     .map((part) => part.trim())
     .filter(Boolean);
   return parts.length > 0 ? parts : [text];
+}
+
+export function processStepFromProgress(progress: number) {
+  if (!Number.isFinite(progress) || progress <= 0) {
+    return 0;
+  }
+  if (progress >= 1) {
+    return 4;
+  }
+  return Math.min(4, Math.floor(progress * 5));
 }
 
 export const announceEvent = "somut-status-announce";

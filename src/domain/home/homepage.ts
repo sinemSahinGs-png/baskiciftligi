@@ -89,31 +89,51 @@ export const homepageJourneys = [
   },
 ] as const;
 
+export const homepageProcessCopy = {
+  eyebrow: "Süreç",
+  title: "Modelden ürüne, beş adımda.",
+  description:
+    "Hazır bir ürün seçebilir, baskıya uygun bir model kullanabilir veya kendi dosyanı yükleyebilirsin. Üretim seçeneklerini belirledikten sonra süreci biz tamamlarız.",
+  cta: "Üretim yolunu seç",
+  store: "Mağazayı keşfet",
+  upload: "Model yükle",
+} as const;
+
 export const homepageProcessSteps = [
   {
     number: "01",
-    title: "Seç veya yükle",
-    description: "Katalogdan bir nesne al, hazır model seç veya kendi dosyanı getir.",
+    kicker: "Seç veya yükle",
+    title: "Ürününü seç veya modelini yükle",
+    description:
+      "Mağazadaki hazır ürünlerden seçim yap, lisanslı bir model belirle ya da STL, 3MF veya OBJ dosyanı yükle.",
   },
   {
     number: "02",
-    title: "Üretimi yapılandır",
-    description: "Teknoloji, malzeme ve kaliteyi sen belirle.",
+    kicker: "Yapılandır",
+    title: "Malzeme ve üretim ayarlarını belirle",
+    description:
+      "Renk, malzeme, ölçü, kalite ve adet seçeneklerini ihtiyacına göre belirle.",
   },
   {
     number: "03",
-    title: "Fiyatı gör",
-    description: "Hazır üründe anlık fiyat; yüklemede değerlendirme sonrası netleşir.",
+    kicker: "Fiyat ve onay",
+    title: "Fiyatı gör veya teklifini onayla",
+    description:
+      "Hazır ürünlerde fiyatı doğrudan gör. Özel baskılarda model teknik kontrolden geçtikten sonra kesin teklifini onayla.",
   },
   {
     number: "04",
-    title: "Biz üretelim",
-    description: "Kontrollü üretim ve son işlem stüdyoda ilerler.",
+    kicker: "Üretim",
+    title: "Baskı Çiftliği üretime başlasın",
+    description:
+      "Model uygun yazıcı ve üretim ayarlarıyla katman katman hazırlanır, ardından kalite kontrolü yapılır.",
   },
   {
     number: "05",
-    title: "Kapına gelsin",
-    description: "Paket hazır olduğunda kargo bilgisi paylaşılır.",
+    kicker: "Teslimat",
+    title: "Kontrol edilsin ve kapına gelsin",
+    description:
+      "Ürün kalite kontrolünden sonra güvenli şekilde paketlenir ve teslimat sürecine alınır.",
   },
 ] as const;
 
@@ -253,15 +273,15 @@ export const homepageGallery = [
     id: "gallery-workshop-1",
     title: "Atölye",
     caption: "Demo stüdyo görseli.",
-    imageUrl: "/demo/categories/fonksiyonel.svg",
+    imageUrl: "/demo/categories/fonksiyonel-parcalar.png",
     isolated: false,
   },
   {
     id: "gallery-workshop-2",
     title: "Yüzey kontrolü",
     caption: "Demo içerik.",
-    imageUrl: "/demo/categories/heykel.svg",
-    isolated: true,
+    imageUrl: "/demo/categories/biblo-ve-heykel.png",
+    isolated: false,
   },
 ] as const;
 

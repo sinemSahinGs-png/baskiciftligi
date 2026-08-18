@@ -88,7 +88,7 @@ export function ServiceDetailPage({
         </div>
       </section>
 
-      <nav aria-label="Diğer hizmetler" className="section-space">
+      <section aria-label="Diğer hizmetler" className="section-space-tight">
         <SectionHeading
           eyebrow="Devamı"
           title="İlgili üretim başlıkları"
@@ -111,7 +111,7 @@ export function ServiceDetailPage({
             </ContentCard>
           ))}
         </div>
-      </nav>
+      </section>
 
       <StatusNotice title="Teklif ve dosya akışı henüz aktif değil" tone="warning">
         <p>

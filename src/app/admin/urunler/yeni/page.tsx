@@ -6,13 +6,18 @@ import { AdminPageHeader } from "@/components/admin/admin-page";
 import { ProductForm } from "@/components/admin/product-form";
 import { createEmptyProductForm } from "@/domain/catalog/admin-form";
 import { getAdminCatalogOverview } from "@/domain/catalog/admin-repository";
+import { requireAdmin } from "@/lib/auth/session";
+import { canManageCatalog, canViewInternalCost } from "@/lib/catalog/authorization";
 
 export const metadata: Metadata = {
   title: "Yeni ürün",
 };
 
 export default async function NewProductPage() {
-  const catalog = await getAdminCatalogOverview();
+  const [catalog, viewer] = await Promise.all([
+    getAdminCatalogOverview(),
+    requireAdmin(),
+  ]);
 
   return (
     <>
@@ -34,6 +39,8 @@ export default async function NewProductPage() {
         initialValues={createEmptyProductForm()}
         categories={catalog.categories}
         collections={catalog.collections}
+        canWrite={canManageCatalog(viewer.role)}
+        canViewCost={canViewInternalCost(viewer.role)}
       />
     </>
   );

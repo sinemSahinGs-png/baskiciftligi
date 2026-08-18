@@ -32,23 +32,18 @@ export function ScrollMotionProvider({ children }: { children: ReactNode }) {
   const isClient = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const reduced = !isClient || reduceMotion !== false;
   const [ready, setReady] = useState(false);
-  const [narrow, setNarrow] = useState(true);
-  const [coarse, setCoarse] = useState(true);
+  const [compact, setCompact] = useState(true);
 
   useEffect(() => {
-    const coarseQuery = window.matchMedia("(pointer: coarse)");
-    const narrowQuery = window.matchMedia("(max-width: 47.99rem)");
+    const compactQuery = window.matchMedia(
+      "(max-width: 63.99rem), (pointer: coarse)",
+    );
     const sync = () => {
-      setCoarse(coarseQuery.matches);
-      setNarrow(narrowQuery.matches);
+      setCompact(compactQuery.matches);
     };
     sync();
-    coarseQuery.addEventListener("change", sync);
-    narrowQuery.addEventListener("change", sync);
-    return () => {
-      coarseQuery.removeEventListener("change", sync);
-      narrowQuery.removeEventListener("change", sync);
-    };
+    compactQuery.addEventListener("change", sync);
+    return () => compactQuery.removeEventListener("change", sync);
   }, []);
 
   useEffect(() => {
@@ -65,10 +60,10 @@ export function ScrollMotionProvider({ children }: { children: ReactNode }) {
     () => ({
       ready,
       reduced,
-      allowPinned: ready && !reduced && !narrow,
-      allowParallax: ready && !reduced && !coarse && !narrow,
+      allowPinned: ready && !reduced && !compact,
+      allowParallax: ready && !reduced && !compact,
     }),
-    [ready, reduced, narrow, coarse],
+    [ready, reduced, compact],
   );
 
   return (

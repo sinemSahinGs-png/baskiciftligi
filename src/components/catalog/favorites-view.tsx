@@ -10,11 +10,15 @@ import { ModelCard } from "@/components/models/model-card";
 import type { ModelCardData } from "@/components/models/model-card";
 import { octoDemoModels } from "@/components/content/content-data";
 import { siteConfig } from "@/config/site";
+import { isDevelopmentDemoMode } from "@/lib/env";
 import type { Product } from "@/domain/catalog/types";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import type { Route } from "next";
 
 function demoModelCards(): ModelCardData[] {
+  if (!isDevelopmentDemoMode) {
+    return [];
+  }
   return octoDemoModels.map((model) => ({
     id: model.externalId,
     href: `/hazir-modeller/octo-demo/${model.externalId}` as Route,

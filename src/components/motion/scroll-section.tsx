@@ -1,9 +1,7 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { useScrollMotion } from "@/components/motion/scroll-motion-provider";
-import { useSafeInView } from "@/components/motion/use-safe-in-view";
 import { cn } from "@/lib/utils";
 
 export function ScrollSection({
@@ -17,18 +15,8 @@ export function ScrollSection({
   atmosphere?: string;
   id?: string;
 }) {
-  const ref = useRef<HTMLElement>(null);
-  const { ready, reduced } = useScrollMotion();
-  const inView = useSafeInView(ref, { once: true, amount: 0.12 });
-  const state = reduced || !ready ? "visible" : inView ? "visible" : "idle";
-
   return (
-    <section
-      ref={ref}
-      id={id}
-      className={cn(atmosphere, className)}
-      data-motion-state={state}
-    >
+    <section id={id} className={cn(atmosphere, className)} data-motion-state="visible">
       {children}
     </section>
   );

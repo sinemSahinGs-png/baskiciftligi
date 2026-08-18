@@ -1,6 +1,6 @@
 import type { Product } from "@/domain/catalog/types";
 
-export type AdminCatalogMode = "demo" | "supabase";
+export type AdminCatalogMode = "demo" | "supabase" | "unconfigured";
 
 export interface AdminCategory {
   id: string;
@@ -8,6 +8,10 @@ export interface AdminCategory {
   slug: string;
   description: string;
   imageUrl: string;
+  eyebrow: string;
+  imageFit: "cover" | "contain";
+  imageScale: number;
+  objectPosition: string;
   status: "draft" | "published" | "archived";
   position: number;
   productCount: number;

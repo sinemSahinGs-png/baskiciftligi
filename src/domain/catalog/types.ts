@@ -2,10 +2,40 @@ import type { StagePreset } from "@/domain/visual/stages";
 
 export type CurrencyCode = "TRY";
 
-export type ProductStatus = "draft" | "active" | "archived";
-export type ProductKind = "ready_stock" | "made_to_order";
+export type ProductStatus = "draft" | "scheduled" | "active" | "archived";
+export type ProductKind = "ready_stock" | "made_to_order" | "hybrid";
+export type InventoryPolicy = "deny" | "continue";
+export type CatalogMaterialCode =
+  | "PLA"
+  | "PETG"
+  | "TPU"
+  | "ASA"
+  | "ABS"
+  | "Resin"
+  | "Other";
 
-export type MediaRole = "primary" | "hover" | "mobile" | "gallery" | "video";
+export type MediaRole =
+  | "primary"
+  | "cover"
+  | "hover"
+  | "mobile"
+  | "gallery"
+  | "video"
+  | "dimensions"
+  | "detail"
+  | "lifestyle"
+  | "social";
+
+export interface PersonalizationField {
+  id: string;
+  type: "text" | "initials" | "name" | "date" | "color" | "custom";
+  label: string;
+  placeholder: string;
+  required: boolean;
+  minLength?: number;
+  maxLength?: number;
+  helpText: string;
+}
 
 export interface ProductMedia {
   id: string;
@@ -17,6 +47,12 @@ export interface ProductMedia {
   objectPosition?: string;
   mobileObjectPosition?: string;
   isolated?: boolean;
+  variantId?: string | null;
+  storagePath?: string | null;
+  mimeType?: string;
+  width?: number;
+  height?: number;
+  fileSize?: number;
 }
 
 export interface ProductPresentation {
@@ -30,9 +66,14 @@ export interface ProductVariant {
   id: string;
   name: string;
   sku: string;
+  barcode?: string;
   colorName?: string;
   colorHex?: string;
+  material?: string;
+  sizeLabel?: string;
+  weightGrams?: number;
   priceAdjustmentMinor: number;
+  compareAtPriceMinor?: number | null;
   inventoryQuantity: number;
   isActive: boolean;
 }
@@ -61,7 +102,27 @@ export interface Product {
   featured: boolean;
   seoTitle: string;
   seoDescription: string;
+  canonicalUrl?: string;
+  searchVisible?: boolean;
+  noindex?: boolean;
   publishedAt: string | null;
+  archivedAt?: string | null;
+  updatedAt?: string;
+  createdAt?: string;
+  vatRateBps?: number;
+  costPriceMinor?: number | null;
+  inventoryPolicy?: InventoryPolicy;
+  materialCode?: CatalogMaterialCode | "";
+  materialSummary?: string;
+  weightGrams?: number | null;
+  widthMm?: number | null;
+  depthMm?: number | null;
+  heightMm?: number | null;
+  personalizationEnabled?: boolean;
+  personalizationFields?: PersonalizationField[];
+  sortOrder?: number;
+  modelName?: string;
+  themeStyle?: string;
   isDemo: boolean;
   reviewSummary?: {
     average: number;
@@ -78,6 +139,8 @@ export interface Category {
   imageUrl: string;
   heroMediaUrl?: string;
   objectPosition?: string;
+  imageFit?: "cover" | "contain";
+  imageScale?: number;
   eyebrow: string;
   isFeatured: boolean;
   position: number;

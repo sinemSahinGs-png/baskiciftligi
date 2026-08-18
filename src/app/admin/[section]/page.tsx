@@ -124,21 +124,6 @@ const stagedSections = {
       "Kamu yalnızca onaylı ve yayınlanmış yorumları okuyabiliyor",
     ],
   },
-  icerik: {
-    title: "İçerik yönetimi",
-    description:
-      "Sayfa, blog, ana sayfa bölümü ve navigasyon yayınlama alanı.",
-    phase: "Aşama 2",
-    requirements: [
-      "İçerik bileşen şemaları ve güvenli zengin metin temizleme",
-      "Taslak ön izleme ve yayın zamanlaması",
-      "Medya varlık kütüphanesi ve erişilebilirlik kontrolleri",
-    ],
-    foundations: [
-      "Sayfa, blog ve ana sayfa bölüm tabloları mevcut",
-      "Kamu okuması yayın durumu ve tarih penceresiyle sınırlı",
-    ],
-  },
   entegrasyonlar: {
     title: "Entegrasyonlar",
     description:

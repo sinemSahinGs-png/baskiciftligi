@@ -4,9 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { SectionIntro } from "@/components/home/section-intro";
-import { PinnedStory } from "@/components/motion/pinned-story";
 import { StaggerGrid } from "@/components/motion/stagger-grid";
-import { useScrollMotion } from "@/components/motion/scroll-motion-provider";
 import {
   homepageMaterialCopy,
   homepageMaterialOrder,
@@ -15,13 +13,7 @@ import type { Material } from "@/domain/catalog/types";
 
 const swatches = ["#4054FF", "#FF6542", "#30D5D2", "#171721", "#7A42F4"];
 
-function MaterialCards({
-  materials,
-  reveal = true,
-}: {
-  materials: Material[];
-  reveal?: boolean;
-}) {
+function MaterialCards({ materials }: { materials: Material[] }) {
   return materials.map((material, index) => {
     const extra =
       homepageMaterialCopy[material.slug as keyof typeof homepageMaterialCopy];
@@ -30,8 +22,8 @@ function MaterialCards({
       <Link
         key={material.id}
         href={`/malzemeler/${material.slug}` as Route}
-        data-motion-item={reveal ? "idle" : "visible"}
-        className="motion-item min-w-0 overflow-hidden rounded-lg bg-optical lg:min-w-[17rem] lg:flex-1"
+        data-motion-item="visible"
+        className="motion-item min-w-0 overflow-hidden rounded-lg bg-optical"
       >
         <span className="relative block h-28 overflow-hidden sm:h-32">
           <span
@@ -67,8 +59,6 @@ export function MaterialsSection({ materials }: { materials: Material[] }) {
   const visible = homepageMaterialOrder
     .map((slug) => materials.find((material) => material.slug === slug))
     .filter((material): material is Material => Boolean(material));
-  const { allowPinned, reduced } = useScrollMotion();
-  const pinned = allowPinned && !reduced;
 
   return (
     <section className="atmosphere-porcelain section-space">
@@ -78,27 +68,9 @@ export function MaterialsSection({ materials }: { materials: Material[] }) {
           description="Yüzey ve teknoloji birlikte okunur."
           action={{ href: "/malzemeler" as Route, label: "Malzeme rehberi" }}
         />
-        {pinned ? (
-          <PinnedStory heightClassName="lg:h-[155vh]">
-            {(progress) => (
-              <div className="overflow-hidden">
-                <div
-                  className="flex gap-3"
-                  style={{
-                    width: "168%",
-                    transform: `translate3d(${progress * -36}%, 0, 0)`,
-                  }}
-                >
-                  <MaterialCards materials={visible} reveal={false} />
-                </div>
-              </div>
-            )}
-          </PinnedStory>
-        ) : (
-          <StaggerGrid className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <MaterialCards materials={visible} />
-          </StaggerGrid>
-        )}
+        <StaggerGrid className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <MaterialCards materials={visible} />
+        </StaggerGrid>
       </div>
     </section>
   );

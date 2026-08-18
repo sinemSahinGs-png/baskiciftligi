@@ -19,10 +19,10 @@ PAYTR_MERCHANT_SALT=
 Browser'a, `NEXT_PUBLIC_*` değişkenine, log'a, veritabanı event payload'ına veya
 support ekranına yazılmaz. Test ve production credential'ları ayrıdır.
 
-TLS kullanan canonical URL'ler ayrıca tanımlanır:
+TLS kullanan canonical URL'ler ayrıca tanımlanır (ödeme henüz aktif değildir):
 
-- callback/webhook: örneğin `/api/payments/paytr/callback`;
-- kullanıcı dönüşü: `/odeme/basarili` ve `/odeme/basarisiz`.
+- callback/webhook: `https://baskiciftligi.com/api/payments/paytr/callback`
+- kullanıcı dönüşü: `https://baskiciftligi.com/odeme/basarili` ve `https://baskiciftligi.com/odeme/basarisiz`
 
 Bunlar planlanan adreslerdir; route gerçekten deploy ve test edilmeden panelde
 canlı moda geçilmez. Browser'ın success URL'ine gelmesi ödeme kanıtı değildir;

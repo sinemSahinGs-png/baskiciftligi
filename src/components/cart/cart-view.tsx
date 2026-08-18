@@ -18,7 +18,7 @@ import {
 import { FormSignal } from "@/components/brand/form-signal";
 import { ErrorState } from "@/components/feedback/error-state";
 import { EmptyState } from "@/components/feedback/empty-state";
-import type { CartPriceResult } from "@/domain/commerce/cart-pricing";
+import type { CartPriceResult, PricedCartLine } from "@/domain/commerce/cart-pricing";
 import type { CartLineDisplayKind } from "@/domain/catalog/presentation";
 import { formatMoney } from "@/lib/money";
 import { useCartStore } from "@/stores/cart-store";
@@ -65,7 +65,27 @@ function lineKindColor(kind: CartLineDisplayKind) {
   return "#4054FF";
 }
 
-function lineSettings(kind: CartLineDisplayKind, variantName: string | null) {
+function lineSettings(
+  kind: CartLineDisplayKind,
+  variantName: string | null,
+  manufacturing?: PricedCartLine["manufacturing"],
+) {
+  if (manufacturing) {
+    const bits = [
+      manufacturing.material,
+      manufacturing.quality,
+      `%${manufacturing.infillPercent} dolgu`,
+      `destek ${manufacturing.supports}`,
+      manufacturing.dimensionsMm
+        ? `${manufacturing.dimensionsMm.x.toFixed(1)}×${manufacturing.dimensionsMm.y.toFixed(1)}×${manufacturing.dimensionsMm.z.toFixed(1)} mm`
+        : null,
+      manufacturing.estimatedDurationSeconds
+        ? `${Math.round(manufacturing.estimatedDurationSeconds / 60)} dk`
+        : null,
+      manufacturing.reviewRequired ? "teknik inceleme" : null,
+    ].filter(Boolean);
+    return bits.join(" · ");
+  }
   if (kind === "uploaded") {
     return "Yazdırma ayarları değerlendirme sonrası netleşir.";
   }
@@ -95,6 +115,7 @@ export function CartView() {
       line.productId,
       line.variantId ?? null,
       line.quantity,
+      line.quoteId ?? null,
     ]),
   );
   const [result, setResult] = useState<CartPriceResult | null>(null);
@@ -131,6 +152,7 @@ export function CartView() {
               productId: line.productId,
               variantId: line.variantId ?? null,
               quantity: line.quantity,
+              quoteId: line.quoteId,
             })),
           }),
           cache: "no-store",
@@ -315,8 +337,23 @@ export function CartView() {
                     ) : null}
                   </div>
                   <p className="mt-1 text-sm text-ink-secondary">
-                    {lineSettings(line.displayKind, line.variantName)}
+                    {lineSettings(
+                      line.displayKind,
+                      line.variantName,
+                      line.manufacturing,
+                    )}
                   </p>
+                  {line.manufacturing?.attributionText ? (
+                    <p className="mt-2 text-xs leading-5 text-ink-muted">
+                      Atıf: {line.manufacturing.attributionText}
+                    </p>
+                  ) : null}
+                  {line.manufacturing?.quoteExpiresAt ? (
+                    <p className="mt-1 text-xs text-ink-muted">
+                      Teklif sonu:{" "}
+                      {new Date(line.manufacturing.quoteExpiresAt).toLocaleString("tr-TR")}
+                    </p>
+                  ) : null}
                   <p className="mt-2 text-xs text-ink-muted">
                     Hazırlık: {line.productionLeadTimeDays.min}–
                     {line.productionLeadTimeDays.max} iş günü

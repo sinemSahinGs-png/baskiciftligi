@@ -27,6 +27,9 @@ function sameLine(
   productId: string,
   variantId?: string | null,
 ) {
+  if (line.quoteId) {
+    return line.productId === productId;
+  }
   return (
     line.productId === productId &&
     (line.variantId ?? null) === (variantId ?? null)
@@ -54,6 +57,10 @@ export const useCartStore = create<CartState>()(
                 },
               ],
             };
+          }
+
+          if (newLine.quoteId) {
+            return state;
           }
 
           return {
