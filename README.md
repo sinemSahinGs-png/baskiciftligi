@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Octo Studio Commerce
 
-## Getting Started
+Octo Studio için premium, Türkçe, Supabase tabanlı e-ticaret ve özel 3D baskı platformu.
 
-First, run the development server:
+Bu çalışma şu anda **Faz 1** kapsamındadır: tasarım sistemi, mağaza, ürün/kategori
+yönetimi, güvenli sunucu fiyatlamalı kalıcı sepet, Supabase Auth sınırları,
+PostgreSQL şeması/RLS ve yerel geliştirme modu. Ödeme, sipariş işleme, dosya
+yükleme, slicer ve Thingiverse entegrasyonları sonraki fazlardır; arayüzde etkin
+gibi gösterilmez.
+
+## Gereksinimler
+
+- Node.js 22 veya daha yeni LTS sürümü (geliştirme sırasında Node 24 doğrulandı)
+- npm 11+
+- Üretim için bir Supabase projesi
+- İsteğe bağlı yerel Supabase CLI/Docker
+
+## Yerel geliştirme
 
 ```bash
+npm install
+copy .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uygulama `http://localhost:3000` adresinde açılır.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Supabase değişkenleri yokken katalog, açıkça **Demo** olarak işaretlenen tohum
+verisiyle çalışır. Geliştirme ortamındaki `/admin` değişiklikleri
+`.octo-data/catalog.json` dosyasına kalıcı olarak yazılır. Bu davranış üretimde
+bir yetkilendirme geçişi oluşturmaz ve Supabase'in yerine kullanılmamalıdır.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Gerçek Supabase kurulumu için:
 
-## Learn More
+1. `.env.local` içindeki `NEXT_PUBLIC_SUPABASE_URL` ve
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` değerlerini doldurun.
+2. `supabase/migrations` dosyalarını sırayla uygulayın.
+3. `supabase/seed.sql` yalnızca demo verisine ihtiyacınız varsa çalıştırın.
+4. İlk yöneticiyi `docs/admin-setup.md` adımlarına göre atayın.
 
-To learn more about Next.js, take a look at the following resources:
+Service-role, PayTR, Thingiverse ve slicer sırları hiçbir zaman
+`NEXT_PUBLIC_` değişkenlerinde tutulmaz.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Kalite komutları
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+npm run test:e2e
+```
 
-## Deploy on Vercel
+Tüm yerel kalite kapısını çalıştırmak için `npm run quality` kullanılabilir.
+Playwright ilk kullanımda tarayıcı kurulumu isteyebilir:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npx playwright install chromium
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Mimari
+
+- Next.js App Router, React Server Components ve strict TypeScript
+- Tailwind CSS 4 ve markaya göre özelleştirilmiş shadcn/ui primitive'leri
+- Supabase PostgreSQL, Auth, private Storage ve Row Level Security
+- Sunucuda yeniden hesaplanan integer kuruş fiyatları
+- Geçici sepet/favori durumu için Zustand
+- Provider sözleşmeleriyle PayTR, kargo, bildirim, slicer, dönüştürücü ve dış
+  model kaynaklarının ayrıştırılması
+- Vitest birim testleri ve Playwright kritik akışları
+
+Ayrıntılar:
+
+- `docs/architecture.md`
+- `docs/deployment.md`
+- `docs/security-checklist.md`
+- `docs/testing.md`
+- `docs/todo-external-services.md`
+
+## Önemli üretim sınırları
+
+- PayTR Faz 2 tamamlanmadan ödeme alınmaz.
+- Müşteri modeli Faz 3 tamamlanmadan yüklenmez.
+- Slicer ikilileri Vercel fonksiyonlarında çalıştırılmaz; Faz 4'te ayrı,
+  uzun süre çalışan Docker worker kullanılır.
+- Thingiverse yalnızca resmi API ve doğrulanmış ticari izin akışıyla
+  etkinleştirilir. Scraping yapılmaz.
+- `supabase/seed.sql` içindeki ürünler demo verisidir; yorum, sipariş ve satış
+  istatistiği uydurulmaz.

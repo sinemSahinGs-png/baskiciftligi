@@ -1,0 +1,9 @@
+.next
+node_modules
+coverage
+playwright-report
+test-results
+.octo-data
+package-lock.json
+public/demo
+supabase/migrations

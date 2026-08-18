@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc" data-demo-placeholder="true">
+  <title id="title">Orbit lamp demo artwork</title>
+  <desc id="desc">Stylized demo illustration of a ring lamp. Not product photography.</desc>
+  <defs>
+    <linearGradient id="orbit-ring" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFF5DD"/>
+      <stop offset=".43" stop-color="#FFC17F"/>
+      <stop offset="1" stop-color="#A84B31"/>
+    </linearGradient>
+    <linearGradient id="orbit-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#778188"/>
+      <stop offset=".48" stop-color="#252C31"/>
+      <stop offset="1" stop-color="#0D1114"/>
+    </linearGradient>
+  </defs>
+  <circle cx="402" cy="390" r="235" fill="none" stroke="url(#orbit-ring)" stroke-width="46"/>
+  <path d="M402 625v169" stroke="url(#orbit-metal)" stroke-width="34"/>
+  <path d="M230 813c0-24 19-43 43-43h258c24 0 43 19 43 43v30H230Z" fill="url(#orbit-metal)"/>
+  <ellipse cx="402" cy="813" rx="172" ry="35" fill="#3D464C"/>
+  <ellipse cx="402" cy="806" rx="125" ry="18" fill="#171C20"/>
+  <path d="M246 306c37-77 107-128 190-139" fill="none" stroke="#FFF9E8" stroke-opacity=".74" stroke-width="12" stroke-linecap="round"/>
+  <path d="M556 514c26-30 44-67 52-107" fill="none" stroke="#FF8E52" stroke-opacity=".72" stroke-width="10" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc" data-demo-placeholder="true">
+  <title id="title">Flux vase demo artwork</title>
+  <desc id="desc">Stylized demo illustration of a parametric vase. Not product photography.</desc>
+  <defs>
+    <linearGradient id="flux-body" x1=".1" y1="0" x2=".92" y2="1">
+      <stop stop-color="#FDF7E9"/>
+      <stop offset=".38" stop-color="#B9B8B2"/>
+      <stop offset=".7" stop-color="#465159"/>
+      <stop offset="1" stop-color="#171C20"/>
+    </linearGradient>
+    <linearGradient id="flux-rim" x1="0" y1=".5" x2="1" y2=".5">
+      <stop stop-color="#36E6FF"/>
+      <stop offset=".52" stop-color="#E8F7F4"/>
+      <stop offset="1" stop-color="#FF9A5B"/>
+    </linearGradient>
+  </defs>
+  <path d="M248 737c15-116 72-185 84-276 10-76-31-136-6-213 16-50 124-50 149 0 35 69-20 137-8 213 15 93 72 161 85 276 8 65-62 91-152 91s-161-26-152-91Z" fill="url(#flux-body)"/>
+  <path d="M324 249c0-23 34-42 76-42s77 19 77 42-35 41-77 41-76-18-76-41Z" fill="url(#flux-rim)"/>
+  <ellipse cx="400" cy="249" rx="51" ry="20" fill="#11161A"/>
+  <path d="M346 309c-26 138 46 159 2 316-19 68-38 123 0 175" fill="none" stroke="#FFF9EC" stroke-opacity=".58" stroke-width="16" stroke-linecap="round"/>
+  <path d="M471 322c14 105-31 153 10 272 27 78 33 142-4 201" fill="none" stroke="#FF9A5A" stroke-opacity=".42" stroke-width="11" stroke-linecap="round"/>
+</svg>

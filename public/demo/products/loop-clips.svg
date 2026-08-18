@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc" data-demo-placeholder="true">
+  <title id="title">Loop clips demo artwork</title>
+  <desc id="desc">Stylized demo illustration of loop clips. Not product photography.</desc>
+  <defs>
+    <linearGradient id="loop-cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#B8F8FF"/>
+      <stop offset=".4" stop-color="#37E6FF"/>
+      <stop offset="1" stop-color="#126D7A"/>
+    </linearGradient>
+    <linearGradient id="loop-ivory" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFF9EA"/>
+      <stop offset="1" stop-color="#918F8A"/>
+    </linearGradient>
+    <linearGradient id="loop-warm" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFD09A"/>
+      <stop offset=".5" stop-color="#FF9759"/>
+      <stop offset="1" stop-color="#893925"/>
+    </linearGradient>
+  </defs>
+  <g transform="rotate(-18 242 488)">
+    <rect x="162" y="279" width="160" height="416" rx="80" fill="url(#loop-cyan)"/>
+    <rect x="205" y="331" width="74" height="298" rx="37" fill="#151A1E"/>
+    <path d="M242 619v99" stroke="#39E7FF" stroke-width="18" stroke-linecap="round"/>
+  </g>
+  <g transform="rotate(11 427 467)">
+    <rect x="341" y="223" width="172" height="488" rx="86" fill="url(#loop-ivory)"/>
+    <rect x="388" y="279" width="78" height="363" rx="39" fill="#151A1E"/>
+    <path d="M427 631v105" stroke="#EEE9DD" stroke-width="19" stroke-linecap="round"/>
+  </g>
+  <g transform="rotate(27 587 520)">
+    <rect x="515" y="342" width="144" height="356" rx="72" fill="url(#loop-warm)"/>
+    <rect x="554" y="389" width="66" height="244" rx="33" fill="#151A1E"/>
+    <path d="M587 626v89" stroke="#FF9A5B" stroke-width="17" stroke-linecap="round"/>
+  </g>
+</svg>

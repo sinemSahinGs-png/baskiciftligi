@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-labelledby="title desc" data-demo-placeholder="true">
+  <title id="title">Ki_iye özel category demo artwork</title>
+  <desc id="desc">An abstract personalized keepsake with flowing contour lines in a studio setting, created as a demo placeholder.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#090B0D"/>
+      <stop offset=".52" stop-color="#202429"/>
+      <stop offset="1" stop-color="#0B0D10"/>
+    </linearGradient>
+    <radialGradient id="halo">
+      <stop stop-color="#FF9A5E" stop-opacity=".34"/>
+      <stop offset=".52" stop-color="#34E5FF" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#34E5FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="plate" x1=".1" y1="0" x2=".9" y2="1">
+      <stop stop-color="#FFF9EB"/>
+      <stop offset=".58" stop-color="#D2CDC4"/>
+      <stop offset="1" stop-color="#8A8D8D"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#44E8FF"/>
+      <stop offset="1" stop-color="#167D91"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <ellipse cx="617" cy="278" rx="458" ry="338" fill="url(#halo)"/>
+  <path d="M0 502C343 473 851 469 1200 502V600H0Z" fill="#080A0C"/>
+  <ellipse cx="612" cy="503" rx="340" ry="34" fill="#000" fill-opacity=".48"/>
+  <path d="M351 169c0-36 29-65 65-65h389c36 0 65 29 65 65v282c0 36-29 65-65 65H416c-36 0-65-29-65-65Z" fill="url(#plate)"/>
+  <path d="M374 189c0-35 28-63 63-63h346c35 0 63 28 63 63v241c0 35-28 63-63 63H437c-35 0-63-28-63-63Z" fill="#151A1E"/>
+  <path d="M534 340c-55-38-63-121 1-155 42-23 77 2 86 30 11-28 47-53 89-30 63 34 55 117 1 155l-90 68Z" fill="none" stroke="url(#ribbon)" stroke-width="16" stroke-linejoin="round"/>
+  <path d="M557 323c-34-24-40-76 0-98 27-14 50 2 64 26 13-24 37-40 64-26 40 22 34 74 0 98l-64 49Z" fill="none" stroke="#F3EEE2" stroke-width="9" stroke-linejoin="round"/>
+  <path d="M591 304c-16-11-18-35 0-45 15-8 25 2 30 14 6-12 16-22 31-14 18 10 16 34 0 45l-31 24Z" fill="#FF9B5B"/>
+  <circle cx="414" cy="167" r="8" fill="#42E7FF"/>
+  <circle cx="807" cy="451" r="8" fill="#FFAA6A"/>
+  <path d="M320 489h582l28 35H291Z" fill="#343B40"/>
+  <path d="M343 524h538l-19 76H361Z" fill="#171B1E"/>
+</svg>

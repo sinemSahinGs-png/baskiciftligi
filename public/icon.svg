@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Baskı Çiftliği</title>
+  <rect width="512" height="512" rx="96" fill="#070713"/>
+  <circle cx="256" cy="256" r="168" fill="none" stroke="#F9F8F5" stroke-opacity=".22" stroke-width="14" stroke-dasharray="90 320"/>
+  <circle cx="392" cy="148" r="28" fill="#FF6542"/>
+  <path d="M168 332c42 58 108 88 148 72" fill="none" stroke="#30D5D2" stroke-width="16" stroke-linecap="round"/>
+</svg>

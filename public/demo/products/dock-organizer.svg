@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc" data-demo-placeholder="true">
+  <title id="title">Dock organizer demo artwork</title>
+  <desc id="desc">Stylized demo illustration of a desktop organizer. Not product photography.</desc>
+  <defs>
+    <linearGradient id="dock-body" x1=".08" y1="0" x2=".92" y2="1">
+      <stop stop-color="#667178"/>
+      <stop offset=".45" stop-color="#2B3237"/>
+      <stop offset="1" stop-color="#111518"/>
+    </linearGradient>
+    <linearGradient id="dock-ivory" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFF9EC"/>
+      <stop offset="1" stop-color="#A7A49E"/>
+    </linearGradient>
+  </defs>
+  <rect x="162" y="320" width="225" height="389" rx="35" fill="url(#dock-body)"/>
+  <rect x="198" y="361" width="153" height="303" rx="20" fill="#0F1417"/>
+  <path d="M220 616h109" stroke="#39E7FF" stroke-width="13" stroke-linecap="round"/>
+  <rect x="420" y="430" width="218" height="279" rx="34" fill="url(#dock-ivory)"/>
+  <path d="M455 476h148v72H455Z" fill="#22282C"/>
+  <path d="M473 500h111" stroke="#FF9B5D" stroke-width="12" stroke-linecap="round"/>
+  <path d="M477 430V224m61 206V179m61 251V269" stroke="#B9B8B2" stroke-width="18" stroke-linecap="round"/>
+  <path d="M477 224V172m61 7v-54m61 144v-76" stroke="#38E6FF" stroke-width="11" stroke-linecap="round"/>
+  <path d="M127 687h547l58 128H68Z" fill="url(#dock-body)"/>
+  <path d="M179 712h442l31 68H148Z" fill="#111619"/>
+  <path d="M345 728h112c14 0 25 11 25 25s-11 25-25 25H345c-14 0-25-11-25-25s11-25 25-25Z" fill="#39E7FF"/>
+</svg>

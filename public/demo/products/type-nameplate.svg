@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc" data-demo-placeholder="true">
+  <title id="title">Type nameplate demo artwork</title>
+  <desc id="desc">Stylized demo illustration of a nameplate. Not product photography.</desc>
+  <defs>
+    <linearGradient id="type-plate" x1=".1" y1="0" x2=".9" y2="1">
+      <stop stop-color="#FFF9EC"/>
+      <stop offset=".54" stop-color="#C8C4BC"/>
+      <stop offset="1" stop-color="#656D72"/>
+    </linearGradient>
+    <linearGradient id="type-ink" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#47E9FF"/>
+      <stop offset=".48" stop-color="#1FB3C7"/>
+      <stop offset="1" stop-color="#16515A"/>
+    </linearGradient>
+  </defs>
+  <path d="M142 343c0-38 31-69 69-69h378c38 0 69 31 69 69v342c0 38-31 69-69 69H211c-38 0-69-31-69-69Z" fill="url(#type-plate)"/>
+  <path d="M170 369c0-35 28-63 63-63h334c35 0 63 28 63 63v288c0 35-28 63-63 63H233c-35 0-63-28-63-63Z" fill="#171C20"/>
+  <path d="M230 597V430h46v167Zm46-86h64v42h-64Zm102 86V430h46v167Zm46-167h72v42h-72Zm0 67h57v42h-57Zm111 100V430h46v167Z" fill="url(#type-ink)"/>
+  <path d="M230 430h46m102 0h46m111 0h46" stroke="#D0FAFF" stroke-opacity=".62" stroke-width="8"/>
+</svg>

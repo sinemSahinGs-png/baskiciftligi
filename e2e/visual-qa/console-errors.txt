@@ -1,0 +1,95 @@
+375x812-home: A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={{...}} forbidden={undefined} unauthorized={undefined}>
+      <HTTPAccessFallbackErrorBoundary pathname="/" notFound={{...}} forbidden={undefined} unauthorized={undefined} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <InnerLayoutRouter url="/" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+              <SegmentViewNode type="layout" pagePath="(store)/la...">
+                <SegmentTrieNode>
+                <script>
+                <script>
+                <StoreLayout>
+                  <ShellAtmosphere>
+                    <div data-atmosphere="cinematic" className="flex min-h...">
+                      <aside>
+                      <SiteHeader>
+                      <div>
+                      <SiteFooter>
+                        <footer className="relative o...">
+                          <div>
+                          <div className="shell rela...">
+                            <div>
+                            <div className="grid gap-6...">
+                              <p>
+                              <fieldset disabled={true} className="flex flex-...">
+                                <label>
+                                <input
+                                  id="newsletter-email"
+                                  type="email"
+                                  placeholder="Bülten yakında"
+                                  className="h-11 flex-1 rounded-md border border-white/15 bg-white/5 px-4 text-sm tex..."
+-                                 style={{caret-color:"transparent"}}
+                                >
+                                ...
+                            ...
+            ...
+
+768x1024-home: A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={{...}} forbidden={undefined} unauthorized={undefined}>
+      <HTTPAccessFallbackErrorBoundary pathname="/" notFound={{...}} forbidden={undefined} unauthorized={undefined} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <InnerLayoutRouter url="/" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+              <SegmentViewNode type="layout" pagePath="(store)/la...">
+                <SegmentTrieNode>
+                <script>
+                <script>
+                <StoreLayout>
+                  <ShellAtmosphere>
+                    <div data-atmosphere="cinematic" className="flex min-h...">
+                      <aside>
+                      <SiteHeader>
+                      <div>
+                      <SiteFooter>
+                        <footer className="relative o...">
+                          <div>
+                          <div className="shell rela...">
+                            <div>
+                            <div className="grid gap-6...">
+                              <p>
+                              <fieldset disabled={true} className="flex flex-...">
+                                <label>
+                                <input
+                                  id="newsletter-email"
+                                  type="email"
+                                  placeholder="Bülten yakında"
+                                  className="h-11 flex-1 rounded-md border border-white/15 bg-white/5 px-4 text-sm tex..."
+-                                 style={{caret-color:"transparent"}}
+                                >
+                                ...
+                            ...
+            ...

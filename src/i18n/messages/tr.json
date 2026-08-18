@@ -1,0 +1,18 @@
+{
+  "common": {
+    "brand": "Baskı Çiftliği",
+    "shop": "Mağaza",
+    "cart": "Sepet",
+    "favorites": "Favoriler",
+    "account": "Hesabım",
+    "search": "Ara",
+    "loading": "Yükleniyor",
+    "demo": "Demo veri"
+  },
+  "commerce": {
+    "addToCart": "Sepete ekle",
+    "outOfStock": "Stokta yok",
+    "madeToOrder": "Sipariş üzerine üretilir",
+    "freeShipping": "Ücretsiz kargo"
+  }
+}

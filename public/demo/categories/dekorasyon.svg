@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-labelledby="title desc" data-demo-placeholder="true">
+  <title id="title">Dekorasyon category demo artwork</title>
+  <desc id="desc">Abstract studio-lit decorative objects on graphite plinths, created as a demo placeholder.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#080A0C"/>
+      <stop offset=".55" stop-color="#171B1F"/>
+      <stop offset="1" stop-color="#0D1013"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#36E4FF" stop-opacity=".34"/>
+      <stop offset="1" stop-color="#36E4FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ivory" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFF9EC"/>
+      <stop offset="1" stop-color="#B7B1A8"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFB36B"/>
+      <stop offset="1" stop-color="#A8472C"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <ellipse cx="620" cy="250" rx="500" ry="330" fill="url(#glow)"/>
+  <path d="M0 486C274 445 850 449 1200 493V600H0Z" fill="#080A0C"/>
+  <path d="M104 498H1090" stroke="#343B41" stroke-width="2"/>
+  <path d="M142 230h246l-28 268H170Z" fill="#242A2F"/>
+  <path d="M777 306h256l34 192H742Z" fill="#1D2226"/>
+  <path d="M469 382h247l17 116H452Z" fill="#31383D"/>
+  <path d="M205 228c0-74 26-129 60-129s60 55 60 129v90c0 31-25 56-56 56h-8c-31 0-56-25-56-56Z" fill="url(#ivory)"/>
+  <path d="M233 100h64l-10 40h-44Z" fill="#121619"/>
+  <circle cx="835" cy="258" r="78" fill="url(#warm)"/>
+  <circle cx="817" cy="236" r="20" fill="#FFD6A7" fill-opacity=".48"/>
+  <path d="M510 382V258c0-71 58-129 129-129s129 58 129 129v124h-63V261c0-40-29-72-66-72s-66 32-66 72v121Z" fill="#ECE6D9"/>
+  <path d="M568 382V271c0-47 31-82 71-82 39 0 70 35 70 82v111Z" fill="#111519"/>
+  <path d="M936 138l35 95-35 95-35-95Z" fill="#41E6FF"/>
+  <circle cx="971" cy="143" r="7" fill="#FFF9EC"/>
+</svg>
