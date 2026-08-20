@@ -173,3 +173,13 @@ export async function requirePricingCalibrator(): Promise<Viewer> {
   }
   return viewer;
 }
+
+export async function requireCatalogOwner(): Promise<Viewer> {
+  const viewer = await requireAdmin();
+
+  if (viewer.role !== "owner") {
+    throw new Error("Bu işlem yalnızca mağaza sahibi içindir.");
+  }
+
+  return viewer;
+}

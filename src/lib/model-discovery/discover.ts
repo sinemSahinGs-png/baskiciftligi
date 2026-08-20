@@ -4,6 +4,8 @@ import {
   rankSummaries,
 } from "@/lib/model-discovery/ranking";
 import { expandTurkishModelQuery } from "@/lib/model-discovery/turkish-query";
+import { searchPublishedCuratedModels } from "@/domain/curated-models/repository";
+import { curatedModelToSummary } from "@/domain/curated-models/to-summary";
 import { listExternalModelProviders } from "@/providers/registry";
 import type { ExternalModelSummary } from "@/providers/contracts";
 
@@ -72,6 +74,9 @@ export async function discoverExternalModels(
   const context = { correlationId: input.correlationId ?? `discover-${Date.now()}` };
   const collected: ExternalModelSummary[] = [];
   const providerReport = summarizeProviders(providers);
+
+  const curated = await searchPublishedCuratedModels(input.query, 12);
+  collected.push(...curated.map(curatedModelToSummary));
 
   await Promise.all(
     providers.map(async (entry) => {

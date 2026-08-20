@@ -166,10 +166,14 @@ export interface ExternalModelSummary {
   thumbnailUrl?: string;
   licenseLabel?: string;
   licenseUrl?: string;
+  licenseCode?: string;
+  categoryLabel?: string;
   attributionText: string;
   attributionRequired?: boolean;
   permissionStatus: ExternalModelPermissionStatus;
   isPurchasable: boolean;
+  /** Discovery may show the card; price modal only when true. */
+  pricingAllowed?: boolean;
   automaticManufacturingAllowed?: boolean;
   description?: string;
   likeCount?: number;

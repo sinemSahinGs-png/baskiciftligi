@@ -7,8 +7,15 @@ import { serverEnv } from "@/lib/env.server";
 import {
   manufacturingPersistenceReady,
   manufacturingUsesLocalPersistence,
+  slicerWorkerSecret,
   slicerWorkerUrl,
 } from "@/lib/manufacturing/paths";
+import {
+  resolveSlicerWorkerHealth,
+  type SlicerWorkerHealthState,
+  type WorkerHealthPayload,
+} from "@/lib/manufacturing/worker-ops";
+import { getIntegrationStatus } from "@/domain/manufacturing/repository";
 import { resolveThingiverseConfigStatus } from "@/providers/thingiverse/status";
 
 export type IntegrationState =
@@ -28,7 +35,7 @@ export interface DeploymentHealth {
   localPersistenceOverride: boolean;
   manufacturingPersistence: "local-json" | "supabase" | "unconfigured";
   thingiverse: IntegrationState;
-  slicerWorker: IntegrationState;
+  slicerWorker: SlicerWorkerHealthState;
   storage: IntegrationState;
   payment: IntegrationState;
 }
@@ -64,20 +71,34 @@ function paymentState(): IntegrationState {
   return ready ? "configured" : "unconfigured";
 }
 
-async function slicerWorkerState(): Promise<IntegrationState> {
+async function slicerWorkerState(): Promise<SlicerWorkerHealthState> {
   const url = slicerWorkerUrl();
-  if (!url) {
+  const secretConfigured = Boolean(slicerWorkerSecret());
+  if (!url || (process.env.NODE_ENV === "production" && !secretConfigured)) {
     return "unconfigured";
   }
+  let healthReachable = false;
+  let health: WorkerHealthPayload | null = null;
   try {
     const response = await fetch(`${url}/health`, {
       cache: "no-store",
       signal: AbortSignal.timeout(1500),
     });
-    return response.ok ? "configured" : "unreachable";
+    healthReachable = response.ok;
+    if (response.ok) {
+      health = (await response.json()) as WorkerHealthPayload;
+    }
   } catch {
-    return "unreachable";
+    healthReachable = false;
   }
+  const integration = await getIntegrationStatus().catch(() => null);
+  return resolveSlicerWorkerHealth({
+    workerUrlConfigured: Boolean(url),
+    workerSecretConfigured: secretConfigured,
+    healthReachable,
+    health,
+    integration,
+  });
 }
 
 export async function getDeploymentHealth(): Promise<DeploymentHealth> {

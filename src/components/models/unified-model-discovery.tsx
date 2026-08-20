@@ -9,6 +9,8 @@ import { EmptyState } from "@/components/feedback/empty-state";
 import { ModelCard } from "@/components/models/model-card";
 import type { ModelCardData } from "@/components/models/model-card";
 import { StaggerGrid, StaggerItem } from "@/components/motion/stagger-grid";
+import { announceStatus } from "@/lib/motion";
+import { useFavoritesStore } from "@/stores/favorites-store";
 import { cn } from "@/lib/utils";
 
 interface DiscoverItem {
@@ -47,16 +49,25 @@ function toCard(item: DiscoverItem): ModelCardData {
           ? "verified"
           : "unverified";
 
+  const source =
+    item.source === "thingiverse"
+      ? "thingiverse"
+      : item.source === "baski-ciftligi"
+        ? "owned"
+        : "licensed";
+
   return {
     id: `${item.source}-${item.externalId}`,
     href: `/hazir-modeller/${item.source}/${item.externalId}` as Route,
     name: item.title,
     creator: item.creatorName,
     category: item.automaticManufacturingAllowed ? "Dosya hazır" : "Baskıya uygunluk inceleniyor",
-    source: item.source === "thingiverse" ? "thingiverse" : "licensed",
+    source,
     license: item.licenseLabel ?? "Lisans bilgisi bekleniyor",
     permission: reviewState,
     thumbnailUrl: item.thumbnailUrl,
+    automaticManufacturingAllowed: item.automaticManufacturingAllowed,
+    verified: item.isPurchasable,
   };
 }
 
@@ -67,6 +78,9 @@ export function UnifiedModelDiscovery({ query }: { query: string }) {
   const [error, setError] = useState<string | null>(null);
   const [blocked, setBlocked] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const modelIds = useFavoritesStore((state) => state.modelIds);
+  const toggleModel = useFavoritesStore((state) => state.toggleModel);
+  const hasHydrated = useFavoritesStore((state) => state.hasHydrated);
 
   const cards = useMemo(() => items.map(toCard), [items]);
 
@@ -198,7 +212,17 @@ export function UnifiedModelDiscovery({ query }: { query: string }) {
       >
         {cards.map((model) => (
           <StaggerItem as="li" key={model.id}>
-            <ModelCard model={model} />
+            <ModelCard
+              model={model}
+              isFavorite={hasHydrated && modelIds.includes(model.id)}
+              onFavorite={() => {
+                const next = !modelIds.includes(model.id);
+                toggleModel(model.id);
+                announceStatus(
+                  next ? `${model.name} kaydedildi.` : `${model.name} kayıtlardan çıkarıldı.`,
+                );
+              }}
+            />
           </StaggerItem>
         ))}
       </StaggerGrid>

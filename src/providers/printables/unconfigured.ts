@@ -24,7 +24,7 @@ export function printablesCapabilities() {
     discovery: false,
     configured: false,
     statusMessage:
-      "Printables resmi self-service API sunmuyor; Prusa ile partnerlik veya kullanım koşulları onayı gerekir.",
+      "Yönlendirmeli arama · ücretsiz · API bağlantısı yok. Sonuçlar Printables üzerinde açılır.",
   };
 }
 

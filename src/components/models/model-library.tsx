@@ -1,137 +1,629 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import type { Route } from "next";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 
 import { FoundryGrid } from "@/components/brand/foundry-grid";
-import { octoDemoModels } from "@/components/content/content-data";
 import { EmptyState } from "@/components/feedback/empty-state";
-import { ModelCard } from "@/components/models/model-card";
-import type { ModelCardData } from "@/components/models/model-card";
 import {
-  ModelLibraryState,
-  ModelLibraryStateGrid,
-} from "@/components/models/model-library-state";
-import { ThingiverseDiscovery } from "@/components/models/thingiverse-discovery";
-import { UnifiedModelDiscovery } from "@/components/models/unified-model-discovery";
-import type { ModelSource } from "@/components/models/model-source-badge";
-import { RevealHeading } from "@/components/motion/reveal-words";
+  CuratedCatalogCard,
+  type CuratedCatalogCardData,
+} from "@/components/models/curated-catalog-card";
+import { ExternalModelPriceModal } from "@/components/models/external-model-price-modal";
+import { ModelLibraryState } from "@/components/models/model-library-state";
+import {
+  ThingiverseLibraryCard,
+  type ThingiverseLibraryCardData,
+} from "@/components/models/thingiverse-library-card";
 import { StaggerGrid, StaggerItem } from "@/components/motion/stagger-grid";
-import { siteConfig } from "@/config/site";
+import type { CuratedModelRecord } from "@/domain/curated-models/types";
+import { platformLabel } from "@/domain/curated-models/types";
+import {
+  labelForSourceType,
+  readExternalQuoteContext,
+  sourceTypeFromPlatform,
+  type ExternalQuoteModelContext,
+} from "@/lib/models/external-quote-context";
+import type {
+  UnifiedDiscoveryResult,
+  UnifiedSearchPayload,
+} from "@/lib/models/unified-discovery";
 import { announceStatus } from "@/lib/motion";
-import { useFavoritesStore } from "@/stores/favorites-store";
-import { isDevelopmentDemoMode } from "@/lib/env";
 import { cn } from "@/lib/utils";
+import { THINGIVERSE_CATEGORY_LABELS } from "@/providers/thingiverse/categories";
 
-const trending = ["vazo", "masaüstü", "aydınlatma", "heykelsi"] as const;
+const trending = [
+  "figür",
+  "telefon tutucu",
+  "vazo",
+  "masaüstü düzenleyici",
+] as const;
 
-const sourceTabs: Array<{ id: ModelSource | "all"; label: string; tone: string }> = [
-  { id: "all", label: "Tümü", tone: "bg-light-text text-dark-text" },
-  { id: "owned", label: siteConfig.collectionLabel, tone: "bg-cobalt text-light-text" },
-  { id: "licensed", label: "Lisanslı Tasarımcılar", tone: "bg-coral text-light-text" },
-  { id: "thingiverse", label: "Thingiverse", tone: "bg-neutral text-dark-text" },
-];
+type LibrarySource = "all" | "owned" | "curated" | "thingiverse";
 
-function toCards(): ModelCardData[] {
-  if (!isDevelopmentDemoMode) {
-    return [];
-  }
-  return octoDemoModels.map((model) => ({
-    id: model.externalId,
-    href: `/hazir-modeller/octo-demo/${model.externalId}` as Route,
-    name: model.name,
-    creator: siteConfig.studioLabel,
-    category: model.category,
-    source: "owned",
-    license: "Demo · lisans yok",
-    permission: "unverified",
-  }));
+const SEARCH_DEBOUNCE_MS = 400;
+
+function toCard(model: CuratedModelRecord): CuratedCatalogCardData {
+  return {
+    id: model.id,
+    slug: model.slug,
+    titleTr: model.titleTr,
+    categoryLabel: model.categoryLabel,
+    listingKind: model.listingKind,
+    previewImageUrl: model.previewImageUrl,
+    imageAlt: model.imageAlt,
+    authorName: model.authorName,
+    platformType: model.platformType,
+    platformLabel: platformLabel(model.platformType),
+    sourceUrl: model.sourceUrl,
+    hasProductionFile: Boolean(model.downloadUrl),
+    licenseName: model.licenseVerified ? model.licenseCode : null,
+    licenseVerified: model.licenseVerified,
+    attribution: model.attributionText,
+  };
 }
 
-export function ModelLibrary() {
+function parseSource(
+  raw: string | null,
+  communityEnabled: boolean,
+): LibrarySource {
+  if (raw === "owned") return "owned";
+  if (raw === "curated") return "curated";
+  if ((raw === "thingiverse" || raw === "community") && communityEnabled) {
+    return "thingiverse";
+  }
+  if (raw === "web" || raw === "printables") return "all";
+  return "all";
+}
+
+function buildLibrarySearch(next: {
+  query: string;
+  source: LibrarySource;
+  category: string;
+}) {
+  const params = new URLSearchParams();
+  if (next.query.trim()) params.set("q", next.query.trim());
+  if (next.source !== "all") params.set("source", next.source);
+  if (next.category.trim()) params.set("category", next.category.trim());
+  return params;
+}
+
+function cacheKey(
+  query: string,
+  source: LibrarySource,
+  category: string,
+  page = 1,
+) {
+  return `${source}::${category}::${query.trim().toLocaleLowerCase("tr-TR")}::p${page}`;
+}
+
+function curatedToQuoteContext(
+  model: CuratedCatalogCardData,
+): ExternalQuoteModelContext {
+  return {
+    externalModelId: model.id,
+    sourceType: sourceTypeFromPlatform(model.platformType ?? "other"),
+    sourceUrl: model.sourceUrl ?? "",
+    title: model.titleTr,
+    categoryLabel: model.categoryLabel,
+    previewImageUrl: model.previewImageUrl,
+    imageAlt: model.imageAlt,
+    attribution: model.attribution ?? null,
+    licenseName: model.licenseVerified ? model.licenseName ?? null : null,
+    licenseVerified: Boolean(model.licenseVerified),
+    platformLabel: model.platformLabel ?? labelForSourceType("other"),
+    slug: model.slug,
+  };
+}
+
+function thingiverseToQuoteContext(
+  model: ThingiverseLibraryCardData,
+): ExternalQuoteModelContext {
+  return {
+    externalModelId: model.id,
+    sourceType: "thingiverse",
+    sourceUrl: model.sourceUrl,
+    title: model.title,
+    categoryLabel: model.categoryLabel,
+    previewImageUrl: model.thumbnailUrl ?? null,
+    imageAlt: model.title,
+    attribution: model.attributionText ?? null,
+    licenseName: model.licenseLabel ?? null,
+    licenseVerified: Boolean(model.pricingAllowed),
+    platformLabel: "Thingiverse",
+    slug: null,
+  };
+}
+
+function mergeUnique(
+  existing: UnifiedDiscoveryResult[],
+  incoming: UnifiedDiscoveryResult[],
+) {
+  const seen = new Set(existing.map((item) => `${item.kind}-${item.id}`));
+  const merged = [...existing];
+  for (const item of incoming) {
+    const key = `${item.kind}-${item.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(item);
+  }
+  return merged;
+}
+
+function normalizeModels(raw: unknown): UnifiedDiscoveryResult[] {
+  if (!Array.isArray(raw)) return [];
+  const out: UnifiedDiscoveryResult[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as Record<string, unknown>;
+    if (row.kind === "thingiverse" && typeof row.id === "string") {
+      out.push(item as UnifiedDiscoveryResult);
+      continue;
+    }
+    if (row.kind === "curated" && typeof row.id === "string") {
+      out.push(item as UnifiedDiscoveryResult);
+    }
+  }
+  return out;
+}
+
+const ModelResultsGrid = memo(function ModelResultsGrid({
+  models,
+  onExternalQuote,
+  onThingiverseQuote,
+  ctaRefs,
+}: {
+  models: UnifiedDiscoveryResult[];
+  onExternalQuote: (model: CuratedCatalogCardData) => void;
+  onThingiverseQuote: (model: ThingiverseLibraryCardData) => void;
+  ctaRefs: React.MutableRefObject<Map<string, HTMLButtonElement>>;
+}) {
+  return (
+    <StaggerGrid
+      as="ul"
+      data-model-results=""
+      className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+    >
+      {models.map((model) => (
+        <StaggerItem as="li" key={`${model.kind}-${model.id}`} className="h-full">
+          {model.kind === "curated" ? (
+            <CuratedCatalogCard
+              model={model}
+              onExternalQuote={onExternalQuote}
+              ref={(node) => {
+                if (node) ctaRefs.current.set(`curated-${model.id}`, node);
+                else ctaRefs.current.delete(`curated-${model.id}`);
+              }}
+            />
+          ) : (
+            <ThingiverseLibraryCard
+              model={model}
+              onQuote={onThingiverseQuote}
+              ref={(node) => {
+                if (node) ctaRefs.current.set(`tv-${model.id}`, node);
+                else ctaRefs.current.delete(`tv-${model.id}`);
+              }}
+            />
+          )}
+        </StaggerItem>
+      ))}
+    </StaggerGrid>
+  );
+});
+
+function SkeletonGrid() {
+  return (
+    <ul
+      className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+      aria-hidden="true"
+    >
+      {Array.from({ length: 8 }).map((_, index) => (
+        <li key={index} className="animate-pulse">
+          <div className="aspect-[4/5] rounded-lg bg-white/10" />
+          <div className="mt-3 h-3 w-1/3 rounded bg-white/10" />
+          <div className="mt-2 h-4 w-4/5 rounded bg-white/10" />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function ModelLibrary({
+  curatedModels = [],
+  thingiverseEnabled = false,
+}: {
+  curatedModels?: CuratedModelRecord[];
+  thingiverseEnabled?: boolean;
+}) {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const urlQuery = searchParams.get("q") ?? "";
-  const [query, setQuery] = useState(urlQuery);
-  const [source, setSource] = useState<ModelSource | "all">("all");
-  const [category, setCategory] = useState("");
-  const modelIds = useFavoritesStore((state) => state.modelIds);
-  const toggleModel = useFavoritesStore((state) => state.toggleModel);
-  const hasHydrated = useFavoritesStore((state) => state.hasHydrated);
 
-  const effectiveQuery = urlQuery || query;
+  const initialCards = useMemo<UnifiedDiscoveryResult[]>(
+    () => curatedModels.map((model) => ({ kind: "curated" as const, ...toCard(model) })),
+    [curatedModels],
+  );
 
-  const cards = useMemo(() => toCards(), []);
-  const categories = [...new Set(cards.map((card) => card.category))];
+  /** SSR may lag env; API can promote community tab at runtime. */
+  const [communityFromApi, setCommunityFromApi] = useState(false);
+  const communityEnabled = thingiverseEnabled || communityFromApi;
 
-  const visible = cards.filter((card) => {
-    const matchesQuery =
-      !query ||
-      `${card.name} ${card.category} ${card.creator}`
-        .toLocaleLowerCase("tr-TR")
-        .includes(query.toLocaleLowerCase("tr-TR"));
-    const matchesSource = source === "all" || card.source === source;
-    const matchesCategory = !category || card.category === category;
-    return matchesQuery && matchesSource && matchesCategory;
-  });
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  const [committedQuery, setCommittedQuery] = useState(
+    () => (searchParams.get("q") ?? "").trim(),
+  );
+  const [source, setSource] = useState<LibrarySource>(() =>
+    parseSource(searchParams.get("source"), thingiverseEnabled),
+  );
+  const [category, setCategory] = useState(
+    () => searchParams.get("category") ?? "",
+  );
+  const [results, setResults] = useState<UnifiedDiscoveryResult[]>(initialCards);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [softError, setSoftError] = useState<string | null>(null);
+  const [modalModel, setModalModel] = useState<ExternalQuoteModelContext | null>(
+    null,
+  );
+  const [modalOpen, setModalOpen] = useState(false);
+  const [returnFocusKey, setReturnFocusKey] = useState<string | null>(null);
+  const cacheRef = useRef(new Map<string, UnifiedSearchPayload>());
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ctaRefs = useRef(new Map<string, HTMLButtonElement>());
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const requestSeq = useRef(0);
+
+  const sourceTabs = useMemo(() => {
+    const tabs: Array<{ id: LibrarySource; label: string; tone: string }> = [
+      { id: "all", label: "Tümü", tone: "bg-light-text text-dark-text" },
+      {
+        id: "owned",
+        label: "Baskı Çiftliği modelleri",
+        tone: "bg-cobalt text-light-text",
+      },
+      {
+        id: "curated",
+        label: "Küratörlü modeller",
+        tone: "bg-orange text-midnight",
+      },
+    ];
+    if (communityEnabled) {
+      tabs.push({
+        id: "thingiverse",
+        label: "Topluluk modelleri",
+        tone: "bg-neutral text-dark-text",
+      });
+    }
+    return tabs;
+  }, [communityEnabled]);
+
+  const categories = useMemo(() => {
+    if (communityEnabled && (source === "thingiverse" || source === "all")) {
+      return [...THINGIVERSE_CATEGORY_LABELS];
+    }
+    const set = new Set<string>();
+    for (const model of curatedModels) {
+      if (model.categoryLabel) set.add(model.categoryLabel);
+    }
+    for (const model of results) {
+      if (model.kind === "curated" && model.categoryLabel) {
+        set.add(model.categoryLabel);
+      }
+    }
+    return [...set].sort((a, b) => a.localeCompare(b, "tr"));
+  }, [curatedModels, results, source, communityEnabled]);
+
+  useEffect(() => {
+    const restored = readExternalQuoteContext();
+    if (!restored?.sourceUrl || !restored.title) return;
+    queueMicrotask(() => {
+      setModalModel(restored);
+      setModalOpen(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    function onPopState() {
+      const params = new URLSearchParams(window.location.search);
+      setQuery(params.get("q") ?? "");
+      setCommittedQuery((params.get("q") ?? "").trim());
+      setSource(parseSource(params.get("source"), communityEnabled));
+      setCategory(params.get("category") ?? "");
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [communityEnabled]);
+
+  useEffect(() => {
+    const key = cacheKey(committedQuery, source, category, 1);
+    const cached = cacheRef.current.get(key);
+    if (cached) {
+      const models = normalizeModels(cached.models);
+      setResults(models);
+      setPage(cached.page ?? 1);
+      setHasMore(Boolean(cached.hasMore));
+      setSoftError(cached.softError ?? null);
+      if (cached.thingiverseConnected) setCommunityFromApi(true);
+      setLoading(false);
+      return;
+    }
+
+    const seq = ++requestSeq.current;
+    const controller = new AbortController();
+    setLoading(true);
+    setSoftError(null);
+    setPage(1);
+    setHasMore(false);
+
+    const params = new URLSearchParams();
+    if (committedQuery.trim()) params.set("q", committedQuery.trim());
+    if (source !== "all") params.set("source", source);
+    if (category.trim()) params.set("category", category.trim());
+    params.set("page", "1");
+
+    void fetch(`/api/hazir-modeller/search?${params}`, {
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Arama başarısız");
+        return (await response.json()) as UnifiedSearchPayload;
+      })
+      .then((payload) => {
+        if (seq !== requestSeq.current) return;
+        const models = normalizeModels(payload.models);
+        const next: UnifiedSearchPayload = {
+          models,
+          page: payload.page ?? 1,
+          hasMore: Boolean(payload.hasMore),
+          softError: payload.softError,
+          thingiverseConnected: payload.thingiverseConnected,
+        };
+        cacheRef.current.set(key, next);
+        setResults(models);
+        setPage(next.page ?? 1);
+        setHasMore(Boolean(next.hasMore));
+        setSoftError(next.softError ?? null);
+        if (payload.thingiverseConnected) setCommunityFromApi(true);
+      })
+      .catch((error: Error) => {
+        if (error.name === "AbortError") return;
+        if (seq !== requestSeq.current) return;
+        // Keep curated seed when community fails on the unified tab.
+        if (source === "all" || source === "owned" || source === "curated") {
+          const fallback =
+            source === "all"
+              ? initialCards
+              : initialCards.filter((item) => {
+                  if (item.kind !== "curated") return false;
+                  if (source === "owned") return item.listingKind === "studio";
+                  return item.listingKind === "curated_external";
+                });
+          const filtered = committedQuery
+            ? fallback.filter((item) => {
+                if (item.kind !== "curated") return false;
+                const hay = `${item.titleTr} ${item.categoryLabel}`.toLocaleLowerCase(
+                  "tr-TR",
+                );
+                return hay.includes(committedQuery.toLocaleLowerCase("tr-TR"));
+              })
+            : fallback;
+          setResults(filtered);
+        } else {
+          setResults([]);
+        }
+        setHasMore(false);
+        setSoftError(
+          "Topluluk araması şu an tamamlanamadı. İç katalog sonuçları korunuyor.",
+        );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted && seq === requestSeq.current) {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [committedQuery, source, category, initialCards]);
+
+  async function loadMore() {
+    if (!hasMore || loadingMore || source !== "thingiverse") return;
+    const nextPage = page + 1;
+    const key = cacheKey(committedQuery, source, category, nextPage);
+    const cached = cacheRef.current.get(key);
+    if (cached) {
+      setResults((prev) => mergeUnique(prev, normalizeModels(cached.models)));
+      setPage(cached.page ?? nextPage);
+      setHasMore(Boolean(cached.hasMore));
+      return;
+    }
+
+    setLoadingMore(true);
+    const params = new URLSearchParams();
+    if (committedQuery.trim()) params.set("q", committedQuery.trim());
+    params.set("source", "thingiverse");
+    if (category.trim()) params.set("category", category.trim());
+    params.set("page", String(nextPage));
+
+    try {
+      const response = await fetch(`/api/hazir-modeller/search?${params}`, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      if (!response.ok) throw new Error("Sayfa yüklenemedi");
+      const payload = (await response.json()) as UnifiedSearchPayload;
+      const models = normalizeModels(payload.models);
+      const next: UnifiedSearchPayload = {
+        models,
+        page: payload.page ?? nextPage,
+        hasMore: Boolean(payload.hasMore),
+        softError: payload.softError,
+      };
+      cacheRef.current.set(key, next);
+      setResults((prev) => mergeUnique(prev, models));
+      setPage(next.page ?? nextPage);
+      setHasMore(Boolean(next.hasMore));
+      if (next.softError) setSoftError(next.softError);
+      if (payload.thingiverseConnected) setCommunityFromApi(true);
+    } catch {
+      setSoftError("Daha fazla model yüklenemedi. Kısa süre sonra yeniden deneyin.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  function persistHistory(next: {
+    query: string;
+    source: LibrarySource;
+    category: string;
+  }) {
+    const params = buildLibrarySearch(next);
+    const target = params.toString() ? `${pathname}?${params}` : pathname;
+    window.history.replaceState(null, "", target);
+  }
+
+  function commitSearch(
+    nextQuery = query,
+    nextSource = source,
+    nextCategory = category,
+  ) {
+    const trimmed = nextQuery.trim();
+    setCommittedQuery(trimmed);
+    // Clear stale category filters on fresh text search so community hits survive.
+    const categoryForSearch = trimmed ? nextCategory : nextCategory;
+    persistHistory({
+      query: trimmed,
+      source: nextSource,
+      category: categoryForSearch,
+    });
+    announceStatus(
+      trimmed ? `“${trimmed}” için arama yapıldı.` : "Arama temizlendi.",
+    );
+  }
+
+  function openCuratedQuote(model: CuratedCatalogCardData) {
+    if (!model.sourceUrl) return;
+    setReturnFocusKey(`curated-${model.id}`);
+    returnFocusRef.current = ctaRefs.current.get(`curated-${model.id}`) ?? null;
+    setModalModel(curatedToQuoteContext(model));
+    setModalOpen(true);
+  }
+
+  function openThingiverseQuote(model: ThingiverseLibraryCardData) {
+    if (!model.pricingAllowed) return;
+    setReturnFocusKey(`tv-${model.id}`);
+    returnFocusRef.current = ctaRefs.current.get(`tv-${model.id}`) ?? null;
+    setModalModel(thingiverseToQuoteContext(model));
+    setModalOpen(true);
+  }
+
+  const showEmptyQueryMiss =
+    !loading && Boolean(committedQuery) && results.length === 0 && !softError;
+  const showSoftEmpty =
+    !loading && Boolean(committedQuery) && results.length === 0 && Boolean(softError);
 
   return (
-    <div className="relative text-light-text">
-      <FoundryGrid variant="blueprint" className="opacity-40" />
-      <header className="relative overflow-hidden py-10 sm:py-14">
-        <FoundryGrid variant="fade" className="opacity-70" />
-        <div className="shell relative">
+    <div
+      className="relative text-light-text"
+      data-model-library-root
+      data-community-enabled={communityEnabled ? "true" : "false"}
+    >
+      <FoundryGrid variant="blueprint" className="pointer-events-none opacity-30" />
+      <div className="shell relative py-6 sm:py-8" data-model-library>
+        <header className="max-w-3xl">
           <p className="eyebrow">Hazır modeller</p>
-          <RevealHeading
-            as="h1"
-            text="Ne üretmek istiyorsun?"
-            className="display-title stack-title max-w-[16ch]"
-          />
-          <label
-            data-motion-state="visible"
-            className="relative mt-8 block max-w-2xl"
+          <h1 className="mt-2 font-heading text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
+            Ne üretmek istiyorsun?
+          </h1>
+
+          <form
+            className="mt-5 flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-stretch"
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (debounceRef.current) clearTimeout(debounceRef.current);
+              // Text search from the unified pool unless user pinned a tab.
+              commitSearch(query, source === "owned" || source === "curated" ? source : source, category);
+            }}
           >
-            <span className="sr-only">Model ara</span>
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-light"
-            />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Model, kategori veya kullanım ara"
-              className="motion-search h-14 w-full rounded-md border border-white/15 bg-white/8 pr-4 pl-12 text-base text-light-text outline-none placeholder:text-muted-light"
-            />
-          </label>
-          <p className="mt-4 text-sm text-muted-light">Popüler aramalar</p>
-          <div className="mt-2 flex flex-wrap gap-2">
+            <label className="relative block min-w-0 flex-1">
+              <span className="sr-only">Model ara</span>
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-muted-light"
+              />
+              <input
+                data-model-search-input
+                value={query}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setQuery(value);
+                  if (debounceRef.current) clearTimeout(debounceRef.current);
+                  debounceRef.current = setTimeout(() => {
+                    commitSearch(value, source, category);
+                  }, SEARCH_DEBOUNCE_MS);
+                }}
+                placeholder="Örn. figür, telefon tutucu, vazo"
+                className="h-12 w-full rounded-md border border-white/15 bg-white/8 pr-4 pl-11 text-base text-light-text outline-none placeholder:text-muted-light focus-visible:ring-2 focus-visible:ring-coral/60"
+                autoComplete="off"
+                enterKeyHint="search"
+              />
+            </label>
+            <button
+              type="submit"
+              className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-md bg-coral px-5 text-sm font-semibold text-light-text"
+            >
+              Ara
+            </button>
+          </form>
+
+          <p className="mt-3 text-xs text-muted-light">Popüler aramalar</p>
+          <div className="mt-2 flex max-w-full gap-2 overflow-x-auto pb-1">
             {trending.map((term) => (
               <button
                 key={term}
                 type="button"
-                onClick={() => setQuery(term)}
-                className="min-h-11 rounded-md border border-white/15 px-3 text-sm"
+                onClick={() => {
+                  if (debounceRef.current) clearTimeout(debounceRef.current);
+                  setQuery(term);
+                  setSource("all");
+                  setCategory("");
+                  setCommittedQuery(term);
+                  persistHistory({ query: term, source: "all", category: "" });
+                }}
+                className="min-h-10 shrink-0 rounded-md border border-white/15 px-3 text-sm"
               >
                 {term}
               </button>
             ))}
           </div>
-        </div>
-      </header>
+        </header>
 
-      <section className="shell relative py-8 sm:py-10" data-visual-landmark data-model-library>
-        <div role="tablist" aria-label="Model kaynakları">
-          <StaggerGrid className="flex max-w-full min-w-0 gap-2 overflow-x-auto pb-2">
+        <div
+          role="tablist"
+          aria-label="Model kaynakları"
+          className="mt-5 flex max-w-full gap-2 overflow-x-auto pb-1"
+        >
           {sourceTabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
               role="tab"
+              data-library-source={tab.id}
               aria-selected={source === tab.id}
-              onClick={() => setSource(tab.id)}
+              onClick={() => {
+                setSource(tab.id);
+                persistHistory({
+                  query: committedQuery,
+                  source: tab.id,
+                  category,
+                });
+              }}
               className={cn(
-                "min-h-11 shrink-0 rounded-md px-4 text-sm font-semibold",
+                "min-h-10 shrink-0 rounded-md px-3.5 text-sm font-semibold",
                 source === tab.id
                   ? tab.tone
                   : "border border-white/15 text-light-text",
@@ -140,118 +632,127 @@ export function ModelLibrary() {
               {tab.label}
             </button>
           ))}
-          </StaggerGrid>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          {categories.length > 0 ? (
-            <>
-          <button
-            type="button"
-            onClick={() => setCategory("")}
-            className={cn(
-              "min-h-11 rounded-md px-3 text-sm",
-              !category ? "bg-white/12 font-semibold" : "border border-white/15",
-            )}
-          >
-            Tüm kategoriler
-          </button>
-          {categories.map((item) => (
+        {categories.length > 0 ? (
+          <div className="mt-3 flex max-w-full gap-2 overflow-x-auto pb-1">
             <button
-              key={item}
               type="button"
-              onClick={() => setCategory(item)}
+              onClick={() => {
+                setCategory("");
+                persistHistory({
+                  query: committedQuery,
+                  source,
+                  category: "",
+                });
+              }}
               className={cn(
-                "min-h-11 rounded-md px-3 text-sm",
-                category === item
-                  ? "bg-white/12 font-semibold"
-                  : "border border-white/15",
+                "min-h-9 shrink-0 rounded-md px-3 text-xs font-semibold",
+                !category
+                  ? "bg-white/15"
+                  : "border border-white/15 text-muted-light",
               )}
             >
-              {item}
+              Tüm kategoriler
             </button>
-          ))}
-            </>
-          ) : null}
-        </div>
-
-        {source === "thingiverse" ? <ThingiverseDiscovery /> : null}
-
-        {source === "all" && effectiveQuery.trim() ? (
-          <UnifiedModelDiscovery query={effectiveQuery} />
-        ) : null}
-
-        {source === "licensed" ? (
-          <section className="mt-10 space-y-6">
-            <EmptyState
-              compact
-              icon={<Search aria-hidden="true" className="size-5" />}
-              title="Lisanslı tasarımcı kataloğu henüz bağlı değil"
-              description="Doğrulanmış ticari izinli modeller burada ayrı bir kaynak olarak listelenecek. Şu an satın alınabilir harici kayıt yok."
-            />
-            <ModelLibraryStateGrid
-              ids={["permission-review", "verified", "not-permitted", "missing-file"]}
-            />
-          </section>
-        ) : null}
-
-        {source === "all" || source === "owned" ? (
-          !effectiveQuery.trim() ? (
-          visible.length > 0 ? (
-            <StaggerGrid
-              as="ul"
-              data-model-results=""
-              className="mt-8 grid gap-6 sm:grid-cols-2 sm:gap-8 xl:grid-cols-3"
-            >
-              {visible.map((model) => (
-                <StaggerItem as="li" key={model.id}>
-                  <ModelCard
-                    model={model}
-                    isFavorite={hasHydrated && modelIds.includes(model.id)}
-                    onFavorite={() => {
-                      const next = !modelIds.includes(model.id);
-                      toggleModel(model.id);
-                      announceStatus(
-                        next
-                          ? `${model.name} kaydedildi.`
-                          : `${model.name} kayıtlardan çıkarıldı.`,
-                      );
-                    }}
-                  />
-                </StaggerItem>
-              ))}
-            </StaggerGrid>
-          ) : (
-            <EmptyState
-              icon={<Search aria-hidden="true" className="size-5" />}
-              title={
-                cards.length === 0
-                  ? "Hazır koleksiyon henüz yayınlanmadı"
-                  : "Eşleşen model yok"
-              }
-              description={
-                cards.length === 0
-                  ? "Stüdyo modelleri yayınlandığında burada görünür. Geliştirme demosu production’da listelenmez."
-                  : "Aramayı veya kategori süzgecini sadeleştirmeyi dene."
-              }
-            />
-          )
-          ) : null
-        ) : null}
-
-        {source === "all" ? (
-          <p className="mt-10 text-sm text-muted-light">
-            Başlangıç fiyatı yalnızca doğrulanmış ticari izin ve gerçek teklif
-            olduğunda gösterilir. Demo kayıtlarda fiyat yoktur.
-          </p>
-        ) : null}
-
-        {source === "owned" ? (
-          <div className="mt-10">
-            <ModelLibraryState id="missing-file" />
+            {categories.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => {
+                  setCategory(item);
+                  persistHistory({
+                    query: committedQuery,
+                    source,
+                    category: item,
+                  });
+                }}
+                className={cn(
+                  "min-h-9 shrink-0 rounded-md px-3 text-xs font-semibold",
+                  category === item
+                    ? "bg-white/15"
+                    : "border border-white/15 text-muted-light",
+                )}
+              >
+                {item}
+              </button>
+            ))}
           </div>
         ) : null}
-      </section>
+
+        <div className="mt-5 space-y-5" aria-busy={loading}>
+          {softError ? (
+            <p
+              role="status"
+              data-community-soft-error=""
+              className="rounded-xl border border-amber-400/30 bg-amber-400/5 px-4 py-3 text-sm text-amber-50"
+            >
+              {softError}
+            </p>
+          ) : null}
+          {loading && results.length === 0 ? <SkeletonGrid /> : null}
+          {results.length > 0 ? (
+            <ModelResultsGrid
+              models={results}
+              onExternalQuote={openCuratedQuote}
+              onThingiverseQuote={openThingiverseQuote}
+              ctaRefs={ctaRefs}
+            />
+          ) : showEmptyQueryMiss || showSoftEmpty ? (
+            <div
+              className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
+              data-search-empty=""
+            >
+              <p className="text-sm font-semibold">
+                {showSoftEmpty
+                  ? "Topluluk sonuçları geçici olarak alınamadı."
+                  : "Sonuç bulunamadı."}
+              </p>
+              <p className="mt-1 text-sm text-muted-light">
+                Aramayı düzenleyebilir veya kendi modelini yükleyebilirsin.
+              </p>
+            </div>
+          ) : !loading ? (
+            <EmptyState
+              icon={<Search aria-hidden="true" className="size-5" />}
+              title="Keşfetmeye başla"
+              description="Popüler bir arama seç veya kendi dosyanı yükle. Topluluk modelleri bağlantı açıkken burada birleşir."
+            />
+          ) : null}
+
+          {source === "thingiverse" && hasMore ? (
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={() => void loadMore()}
+                disabled={loadingMore}
+                className="inline-flex min-h-11 items-center rounded-md border border-white/20 px-5 text-sm font-semibold disabled:opacity-50"
+              >
+                {loadingMore ? "Yükleniyor…" : "Daha fazla yükle"}
+              </button>
+            </div>
+          ) : null}
+
+          {source === "owned" ? (
+            <div className="pt-2">
+              <ModelLibraryState id="missing-file" />
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <ExternalModelPriceModal
+        open={modalOpen}
+        onOpenChange={(open) => {
+          setModalOpen(open);
+          if (!open && returnFocusKey) {
+            returnFocusRef.current =
+              ctaRefs.current.get(returnFocusKey) ?? returnFocusRef.current;
+          }
+        }}
+        model={modalModel}
+        returnFocusRef={returnFocusRef}
+      />
     </div>
   );
 }

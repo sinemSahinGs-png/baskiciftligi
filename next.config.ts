@@ -6,7 +6,7 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.supabase.co https://cdn.thingiverse.com https://www.thingiverse.com",
+  "img-src 'self' data: blob: https://*.supabase.co https://cdn.thingiverse.com https://resize.thingiverse.com https://www.thingiverse.com",
   "font-src 'self' data:",
   "media-src 'self' blob: https://*.supabase.co",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "cdn.thingiverse.com",
+      },
+      {
+        protocol: "https",
+        hostname: "resize.thingiverse.com",
       },
       {
         protocol: "https",

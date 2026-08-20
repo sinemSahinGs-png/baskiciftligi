@@ -10,9 +10,11 @@ import {
 import {
   getActivePricing,
   getIntegrationStatus,
+  getQuoteJob,
   listPricingConfigs,
   listQuoteJobs,
   savePricingConfig,
+  transitionQuoteJob,
 } from "@/domain/manufacturing/repository";
 import {
   calibratedPricingChecksum,
@@ -27,8 +29,13 @@ import {
   PRICING_FORMULA_NOTES,
 } from "@/domain/manufacturing/pricing-audit";
 import { DEVELOPMENT_PRINTER } from "@/domain/manufacturing/profiles";
+import { JOB_MAX_ATTEMPTS } from "@/domain/manufacturing/types";
 import { getThingiverseConfigStatus } from "@/providers/thingiverse/provider";
 import { slicerWorkerUrl } from "@/lib/manufacturing/paths";
+import {
+  computeWorkerOps,
+  type WorkerHealthPayload,
+} from "@/lib/manufacturing/worker-ops";
 
 export async function GET() {
   const viewer = await getViewer();
@@ -42,6 +49,7 @@ export async function GET() {
   const showInternal = canViewInternalCost(viewer.role);
   const canCalibrate = canCalibratePricing(viewer.role, viewer.isDemo);
   let workerOnline = false;
+  let workerHealth: WorkerHealthPayload | null = null;
   const workerUrl = slicerWorkerUrl();
   if (workerUrl) {
     try {
@@ -50,13 +58,24 @@ export async function GET() {
         signal: AbortSignal.timeout(1500),
       });
       workerOnline = health.ok;
+      if (health.ok) {
+        workerHealth = (await health.json()) as WorkerHealthPayload;
+      }
     } catch {
       workerOnline = false;
     }
   }
+  const workerOps = computeWorkerOps({
+    jobs,
+    integration,
+    health: workerHealth,
+    healthReachable: workerOnline,
+  });
   return NextResponse.json({
     thingiverse: getThingiverseConfigStatus(),
     workerOnline,
+    workerOps,
+    workerUrlConfigured: Boolean(workerUrl),
     printer: DEVELOPMENT_PRINTER,
     jobs: jobs.slice(0, 50).map((job) => ({
       id: job.id,
@@ -144,6 +163,43 @@ const bodySchema = z.object({
   calibration: calibrationSchema,
   activate: z.boolean().optional(),
 });
+
+const retryBodySchema = z.object({
+  jobId: z.string().uuid(),
+});
+
+export async function PATCH(request: Request) {
+  const viewer = await getViewer();
+  if (!viewer || !canViewAdminCatalog(viewer.role)) {
+    return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
+  }
+  const parsed = retryBodySchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Geçersiz iş kimliği." }, { status: 422 });
+  }
+  const job = await getQuoteJob(parsed.data.jobId);
+  if (!job) {
+    return NextResponse.json({ error: "İş bulunamadı." }, { status: 404 });
+  }
+  if (job.state !== "failed" && job.state !== "needs_review") {
+    return NextResponse.json(
+      { error: "Yalnız başarısız veya inceleme bekleyen işler yenilenir." },
+      { status: 409 },
+    );
+  }
+  if (job.attemptCount >= JOB_MAX_ATTEMPTS) {
+    return NextResponse.json({ error: "Yeniden deneme hakkı doldu." }, { status: 409 });
+  }
+  await transitionQuoteJob(job.id, "uploaded", {
+    errorCode: null,
+    errorMessage: null,
+    lockedAt: null,
+    lockedBy: null,
+    quoteId: null,
+    reviewFlags: job.state === "needs_review" ? job.reviewFlags : [],
+  });
+  return NextResponse.json({ ok: true, jobId: job.id });
+}
 
 export async function POST(request: Request) {
   const viewer = await getViewer();

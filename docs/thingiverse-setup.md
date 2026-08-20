@@ -23,16 +23,35 @@
 
 ## Credential ve provider approval
 
-Thingiverse developer application ve gerekli platform/ticari kullanım onayı
-alındıktan sonra server-side secret store'a eklenir:
+Thingiverse developer application oluşturma (güncel):
+
+1. Thingiverse hesabına giriş → https://www.thingiverse.com/apps/create
+2. **Select A Platform:** Web App
+3. **App Name:** Baskı Çiftliği
+4. MakerBot API şartlarını kabul et → **Create & Get App Key**
+5. Ekrandaki **Client ID**, **Client Secret**, **App Token** değerlerini kopyala
+6. Production OAuth kullanıyorsan (şimdilik gerekli değil — App Token yeter):
+   `https://baskiciftligi.com/api/auth/thingiverse/callback`
+7. Vercel → project → Settings → Environment Variables → **Production**:
 
 ```dotenv
 THINGIVERSE_CLIENT_ID=
 THINGIVERSE_CLIENT_SECRET=
-THINGIVERSE_REDIRECT_URI=
 THINGIVERSE_ACCESS_TOKEN=
 THINGIVERSE_API_BASE_URL=https://api.thingiverse.com
+THINGIVERSE_FIXTURE_MODE=false
+# Opsiyonel (OAuth):
+# THINGIVERSE_REDIRECT_URI=https://baskiciftligi.com/api/auth/thingiverse/callback
 ```
+
+Güvenli secret vault yok: token’ı Supabase/DB’ye yazmayın. Yalnızca Vercel
+(veya yerel `.env.local`) environment variable kullanın. Admin formuna token
+kaydetme yoktur. Env değişince Redeploy şarttır. Ardından
+`/admin/entegrasyonlar` → **Bağlantıyı test et**.
+
+**Zorunlu credential:** `THINGIVERSE_ACCESS_TOKEN` (= App Token). Client ID/Secret
+arşiv ve ilerideki OAuth için tutulur; canlı popular/search çağrıları Bearer App
+Token ile yapılır.
 
 Belgelenmiş uç noktalar: `GET /popular?page=`, `GET /search/{term}?page=`,
 `GET /things/{id}`, `GET /things/{id}/images`, `GET /things/{id}/files`.

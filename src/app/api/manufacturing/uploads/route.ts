@@ -102,6 +102,34 @@ export async function POST(request: Request) {
     const storageKey = `${actor.sessionId}/${fileId}/source.${analysis.format}`;
     await writePrivateObject(storageKey, bytes);
     const now = new Date().toISOString();
+
+    const externalModelId = String(form.get("externalModelId") ?? "").slice(0, 120) || null;
+    const sourceTypeRaw = String(form.get("sourceType") ?? "").slice(0, 40);
+    const sourceUrlRaw = String(form.get("sourceUrl") ?? "").trim();
+    const sourceTitle = String(form.get("sourceTitle") ?? "").slice(0, 180) || null;
+    const attribution = String(form.get("attribution") ?? "").slice(0, 500) || null;
+    const licenseVerified = form.get("licenseVerified") === "true";
+    const licenseName = licenseVerified
+      ? String(form.get("licenseName") ?? "").slice(0, 120) || null
+      : null;
+
+    let safeSourceUrl: string | null = null;
+    if (sourceUrlRaw) {
+      const { assertSafeExternalSourceOpenUrl } = await import(
+        "@/lib/models/external-quote-context"
+      );
+      const platformHint =
+        sourceTypeRaw === "printables" ||
+        sourceTypeRaw === "thingiverse" ||
+        sourceTypeRaw === "myminifactory"
+          ? sourceTypeRaw
+          : "other";
+      const check = assertSafeExternalSourceOpenUrl(sourceUrlRaw, platformHint);
+      if (check.ok) {
+        safeSourceUrl = check.canonicalUrl;
+      }
+    }
+
     const file: ManufacturingFileRecord = {
       id: fileId,
       ownerUserId: actor.userId,
@@ -116,19 +144,20 @@ export async function POST(request: Request) {
       rightsConfirmedAt: now,
       provenance: {
         source: "upload",
-        thingId: null,
+        thingId:
+          sourceTypeRaw === "thingiverse" ? externalModelId : null,
         fileId: null,
-        thingTitle: null,
+        thingTitle: sourceTitle,
         creatorUsername: null,
         creatorUrl: null,
-        sourceUrl: null,
-        licenseName: null,
+        sourceUrl: safeSourceUrl,
+        licenseName,
         licenseUrl: null,
-        retrievedAt: null,
+        retrievedAt: safeSourceUrl ? now : null,
         permissionVerdict: null,
         selectedFilename: blob.name.slice(0, 180),
         fileChecksum: sha256Hex(bytes),
-        attributionText: null,
+        attributionText: attribution,
         rightsConfirmedAt: now,
       },
       createdAt: now,

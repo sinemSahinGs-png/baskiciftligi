@@ -1,16 +1,16 @@
 import type { ManufacturingQuoteRecord, QuoteJobRecord, QuoteStatusEvent } from "@/domain/manufacturing/types";
 
 const JOB_COPY: Record<QuoteJobRecord["state"], string> = {
-  created: "Kuyruğa alındı",
+  created: "Sıraya alındı",
   uploading: "Dosya yükleniyor",
-  uploaded: "Dosya kontrol ediliyor",
-  validating: "Dosya kontrol ediliyor",
+  uploaded: "Güvenlik kontrolü",
+  validating: "Güvenlik kontrolü",
   analyzing: "Model analiz ediliyor",
-  slicing: "Model dilimleniyor",
+  slicing: "Dilimleniyor",
   pricing: "Fiyat hazırlanıyor",
-  priced: "Otomatik teklif hazır",
-  needs_review: "Teknik inceleme gerekiyor",
-  failed: "Bu model otomatik olarak fiyatlandırılamadı",
+  priced: "Teklif hazır",
+  needs_review: "Teknik inceleme gerekli",
+  failed: "Analiz başarısız",
   expired: "Teklif süresi doldu",
   cancelled: "İş iptal edildi",
 };

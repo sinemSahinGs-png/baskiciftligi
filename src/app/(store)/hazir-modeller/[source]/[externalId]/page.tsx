@@ -195,6 +195,16 @@ export default async function ExternalModelPage({
     );
   }
 
+  if (source === "baski-ciftligi") {
+    const { getPublishedCuratedModel } = await import("@/domain/curated-models/repository");
+    const { CuratedModelDetail } = await import("@/components/models/curated-model-detail");
+    const model = await getPublishedCuratedModel(externalId);
+    if (!model) {
+      notFound();
+    }
+    return <CuratedModelDetail model={model} />;
+  }
+
   if (source !== "octo-demo") {
     notFound();
   }

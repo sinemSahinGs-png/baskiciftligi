@@ -138,9 +138,9 @@ export async function gatherLaunchReadiness(): Promise<LaunchReadinessSnapshot> 
     workerSecret: Boolean(serverEnv.SLICER_WORKER_SECRET),
     workerUrl: Boolean(slicerWorkerUrl()),
     workerReachable:
-      health.slicerWorker === "configured"
+      health.slicerWorker === "configured" || health.slicerWorker === "degraded"
         ? true
-        : health.slicerWorker === "unreachable"
+        : health.slicerWorker === "unavailable"
           ? false
           : null,
     manufacturingStorage: manufacturingPersistenceReady(),

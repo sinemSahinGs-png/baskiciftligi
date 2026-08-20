@@ -1,9 +1,8 @@
 import "server-only";
 
-import { buildAttributionText, normalizeLicense } from "@/domain/manufacturing/licenses";
+import { buildAttributionText, canAutomaticallyQuoteLicense, normalizeLicense } from "@/domain/manufacturing/licenses";
 import { decideExternalModelPurchase } from "@/domain/external-models/permissions";
 import { getExternalPermission } from "@/domain/external-models/permission-store";
-import { getPermissionReview } from "@/domain/manufacturing/repository";
 import { parseStrictEnvBoolean } from "@/lib/env-boolean";
 import { serverEnv } from "@/lib/env.server";
 import type {
@@ -21,6 +20,7 @@ import {
   searchThings,
   ThingiverseApiError,
 } from "@/providers/thingiverse/client";
+import { mapThingiverseCategory } from "@/providers/thingiverse/categories";
 import {
   identifyThingiverseUrl,
   resolveThingiverseConfigStatus,
@@ -74,20 +74,21 @@ async function mapThing(thing: ThingiverseThing): Promise<ExternalModelSummary |
   }
   const externalId = String(thing.id);
   const stored = getExternalPermission(source, externalId);
-  const review = await getPermissionReview(externalId).catch(() => null);
-  const licenseVerdict = review?.verdict ?? normalizeLicense(thing.license);
+  // Browse/list path: avoid per-item DB review (N parallel queries stall /hazir-modeller).
+  const licenseVerdict = normalizeLicense(thing.license);
   const licenseLabel = thing.license || "Lisans API’de belirtilmedi";
-  const permission = stored?.status ?? (licenseVerdict.automaticManufacturingAllowed
+  const pricingAllowed = canAutomaticallyQuoteLicense(licenseVerdict);
+  const permission = stored?.status ?? (pricingAllowed
     ? "discovery_only"
     : licenseVerdict.commercialUse === "prohibited"
       ? "rejected"
       : "license_review");
   const purchase = decideExternalModelPurchase({
-    status: stored?.status ?? (licenseVerdict.automaticManufacturingAllowed ? "permission_verified" : permission),
-    verifiedAt: stored?.verifiedAt ?? (licenseVerdict.automaticManufacturingAllowed ? new Date().toISOString() : null),
+    status: stored?.status ?? (pricingAllowed ? "permission_verified" : permission),
+    verifiedAt: stored?.verifiedAt ?? (pricingAllowed ? new Date().toISOString() : null),
     revokedAt: stored?.revokedAt ?? null,
-    evidenceReference: stored?.evidenceReference ?? (licenseVerdict.automaticManufacturingAllowed ? `license:${licenseVerdict.code}` : null),
-    platformApprovalReference: stored?.evidenceReference ?? (licenseVerdict.automaticManufacturingAllowed ? `license:${licenseVerdict.code}` : null),
+    evidenceReference: stored?.evidenceReference ?? (pricingAllowed ? `license:${licenseVerdict.code}` : null),
+    platformApprovalReference: stored?.evidenceReference ?? (pricingAllowed ? `license:${licenseVerdict.code}` : null),
     sourceAvailable: true,
     nsfw: Boolean(thing.is_nsfw),
   });
@@ -95,7 +96,12 @@ async function mapThing(thing: ThingiverseThing): Promise<ExternalModelSummary |
   const creator = creatorName(thing);
   const sourceUrl =
     thing.public_url || `https://www.thingiverse.com/thing:${externalId}`;
-  const automatic = licenseVerdict.automaticManufacturingAllowed && purchase.allowed;
+  const automatic = pricingAllowed && purchase.allowed;
+  const categoryLabel = mapThingiverseCategory({
+    name: thing.name,
+    description: thing.description,
+    tags: [...(thing.tags ?? []), ...(thing.categories ?? [])],
+  });
 
   return {
     source,
@@ -110,6 +116,8 @@ async function mapThing(thing: ThingiverseThing): Promise<ExternalModelSummary |
     thumbnailUrl: thing.thumbnail || thing.default_image?.url,
     licenseLabel,
     licenseUrl: thing.license_url,
+    licenseCode: licenseVerdict.code,
+    categoryLabel,
     attributionText: buildAttributionText({
       title: name,
       creator,
@@ -119,6 +127,7 @@ async function mapThing(thing: ThingiverseThing): Promise<ExternalModelSummary |
     attributionRequired: licenseVerdict.attributionRequired,
     permissionStatus: automatic ? "permission_verified" : permission,
     isPurchasable: automatic,
+    pricingAllowed,
     automaticManufacturingAllowed: automatic,
     description: thing.description,
     likeCount: thing.like_count,
@@ -154,9 +163,19 @@ export const thingiverseProvider: BrowsableExternalModelProvider = {
       return { items: [], page: input.page, perPage, hasMore: false };
     }
     const page = Math.max(1, input.page);
-    const things = input.query?.trim()
-      ? await searchThings(input.query, page)
+    const rawQuery = input.query?.trim() ?? "";
+    let searchQuery = rawQuery;
+    if (rawQuery) {
+      const { translateTurkishToEnglishPhrase } = await import(
+        "@/lib/model-discovery/printables-redirect"
+      );
+      searchQuery = translateTurkishToEnglishPhrase(rawQuery).englishQuery || rawQuery;
+    }
+    const things = searchQuery
+      ? await searchThings(searchQuery, page)
       : await listPopularThings(page);
+    // Do not N+1 GET /things/{id} on browse — it times out production search
+    // and leaves /hazir-modeller empty. Missing license ⇒ pricingAllowed false.
     const items = (
       await Promise.all(things.map((thing) => mapThing(thing)))
     ).filter((item): item is ExternalModelSummary => Boolean(item));

@@ -4,11 +4,36 @@ import { useEffect, useState } from "react";
 
 import { AdminPageHeader } from "@/components/admin/admin-page";
 import { PricingCalibrationForm } from "@/components/admin/pricing-calibration-form";
+import { ProviderIntegrationsPanel } from "@/components/admin/provider-integrations-panel";
 import { formatMoney } from "@/lib/money";
 
 interface AdminPayload {
   thingiverse: string;
   workerOnline: boolean;
+  workerUrlConfigured?: boolean;
+  workerOps?: {
+    connected: boolean;
+    healthOk: boolean;
+    workerVersion: string | null;
+    prusaSlicerVersion: string | null;
+    lastHeartbeat: string | null;
+    heartbeatStale: boolean;
+    currentJobId: string | null;
+    queueDepth: number;
+    successCount: number;
+    failureCount: number;
+    reviewCount: number;
+    averageSliceSeconds: number | null;
+    concurrency: number;
+    profileChecksum: string | null;
+    lastError: string | null;
+    recentErrors: Array<{ jobId: string; message: string; at: string }>;
+  };
+  integration?: {
+    workerLastSeenAt: string | null;
+    workerVersion: string | null;
+    prusaSlicerVersion: string | null;
+  } | null;
   printer: { name: string; buildVolumeMm: { x: number; y: number; z: number }; nozzleDiameterMm: number; notes: string };
   jobs: Array<{
     id: string;
@@ -76,6 +101,32 @@ interface AdminPayload {
   showInternal?: boolean;
 }
 
+function formatRelativeTime(iso: string | null) {
+  if (!iso) {
+    return "—";
+  }
+  const delta = Date.now() - new Date(iso).getTime();
+  if (delta < 60_000) {
+    return "az önce";
+  }
+  if (delta < 3_600_000) {
+    return `${Math.round(delta / 60_000)} dk önce`;
+  }
+  return new Date(iso).toLocaleString("tr-TR");
+}
+
+async function adminRetryJob(jobId: string) {
+  const response = await fetch("/api/admin/manufacturing", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jobId }),
+  });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(payload?.error ?? "Yeniden kuyruğa alınamadı.");
+  }
+}
+
 export function ManufacturingAdmin({
   title,
   mode,
@@ -108,30 +159,110 @@ export function ManufacturingAdmin({
         description="Sunucu tarafı üretim teklifi, işçi ve fiyatlandırma. Sırlar gösterilmez."
       />
       {mode === "integrations" ? (
+        <>
         <ul className="grid gap-3 sm:grid-cols-2">
           <li className="rounded-2xl border border-white/10 p-4">
             Thingiverse: {data.thingiverse}
           </li>
           <li className="rounded-2xl border border-white/10 p-4">
-            Dilimleme işçisi: {data.workerOnline ? "çevrimiçi" : "çevrimdışı"}
+            Dilimleme işçisi:{" "}
+            {data.workerOps?.connected
+              ? "bağlı"
+              : data.workerUrlConfigured
+                ? "yapılandırıldı · erişilemiyor"
+                : "yapılandırılmadı"}
           </li>
           <li className="rounded-2xl border border-white/10 p-4">
-            PrusaSlicer hedefi: 2.8.1
+            PrusaSlicer: {data.workerOps?.prusaSlicerVersion ?? "2.8.1"}
+          </li>
+          <li className="rounded-2xl border border-white/10 p-4">
+            İşçi sürümü: {data.workerOps?.workerVersion ?? "—"}
+          </li>
+          <li className="rounded-2xl border border-white/10 p-4">
+            Son nabız: {formatRelativeTime(data.workerOps?.lastHeartbeat ?? null)}
+          </li>
+          <li className="rounded-2xl border border-white/10 p-4">
+            Kuyruk derinliği: {data.workerOps?.queueDepth ?? 0}
           </li>
           <li className="rounded-2xl border border-white/10 p-4">
             Fiyatlandırma: {data.active ? `v${data.active.version}` : "etkin değil"}
             {data.active?.isDevelopmentSeed ? " · geliştirme tohumu" : ""}
           </li>
         </ul>
+        <ProviderIntegrationsPanel />
+        </>
       ) : null}
       {mode === "printers" ? (
-        <section className="rounded-3xl border border-white/10 p-6">
-          <h2 className="font-heading text-2xl">{data.printer.name}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{data.printer.notes}</p>
-          <p className="mt-4 text-sm">
-            Hacim {data.printer.buildVolumeMm.x}×{data.printer.buildVolumeMm.y}×
-            {data.printer.buildVolumeMm.z} mm · nozul {data.printer.nozzleDiameterMm} mm
-          </p>
+        <section className="space-y-6">
+          <div className="rounded-3xl border border-white/10 p-6">
+            <h2 className="font-heading text-2xl">{data.printer.name}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{data.printer.notes}</p>
+            <p className="mt-4 text-sm">
+              Hacim {data.printer.buildVolumeMm.x}×{data.printer.buildVolumeMm.y}×
+              {data.printer.buildVolumeMm.z} mm · nozul {data.printer.nozzleDiameterMm} mm
+            </p>
+          </div>
+          <div className="rounded-3xl border border-white/10 p-6">
+            <h3 className="font-heading text-xl">Dilimleme işçisi</h3>
+            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="text-muted-foreground">Durum</dt>
+                <dd className="font-semibold">
+                  {data.workerOps?.connected
+                    ? "Bağlı"
+                    : data.workerUrlConfigured
+                      ? "Yapılandırıldı · erişilemiyor"
+                      : "Yapılandırılmadı"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Eşzamanlılık</dt>
+                <dd>{data.workerOps?.concurrency ?? 1}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Aktif iş</dt>
+                <dd className="font-mono text-xs">{data.workerOps?.currentJobId ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Kuyruk</dt>
+                <dd>{data.workerOps?.queueDepth ?? 0}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Başarı / hata / inceleme</dt>
+                <dd>
+                  {data.workerOps?.successCount ?? 0} / {data.workerOps?.failureCount ?? 0} /{" "}
+                  {data.workerOps?.reviewCount ?? 0}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Ort. dilim süresi</dt>
+                <dd>
+                  {data.workerOps?.averageSliceSeconds
+                    ? `${Math.round(data.workerOps.averageSliceSeconds / 60)} dk`
+                    : "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Profil checksum</dt>
+                <dd className="font-mono text-xs break-all">
+                  {data.workerOps?.profileChecksum ?? "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Son hata</dt>
+                <dd>{data.workerOps?.lastError ?? "—"}</dd>
+              </div>
+            </dl>
+            {data.workerOps?.recentErrors?.length ? (
+              <ul className="mt-6 space-y-2 text-xs text-muted-foreground">
+                {data.workerOps.recentErrors.map((entry) => (
+                  <li key={`${entry.jobId}-${entry.at}`} className="rounded-xl border border-white/5 p-3">
+                    <span className="font-mono">{entry.jobId.slice(0, 8)}…</span> · {entry.message}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         </section>
       ) : null}
       {mode === "pricing" ? (
@@ -258,6 +389,21 @@ export function ManufacturingAdmin({
                   </p>
                 ) : null}
                 {job.errorMessage ? <p className="mt-2 text-error">{job.errorMessage}</p> : null}
+                {job.state === "failed" || job.state === "needs_review" ? (
+                  <button
+                    type="button"
+                    className="mt-3 rounded-full border border-white/15 px-3 py-1 text-xs"
+                    onClick={() => {
+                      void adminRetryJob(job.id)
+                        .then(() => window.location.reload())
+                        .catch((retryError) => {
+                          alert(retryError instanceof Error ? retryError.message : "Hata");
+                        });
+                    }}
+                  >
+                    Yeniden kuyruğa al
+                  </button>
+                ) : null}
               </li>
             ))
           )}

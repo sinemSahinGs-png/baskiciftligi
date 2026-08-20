@@ -8,6 +8,7 @@ import type {
   ThingiverseFile,
   ThingiverseThing,
 } from "@/providers/thingiverse/types";
+import { normalizeThingList as normalizeThingListShape } from "@/providers/thingiverse/normalize-list";
 
 const defaultBase = "https://api.thingiverse.com";
 const cacheTtlMs = 8 * 60 * 1000;
@@ -142,15 +143,30 @@ async function thingiverseFetch<T>(path: string): Promise<T> {
   return payload;
 }
 
+export function normalizeThingList(payload: unknown): ThingiverseThing[] {
+  try {
+    return normalizeThingListShape(payload);
+  } catch (error) {
+    throw new ThingiverseApiError(
+      502,
+      error instanceof Error ? error.message : "Thingiverse liste biçimi beklenmeyen.",
+    );
+  }
+}
+
 export async function listPopularThings(page: number) {
   const safePage = Math.max(1, Math.trunc(page));
-  return thingiverseFetch<ThingiverseThing[]>(`/popular?page=${safePage}`);
+  const payload = await thingiverseFetch<unknown>(`/popular?page=${safePage}`);
+  return normalizeThingList(payload);
 }
 
 export async function searchThings(query: string, page: number) {
   const safePage = Math.max(1, Math.trunc(page));
   const term = encodeURIComponent(query.trim());
-  return thingiverseFetch<ThingiverseThing[]>(`/search/${term}?page=${safePage}`);
+  const payload = await thingiverseFetch<unknown>(
+    `/search/${term}?page=${safePage}`,
+  );
+  return normalizeThingList(payload);
 }
 
 export async function getThing(id: string) {

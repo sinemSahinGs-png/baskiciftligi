@@ -20,6 +20,21 @@ describe("expandTurkishModelQuery", () => {
     );
   });
 
+  it("expands gözlük standı and kulaklık standı", () => {
+    expect(expandTurkishModelQuery("gözlük standı").englishQueries).toEqual(
+      expect.arrayContaining(["glasses stand", "eyewear holder"]),
+    );
+    expect(expandTurkishModelQuery("kulaklık standı").englishQueries).toEqual(
+      expect.arrayContaining(["headphone stand", "headset holder"]),
+    );
+  });
+
+  it("expands duvar askısı", () => {
+    expect(expandTurkishModelQuery("duvar askısı").englishQueries).toEqual(
+      expect.arrayContaining(["wall hook", "wall hanger"]),
+    );
+  });
+
   it("blocks weapon queries", () => {
     const result = expandTurkishModelQuery("silah parçası");
     expect(result.blocked).toBe(true);

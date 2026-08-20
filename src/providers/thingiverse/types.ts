@@ -26,6 +26,8 @@ export interface ThingiverseThing {
   is_nsfw?: boolean;
   file_count?: number;
   files_url?: string;
+  tags?: Array<string | { name?: string }>;
+  categories?: Array<string | { name?: string }>;
 }
 
 export interface ThingiverseFile {

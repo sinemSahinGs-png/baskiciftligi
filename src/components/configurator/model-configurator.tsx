@@ -24,6 +24,11 @@ import { FoundryGrid } from "@/components/brand/foundry-grid";
 import { RevealHeading } from "@/components/motion/reveal-words";
 import { siteConfig } from "@/config/site";
 import { formatMoney } from "@/lib/money";
+import {
+  takePendingExternalUpload,
+  peekPendingExternalUpload,
+  type ExternalQuoteModelContext,
+} from "@/lib/models/external-quote-context";
 import { announceStatus } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart-store";
@@ -57,7 +62,7 @@ const stepTone = [
 ] as const;
 
 const RIGHTS_COPY =
-  "Bu dosyayı üretme ve çoğaltma hakkına sahip olduğumu onaylıyorum.";
+  "Bu dosyayı üretme ve çoğaltma hakkına sahip olduğumu ve kaynak modelin lisans koşullarını kontrol ettiğimi onaylıyorum.";
 
 function isAllowed(file: File) {
   const name = file.name.toLocaleLowerCase("tr-TR");
@@ -117,9 +122,15 @@ export function ModelConfigurator() {
   } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [workerOnline, setWorkerOnline] = useState<boolean | null>(null);
+  const [handoff] = useState(() =>
+    typeof window === "undefined" ? null : peekPendingExternalUpload(),
+  );
+  const [externalContext, setExternalContext] =
+    useState<ExternalQuoteModelContext | null>(() => handoff?.context ?? null);
   const thingId = searchParams.get("thing");
   const thingFile = searchParams.get("file");
   const source = searchParams.get("source");
+  const sourceModel = searchParams.get("sourceModel");
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 1024px)");
@@ -174,7 +185,7 @@ export function ModelConfigurator() {
     [],
   );
 
-  function acceptFile(nextFile: File) {
+  function acceptFile(nextFile: File, options?: { rightsAlreadyConfirmed?: boolean }) {
     if (!isAllowed(nextFile)) {
       setError("Yalnızca STL, 3MF veya OBJ seçilebilir.");
       return;
@@ -187,10 +198,29 @@ export function ModelConfigurator() {
     setFile(nextFile);
     setQuote(null);
     setJobId(null);
-    setStep(rights ? 1 : 0);
+    const rightsOk = options?.rightsAlreadyConfirmed || rights;
+    setStep(rightsOk ? 1 : 0);
     setMobileOpen(false);
     announceStatus(`${nextFile.name} yerel olarak okunuyor.`);
   }
+
+  const handoffApplied = useRef(false);
+  useEffect(() => {
+    const root = globalThis as typeof globalThis & {
+      __bcHandoffConsumed?: boolean;
+    };
+    if (handoffApplied.current || root.__bcHandoffConsumed) return;
+    const pending = takePendingExternalUpload() ?? handoff;
+    if (!pending) return;
+    handoffApplied.current = true;
+    root.__bcHandoffConsumed = true;
+    queueMicrotask(() => {
+      setExternalContext(pending.context);
+      setRights(true);
+      acceptFile(pending.file, { rightsAlreadyConfirmed: true });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot handoff
+  }, [handoff]);
 
   function onDrop(event: DragEvent<HTMLElement>) {
     event.preventDefault();
@@ -276,6 +306,21 @@ export function ModelConfigurator() {
       form.set("scalePercent", String(scalePercent));
       form.set("quantity", String(quantity));
       form.set("unit", unit);
+      if (externalContext) {
+        form.set("externalModelId", externalContext.externalModelId);
+        form.set("sourceType", externalContext.sourceType);
+        form.set("sourceUrl", externalContext.sourceUrl);
+        form.set("sourceTitle", externalContext.title);
+        if (externalContext.attribution) {
+          form.set("attribution", externalContext.attribution);
+        }
+        if (externalContext.licenseVerified && externalContext.licenseName) {
+          form.set("licenseName", externalContext.licenseName);
+          form.set("licenseVerified", "true");
+        }
+      } else if (sourceModel) {
+        form.set("sourceType", sourceModel);
+      }
       const response = await fetch("/api/manufacturing/uploads", {
         method: "POST",
         body: form,
@@ -843,6 +888,16 @@ export function ModelConfigurator() {
       data-testid="configurator-shell"
       className="flex h-[calc(100svh-4rem)] min-h-[calc(100svh-4rem)] min-w-0 flex-col bg-midnight text-light-text lg:grid lg:h-auto lg:min-h-0 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]"
     >
+      {externalContext ? (
+        <p
+          data-external-model-context=""
+          className="col-span-full border-b border-white/10 bg-white/5 px-4 py-2 text-xs text-muted-light"
+        >
+          Harici model bağlamı: {externalContext.title} ·{" "}
+          {externalContext.platformLabel}. Kaynak lisansı kontrol edilmeden
+          otomatik üretim izni varsayılmaz.
+        </p>
+      ) : null}
       <section
         data-testid="mesh-viewer"
         className={cn(
