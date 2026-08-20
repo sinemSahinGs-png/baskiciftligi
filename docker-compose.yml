@@ -20,7 +20,7 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "8788:8788"
-    mem_limit: 2g
+    mem_limit: 4g
     cpus: "2.0"
     pids_limit: 128
     security_opt:

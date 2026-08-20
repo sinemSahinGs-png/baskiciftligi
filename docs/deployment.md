@@ -110,7 +110,7 @@ The Next.js site may run on Vercel. `apps/slicer-worker` must not be deployed
 as a Vercel Function. Host the existing Dockerfile later on Railway, Render,
 Fly.io, Cloud Run, or a VPS after authorization.
 
-Documented worker shape:
+Documented worker shape and hosting runbook: [slicer-worker-hosting.md](./slicer-worker-hosting.md).
 
 - Health: `GET /health` on port `8788` (or `PORT`)
 - Non-root user `slicer` (uid 10001)

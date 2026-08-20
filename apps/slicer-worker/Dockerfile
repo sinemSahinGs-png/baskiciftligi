@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Official PrusaSlicer 2.8.1 Linux AppImage (newer-distros / GTK3).
 ARG PRUSA_URL=https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.8.1/PrusaSlicer-2.8.1+linux-x64-newer-distros-GTK3-202409181416.AppImage
+ARG PRUSA_SHA256=565f2f4bd4dbb05904a459d54db1916b6932124709c1d17b5aacfe9f5f2f1b03
 RUN curl -L --fail -o /tmp/prusaslicer.AppImage "$PRUSA_URL" \
+  && echo "${PRUSA_SHA256}  /tmp/prusaslicer.AppImage" | sha256sum -c - \
   && chmod +x /tmp/prusaslicer.AppImage \
   && cd /opt \
   && /tmp/prusaslicer.AppImage --appimage-extract \
@@ -32,6 +34,7 @@ COPY apps/slicer-worker/profiles /app/profiles
 ENV PRUSA_SLICER_BIN=/opt/prusa-slicer/usr/bin/prusa-slicer \
     SLICER_PROFILE_ROOT=/app/profiles \
     SLICER_JOB_ROOT=/tmp/slicer-jobs \
+    SLICER_MAX_CONCURRENT=1 \
     NODE_ENV=production
 
 WORKDIR /app

@@ -1,0 +1,44 @@
+# Fly.io configuration for the PrusaSlicer pull worker.
+# Deploy manually: fly launch --no-deploy && fly secrets set ... && fly deploy
+app = "baski-ciftligi-slicer"
+primary_region = "fra"
+
+[build]
+  dockerfile = "apps/slicer-worker/Dockerfile"
+
+[env]
+  APP_BASE_URL = "https://baskiciftligi.com"
+  SLICER_WORKER_ID = "fly-prod-1"
+  PORT = "8788"
+  SLICER_MAX_CONCURRENT = "1"
+
+[[services]]
+  internal_port = 8788
+  protocol = "tcp"
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 10
+    soft_limit = 5
+
+  [[services.http_checks]]
+    interval = "20s"
+    timeout = "5s"
+    grace_period = "30s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "4096mb"

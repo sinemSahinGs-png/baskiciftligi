@@ -1,0 +1,20 @@
+# Render blueprint for the PrusaSlicer pull worker.
+# Review and apply manually — creates billable resources.
+services:
+  - type: worker
+    name: baski-ciftligi-slicer
+    runtime: docker
+    dockerfilePath: ./apps/slicer-worker/Dockerfile
+    dockerContext: .
+    plan: starter
+    envVars:
+      - key: APP_BASE_URL
+        value: https://baskiciftligi.com
+      - key: SLICER_WORKER_ID
+        value: render-prod-1
+      - key: PORT
+        value: "8788"
+      - key: SLICER_MAX_CONCURRENT
+        value: "1"
+      - key: SLICER_WORKER_SECRET
+        sync: false
