@@ -16,6 +16,7 @@ import type {
   ProductVariant,
 } from "@/domain/catalog/types";
 import { productionVitrineSnapshot } from "@/lib/catalog/production-vitrine";
+import { PUBLIC_CATALOG_CACHE_TAGS } from "@/lib/catalog/cache-tags";
 import { resolveCategoryCoverUrl } from "@/lib/catalog/category-cover";
 import { catalogMediaPublicUrl } from "@/lib/catalog/media-url";
 import { resolveCatalogSource } from "@/lib/catalog/source";
@@ -394,7 +395,7 @@ const loadSupabaseCatalogCached = unstable_cache(
   loadSupabaseCatalog,
   ["public-catalog-v1"],
   {
-    tags: ["catalog"],
+    tags: [...PUBLIC_CATALOG_CACHE_TAGS],
     revalidate: 300,
   },
 );

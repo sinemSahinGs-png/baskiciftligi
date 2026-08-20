@@ -20,6 +20,7 @@
     "deploy:check:production": "node scripts/deployment-readiness.mjs --production",
     "smoke:deployed": "node scripts/smoke-deployed.mjs",
     "catalog:export": "npx vite-node --config vitest.config.mts scripts/catalog-export.ts",
+    "catalog:sync:categories": "npx vite-node --config vitest.config.mts scripts/sync-hosted-categories.ts",
     "catalog:import:supabase": "npx vite-node --config vitest.config.mts scripts/catalog-import-supabase.ts",
     "catalog:import:media": "npx vite-node --config vitest.config.mts scripts/catalog-import-media.ts",
     "catalog:db-ready": "npx vite-node --config vitest.config.mts scripts/catalog-db-ready.ts",

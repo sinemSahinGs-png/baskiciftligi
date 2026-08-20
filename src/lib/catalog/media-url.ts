@@ -20,3 +20,11 @@ export function catalogMediaPublicUrl(storagePath: string): string {
 export function catalogObjectPath(productId: string, mediaId: string, filename: string): string {
   return `products/${productId}/${mediaId}-${filename}`;
 }
+
+export function curatedMediaObjectPath(
+  curatedModelId: string,
+  mediaId: string,
+  filename: string,
+): string {
+  return `curated/${curatedModelId}/${mediaId}-${filename}`;
+}

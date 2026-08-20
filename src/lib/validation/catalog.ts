@@ -98,10 +98,10 @@ export const productFormSchema = z
     name: z.string().trim().min(2, "Ürün adı zorunludur.").max(180),
     slug: slugSchema,
     shortDescription: z.string().trim().min(10, "Kısa açıklama çok kısa.").max(320),
-    description: z.string().trim().min(20, "Ürün açıklaması çok kısa.").max(20_000),
+    description: z.string().trim().max(20_000),
     status: z.enum(["draft", "scheduled", "active", "archived"]),
     kind: z.enum(["ready_stock", "made_to_order", "hybrid"]),
-    priceMinor: minorUnitSchema,
+    priceMinor: z.union([minorUnitSchema, z.null()]),
     compareAtPriceMinor: minorUnitSchema.nullable(),
     sku: z.string().trim().min(1, "Ana SKU zorunludur.").max(80),
     barcode: z.string().trim().max(80),
@@ -196,7 +196,7 @@ export const productFormSchema = z
     if (
       value.compareAtPriceMinor !== null &&
       value.compareAtPriceMinor > 0 &&
-      value.compareAtPriceMinor < value.priceMinor
+      value.compareAtPriceMinor < (value.priceMinor ?? 0)
     ) {
       context.addIssue({
         code: "custom",
@@ -244,7 +244,7 @@ export const productFormSchema = z
     }
 
     value.variants.forEach((variant, index) => {
-      if (value.priceMinor + variant.priceAdjustmentMinor < 0) {
+      if ((value.priceMinor ?? 0) + variant.priceAdjustmentMinor < 0) {
         context.addIssue({
           code: "custom",
           path: ["variants", index, "priceAdjustmentMinor"],

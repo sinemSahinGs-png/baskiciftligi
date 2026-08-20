@@ -24,7 +24,7 @@ export default async function NewProductPage() {
       <AdminPageHeader
         eyebrow="Katalog / Ürünler"
         title="Yeni ürün"
-        description="Taslak ürün oluşturun; yayınlamadan önce varyant, stok, sınıflandırma, medya URL’leri ve SEO alanlarını tamamlayın."
+        description="Adım adım ürün ekleyin; yalnızca satış için gerekli alanlar varsayılan olarak gösterilir."
         actions={
           <Link
             href="/admin/urunler"

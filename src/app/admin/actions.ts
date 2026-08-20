@@ -8,15 +8,40 @@ import {
   deleteAdminCategory,
   deleteAdminProduct,
   duplicateAdminProduct,
+  getAdminProductById,
   importDemoCatalogProducts,
   saveAdminCategory,
   saveAdminProduct,
   type BulkCatalogAction,
 } from "@/domain/catalog/admin-repository";
-import { requireCatalogPublisher, requireCatalogWriter } from "@/lib/auth/session";
-import { applyPublicationInput } from "@/lib/catalog/publication";
+import {
+  requireCatalogOwner,
+  requireCatalogPublisher,
+  requireCatalogWriter,
+} from "@/lib/auth/session";
+import {
+  CATALOG_CACHE_TAG,
+  CATALOG_CATEGORIES_CACHE_TAG,
+  CATALOG_FEATURED_CACHE_TAG,
+  categoryCacheTag,
+  productCacheTag,
+} from "@/lib/catalog/cache-tags";
+import {
+  assessPublicationReadiness,
+  publicationSaveMessage,
+} from "@/lib/catalog/publication-checklist";
+import { prepareProductForSave, type VariantMode } from "@/lib/catalog/prepare-product-save";
+import {
+  buildSuggestedSku,
+  categoryCodeFromSlug,
+  parseSkuSequence,
+} from "@/lib/catalog/sku-generator";
+import { canonicalCategorySlugs } from "@/lib/catalog/canonical-categories";
 import { allowDemoCatalogImport } from "@/lib/catalog/source";
-import { allowProductionDemoImport } from "@/lib/env";
+import { syncCanonicalCategories } from "@/lib/catalog/sync-categories";
+import { applyPublicationInput } from "@/lib/catalog/publication";
+import { isSupabaseConfigured, allowProductionDemoImport } from "@/lib/env";
+import { createServiceRoleSupabaseClient } from "@/lib/supabase/admin";
 import { minorUnitsFromClientNumber } from "@/lib/catalog/money-input";
 import { saveSiteContent } from "@/domain/site/content-repository";
 import { mergeSiteContent } from "@/domain/site/content";
@@ -30,8 +55,15 @@ import {
 import { siteContentFormSchema } from "@/lib/validation/site-content";
 import type { AdminActionState } from "./admin-state";
 
-function revalidateCatalog(productId?: string) {
-  revalidateTag("catalog", "max");
+function revalidateCatalog(product?: {
+  id: string;
+  slug: string;
+  categorySlugs: string[];
+  featured?: boolean;
+}) {
+  revalidateTag(CATALOG_CACHE_TAG, "max");
+  revalidateTag(CATALOG_FEATURED_CACHE_TAG, "max");
+  revalidateTag(CATALOG_CATEGORIES_CACHE_TAG, "max");
   revalidatePath("/");
   revalidatePath("/magaza", "layout");
   revalidatePath("/urun", "layout");
@@ -40,9 +72,23 @@ function revalidateCatalog(productId?: string) {
   revalidatePath("/admin/kategoriler");
   revalidatePath("/admin/icerik");
 
-  if (productId) {
-    revalidatePath(`/admin/urunler/${productId}`);
-    revalidatePath(`/admin/urunler/${productId}/onizleme`);
+  for (const categorySlug of canonicalCategorySlugs()) {
+    revalidateTag(categoryCacheTag(categorySlug), "max");
+    revalidatePath(`/magaza/${categorySlug}`);
+  }
+
+  if (product) {
+    revalidateTag(productCacheTag(product.slug), "max");
+    for (const categorySlug of product.categorySlugs) {
+      revalidateTag(categoryCacheTag(categorySlug), "max");
+      revalidatePath(`/magaza/${categorySlug}`);
+    }
+    if (product.featured) {
+      revalidatePath("/");
+    }
+    revalidatePath(`/urun/${product.slug}`);
+    revalidatePath(`/admin/urunler/${product.id}`);
+    revalidatePath(`/admin/urunler/${product.id}/onizleme`);
   }
 }
 
@@ -78,22 +124,80 @@ function expectedErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+export async function suggestProductSkuAction(input: {
+  categorySlugs: string[];
+  excludeProductId?: string;
+}): Promise<{ sku: string | null }> {
+  await requireCatalogWriter();
+
+  const prefix = categoryCodeFromSlug(input.categorySlugs[0] ?? "genel");
+  if (!isSupabaseConfigured) {
+    return { sku: buildSuggestedSku(input.categorySlugs, 1) };
+  }
+
+  const supabase = createServiceRoleSupabaseClient();
+  if (!supabase) {
+    return { sku: buildSuggestedSku(input.categorySlugs, 1) };
+  }
+
+  const { data, error } = await supabase.from("products").select("id, metadata").limit(500);
+
+  if (error) {
+    return { sku: buildSuggestedSku(input.categorySlugs, 1) };
+  }
+
+  let maxSequence = 0;
+  for (const row of data ?? []) {
+    if (input.excludeProductId && row.id === input.excludeProductId) {
+      continue;
+    }
+    const metadata =
+      row.metadata && typeof row.metadata === "object" && !Array.isArray(row.metadata)
+        ? (row.metadata as Record<string, unknown>)
+        : {};
+    const sku = typeof metadata.sku === "string" ? metadata.sku : "";
+    const sequence = parseSkuSequence(sku, prefix);
+    if (sequence !== null) {
+      maxSequence = Math.max(maxSequence, sequence);
+    }
+  }
+
+  return { sku: buildSuggestedSku(input.categorySlugs, maxSequence + 1) };
+}
+
 export async function saveProductAction(
   input: ProductFormInput,
+  options: {
+    intent?: "draft" | "publish";
+    variantMode?: VariantMode;
+  } = {},
 ): Promise<AdminActionState> {
-  const publishes =
-    input.status === "active" || input.status === "scheduled";
-  if (publishes) {
+  const intent = options.intent ?? "draft";
+  const publishing = intent === "publish";
+  const normalizedInput = prepareProductForSave(input, {
+    variantMode: options.variantMode,
+    publishing,
+    draft: !publishing,
+  });
+
+  if (publishing) {
     await requireCatalogPublisher();
   } else {
     await requireCatalogWriter();
   }
 
   try {
-    const prepared = applyPublicationInput(input);
+    const prepared = applyPublicationInput(
+      publishing
+        ? { ...normalizedInput, status: "active" as const }
+        : { ...normalizedInput, status: "draft" as const },
+    );
     const parsed = productFormSchema.safeParse({
       ...prepared,
-      priceMinor: minorUnitsFromClientNumber(prepared.priceMinor),
+      priceMinor:
+        prepared.priceMinor === null || prepared.priceMinor === undefined
+          ? 0
+          : minorUnitsFromClientNumber(prepared.priceMinor),
       compareAtPriceMinor:
         input.compareAtPriceMinor === null ||
         input.compareAtPriceMinor === undefined ||
@@ -110,17 +214,35 @@ export async function saveProductAction(
       };
     }
 
+    if (publishing) {
+      const readiness = assessPublicationReadiness(parsed.data);
+      if (!readiness.ready) {
+        return {
+          status: "error",
+          message: `Yayın öncesi eksikler var: ${readiness.blockingMessages.join(" · ")}`,
+          fieldErrors: {
+            status: readiness.blockingMessages,
+          },
+        };
+      }
+    }
+
     const product = await saveAdminProduct(parsed.data);
-    revalidateCatalog(product.id);
+    revalidateCatalog({
+      id: product.id,
+      slug: product.slug,
+      categorySlugs: product.categorySlugs,
+      featured: product.featured,
+    });
     return {
       status: "success",
-      message: "Ürün ve bağlı katalog kayıtları kaydedildi.",
+      message: publicationSaveMessage(product.status),
       id: product.id,
     };
   } catch (error) {
     return {
       status: "error",
-      message: expectedErrorMessage(error, "Ürün kaydedilemedi."),
+      message: expectedErrorMessage(error, publishing ? "Yayın başarısız." : "Ürün kaydedilemedi."),
     };
   }
 }
@@ -137,7 +259,12 @@ export async function duplicateProductAction(
 
   try {
     const duplicate = await duplicateAdminProduct(parsedId.data);
-    revalidateCatalog(duplicate.id);
+    revalidateCatalog({
+      id: duplicate.id,
+      slug: duplicate.slug,
+      categorySlugs: duplicate.categorySlugs,
+      featured: duplicate.featured,
+    });
     return {
       status: "success",
       message: "Taslak ürün kopyası oluşturuldu.",
@@ -162,9 +289,19 @@ export async function archiveProductAction(
   }
 
   try {
+    const existing = await getAdminProductById(parsedId.data);
     await archiveAdminProduct(parsedId.data);
-    revalidateCatalog(parsedId.data);
-    return { status: "success", message: "Ürün arşivlendi." };
+    if (existing) {
+      revalidateCatalog({
+        id: existing.id,
+        slug: existing.slug,
+        categorySlugs: existing.categorySlugs,
+        featured: existing.featured,
+      });
+    } else {
+      revalidateCatalog();
+    }
+    return { status: "success", message: publicationSaveMessage("archived") };
   } catch (error) {
     return {
       status: "error",
@@ -184,8 +321,18 @@ export async function deleteProductAction(
   }
 
   try {
+    const existing = await getAdminProductById(parsedId.data);
     await deleteAdminProduct(parsedId.data);
-    revalidateCatalog();
+    if (existing) {
+      revalidateCatalog({
+        id: existing.id,
+        slug: existing.slug,
+        categorySlugs: existing.categorySlugs,
+        featured: existing.featured,
+      });
+    } else {
+      revalidateCatalog();
+    }
     return { status: "success", message: "Ürün kalıcı olarak silindi." };
   } catch (error) {
     return {
@@ -350,6 +497,126 @@ export async function importCatalogCsvAction(
     return {
       status: "error",
       message: expectedErrorMessage(error, "CSV içe aktarılamadı."),
+    };
+  }
+}
+
+export async function previewSyncCanonicalCategoriesAction(): Promise<{
+  status: "success" | "error";
+  message?: string;
+  created?: number;
+  updated?: number;
+  skipped?: number;
+  decisions?: Array<{
+    slug: string;
+    operation: string;
+    imageUrl: string;
+  }>;
+}> {
+  await requireCatalogOwner();
+
+  if (!isSupabaseConfigured) {
+    return {
+      status: "error",
+      message: "Supabase yapılandırılmadı.",
+    };
+  }
+
+  try {
+    const supabase = createServiceRoleSupabaseClient();
+    if (!supabase) {
+      return {
+        status: "error",
+        message: "Service-role istemcisi yapılandırılmadı.",
+      };
+    }
+
+    const viewer = await requireCatalogOwner();
+    const result = await syncCanonicalCategories({
+      supabase,
+      dryRun: true,
+      actorId: viewer.id,
+      actorRole: viewer.role,
+    });
+
+    return {
+      status: "success",
+      created: result.created,
+      updated: result.updated,
+      skipped: result.skipped,
+      decisions: result.decisions.map((decision) => ({
+        slug: decision.slug,
+        operation: decision.operation,
+        imageUrl: decision.imageUrl,
+      })),
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message: expectedErrorMessage(
+        error,
+        "Kategori senkronizasyonu önizlemesi başarısız.",
+      ),
+    };
+  }
+}
+
+export async function syncCanonicalCategoriesAction(input: {
+  confirmed: boolean;
+}): Promise<AdminActionState & {
+  created?: number;
+  updated?: number;
+  skipped?: number;
+}> {
+  await requireCatalogOwner();
+
+  if (!input.confirmed) {
+    return {
+      status: "error",
+      message: "Senkronizasyon için onay gerekir.",
+    };
+  }
+
+  if (!isSupabaseConfigured) {
+    return {
+      status: "error",
+      message: "Supabase yapılandırılmadı.",
+    };
+  }
+
+  try {
+    const supabase = createServiceRoleSupabaseClient();
+    if (!supabase) {
+      return {
+        status: "error",
+        message: "Service-role istemcisi yapılandırılmadı.",
+      };
+    }
+
+    const viewer = await requireCatalogOwner();
+    const result = await syncCanonicalCategories({
+      supabase,
+      dryRun: false,
+      actorId: viewer.id,
+      actorRole: viewer.role,
+    });
+
+    revalidateCatalog();
+
+    return {
+      status: "success",
+      message: `${result.created} kategori oluşturuldu, ${result.updated} güncellendi, ${result.skipped} atlandı.`,
+      created: result.created,
+      updated: result.updated,
+      skipped: result.skipped,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message: expectedErrorMessage(
+        error,
+        "Kategori senkronizasyonu başarısız.",
+      ),
     };
   }
 }

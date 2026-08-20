@@ -14,8 +14,10 @@ import {
   CATALOG_MEDIA_BUCKET,
   catalogMediaPublicUrl,
   catalogObjectPath,
+  curatedMediaObjectPath,
 } from "@/lib/catalog/media-url";
 import { categoryCoverPublicPath } from "@/lib/catalog/category-cover";
+import { assertCuratedCoverDimensions } from "@/lib/curated-models/image-dimensions";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export interface StoredCatalogMedia {
@@ -30,7 +32,8 @@ export interface StoredCatalogMedia {
 const localMediaRoot = path.join(process.cwd(), ".octo-data", "media");
 
 export async function storeCatalogMediaFile(input: {
-  productId: string;
+  productId?: string;
+  curatedModelId?: string;
   bytes: Uint8Array;
   filename: string;
   declaredMime?: string | null;
@@ -40,9 +43,21 @@ export async function storeCatalogMediaFile(input: {
     filename: input.filename,
     declaredMime: input.declaredMime,
   });
+  if (input.curatedModelId) {
+    if (detected.kind !== "image") {
+      throw new Error("Küratörlü modeller için yalnızca görsel yüklenebilir.");
+    }
+    assertCuratedCoverDimensions(input.bytes);
+  }
   const mediaId = randomUUID();
   const filename = safeCatalogFilename(input.filename, detected.extension);
-  const objectPath = catalogObjectPath(input.productId, mediaId, filename);
+  const ownerId = input.curatedModelId ?? input.productId;
+  if (!ownerId) {
+    throw new Error("Medya sahibi kimliği gerekli.");
+  }
+  const objectPath = input.curatedModelId
+    ? curatedMediaObjectPath(input.curatedModelId, mediaId, filename)
+    : catalogObjectPath(input.productId!, mediaId, filename);
 
   if (isSupabaseConfigured) {
     const supabase = await createServerSupabaseClient();

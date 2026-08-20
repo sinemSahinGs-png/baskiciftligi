@@ -16,11 +16,13 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const productIdValue = String(formData.get("productId") ?? "");
-  const parsedId = catalogRecordIdSchema.safeParse(productIdValue);
+  const curatedModelIdValue = String(formData.get("curatedModelId") ?? "");
+  const productParsed = catalogRecordIdSchema.safeParse(productIdValue);
+  const curatedParsed = catalogRecordIdSchema.safeParse(curatedModelIdValue);
   const file = formData.get("file");
 
-  if (!parsedId.success) {
-    return NextResponse.json({ error: "Geçersiz ürün kimliği." }, { status: 400 });
+  if (!productParsed.success && !curatedParsed.success) {
+    return NextResponse.json({ error: "Geçersiz medya kimliği." }, { status: 400 });
   }
 
   if (!(file instanceof File) || file.size === 0) {
@@ -30,7 +32,8 @@ export async function POST(request: Request) {
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const stored = await storeCatalogMediaFile({
-      productId: parsedId.data,
+      productId: productParsed.success ? productParsed.data : undefined,
+      curatedModelId: curatedParsed.success ? curatedParsed.data : undefined,
       bytes,
       filename: file.name,
       declaredMime: file.type,

@@ -917,3 +917,70 @@ html.motion-ready:not([data-reduced-motion="true"]) [data-motion-item="visible"]
     width: min(100% - 4rem, 96rem);
   }
 }
+
+@keyframes editorAutosavePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(33 212 253 / 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgb(33 212 253 / 0);
+  }
+}
+
+.editor-autosave-pulse {
+  animation: editorAutosavePulse 0.7s ease-out 1;
+}
+
+@keyframes editorStepEnter {
+  from {
+    opacity: 0.72;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.editor-step-active {
+  animation: editorStepEnter 220ms ease-out 1;
+}
+
+@keyframes categoryCardPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(33 212 253 / 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgb(33 212 253 / 0);
+  }
+}
+
+.category-card-selected-pulse {
+  animation: categoryCardPulse 0.55s ease-out 1;
+}
+
+@keyframes editorUploadSuccess {
+  0% {
+    border-color: rgb(33 212 253 / 0.8);
+  }
+  100% {
+    border-color: rgb(255 255 255 / 0.15);
+  }
+}
+
+.editor-upload-success {
+  animation: editorUploadSuccess 0.7s ease-out 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-autosave-pulse,
+  .category-card-selected-pulse,
+  .editor-upload-success,
+  .editor-step-active {
+    animation: none;
+  }
+
+  .editor-step-active {
+    box-shadow: none;
+  }
+}

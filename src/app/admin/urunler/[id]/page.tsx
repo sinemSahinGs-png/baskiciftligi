@@ -63,6 +63,7 @@ export default async function EditProductPage({
         initialValues={productToAdminForm(product)}
         categories={catalog.categories}
         collections={catalog.collections}
+        serverRevisionAt={product.updatedAt ?? product.publishedAt ?? undefined}
         canWrite={canManageCatalog(viewer.role)}
         canPublish={canPublishCatalog(viewer.role)}
         canViewCost={canViewInternalCost(viewer.role)}

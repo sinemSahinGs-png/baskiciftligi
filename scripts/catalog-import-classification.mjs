@@ -10,15 +10,24 @@ const catalogPath = path.join(process.cwd(), ".octo-data", "catalog.json");
 const snapshot = JSON.parse(readFileSync(catalogPath, "utf8"));
 
 function isCopyChain(product) {
-  const sku = product.sku.toLowerCase();
-  return sku.includes("-copy-") || /-copy-[a-z0-9]+/i.test(product.sku);
+  const sku = String(product.sku ?? "");
+  const slug = String(product.slug ?? "");
+  return (
+    sku.toLowerCase().includes("-copy-") ||
+    /-copy-[a-z0-9]+/i.test(sku) ||
+    /kopya/i.test(slug)
+  );
 }
 
 function isDemoSeed(product) {
+  const sku = String(product.sku ?? "").toLocaleLowerCase("tr-TR");
+  const slug = String(product.slug ?? "").toLocaleLowerCase("tr-TR");
   return (
-    product.sku.startsWith("demo-") ||
-    product.slug.startsWith("demo-") ||
-    (product.metadata && product.metadata.demo === true)
+    sku.startsWith("demo-") ||
+    slug.startsWith("demo-") ||
+    slug.endsWith("-demo") ||
+    slug.includes("-demo-") ||
+    Boolean(product.metadata && product.metadata.demo)
   );
 }
 
@@ -69,7 +78,7 @@ for (const product of snapshot.products) {
     classification.playwright.push(entry);
     continue;
   }
-  if (isCopyChain(product) && (skuCounts.get(product.sku.toLowerCase()) ?? 0) > 1) {
+  if (isCopyChain(product)) {
     classification.duplicateCopies.push(entry);
     continue;
   }

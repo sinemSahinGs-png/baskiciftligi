@@ -61,6 +61,7 @@ interface AdminProductRow {
   seo_title: string | null;
   seo_description: string | null;
   published_at: string | null;
+  updated_at: string;
   product_variants: Array<{
     id: string;
     sku: string;
@@ -286,6 +287,7 @@ function mapDatabaseProduct(row: AdminProductRow): Product {
     seoTitle: row.seo_title ?? row.name,
     seoDescription: row.seo_description ?? row.short_description ?? "",
     publishedAt: row.published_at,
+    updatedAt: row.updated_at,
     isDemo: false,
     ...extraCatalogFieldsFromMetadata(metadata),
   };
@@ -308,7 +310,7 @@ async function listSupabaseProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, name, slug, short_description, description, status, base_price_minor, compare_at_price_minor, currency, metadata, seo_title, seo_description, published_at, product_variants(id, sku, title, barcode, status, price_minor, attributes, is_default, position, inventory_levels(on_hand_quantity, reserved_quantity)), product_images(id, storage_path, external_url, alt_text, position, role, object_position, mobile_object_position, mime_type, media_type, variant_id), product_categories(categories(slug)), collection_products(collections(slug))",
+      "id, name, slug, short_description, description, status, base_price_minor, compare_at_price_minor, currency, metadata, seo_title, seo_description, published_at, updated_at, product_variants(id, sku, title, barcode, status, price_minor, attributes, is_default, position, inventory_levels(on_hand_quantity, reserved_quantity)), product_images(id, storage_path, external_url, alt_text, position, role, object_position, mobile_object_position, mime_type, media_type, variant_id), product_categories(categories(slug)), collection_products(collections(slug))",
     )
     .order("updated_at", { ascending: false });
 
@@ -448,7 +450,7 @@ export async function getAdminProductById(
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, name, slug, short_description, description, status, base_price_minor, compare_at_price_minor, currency, metadata, seo_title, seo_description, published_at, product_variants(id, sku, title, barcode, status, price_minor, attributes, is_default, position, inventory_levels(on_hand_quantity, reserved_quantity)), product_images(id, storage_path, external_url, alt_text, position, role, object_position, mobile_object_position, mime_type, media_type, variant_id), product_categories(categories(slug)), collection_products(collections(slug))",
+      "id, name, slug, short_description, description, status, base_price_minor, compare_at_price_minor, currency, metadata, seo_title, seo_description, published_at, updated_at, product_variants(id, sku, title, barcode, status, price_minor, attributes, is_default, position, inventory_levels(on_hand_quantity, reserved_quantity)), product_images(id, storage_path, external_url, alt_text, position, role, object_position, mobile_object_position, mime_type, media_type, variant_id), product_categories(categories(slug)), collection_products(collections(slug))",
     )
     .eq("id", productId)
     .maybeSingle();
@@ -458,6 +460,7 @@ export async function getAdminProductById(
 }
 
 function productFromInput(input: ProductFormInput, productId: string): Product {
+  const priceMinor = input.priceMinor ?? 0;
   const variants = input.variants.map((variant) => ({
     id: variant.id ?? `demo-variant-${randomUUID()}`,
     name: variant.name,
@@ -480,7 +483,7 @@ function productFromInput(input: ProductFormInput, productId: string): Product {
     description: input.description,
     status: input.status,
     kind: input.kind,
-    priceMinor: input.priceMinor,
+    priceMinor,
     compareAtPriceMinor: input.compareAtPriceMinor,
     currency: "TRY",
     sku: input.sku,
@@ -739,6 +742,7 @@ async function writeCatalogAudit(
 }
 
 async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
+  const priceMinor = input.priceMinor ?? 0;
   const supabase = await requiredSupabase();
   const viewer = await getViewer();
   const actorId =
@@ -767,7 +771,7 @@ async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
       description: input.description,
       product_type: "physical",
       status: input.status,
-      base_price_minor: input.priceMinor,
+      base_price_minor: priceMinor,
       compare_at_price_minor: input.compareAtPriceMinor,
       currency: "TRY",
       tax_rate_bps: input.vatRateBps ?? 2000,
@@ -883,7 +887,7 @@ async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
         ? "active"
         : "draft"
       : "archived",
-    price_minor: input.priceMinor + variant.priceAdjustmentMinor,
+    price_minor: priceMinor + variant.priceAdjustmentMinor,
     compare_at_price_minor:
       input.compareAtPriceMinor === null
         ? null
@@ -1017,17 +1021,17 @@ async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
   await writeCatalogAudit(auditAction, productId, {
     status: input.status,
     slug: input.slug,
-    price_minor: input.priceMinor,
+    price_minor: priceMinor,
   });
 
   if (
     !created &&
     previousPrice !== null &&
-    Number(previousPrice) !== input.priceMinor
+    Number(previousPrice) !== priceMinor
   ) {
     await writeCatalogAudit("price_changed", productId, {
       from_minor: previousPrice,
-      to_minor: input.priceMinor,
+      to_minor: priceMinor,
     });
   }
 
