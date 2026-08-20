@@ -12,7 +12,7 @@ import {
   getAdminProductById,
 } from "@/domain/catalog/admin-repository";
 import { requireAdmin } from "@/lib/auth/session";
-import { canManageCatalog, canViewInternalCost } from "@/lib/catalog/authorization";
+import { canManageCatalog, canPublishCatalog, canViewInternalCost } from "@/lib/catalog/authorization";
 
 export const metadata: Metadata = {
   title: "Ürün düzenle",
@@ -64,6 +64,7 @@ export default async function EditProductPage({
         categories={catalog.categories}
         collections={catalog.collections}
         canWrite={canManageCatalog(viewer.role)}
+        canPublish={canPublishCatalog(viewer.role)}
         canViewCost={canViewInternalCost(viewer.role)}
       />
     </>

@@ -7,7 +7,7 @@ import { ProductForm } from "@/components/admin/product-form";
 import { createEmptyProductForm } from "@/domain/catalog/admin-form";
 import { getAdminCatalogOverview } from "@/domain/catalog/admin-repository";
 import { requireAdmin } from "@/lib/auth/session";
-import { canManageCatalog, canViewInternalCost } from "@/lib/catalog/authorization";
+import { canManageCatalog, canPublishCatalog, canViewInternalCost } from "@/lib/catalog/authorization";
 
 export const metadata: Metadata = {
   title: "Yeni ürün",
@@ -40,6 +40,7 @@ export default async function NewProductPage() {
         categories={catalog.categories}
         collections={catalog.collections}
         canWrite={canManageCatalog(viewer.role)}
+        canPublish={canPublishCatalog(viewer.role)}
         canViewCost={canViewInternalCost(viewer.role)}
       />
     </>

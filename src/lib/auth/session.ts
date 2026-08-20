@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { siteConfig } from "@/config/site";
 import { resolveAdminAccess } from "@/lib/auth/admin-access";
+import { resolveAuthoritativeViewer } from "@/lib/auth/staff-role";
 import {
   canAccessLaunchCenter,
   canCalibratePricing,
@@ -17,13 +18,7 @@ import {
 import { isDevelopmentDemoMode, isSupabaseConfigured } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export type AppRole =
-  | "customer"
-  | "viewer"
-  | "editor"
-  | "catalog_manager"
-  | "admin"
-  | "owner";
+export type { AppRole } from "@/lib/auth/staff-role";
 
 export interface Viewer {
   id: string;
@@ -31,6 +26,7 @@ export interface Viewer {
   displayName: string;
   role: AppRole;
   isDemo: boolean;
+  isActive: boolean;
 }
 
 export async function getViewer(): Promise<Viewer | null> {
@@ -41,6 +37,7 @@ export async function getViewer(): Promise<Viewer | null> {
       displayName: "Yerel Demo Yöneticisi",
       role: "admin",
       isDemo: true,
+      isActive: true,
     };
   }
 
@@ -63,13 +60,34 @@ export async function getViewer(): Promise<Viewer | null> {
     return null;
   }
 
-  const { data: profile } = await supabase
+  const {
+    data: profile,
+    error: profileError,
+  } = await supabase
     .from("profiles")
-    .select("display_name, role, is_active")
+    .select("id, display_name, role, is_active")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profile && profile.is_active === false) {
+  if (profileError) {
+    return null;
+  }
+
+  const resolved = resolveAuthoritativeViewer({
+    authUserId: user.id,
+    profile: profile
+      ? {
+          id: String(profile.id),
+          role: profile.role,
+          is_active: profile.is_active,
+        }
+      : null,
+    jwtMetadataRole:
+      (user.app_metadata as { role?: unknown } | undefined)?.role ??
+      (user.user_metadata as { role?: unknown } | undefined)?.role,
+  });
+
+  if (!resolved) {
     return null;
   }
 
@@ -80,8 +98,9 @@ export async function getViewer(): Promise<Viewer | null> {
       profile?.display_name ??
       user.email?.split("@")[0] ??
       `${siteConfig.name} müşterisi`,
-    role: (profile?.role as AppRole | undefined) ?? "customer",
+    role: resolved.role,
     isDemo: false,
+    isActive: resolved.isActive,
   };
 }
 
@@ -102,7 +121,9 @@ export async function requireAdmin(): Promise<Viewer> {
 
   const viewer = await getViewer();
   const gate = resolveAdminAccess(
-    viewer ? { role: viewer.role, isActive: true } : null,
+    viewer
+      ? { role: viewer.role, isActive: viewer.isActive }
+      : null,
   );
 
   if (!gate.allowed) {

@@ -15,6 +15,7 @@ import { siteConfig } from "@/config/site";
 import { isAdminLoginPath } from "@/lib/auth/admin-password";
 import { isLocalAdminPasswordEnabled } from "@/lib/auth/admin-session";
 import { requireAdmin } from "@/lib/auth/session";
+import { staffRoleLabel } from "@/lib/auth/staff-role";
 import {
   productionFixtureWarning,
   readProductionSafetyFlags,
@@ -75,7 +76,7 @@ export default async function AdminLayout({
               <p className="text-xs font-semibold">{viewer.displayName}</p>
               <p className="flex items-center justify-end gap-1 text-[0.65rem] text-muted-foreground">
                 <ShieldCheck className="size-3" aria-hidden="true" />
-                {viewer.role === "admin" ? "Yönetici" : "Editör"}
+                {staffRoleLabel(viewer.role)}
               </p>
             </div>
             <form action={logout}>

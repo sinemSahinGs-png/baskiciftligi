@@ -53,6 +53,7 @@ interface ProductFormProps {
   categories: AdminCategory[];
   collections: AdminCollection[];
   canWrite?: boolean;
+  canPublish?: boolean;
   canViewCost?: boolean;
 }
 
@@ -212,6 +213,7 @@ export function ProductForm({
   categories,
   collections,
   canWrite = true,
+  canPublish = false,
   canViewCost = false,
 }: ProductFormProps) {
   const router = useRouter();
@@ -1390,8 +1392,12 @@ export function ProductForm({
                   className={selectClass}
                 >
                   <option value="draft">Taslak</option>
-                  <option value="scheduled">Planlandı</option>
-                  <option value="active">Yayında</option>
+                  {canPublish ? (
+                    <>
+                      <option value="scheduled">Planlandı</option>
+                      <option value="active">Yayında</option>
+                    </>
+                  ) : null}
                   <option value="archived">Arşiv</option>
                 </select>
               </div>

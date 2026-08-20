@@ -34,6 +34,13 @@ export async function createServerSupabaseClient() {
           }
         },
       },
+      global: {
+        fetch: (input, init) =>
+          fetch(input, {
+            ...init,
+            cache: "no-store",
+          }),
+      },
     },
   );
 }
