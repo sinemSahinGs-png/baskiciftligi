@@ -8,12 +8,14 @@ import {
   localGetJob,
   localGetJobByIdempotency,
   localGetQuote,
+  localGetQuoteRevocation,
   localGetReview,
   localIntegration,
   localJobEvents,
   localListFiles,
   localListJobs,
   localListPricing,
+  localRevokeQuote,
   localSaveFile,
   localSaveJob,
   localSavePricing,
@@ -26,6 +28,31 @@ import {
   manufacturingPersistenceReady,
   manufacturingUsesLocalPersistence,
 } from "@/lib/manufacturing/paths";
+import {
+  supabaseActivePricing,
+  supabaseClaimJob,
+  supabaseGetFile,
+  supabaseGetJob,
+  supabaseGetJobByIdempotency,
+  supabaseGetQuote,
+  supabaseGetQuoteRevocation,
+  supabaseGetReview,
+  supabaseIntegration,
+  supabaseJobEvents,
+  supabaseListFiles,
+  supabaseListJobs,
+  supabaseListPricing,
+  supabaseQuoteHasLinkedOrder,
+  supabaseRevokeQuote,
+  supabaseSaveFile,
+  supabaseSaveJob,
+  supabaseSavePricing,
+  supabaseSaveQuote,
+  supabaseSaveReview,
+  supabaseTouchIntegration,
+  supabaseTransition,
+} from "@/lib/manufacturing/supabase-store";
+import { assertQuoteCanBeRevoked } from "@/domain/manufacturing/quote-revocation";
 import type {
   ManufacturingFileRecord,
   ManufacturingQuoteRecord,
@@ -44,53 +71,41 @@ export function assertManufacturingPersistence() {
   }
 }
 
-function requireLocal() {
+function isLocalStore() {
   assertManufacturingPersistence();
-  if (!manufacturingUsesLocalPersistence()) {
-    throw new Error(
-      "Supabase üretim deposu henüz etkin değil; üretim teklifleri için veritabanı kimlik bilgisi gerekir.",
-    );
-  }
+  return manufacturingUsesLocalPersistence();
 }
 
 export async function saveManufacturingFile(record: ManufacturingFileRecord) {
-  requireLocal();
-  return localSaveFile(record);
+  return isLocalStore() ? localSaveFile(record) : supabaseSaveFile(record);
 }
 
 export async function getManufacturingFile(id: string) {
-  requireLocal();
-  return localGetFile(id);
+  return isLocalStore() ? localGetFile(id) : supabaseGetFile(id);
 }
 
 export async function saveQuoteJob(record: QuoteJobRecord, detail?: string) {
-  requireLocal();
-  return localSaveJob(record, detail);
+  return isLocalStore() ? localSaveJob(record, detail) : supabaseSaveJob(record, detail);
 }
 
 export async function getQuoteJob(id: string) {
-  requireLocal();
-  return localGetJob(id);
+  return isLocalStore() ? localGetJob(id) : supabaseGetJob(id);
 }
 
 export async function getQuoteJobByIdempotency(key: string) {
-  requireLocal();
-  return localGetJobByIdempotency(key);
+  return isLocalStore() ? localGetJobByIdempotency(key) : supabaseGetJobByIdempotency(key);
 }
 
 export async function listQuoteJobs() {
-  requireLocal();
-  return localListJobs();
+  return isLocalStore() ? localListJobs() : supabaseListJobs();
 }
 
 export async function listManufacturingFiles() {
-  requireLocal();
-  return localListFiles();
+  return isLocalStore() ? localListFiles() : supabaseListFiles();
 }
 
 export async function claimQuoteJob(workerId: string) {
-  requireLocal();
-  return localClaimJob(workerId);
+  return isLocalStore() ? localClaimJob(workerId) : supabaseClaimJob(workerId);
 }
 
 export async function transitionQuoteJob(
@@ -98,61 +113,94 @@ export async function transitionQuoteJob(
   toState: QuoteJobState,
   patch?: Partial<QuoteJobRecord>,
 ) {
-  requireLocal();
-  return localTransition(jobId, toState, patch);
+  return isLocalStore()
+    ? localTransition(jobId, toState, patch)
+    : supabaseTransition(jobId, toState, patch);
 }
 
 export async function saveManufacturingQuote(record: ManufacturingQuoteRecord) {
-  requireLocal();
-  return localSaveQuote(record);
+  return isLocalStore() ? localSaveQuote(record) : supabaseSaveQuote(record);
 }
 
 export async function getManufacturingQuote(id: string) {
-  requireLocal();
-  return localGetQuote(id);
+  return isLocalStore() ? localGetQuote(id) : supabaseGetQuote(id);
+}
+
+export async function getQuoteRevocation(quoteId: string) {
+  return isLocalStore() ? localGetQuoteRevocation(quoteId) : supabaseGetQuoteRevocation(quoteId);
+}
+
+export async function quoteIsLinkedToOrder(quoteId: string) {
+  if (isLocalStore()) {
+    return false;
+  }
+  return supabaseQuoteHasLinkedOrder(quoteId);
+}
+
+export async function revokeManufacturingQuote(input: {
+  quoteId: string;
+  reason: string;
+  revokedBy: string;
+}) {
+  if (isLocalStore()) {
+    return localRevokeQuote(input);
+  }
+  const quote = await supabaseGetQuote(input.quoteId);
+  const revocations = [];
+  const existing = await supabaseGetQuoteRevocation(input.quoteId);
+  if (existing) {
+    revocations.push(existing);
+  }
+  const gate = assertQuoteCanBeRevoked({
+    quoteId: input.quoteId,
+    revocations,
+    quoteExists: Boolean(quote),
+    hasLinkedOrder: await supabaseQuoteHasLinkedOrder(input.quoteId),
+  });
+  if (!gate.ok) {
+    throw new Error(gate.reason);
+  }
+  return supabaseRevokeQuote(input);
 }
 
 export async function getActivePricing(): Promise<PricingConfig | null> {
-  requireLocal();
-  return localActivePricing();
+  return isLocalStore() ? localActivePricing() : supabaseActivePricing();
 }
 
 export async function savePricingConfig(config: PricingConfig) {
-  requireLocal();
-  return localSavePricing(config);
+  return isLocalStore() ? localSavePricing(config) : supabaseSavePricing(config);
 }
 
 export async function listPricingConfigs() {
-  requireLocal();
-  return localListPricing();
+  return isLocalStore() ? localListPricing() : supabaseListPricing();
 }
 
 export async function getJobEvents(jobId: string) {
-  requireLocal();
-  return localJobEvents(jobId);
+  return isLocalStore() ? localJobEvents(jobId) : supabaseJobEvents(jobId);
 }
 
 export async function savePermissionReview(record: PermissionReviewRecord) {
-  requireLocal();
-  return localSaveReview(record);
+  return isLocalStore() ? localSaveReview(record) : supabaseSaveReview(record);
 }
 
 export async function getPermissionReview(thingId: string) {
-  requireLocal();
-  return localGetReview(thingId);
+  return isLocalStore() ? localGetReview(thingId) : supabaseGetReview(thingId);
 }
 
 export async function touchIntegration(
   patch: Parameters<typeof localTouchIntegration>[0],
 ) {
-  if (!manufacturingUsesLocalPersistence()) {
-    return patch;
+  if (isLocalStore()) {
+    return localTouchIntegration(patch);
   }
-  return localTouchIntegration(patch);
+  return supabaseTouchIntegration(patch);
 }
 
 export async function getIntegrationStatus() {
-  if (!manufacturingUsesLocalPersistence()) {
+  if (isLocalStore()) {
+    return localIntegration();
+  }
+  if (!isSupabaseConfigured) {
     return {
       thingiverseLastSuccessAt: null,
       thingiverseLastFailureAt: null,
@@ -163,7 +211,7 @@ export async function getIntegrationStatus() {
       prusaSlicerVersion: null,
     };
   }
-  return localIntegration();
+  return supabaseIntegration();
 }
 
 export function manufacturingModeLabel() {

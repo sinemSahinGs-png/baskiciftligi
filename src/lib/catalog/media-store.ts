@@ -1,7 +1,7 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { isDevelopmentDemoMode, isSupabaseConfigured } from "@/lib/env";
@@ -152,4 +152,16 @@ export async function storeCategoryCoverPng(input: {
     kind: "image",
     fileSize: input.bytes.byteLength,
   };
+}
+
+export async function removeLocalCatalogMediaForProduct(
+  productId: string,
+): Promise<void> {
+  if (!/^[A-Za-z0-9_-]+$/.test(productId)) {
+    return;
+  }
+  await rm(path.join(localMediaRoot, "products", productId), {
+    recursive: true,
+    force: true,
+  });
 }

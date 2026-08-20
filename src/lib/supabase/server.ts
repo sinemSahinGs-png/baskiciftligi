@@ -3,13 +3,13 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-import { isSupabaseConfigured, publicEnv } from "@/lib/env";
+import { isSupabaseConfigured, publicEnv, supabasePublishableKey } from "@/lib/env";
 
 export async function createServerSupabaseClient() {
   if (
     !isSupabaseConfigured ||
     !publicEnv.NEXT_PUBLIC_SUPABASE_URL ||
-    !publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    !supabasePublishableKey
   ) {
     return null;
   }
@@ -18,7 +18,7 @@ export async function createServerSupabaseClient() {
 
   return createServerClient(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-    publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublishableKey,
     {
       cookies: {
         getAll() {

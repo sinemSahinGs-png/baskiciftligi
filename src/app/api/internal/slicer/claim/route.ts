@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     prusaSlicerVersion: prusaVersion ?? undefined,
   });
   const job = await claimQuoteJob(workerId);
-  if (!job) {
+  if (!job?.fileId) {
     return NextResponse.json({ job: null });
   }
   const file = await getManufacturingFile(job.fileId);

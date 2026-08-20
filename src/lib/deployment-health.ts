@@ -2,10 +2,11 @@ import "server-only";
 
 import { parseStrictEnvBoolean } from "@/lib/env-boolean";
 import { resolveCatalogSource } from "@/lib/catalog/source";
-import { isSupabaseConfigured } from "@/lib/env";
+import { forceLocalPersistence, isSupabaseConfigured, supabaseCredentialsPresent } from "@/lib/env";
 import { serverEnv } from "@/lib/env.server";
 import {
   manufacturingPersistenceReady,
+  manufacturingUsesLocalPersistence,
   slicerWorkerUrl,
 } from "@/lib/manufacturing/paths";
 import { resolveThingiverseConfigStatus } from "@/providers/thingiverse/status";
@@ -23,6 +24,9 @@ export interface DeploymentHealth {
   environment: string;
   catalog: CatalogSourceState;
   supabase: IntegrationState;
+  supabaseCredentials: boolean;
+  localPersistenceOverride: boolean;
+  manufacturingPersistence: "local-json" | "supabase" | "unconfigured";
   thingiverse: IntegrationState;
   slicerWorker: IntegrationState;
   storage: IntegrationState;
@@ -78,6 +82,14 @@ async function slicerWorkerState(): Promise<IntegrationState> {
 
 export async function getDeploymentHealth(): Promise<DeploymentHealth> {
   const slicerWorker = await slicerWorkerState();
+  const manufacturingPersistence: DeploymentHealth["manufacturingPersistence"] =
+    process.env.NODE_ENV === "production" && !isSupabaseConfigured
+      ? "unconfigured"
+      : manufacturingUsesLocalPersistence()
+        ? "local-json"
+        : isSupabaseConfigured
+          ? "supabase"
+          : "unconfigured";
   return {
     ok: true,
     service: "baski-ciftligi",
@@ -93,6 +105,9 @@ export async function getDeploymentHealth(): Promise<DeploymentHealth> {
       nodeEnv: process.env.NODE_ENV,
     }),
     supabase: isSupabaseConfigured ? "configured" : "unconfigured",
+    supabaseCredentials: supabaseCredentialsPresent,
+    localPersistenceOverride: forceLocalPersistence,
+    manufacturingPersistence,
     thingiverse: thingiverseState(),
     slicerWorker,
     storage: manufacturingPersistenceReady() ? "configured" : "unconfigured",

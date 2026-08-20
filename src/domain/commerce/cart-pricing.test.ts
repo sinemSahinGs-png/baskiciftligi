@@ -17,7 +17,7 @@ describe("server cart pricing", () => {
         {
           productId: product.id,
           variantId: product.variants[0].id,
-          quantity: 2,
+          quantity: 1,
         },
       ],
       [product],
@@ -26,9 +26,7 @@ describe("server cart pricing", () => {
 
     expect(result.lines[0].displayKind).toBe("store");
     expect(result.lines[0].unitPriceMinor).toBe(product.priceMinor + 5_000);
-    expect(result.lines[0].lineTotalMinor).toBe(
-      (product.priceMinor + 5_000) * 2,
-    );
+    expect(result.lines[0].lineTotalMinor).toBe(product.priceMinor + 5_000);
     expect(result.estimatedShippingMinor).toBe(STANDARD_SHIPPING_MINOR);
   });
 
@@ -76,6 +74,7 @@ describe("server cart pricing", () => {
 
     expect(result.estimatedShippingMinor).toBe(0);
     expect(result.totalMinor).toBe(FREE_SHIPPING_THRESHOLD_MINOR);
+    expect(result.freeShippingThresholdMinor).toBe(150_000);
   });
 
   it("rejects archived or unpublished products and unknown variants", () => {

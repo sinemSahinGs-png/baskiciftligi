@@ -14,6 +14,7 @@ import {
   type BulkCatalogAction,
 } from "@/domain/catalog/admin-repository";
 import { requireCatalogPublisher, requireCatalogWriter } from "@/lib/auth/session";
+import { applyPublicationInput } from "@/lib/catalog/publication";
 import { allowDemoCatalogImport } from "@/lib/catalog/source";
 import { allowProductionDemoImport } from "@/lib/env";
 import { minorUnitsFromClientNumber } from "@/lib/catalog/money-input";
@@ -89,9 +90,10 @@ export async function saveProductAction(
   }
 
   try {
+    const prepared = applyPublicationInput(input);
     const parsed = productFormSchema.safeParse({
-      ...input,
-      priceMinor: minorUnitsFromClientNumber(input.priceMinor),
+      ...prepared,
+      priceMinor: minorUnitsFromClientNumber(prepared.priceMinor),
       compareAtPriceMinor:
         input.compareAtPriceMinor === null ||
         input.compareAtPriceMinor === undefined ||

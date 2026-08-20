@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { ModelLibrary } from "@/components/models/model-library";
@@ -14,7 +15,9 @@ export const metadata: Metadata = createPageMetadata({
 export default function ReadyModelsPage() {
   return (
     <main id="ana-icerik">
-      <ModelLibrary />
+      <Suspense fallback={null}>
+        <ModelLibrary />
+      </Suspense>
     </main>
   );
 }

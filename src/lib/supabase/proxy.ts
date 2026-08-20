@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
-import { isSupabaseConfigured, publicEnv } from "@/lib/env";
+import { isSupabaseConfigured, publicEnv, supabasePublishableKey } from "@/lib/env";
 
 function nextWithPathname(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
@@ -17,14 +17,14 @@ export async function refreshSupabaseSession(request: NextRequest) {
   if (
     !isSupabaseConfigured ||
     !publicEnv.NEXT_PUBLIC_SUPABASE_URL ||
-    !publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    !supabasePublishableKey
   ) {
     return { response, user: null };
   }
 
   const supabase = createServerClient(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-    publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublishableKey,
     {
       cookies: {
         getAll: () => request.cookies.getAll(),

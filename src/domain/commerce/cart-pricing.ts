@@ -2,6 +2,11 @@ import {
   displayKindForProduct,
   type CartLineDisplayKind,
 } from "@/domain/catalog/presentation";
+import {
+  COMMERCE_SHIPPING_POLICY,
+  computeCartShippingMinor,
+  publicShippingPolicyFields,
+} from "@/domain/commerce/shipping-policy";
 import { isPubliclyVisibleProduct } from "@/lib/catalog/visibility";
 import type { Product, ProductKind } from "@/domain/catalog/types";
 import { assertMinorUnits } from "@/lib/money";
@@ -62,10 +67,12 @@ export interface CartPriceResult {
   freeShippingThresholdMinor: number;
   hasUnavailableItems: boolean;
   pricedAt: string;
+  shippingPolicy: ReturnType<typeof publicShippingPolicyFields>;
 }
 
-export const FREE_SHIPPING_THRESHOLD_MINOR = 200_000;
-export const STANDARD_SHIPPING_MINOR = 8_990;
+export const FREE_SHIPPING_THRESHOLD_MINOR =
+  COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor;
+export const STANDARD_SHIPPING_MINOR = COMMERCE_SHIPPING_POLICY.standardShippingMinor;
 
 export function priceCart(
   inputLines: CartInputLine[],
@@ -153,10 +160,7 @@ export function priceCart(
       0,
     ),
   );
-  const estimatedShippingMinor =
-    subtotalMinor === 0 || subtotalMinor >= FREE_SHIPPING_THRESHOLD_MINOR
-      ? 0
-      : STANDARD_SHIPPING_MINOR;
+  const estimatedShippingMinor = computeCartShippingMinor(subtotalMinor);
 
   return {
     currency: "TRY",
@@ -167,6 +171,7 @@ export function priceCart(
     freeShippingThresholdMinor: FREE_SHIPPING_THRESHOLD_MINOR,
     hasUnavailableItems: lines.some((line) => !line.isAvailable),
     pricedAt,
+    shippingPolicy: publicShippingPolicyFields(),
   };
 }
 

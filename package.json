@@ -32,7 +32,9 @@
     "manufacturing:down": "node scripts/manufacturing-compose.mjs down",
     "manufacturing:logs": "node scripts/manufacturing-compose.mjs logs",
     "manufacturing:health": "node scripts/manufacturing-health.mjs",
-    "test:manufacturing:live": "node scripts/manufacturing-live-slice.mjs"
+    "test:manufacturing:live": "node scripts/manufacturing-live-slice.mjs",
+    "test:hosted:supabase": "node scripts/hosted-supabase-rls.mjs",
+    "test:hosted:acceptance": "node scripts/hosted-supabase-acceptance.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

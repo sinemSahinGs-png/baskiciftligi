@@ -11,6 +11,10 @@ const optionalSecret = z.preprocess(
 );
 
 const serverEnvSchema = z.object({
+  SUPABASE_SECRET_KEY: z.preprocess(
+    emptyToUndefined,
+    z.string().min(20).optional(),
+  ),
   SUPABASE_SERVICE_ROLE_KEY: z.preprocess(
     emptyToUndefined,
     z.string().min(20).optional(),
@@ -52,6 +56,7 @@ const serverEnvSchema = z.object({
 });
 
 const parsed = serverEnvSchema.safeParse({
+  SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   NEXT_SERVER_ACTIONS_ENCRYPTION_KEY:
     process.env.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY,
@@ -87,6 +92,10 @@ if (!parsed.success) {
 }
 
 export const serverEnv = parsed.data;
+
+/** Server-only secret key — prefers SUPABASE_SECRET_KEY. */
+export const supabaseSecretKey =
+  serverEnv.SUPABASE_SECRET_KEY ?? serverEnv.SUPABASE_SERVICE_ROLE_KEY;
 
 export const allowDemoAdminMutations =
   process.env.NODE_ENV === "development" &&

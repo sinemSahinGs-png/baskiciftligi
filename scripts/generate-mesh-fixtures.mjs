@@ -2,23 +2,29 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-function cube(size, origin = { x: 0, y: 0, z: 0 }) {
-  const s = size;
+function boxFaces(origin, size) {
   const o = origin;
-  const faces = [
-    [o, { x: o.x + s, y: o.y, z: o.z }, { x: o.x + s, y: o.y + s, z: o.z }],
-    [o, { x: o.x + s, y: o.y + s, z: o.z }, { x: o.x, y: o.y + s, z: o.z }],
-    [{ x: o.x, y: o.y, z: o.z + s }, { x: o.x + s, y: o.y + s, z: o.z + s }, { x: o.x + s, y: o.y, z: o.z + s }],
-    [{ x: o.x, y: o.y, z: o.z + s }, { x: o.x, y: o.y + s, z: o.z + s }, { x: o.x + s, y: o.y + s, z: o.z + s }],
-    [o, { x: o.x, y: o.y, z: o.z + s }, { x: o.x + s, y: o.y, z: o.z + s }],
-    [o, { x: o.x + s, y: o.y, z: o.z + s }, { x: o.x + s, y: o.y, z: o.z }],
-    [{ x: o.x, y: o.y + s, z: o.z }, { x: o.x + s, y: o.y + s, z: o.z }, { x: o.x + s, y: o.y + s, z: o.z + s }],
-    [{ x: o.x, y: o.y + s, z: o.z }, { x: o.x + s, y: o.y + s, z: o.z + s }, { x: o.x, y: o.y + s, z: o.z + s }],
-    [o, { x: o.x, y: o.y + s, z: o.z }, { x: o.x, y: o.y + s, z: o.z + s }],
-    [o, { x: o.x, y: o.y + s, z: o.z + s }, { x: o.x, y: o.y, z: o.z + s }],
-    [{ x: o.x + s, y: o.y, z: o.z }, { x: o.x + s, y: o.y, z: o.z + s }, { x: o.x + s, y: o.y + s, z: o.z + s }],
-    [{ x: o.x + s, y: o.y, z: o.z }, { x: o.x + s, y: o.y + s, z: o.z + s }, { x: o.x + s, y: o.y + s, z: o.z }],
+  const sx = size.x;
+  const sy = size.y;
+  const sz = size.z;
+  const v = (x, y, z) => ({ x, y, z });
+  return [
+    [v(o.x, o.y, o.z), v(o.x + sx, o.y, o.z), v(o.x + sx, o.y + sy, o.z)],
+    [v(o.x, o.y, o.z), v(o.x + sx, o.y + sy, o.z), v(o.x, o.y + sy, o.z)],
+    [v(o.x, o.y, o.z + sz), v(o.x + sx, o.y + sy, o.z + sz), v(o.x + sx, o.y, o.z + sz)],
+    [v(o.x, o.y, o.z + sz), v(o.x, o.y + sy, o.z + sz), v(o.x + sx, o.y + sy, o.z + sz)],
+    [v(o.x, o.y, o.z), v(o.x, o.y, o.z + sz), v(o.x + sx, o.y, o.z + sz)],
+    [v(o.x, o.y, o.z), v(o.x + sx, o.y, o.z + sz), v(o.x + sx, o.y, o.z)],
+    [v(o.x, o.y + sy, o.z), v(o.x + sx, o.y + sy, o.z), v(o.x + sx, o.y + sy, o.z + sz)],
+    [v(o.x, o.y + sy, o.z), v(o.x + sx, o.y + sy, o.z + sz), v(o.x, o.y + sy, o.z + sz)],
+    [v(o.x, o.y, o.z), v(o.x, o.y + sy, o.z), v(o.x, o.y + sy, o.z + sz)],
+    [v(o.x, o.y, o.z), v(o.x, o.y + sy, o.z + sz), v(o.x, o.y, o.z + sz)],
+    [v(o.x + sx, o.y, o.z), v(o.x + sx, o.y, o.z + sz), v(o.x + sx, o.y + sy, o.z + sz)],
+    [v(o.x + sx, o.y, o.z), v(o.x + sx, o.y + sy, o.z + sz), v(o.x + sx, o.y + sy, o.z)],
   ];
+}
+
+function binaryStl(faces) {
   const buffer = Buffer.alloc(84 + faces.length * 50);
   buffer.write("Baski Ciftligi fixture", 0, "ascii");
   buffer.writeUInt32LE(faces.length, 80);
@@ -33,11 +39,22 @@ function cube(size, origin = { x: 0, y: 0, z: 0 }) {
   return buffer;
 }
 
+function cube(size, origin = { x: 0, y: 0, z: 0 }) {
+  return binaryStl(boxFaces(origin, { x: size, y: size, z: size }));
+}
+
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "fixtures", "meshes");
 mkdirSync(root, { recursive: true });
 writeFileSync(path.join(root, "20mm-cube.stl"), cube(20));
 writeFileSync(path.join(root, "simple-vase.stl"), cube(18));
 writeFileSync(path.join(root, "overhang.stl"), cube(15, { x: 0, y: 0, z: 8 }));
+writeFileSync(
+  path.join(root, "t-overhang.stl"),
+  binaryStl([
+    ...boxFaces({ x: 10, y: 10, z: 0 }, { x: 4, y: 4, z: 16 }),
+    ...boxFaces({ x: 0, y: 0, z: 16 }, { x: 24, y: 24, z: 3 }),
+  ]),
+);
 writeFileSync(path.join(root, "too-large.stl"), cube(400));
 writeFileSync(path.join(root, "multi-shell.stl"), cube(12, { x: 40, y: 0, z: 0 }));
 writeFileSync(

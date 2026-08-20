@@ -10,6 +10,7 @@ import type {
   Product,
 } from "@/domain/catalog/types";
 import { resolveCategoryCoverUrl } from "@/lib/catalog/category-cover";
+import { upsertProductInSnapshot } from "@/lib/catalog/publication";
 import { allowDemoAdminMutations } from "@/lib/env.server";
 
 const dataDirectory = path.join(process.cwd(), ".octo-data");
@@ -82,17 +83,16 @@ export async function saveDemoCatalog(
 
 export async function upsertDemoProduct(product: Product): Promise<Product> {
   const snapshot = await loadDemoCatalog();
-  const index = snapshot.products.findIndex((item) => item.id === product.id);
   const nextProduct = { ...product, isDemo: true };
-
-  if (index >= 0) {
-    snapshot.products[index] = nextProduct;
-  } else {
-    snapshot.products.unshift(nextProduct);
-  }
-
+  snapshot.products = upsertProductInSnapshot(snapshot.products, nextProduct);
   await saveDemoCatalog(snapshot);
-  return nextProduct;
+  const persisted = (await loadDemoCatalog()).products.find(
+    (item) => item.id === nextProduct.id,
+  );
+  if (!persisted) {
+    throw new Error("Ürün yerel katalog dosyasına yazılamadı.");
+  }
+  return persisted;
 }
 
 export async function removeDemoProduct(productId: string): Promise<void> {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   useEffect,
   useMemo,
@@ -215,7 +215,9 @@ export function ProductForm({
   canViewCost = false,
 }: ProductFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [pending, startTransition] = useTransition();
+  const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [slugWasEdited, setSlugWasEdited] = useState(Boolean(initialValues.slug));
   const [draftMessage, setDraftMessage] = useState(
     "Tarayıcı yerel taslağı hazır.",
@@ -367,8 +369,16 @@ export function ProductForm({
   }
 
   function submit(values: ProductFormInput) {
+    toast.dismiss();
+    setSaveNotice(null);
+    setFormErrorSummary("");
+    const publishedAt =
+      values.status === "active" && !values.publishedAt?.trim()
+        ? new Date().toISOString()
+        : values.publishedAt;
     const normalized: ProductFormInput = {
       ...values,
+      publishedAt,
       compareAtPriceMinor:
         values.compareAtPriceMinor && values.compareAtPriceMinor > 0
           ? values.compareAtPriceMinor
@@ -392,11 +402,12 @@ export function ProductForm({
       }
 
       window.localStorage.removeItem(storageKey);
-      reset({ ...normalized, id: result.id });
+      reset({ ...normalized, id: result.id, publishedAt });
       setDraftMessage("Sunucu kaydı güncel. Yerel taslak temizlendi.");
-      toast.success(result.message);
-      router.push(`/admin/urunler/${result.id}`);
-      router.refresh();
+      setSaveNotice(result.message ?? "Ürün ve bağlı katalog kayıtları kaydedildi.");
+      if (pathname !== `/admin/urunler/${result.id}`) {
+        router.push(`/admin/urunler/${result.id}`);
+      }
     });
   }
 
@@ -461,6 +472,17 @@ export function ProductForm({
           </button>
         </div>
       </div>
+
+      {saveNotice ? (
+        <div
+          className="mb-5 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 p-4 text-sm text-emerald-200"
+          role="status"
+          data-testid="admin-save-success"
+          data-saved-status={watchedStatus}
+        >
+          {saveNotice}
+        </div>
+      ) : null}
 
       {formErrorSummary ? (
         <div

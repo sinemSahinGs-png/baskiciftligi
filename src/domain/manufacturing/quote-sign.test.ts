@@ -55,6 +55,13 @@ describe("quote signatures", () => {
       ),
     ).toBe(false);
     expect(
+      verifyQuoteSignature(
+        { ...payload, pricingVersion: 2 },
+        signature,
+        "secret",
+      ),
+    ).toBe(false);
+    expect(
       verifyQuoteSignature(payload, signature, "other-secret"),
     ).toBe(false);
   });

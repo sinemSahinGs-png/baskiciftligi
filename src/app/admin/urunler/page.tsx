@@ -6,6 +6,7 @@ import { AdminPageHeader } from "@/components/admin/admin-page";
 import { ProductCatalogTable } from "@/components/admin/product-catalog-table";
 import { getAdminCatalogOverview } from "@/domain/catalog/admin-repository";
 import type { ProductStatus } from "@/domain/catalog/types";
+import { isE2eCatalogFixture } from "@/lib/catalog/e2e-fixture";
 import { allowDemoCatalogImport } from "@/lib/catalog/source";
 import { allowProductionDemoImport } from "@/lib/env";
 
@@ -56,12 +57,15 @@ export default async function ProductsPage({
               ? product.inventoryQuantity > 0
               : true;
       const matchesFeatured = featured === "1" ? product.featured : true;
+      const matchesFixture =
+        Boolean(normalizedSearch) || !isE2eCatalogFixture(product);
       return (
         matchesSearch &&
         matchesStatus &&
         matchesCategory &&
         matchesStock &&
-        matchesFeatured
+        matchesFeatured &&
+        matchesFixture
       );
     })
     .sort((left, right) => {

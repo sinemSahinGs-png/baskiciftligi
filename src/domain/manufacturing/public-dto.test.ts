@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { publicQuote } from "./public-dto";
-import { DEVELOPMENT_SEED_RATES } from "./pricing";
-import type { ManufacturingQuoteRecord } from "./types";
+import { priceCart } from "@/domain/commerce/cart-pricing";
+import { publicQuote } from "@/domain/manufacturing/public-dto";
+import {
+  assertPublicPayloadSafe,
+  findForbiddenPublicCostFields,
+} from "@/domain/manufacturing/public-payload-security";
+import { DEVELOPMENT_SEED_RATES } from "@/domain/manufacturing/pricing";
+import type { ManufacturingQuoteRecord } from "@/domain/manufacturing/types";
 
 const quote: ManufacturingQuoteRecord = {
   id: "q1",
@@ -97,13 +102,31 @@ const quote: ManufacturingQuoteRecord = {
 };
 
 describe("public quote DTO", () => {
-  it("hides internal cost rates from the customer payload", () => {
-    const dto = publicQuote(quote, null);
-    expect(dto.internal).toBeNull();
-    expect(JSON.stringify(dto)).not.toContain("targetMarginRate");
-    expect(JSON.stringify(dto)).not.toContain("riskRate");
-    expect(JSON.stringify(dto)).not.toMatch(/machineHourlyRate/);
+  it("never exposes internal cost fields regardless of session role", () => {
+    const dto = publicQuote(quote);
+    expect("internal" in dto).toBe(false);
+    expect(dto.metrics.supportGenerated).toBeNull();
     expect(dto.breakdown.shippingStatus).toBe("not_included");
     expect(DEVELOPMENT_SEED_RATES.minimumOrderNetMinor).toBe(7500);
+    assertPublicPayloadSafe(dto);
+  });
+
+  it("keeps manufacturing cart metadata customer-safe", () => {
+    const line = {
+      manufacturing: {
+        netMinor: 7500,
+        vatMinor: 1500,
+        grossMinor: 9000,
+      },
+    };
+    assertPublicPayloadSafe(line);
+    expect(line.manufacturing.netMinor).toBe(7500);
+    expect(line.manufacturing.vatMinor).toBe(1500);
+  });
+
+  it("recursively rejects forbidden cost keys in public cart pricing", () => {
+    const cart = priceCart([], []);
+    const hits = findForbiddenPublicCostFields(cart);
+    expect(hits).toEqual([]);
   });
 });

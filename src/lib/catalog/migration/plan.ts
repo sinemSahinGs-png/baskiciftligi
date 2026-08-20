@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 
 import type { Category, Collection, Product } from "@/domain/catalog/types";
-import { CATALOG_EXPORT_SCHEMA_VERSION } from "@/lib/catalog/migration/schema";
+import { CATALOG_EXPORT_SCHEMA_VERSION, validateCatalogSnapshot } from "@/lib/catalog/migration/schema";
 import type { CatalogExportDocument } from "@/lib/catalog/migration/schema";
-import { validateCatalogSnapshot } from "@/lib/catalog/migration/schema";
+import { isE2eCatalogFixture } from "@/lib/catalog/e2e-fixture";
 
 function stableRecordId(id: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -102,6 +102,16 @@ export function planCatalogImport(input: {
   );
 
   for (const product of input.document.catalog.products) {
+    if (isE2eCatalogFixture(product)) {
+      products.push({
+        op: "skip",
+        sku: product.sku,
+        slug: product.slug,
+        status: product.status,
+        product,
+      });
+      continue;
+    }
     const skuKey = product.sku.trim().toLocaleLowerCase("tr-TR");
     const slugKey = product.slug.trim().toLowerCase();
     const existingBySku = input.existing.productsBySku.get(skuKey);
@@ -172,13 +182,14 @@ export function planCatalogImport(input: {
 
   const creates = products.filter((item) => item.op === "create").length;
   const updates = products.filter((item) => item.op === "update").length;
+  const skips = products.filter((item) => item.op === "skip").length;
 
   return {
     schemaVersion: input.document.schemaVersion,
     dryRun: input.dryRun,
     creates,
     updates,
-    skips: 0,
+    skips,
     errors,
     products,
     categories,

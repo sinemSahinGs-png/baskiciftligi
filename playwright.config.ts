@@ -66,6 +66,7 @@ export default defineConfig({
     env: {
       ...process.env,
       ALLOW_DEMO_ADMIN_MUTATIONS: "true",
+      BC_FORCE_LOCAL_PERSISTENCE: "true",
     },
   },
 });

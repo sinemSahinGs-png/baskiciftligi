@@ -22,9 +22,12 @@ const document = JSON.parse(await readFile(file, "utf8")) as CatalogExportDocume
 
 if (!dryRun) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceRoleKey =
+    process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceRoleKey) {
-    console.error("Üretim commit için NEXT_PUBLIC_SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY gerekir.");
+    console.error(
+      "Üretim commit için NEXT_PUBLIC_SUPABASE_URL ve SUPABASE_SECRET_KEY (veya SUPABASE_SERVICE_ROLE_KEY) gerekir.",
+    );
     process.exit(1);
   }
   const result = await commitCatalogImportToSupabase({

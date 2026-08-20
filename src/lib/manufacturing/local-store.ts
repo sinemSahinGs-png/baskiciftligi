@@ -13,8 +13,13 @@ import type {
   PricingConfig,
   QuoteJobRecord,
   QuoteJobState,
+  QuoteRevocationRecord,
   QuoteStatusEvent,
 } from "@/domain/manufacturing/types";
+import {
+  assertQuoteCanBeRevoked,
+  HISTORICAL_INCORRECT_QUOTE_ID,
+} from "@/domain/manufacturing/quote-revocation";
 import {
   claimNextQueuedJob,
   expireStaleJobLocks,
@@ -46,6 +51,7 @@ function seedPricing(): PricingConfig {
     version: 1,
     checksum: pricingChecksum(DEVELOPMENT_SEED_RATES),
     rates: DEVELOPMENT_SEED_RATES,
+    calibration: null,
     formulaId: "bc-quote-v1",
     isDevelopmentSeed: true,
     activatedAt: createdAt,
@@ -63,7 +69,35 @@ function emptyStore(): ManufacturingStoreSnapshot {
     pricing: [seedPricing()],
     permissionReviews: [],
     integration: emptyIntegration(),
+    quoteRevocations: [],
   };
+}
+
+function ensureRevocationList(snapshot: ManufacturingStoreSnapshot) {
+  if (!snapshot.quoteRevocations) {
+    snapshot.quoteRevocations = [];
+  }
+}
+
+function applyDevHistoricalRevocations(snapshot: ManufacturingStoreSnapshot): boolean {
+  ensureRevocationList(snapshot);
+  const revocations = snapshot.quoteRevocations!;
+  const quote = snapshot.quotes.find((item) => item.id === HISTORICAL_INCORRECT_QUOTE_ID);
+  if (!quote) {
+    return false;
+  }
+  if (revocations.some((item) => item.quoteId === HISTORICAL_INCORRECT_QUOTE_ID)) {
+    return false;
+  }
+  revocations.push({
+    id: crypto.randomUUID(),
+    quoteId: HISTORICAL_INCORRECT_QUOTE_ID,
+    reason:
+      "Yanlış supportUsed fiyatlandırması (bc-gcode-support-v1 öncesi); yerel geliştirme iptali.",
+    revokedBy: "local-dev-bootstrap",
+    revokedAt: new Date().toISOString(),
+  });
+  return true;
 }
 
 async function readStore(): Promise<ManufacturingStoreSnapshot> {
@@ -75,7 +109,12 @@ async function readStore(): Promise<ManufacturingStoreSnapshot> {
     return emptyStore();
   }
   try {
-    return JSON.parse(contents) as ManufacturingStoreSnapshot;
+    const snapshot = JSON.parse(contents) as ManufacturingStoreSnapshot;
+    ensureRevocationList(snapshot);
+    if (process.env.NODE_ENV === "development" && applyDevHistoricalRevocations(snapshot)) {
+      await writeStore(snapshot);
+    }
+    return snapshot;
   } catch {
     return emptyStore();
   }
@@ -226,6 +265,30 @@ export async function localSavePricing(config: PricingConfig) {
   });
 }
 
+export async function localActivatePricingConfig(input: {
+  version: number;
+  activatedBy: string;
+  auditEntry: import("@/domain/manufacturing/types").PricingActivationAuditEntry;
+}) {
+  return mutate((snapshot) => {
+    const target = snapshot.pricing.find((item) => item.version === input.version);
+    if (!target) {
+      throw new Error(`Tarife sürümü ${input.version} bulunamadı.`);
+    }
+    if (target.formulaId !== "bc-quote-v2" || !target.calibration) {
+      throw new Error("Yalnızca bc-quote-v2 kalibrasyonu etkinleştirilebilir.");
+    }
+    const now = new Date().toISOString();
+    target.activatedAt = now;
+    target.activatedBy = input.activatedBy;
+    if (!snapshot.pricingAuditLog) {
+      snapshot.pricingAuditLog = [];
+    }
+    snapshot.pricingAuditLog.push(input.auditEntry);
+    return target;
+  });
+}
+
 export async function localListPricing() {
   const snapshot = await readStore();
   return [...snapshot.pricing].sort((a, b) => b.version - a.version);
@@ -268,6 +331,38 @@ export async function localIntegration() {
 export async function localListFiles() {
   const snapshot = await readStore();
   return [...snapshot.files].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function localGetQuoteRevocation(quoteId: string) {
+  const snapshot = await readStore();
+  return snapshot.quoteRevocations?.find((item) => item.quoteId === quoteId) ?? null;
+}
+
+export async function localRevokeQuote(input: {
+  quoteId: string;
+  reason: string;
+  revokedBy: string;
+}): Promise<QuoteRevocationRecord> {
+  return mutate((snapshot) => {
+    ensureRevocationList(snapshot);
+    const gate = assertQuoteCanBeRevoked({
+      quoteId: input.quoteId,
+      revocations: snapshot.quoteRevocations,
+      quoteExists: snapshot.quotes.some((item) => item.id === input.quoteId),
+    });
+    if (!gate.ok) {
+      throw new Error(gate.reason);
+    }
+    const record: QuoteRevocationRecord = {
+      id: crypto.randomUUID(),
+      quoteId: input.quoteId,
+      reason: input.reason.trim(),
+      revokedBy: input.revokedBy,
+      revokedAt: new Date().toISOString(),
+    };
+    snapshot.quoteRevocations!.push(record);
+    return record;
+  });
 }
 
 export async function localTransition(

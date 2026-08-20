@@ -3,11 +3,12 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { siteConfig } from "@/config/site";
+import { resolveAdminAccess } from "@/lib/auth/admin-access";
 import {
   canAccessLaunchCenter,
+  canCalibratePricing,
   canManageCatalog,
   canPublishCatalog,
-  canViewAdminCatalog,
 } from "@/lib/catalog/authorization";
 import {
   hasAdminPasswordSession,
@@ -64,16 +65,19 @@ export async function getViewer(): Promise<Viewer | null> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, role")
+    .select("display_name, role, is_active")
     .eq("id", user.id)
     .maybeSingle();
+
+  if (profile && profile.is_active === false) {
+    return null;
+  }
 
   return {
     id: user.id,
     email: user.email ?? "",
     displayName:
       profile?.display_name ??
-      user.user_metadata?.display_name ??
       user.email?.split("@")[0] ??
       `${siteConfig.name} müşterisi`,
     role: (profile?.role as AppRole | undefined) ?? "customer",
@@ -97,16 +101,15 @@ export async function requireAdmin(): Promise<Viewer> {
   }
 
   const viewer = await getViewer();
+  const gate = resolveAdminAccess(
+    viewer ? { role: viewer.role, isActive: true } : null,
+  );
 
-  if (!viewer) {
-    redirect("/giris?next=/admin");
+  if (!gate.allowed) {
+    redirect(gate.redirectTo);
   }
 
-  if (!canViewAdminCatalog(viewer.role)) {
-    redirect("/");
-  }
-
-  return viewer;
+  return viewer as Viewer;
 }
 
 export async function requireLaunchOperator(): Promise<Viewer> {
@@ -136,5 +139,13 @@ export async function requireCatalogPublisher(): Promise<Viewer> {
     throw new Error("Yayınlama yalnızca sahip veya yönetici içindir.");
   }
 
+  return viewer;
+}
+
+export async function requirePricingCalibrator(): Promise<Viewer> {
+  const viewer = await requireAdmin();
+  if (!canCalibratePricing(viewer.role, viewer.isDemo)) {
+    throw new Error("Fiyat kalibrasyonu yalnızca sahip içindir.");
+  }
   return viewer;
 }

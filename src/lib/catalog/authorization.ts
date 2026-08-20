@@ -36,8 +36,24 @@ export function canPublishCatalog(role: string | null | undefined): boolean {
   return role === "owner" || role === "admin";
 }
 
+export function canRevokeManufacturingQuotes(
+  role: string | null | undefined,
+): boolean {
+  return role === "owner";
+}
+
 export function canViewInternalCost(role: string | null | undefined): boolean {
   return role === "owner" || role === "admin";
+}
+
+export function canCalibratePricing(
+  role: string | null | undefined,
+  isDemo = false,
+): boolean {
+  if (role === "owner") {
+    return true;
+  }
+  return Boolean(isDemo) && role === "admin";
 }
 
 export function assertCatalogWriteAccess(role: string | null | undefined): void {

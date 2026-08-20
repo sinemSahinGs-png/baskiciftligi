@@ -50,8 +50,12 @@ ALLOW_DEMO_ADMIN_MUTATIONS=false
 Supabase Auth (when configured):
 
 - Site URL: `https://baskiciftligi.com`
-- Redirect allow-list: `https://baskiciftligi.com/**`
-- Do not add `localhost` or wildcard Vercel preview URLs to the production Auth project.
+- Redirect allow-list (no wildcards):
+  - `http://localhost:3000/auth/callback`
+  - `https://baskiciftligi.com/auth/callback`
+  - `https://www.baskiciftligi.com/auth/callback`
+- Password recovery uses PKCE only: `/auth/callback?next=/sifre-yenile`.
+  Do not enable implicit token-in-URL recovery links.
 
 İsteğe bağlı public iletişim alanları:
 

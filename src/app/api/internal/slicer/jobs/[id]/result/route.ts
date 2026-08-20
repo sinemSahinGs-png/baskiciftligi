@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { finalizePricedJob } from "@/domain/manufacturing/quote-service";
 import { duplicateWorkerResultAction } from "@/domain/manufacturing/job-lifecycle";
+import { actualSupportGenerated, GCODE_PARSER_VERSION } from "@/domain/manufacturing/gcode";
 import { getQuoteJob, transitionQuoteJob } from "@/domain/manufacturing/repository";
 import type { ReviewFlag, SlicingMetrics } from "@/domain/manufacturing/types";
 import { assertSlicerWorker } from "@/lib/manufacturing/worker-auth";
@@ -20,7 +21,12 @@ const resultSchema = z.object({
       filamentWeightGrams: z.number().positive(),
       estimatedDurationSeconds: z.number().positive(),
       layerCount: z.number().int().nullable(),
-      supportUsed: z.boolean(),
+      supportUsed: z.boolean().optional(),
+      supportGenerated: z.boolean().optional(),
+      supportMaterialMm: z.number().min(0).optional(),
+      supportMaterialGrams: z.number().min(0).optional(),
+      supportLayerCount: z.number().int().min(0).optional(),
+      gcodeParserVersion: z.string().max(40).optional(),
       materialId: z.literal("pla"),
       qualityId: z.enum(["ekonomik", "standart", "detayli"]),
       quantity: z.int().min(1),
@@ -83,7 +89,17 @@ export async function POST(
     return NextResponse.json({ ok: true, state: "failed" });
   }
 
-  const metrics = parsed.data.metrics as SlicingMetrics;
+  const incoming = parsed.data.metrics;
+  const supportGenerated = actualSupportGenerated(incoming);
+  const metrics = {
+    ...incoming,
+    supportGenerated,
+    supportUsed: supportGenerated,
+    supportMaterialMm: incoming.supportMaterialMm ?? 0,
+    supportMaterialGrams: incoming.supportMaterialGrams ?? 0,
+    supportLayerCount: incoming.supportLayerCount ?? 0,
+    gcodeParserVersion: incoming.gcodeParserVersion ?? GCODE_PARSER_VERSION,
+  } as SlicingMetrics;
   const flags = (parsed.data.flags ?? []) as ReviewFlag[];
   await transitionQuoteJob(job.id, "pricing", { metrics, reviewFlags: flags });
   const quote = await finalizePricedJob({ job: { ...job, metrics }, metrics, flags });

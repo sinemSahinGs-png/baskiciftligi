@@ -1,4 +1,5 @@
 import { computeQuotePrice } from "@/domain/manufacturing/pricing";
+import { computeCalibratedQuote } from "@/domain/manufacturing/pricing-calibration";
 import { DEVELOPMENT_PRINTER, qualityLabel } from "@/domain/manufacturing/profiles";
 import { signQuote } from "@/domain/manufacturing/quote-sign";
 import {
@@ -69,16 +70,28 @@ export async function finalizePricedJob(input: {
     !input.job.analysis?.fitsBuildVolume;
 
   const expiresAt = new Date(
-    Date.now() + pricing.rates.quoteLifetimeHours * 3600 * 1000,
+    Date.now() +
+      (pricing.calibration?.quoteLifetimeHours ?? pricing.rates.quoteLifetimeHours) *
+        3600 *
+        1000,
   ).toISOString();
 
-  const priced = computeQuotePrice({
-    metrics: input.metrics,
-    rates: pricing.rates,
-    reviewRequired,
-    expiresAt,
-    configurationSummary: configurationSummary(input.job),
-  });
+  const priced =
+    pricing.formulaId === "bc-quote-v2" && pricing.calibration
+      ? computeCalibratedQuote({
+          metrics: input.metrics,
+          calibration: pricing.calibration,
+          reviewRequired,
+          expiresAt,
+          configurationSummary: configurationSummary(input.job),
+        })
+      : computeQuotePrice({
+          metrics: input.metrics,
+          rates: pricing.rates,
+          reviewRequired,
+          expiresAt,
+          configurationSummary: configurationSummary(input.job),
+        });
 
   const quoteId = crypto.randomUUID();
   const signature = signQuote(
@@ -139,7 +152,13 @@ export function printerBuildVolume() {
   return DEVELOPMENT_PRINTER.buildVolumeMm;
 }
 
-export function quotePurchasable(quote: ManufacturingQuoteRecord) {
+export function quotePurchasable(
+  quote: ManufacturingQuoteRecord,
+  options?: { revoked?: boolean },
+) {
+  if (options?.revoked) {
+    return false;
+  }
   if (quote.status === "expired" || quote.status === "cancelled") {
     return false;
   }

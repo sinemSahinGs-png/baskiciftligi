@@ -126,7 +126,13 @@ export interface SlicingMetrics {
   filamentWeightGrams: number;
   estimatedDurationSeconds: number;
   layerCount: number | null;
+  /** True only when G-code contains actual support toolpath extrusion. */
   supportUsed: boolean;
+  supportGenerated?: boolean;
+  supportMaterialMm?: number;
+  supportMaterialGrams?: number;
+  supportLayerCount?: number;
+  gcodeParserVersion?: string;
   materialId: MaterialId;
   qualityId: QualityId;
   quantity: number;
@@ -185,12 +191,44 @@ export interface PricingRates {
   quantityAdjustments: Array<{ minQty: number; multiplier: number }>;
 }
 
+export type QuoteFormulaId = "bc-quote-v1" | "bc-quote-v2";
+
+export type MaintenanceBasis = "hourly" | "annual";
+export type PackagingBasis = "unit" | "shipment";
+
+export interface PricingCalibrationInputs {
+  filamentSpoolPriceMinor: number;
+  spoolWeightGrams: number;
+  wastePercent: number;
+  printerPurchasePriceMinor: number;
+  depreciationHours: number;
+  maintenanceBasis: MaintenanceBasis;
+  maintenanceMinor: number;
+  expectedAnnualPrintHours: number;
+  electricityPricePerKwhMinor: number;
+  printerPowerWatts: number;
+  laborHourlyMinor: number;
+  setupMinutesPerOrder: number;
+  postProcessingMinutesPerUnit: number;
+  supportRemovalMinutesPerJob: number;
+  packagingMinor: number;
+  packagingBasis: PackagingBasis;
+  failedPrintPercent: number;
+  targetMarginRate: number;
+  minimumOrderNetMinor: number;
+  vatRate: number;
+  shippingDisplayMinor: number;
+  shippingFreeThresholdMinor: number | null;
+  quoteLifetimeHours: number;
+}
+
 export interface PricingConfig {
   id: string;
   version: number;
   checksum: string;
   rates: PricingRates;
-  formulaId: "bc-quote-v1";
+  calibration: PricingCalibrationInputs | null;
+  formulaId: QuoteFormulaId;
   isDevelopmentSeed: boolean;
   activatedAt: string | null;
   activatedBy: string | null;
@@ -338,6 +376,28 @@ export interface PermissionReviewRecord {
   allowedCommercialUse: boolean;
 }
 
+export interface PricingActivationAuditEntry {
+  id: string;
+  at: string;
+  activatedBy: string;
+  previousVersion: number | null;
+  previousChecksum: string | null;
+  newVersion: number;
+  newChecksum: string;
+  formulaId: QuoteFormulaId;
+  backupFile: string;
+  verificationPassed: boolean;
+  cubeGrossMinor: number;
+}
+
+export interface QuoteRevocationRecord {
+  id: string;
+  quoteId: string;
+  reason: string;
+  revokedBy: string;
+  revokedAt: string;
+}
+
 export interface ManufacturingStoreSnapshot {
   files: ManufacturingFileRecord[];
   jobs: QuoteJobRecord[];
@@ -346,6 +406,8 @@ export interface ManufacturingStoreSnapshot {
   pricing: PricingConfig[];
   permissionReviews: PermissionReviewRecord[];
   integration: IntegrationStatusSnapshot;
+  pricingAuditLog?: PricingActivationAuditEntry[];
+  quoteRevocations?: QuoteRevocationRecord[];
 }
 
 export interface IntegrationStatusSnapshot {
@@ -367,6 +429,7 @@ export const ZIP_MAX_UNCOMPRESSED_BYTES = 200 * 1024 * 1024;
 export const JOB_LOCK_MS = 12 * 60 * 1000;
 export const JOB_MAX_ATTEMPTS = 3;
 export const FORMULA_ID = "bc-quote-v1" as const;
+export const CALIBRATED_FORMULA_ID = "bc-quote-v2" as const;
 export const ORIENTATION_CANDIDATES = [
   { rotateX: 0, rotateY: 0, rotateZ: 0 },
   { rotateX: 90, rotateY: 0, rotateZ: 0 },

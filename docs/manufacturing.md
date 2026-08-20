@@ -150,6 +150,12 @@ testine dahil değildir.
 
 ## Fiyatlandırma
 
+Canlı yerel hat hâlâ `bc-quote-v1` geliştirme tohumunu kullanır. Sahip
+kalibrasyonu (`bc-quote-v2`) `/admin/fiyatlandirma` altında taslak olarak
+durur ve onaylanmadan etkinleşmez. Ayrıntı: `docs/pricing-model.md`.
+İmzalı teklifler `pricingVersion` + `pricingChecksum` taşır; tarife değişince
+eski teklif yeniden fiyatlanmaz.
+
 Formül `bc-quote-v1` (kuruş). 90,00 TL taban, dilimleme kanıtı değildir.
 Hesap tabanın altındaysa ön-taban, taban farkı, net, KDV ve brüt ayrıca
 yazılır.

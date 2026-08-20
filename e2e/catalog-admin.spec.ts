@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
 import { openAdmin } from "./admin-session";
+
+const catalogShotDir = path.join(process.cwd(), "test-results", "catalog-acceptance");
 
 const pngBase64 =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
@@ -15,12 +17,31 @@ test.describe("admin catalog persistence flow", () => {
     page,
   }) => {
     test.setTimeout(180_000);
+    await mkdir(catalogShotDir, { recursive: true });
     const stamp = Date.now().toString(36);
     const name = `Playwright Katalog ${stamp}`;
     const sku = `PW-${stamp}`;
     const coverPath = path.join(os.tmpdir(), `pw-cover-${stamp}.png`);
     await writeFile(coverPath, Buffer.from(pngBase64, "base64"));
+    let productUrl: string | null = null;
 
+    async function deleteCreatedProduct() {
+      if (!productUrl) {
+        return;
+      }
+      await openAdmin(page, productUrl);
+      const remove = page.getByLabel("Ürün işlemleri").getByRole("button", { name: "Sil" });
+      if (!(await remove.isVisible().catch(() => false))) {
+        return;
+      }
+      page.once("dialog", (dialog) => dialog.accept());
+      await remove.click();
+      await expect(page.getByText("Ürün kalıcı olarak silindi.")).toBeVisible({
+        timeout: 20_000,
+      });
+    }
+
+    try {
     await openAdmin(page, "/admin/urunler/yeni");
     await expect(page.getByRole("heading", { name: "Yeni ürün" })).toBeVisible();
 
@@ -66,6 +87,8 @@ test.describe("admin catalog persistence flow", () => {
     await expect(page).toHaveURL(/\/admin\/urunler\/(?!yeni(?:\/|$)).+/, {
       timeout: 20_000,
     });
+    productUrl = page.url();
+    await expect(page.getByRole("button", { name: "Ürünü kaydet" })).toBeEnabled();
 
     await page.getByLabel("Durum").selectOption("active");
     const publishedAt = new Date();
@@ -82,6 +105,8 @@ test.describe("admin catalog persistence flow", () => {
     await expect(
       page.getByText("Ürün ve bağlı katalog kayıtları kaydedildi."),
     ).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#status")).toHaveValue("active");
+    await expect(page.locator("#publishedAt")).not.toHaveValue("");
 
     const slug = await page.getByLabel("Slug").inputValue();
     const previewHref = await page
@@ -96,6 +121,10 @@ test.describe("admin catalog persistence flow", () => {
     await expect(
       page.getByRole("link", { name: `${name} ürününü görüntüle` }),
     ).toBeVisible({ timeout: 15_000 });
+    await page.screenshot({
+      path: path.join(catalogShotDir, "magaza-published.png"),
+      fullPage: true,
+    });
 
     await page.goto(`/urun/${slug}`);
     await expect(page.getByRole("heading", { name })).toBeVisible({
@@ -105,6 +134,10 @@ test.describe("admin catalog persistence flow", () => {
     await expect(page.getByRole("banner").getByRole("link", { name: /Sepet, / })).toBeVisible();
 
     await openAdmin(page, "/admin/urunler");
+    await page.screenshot({
+      path: path.join(catalogShotDir, "admin-urunler.png"),
+      fullPage: true,
+    });
     await page.getByPlaceholder("Ad, slug veya SKU ara").fill(name);
     await page.getByRole("button", { name: "Filtrele" }).click();
     await expect(page.getByRole("link", { name, exact: true })).toBeVisible();
@@ -119,9 +152,16 @@ test.describe("admin catalog persistence flow", () => {
     await expect(
       page.getByRole("link", { name: `${name} ürününü görüntüle` }),
     ).toHaveCount(0);
+    await page.screenshot({
+      path: path.join(catalogShotDir, "magaza-archived.png"),
+      fullPage: true,
+    });
     await page.goto(`/urun/${slug}`);
     await expect(
       page.getByRole("button", { name: "Sepete ekle", exact: true }),
     ).toHaveCount(0);
+    } finally {
+      await deleteCreatedProduct();
+    }
   });
 });

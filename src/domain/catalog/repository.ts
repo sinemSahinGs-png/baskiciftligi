@@ -19,6 +19,7 @@ import { productionVitrineSnapshot } from "@/lib/catalog/production-vitrine";
 import { resolveCategoryCoverUrl } from "@/lib/catalog/category-cover";
 import { catalogMediaPublicUrl } from "@/lib/catalog/media-url";
 import { resolveCatalogSource } from "@/lib/catalog/source";
+import { productMatchesSearch } from "@/lib/catalog/storefront-listing";
 import { isPubliclyVisibleProduct } from "@/lib/catalog/visibility";
 import { loadDemoCatalog } from "@/lib/demo/catalog-store";
 import { isSupabaseConfigured } from "@/lib/env";
@@ -253,6 +254,12 @@ async function loadSupabaseCatalog(): Promise<CatalogSnapshot> {
   ].find(Boolean);
 
   if (firstError) {
+    const missingSchema =
+      firstError.code === "PGRST205" ||
+      /schema cache/i.test(firstError.message);
+    if (missingSchema) {
+      return productionVitrineSnapshot();
+    }
     throw new Error(`Katalog sorgusu başarısız: ${firstError.message}`);
   }
 
@@ -434,11 +441,7 @@ export async function listProducts(query: ProductQuery = {}): Promise<Product[]>
         !query.collection || product.collectionSlugs.includes(query.collection),
     )
     .filter(
-      (product) =>
-        !normalizedQuery ||
-        `${product.name} ${product.shortDescription} ${product.description}`
-          .toLocaleLowerCase("tr-TR")
-          .includes(normalizedQuery),
+      (product) => !normalizedQuery || productMatchesSearch(product, normalizedQuery),
     )
     .filter((product) => !query.kind || product.kind === query.kind)
     .filter(

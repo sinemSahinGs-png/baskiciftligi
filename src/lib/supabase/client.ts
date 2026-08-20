@@ -2,19 +2,19 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 
-import { isSupabaseConfigured, publicEnv } from "@/lib/env";
+import { isSupabaseConfigured, publicEnv, supabasePublishableKey } from "@/lib/env";
 
 export function createBrowserSupabaseClient() {
   if (
     !isSupabaseConfigured ||
     !publicEnv.NEXT_PUBLIC_SUPABASE_URL ||
-    !publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    !supabasePublishableKey
   ) {
     return null;
   }
 
   return createBrowserClient(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-    publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublishableKey,
   );
 }

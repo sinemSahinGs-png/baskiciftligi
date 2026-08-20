@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { Route } from "next";
 import { Search } from "lucide-react";
 
@@ -14,6 +15,7 @@ import {
   ModelLibraryStateGrid,
 } from "@/components/models/model-library-state";
 import { ThingiverseDiscovery } from "@/components/models/thingiverse-discovery";
+import { UnifiedModelDiscovery } from "@/components/models/unified-model-discovery";
 import type { ModelSource } from "@/components/models/model-source-badge";
 import { RevealHeading } from "@/components/motion/reveal-words";
 import { StaggerGrid, StaggerItem } from "@/components/motion/stagger-grid";
@@ -49,12 +51,16 @@ function toCards(): ModelCardData[] {
 }
 
 export function ModelLibrary() {
-  const [query, setQuery] = useState("");
+  const searchParams = useSearchParams();
+  const urlQuery = searchParams.get("q") ?? "";
+  const [query, setQuery] = useState(urlQuery);
   const [source, setSource] = useState<ModelSource | "all">("all");
   const [category, setCategory] = useState("");
   const modelIds = useFavoritesStore((state) => state.modelIds);
   const toggleModel = useFavoritesStore((state) => state.toggleModel);
   const hasHydrated = useFavoritesStore((state) => state.hasHydrated);
+
+  const effectiveQuery = urlQuery || query;
 
   const cards = useMemo(() => toCards(), []);
   const categories = [...new Set(cards.map((card) => card.category))];
@@ -138,6 +144,8 @@ export function ModelLibrary() {
         </div>
 
         <div className="mt-6 flex flex-wrap gap-2">
+          {categories.length > 0 ? (
+            <>
           <button
             type="button"
             onClick={() => setCategory("")}
@@ -163,9 +171,15 @@ export function ModelLibrary() {
               {item}
             </button>
           ))}
+            </>
+          ) : null}
         </div>
 
         {source === "thingiverse" ? <ThingiverseDiscovery /> : null}
+
+        {source === "all" && effectiveQuery.trim() ? (
+          <UnifiedModelDiscovery query={effectiveQuery} />
+        ) : null}
 
         {source === "licensed" ? (
           <section className="mt-10 space-y-6">
@@ -182,6 +196,7 @@ export function ModelLibrary() {
         ) : null}
 
         {source === "all" || source === "owned" ? (
+          !effectiveQuery.trim() ? (
           visible.length > 0 ? (
             <StaggerGrid
               as="ul"
@@ -221,6 +236,7 @@ export function ModelLibrary() {
               }
             />
           )
+          ) : null
         ) : null}
 
         {source === "all" ? (

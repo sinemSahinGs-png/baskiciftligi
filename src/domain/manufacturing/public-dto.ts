@@ -1,5 +1,4 @@
 import type { ManufacturingQuoteRecord, QuoteJobRecord, QuoteStatusEvent } from "@/domain/manufacturing/types";
-import { canViewInternalCost } from "@/lib/catalog/authorization";
 
 const JOB_COPY: Record<QuoteJobRecord["state"], string> = {
   created: "Kuyruğa alındı",
@@ -41,6 +40,9 @@ export function publicJob(job: QuoteJobRecord, events: QuoteStatusEvent[]) {
           estimatedDurationSeconds: job.metrics.estimatedDurationSeconds,
           layerCount: job.metrics.layerCount,
           supportUsed: job.metrics.supportUsed,
+          supportGenerated: job.metrics.supportGenerated ?? null,
+          supportMaterialGrams: job.metrics.supportMaterialGrams ?? null,
+          supportLayerCount: job.metrics.supportLayerCount ?? null,
           orientation: job.metrics.orientation,
           engine: job.metrics.engine,
         }
@@ -57,10 +59,7 @@ export function publicJob(job: QuoteJobRecord, events: QuoteStatusEvent[]) {
   };
 }
 
-export function publicQuote(
-  quote: ManufacturingQuoteRecord,
-  role?: string | null,
-) {
+export function publicQuote(quote: ManufacturingQuoteRecord) {
   return {
     id: quote.id,
     jobId: quote.jobId,
@@ -72,6 +71,9 @@ export function publicQuote(
       estimatedDurationSeconds: quote.metrics.estimatedDurationSeconds,
       layerCount: quote.metrics.layerCount,
       supportUsed: quote.metrics.supportUsed,
+      supportGenerated: quote.metrics.supportGenerated ?? null,
+      supportMaterialGrams: quote.metrics.supportMaterialGrams ?? null,
+      supportLayerCount: quote.metrics.supportLayerCount ?? null,
       engine: quote.metrics.engine,
     },
     breakdown: quote.publicBreakdown,
@@ -87,6 +89,5 @@ export function publicQuote(
       sourceUrl: quote.provenance.sourceUrl,
       creatorUsername: quote.provenance.creatorUsername,
     },
-    internal: canViewInternalCost(role) ? quote.internalBreakdown : null,
   };
 }

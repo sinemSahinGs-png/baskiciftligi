@@ -16,4 +16,5 @@ export async function openAdmin(page: Page, path: string) {
   await page.getByLabel("Yönetici şifresi").fill(password);
   await page.getByRole("button", { name: "Panele gir" }).click();
   await page.waitForURL((url) => !url.pathname.startsWith("/admin/giris"));
+  await page.goto(path);
 }

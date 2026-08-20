@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { getManufacturingQuote } from "@/domain/manufacturing/repository";
 import { publicQuote } from "@/domain/manufacturing/public-dto";
 import { getManufacturingActor, ownsRecord } from "@/lib/manufacturing/session";
-import { canViewInternalCost } from "@/lib/catalog/authorization";
 
 export async function GET(
   _request: Request,
@@ -15,10 +14,10 @@ export async function GET(
     return NextResponse.json({ error: "Teklif bulunamadı." }, { status: 404 });
   }
   const actor = await getManufacturingActor();
-  if (!ownsRecord(actor, quote) && !canViewInternalCost(actor.role)) {
+  if (!ownsRecord(actor, quote)) {
     return NextResponse.json({ error: "Teklif bulunamadı." }, { status: 404 });
   }
-  return NextResponse.json(publicQuote(quote, actor.role), {
+  return NextResponse.json(publicQuote(quote), {
     headers: { "Cache-Control": "private, no-store" },
   });
 }

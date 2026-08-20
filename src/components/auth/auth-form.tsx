@@ -203,6 +203,17 @@ export function AuthForm({ mode, configured, nextPath }: AuthFormProps) {
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
+        {isLogin ? (
+          <>
+            <Link
+              href="/sifre-unuttum"
+              className="font-semibold underline-offset-4 hover:underline"
+            >
+              Şifremi unuttum
+            </Link>
+            <span className="mx-2 text-hairline">·</span>
+          </>
+        ) : null}
         {isLogin ? "Henüz hesabınız yok mu?" : "Zaten hesabınız var mı?"}{" "}
         <Link
           href={isLogin ? "/kayit" : "/giris"}

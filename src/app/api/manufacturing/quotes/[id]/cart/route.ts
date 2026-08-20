@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { configurationsMatch, verifyQuoteSignature } from "@/domain/manufacturing/quote-sign";
 import type { PrintConfiguration } from "@/domain/manufacturing/types";
-import { getManufacturingFile, getManufacturingQuote } from "@/domain/manufacturing/repository";
+import { getManufacturingFile, getManufacturingQuote, getQuoteRevocation } from "@/domain/manufacturing/repository";
 import { quotePurchasable } from "@/domain/manufacturing/quote-service";
 import { getManufacturingActor, ownsRecord } from "@/lib/manufacturing/session";
 import { quoteHmacSecret } from "@/lib/manufacturing/paths";
@@ -64,6 +64,12 @@ export async function POST(
   const actor = await getManufacturingActor();
   if (!ownsRecord(actor, quote)) {
     return NextResponse.json({ error: "Teklif bulunamadı." }, { status: 404 });
+  }
+  if (await getQuoteRevocation(id)) {
+    return NextResponse.json(
+      { error: "Bu teklif iptal edildi ve sepete eklenemez." },
+      { status: 409 },
+    );
   }
   const file = await getManufacturingFile(quote.fileId);
   if (!file || file.checksumSha256 !== quote.fileChecksum) {

@@ -23,6 +23,8 @@ import {
 import { parseStoreQuery } from "@/domain/home/homepage";
 import { stageForCategory } from "@/domain/visual/stages";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Mağaza",
   description: `${siteConfig.name} koleksiyonu: ev objeleri, masaüstü tasarımları ve kişiye özel üretim.`,

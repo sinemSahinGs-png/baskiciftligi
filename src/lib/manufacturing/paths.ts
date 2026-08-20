@@ -3,8 +3,8 @@ import "server-only";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { isDevelopmentDemoMode, isSupabaseConfigured } from "@/lib/env";
-import { serverEnv } from "@/lib/env.server";
+import { forceLocalPersistence, isDevelopmentDemoMode, isSupabaseConfigured } from "@/lib/env";
+import { serverEnv, supabaseSecretKey } from "@/lib/env.server";
 import {
   MANUFACTURING_MAX_UPLOAD_BYTES,
 } from "@/domain/manufacturing/types";
@@ -34,6 +34,9 @@ export function manufacturingUsesLocalPersistence() {
   if (process.env.NODE_ENV === "production") {
     return false;
   }
+  if (forceLocalPersistence) {
+    return true;
+  }
   return isDevelopmentDemoMode || !isSupabaseConfigured;
 }
 
@@ -41,7 +44,7 @@ export function manufacturingPersistenceReady() {
   if (manufacturingUsesLocalPersistence()) {
     return true;
   }
-  return isSupabaseConfigured && Boolean(serverEnv.SUPABASE_SERVICE_ROLE_KEY);
+  return isSupabaseConfigured && Boolean(supabaseSecretKey);
 }
 
 export function maxUploadBytes() {
@@ -113,14 +116,23 @@ export async function ensureManufacturingDirs() {
 }
 
 export async function writePrivateObject(storageKey: string, bytes: Uint8Array) {
-  await ensureManufacturingDirs();
-  const target = manufacturingObjectPath(storageKey);
-  await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, bytes);
+  if (manufacturingUsesLocalPersistence()) {
+    await ensureManufacturingDirs();
+    const target = manufacturingObjectPath(storageKey);
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeFile(target, bytes);
+    return;
+  }
+  const { supabaseWriteObject } = await import("@/lib/manufacturing/supabase-store");
+  await supabaseWriteObject(storageKey, bytes);
 }
 
 export async function readPrivateObject(storageKey: string): Promise<Uint8Array> {
-  return new Uint8Array(await readFile(manufacturingObjectPath(storageKey)));
+  if (manufacturingUsesLocalPersistence()) {
+    return new Uint8Array(await readFile(manufacturingObjectPath(storageKey)));
+  }
+  const { supabaseReadObject } = await import("@/lib/manufacturing/supabase-store");
+  return supabaseReadObject(storageKey);
 }
 
 export async function deletePrivateObject(storageKey: string) {

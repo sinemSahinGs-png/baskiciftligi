@@ -2,14 +2,21 @@
 
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ChangeEvent, DragEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import type { ChangeEvent, DragEvent, PointerEvent as ReactPointerEvent } from "react";
 import {
   AlertCircle,
+  ChevronDown,
+  GripHorizontal,
   RotateCcw,
   Ruler,
   UploadCloud,
-  X,
 } from "lucide-react";
 
 import { FormSignal } from "@/components/brand/form-signal";
@@ -181,7 +188,7 @@ export function ModelConfigurator() {
     setQuote(null);
     setJobId(null);
     setStep(rights ? 1 : 0);
-    setMobileOpen(true);
+    setMobileOpen(false);
     announceStatus(`${nextFile.name} yerel olarak okunuyor.`);
   }
 
@@ -202,9 +209,6 @@ export function ModelConfigurator() {
 
   function goToStep(index: number) {
     setStep(index);
-    if (!isDesktop) {
-      setMobileOpen(true);
-    }
   }
 
   async function submitJob() {
@@ -463,6 +467,7 @@ export function ModelConfigurator() {
               STL · 3MF · OBJ · 100 MB
             </span>
           </label>
+          {isDesktop ? (
           <label className="mt-4 flex items-start gap-3 text-sm leading-6">
             <input
               type="checkbox"
@@ -472,6 +477,7 @@ export function ModelConfigurator() {
             />
             <span>{RIGHTS_COPY}</span>
           </label>
+          ) : null}
         </div>
       ) : null}
 
@@ -778,15 +784,74 @@ export function ModelConfigurator() {
   );
 
   const priceHint = quote
-    ? formatMoney(quote.grossMinor)
+    ? `${formatMoney(quote.grossMinor)} KDV dahil`
     : jobLabel ?? "Fiyat, dilimleme bitince görünür";
+  const drawerDragStart = useRef<number | null>(null);
+
+  function onDrawerHandlePointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+    drawerDragStart.current = event.clientY;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function onDrawerHandlePointerUp(event: ReactPointerEvent<HTMLButtonElement>) {
+    const start = drawerDragStart.current;
+    drawerDragStart.current = null;
+    if (start === null) {
+      return;
+    }
+    const delta = start - event.clientY;
+    if (Math.abs(delta) < 24) {
+      setMobileOpen((open) => !open);
+      return;
+    }
+    setMobileOpen(delta > 0);
+  }
+
+  const collapsedPrimaryAction =
+    step === 6 ? (
+      quote ? (
+        <button
+          type="button"
+          disabled={!quote}
+          onClick={() => void addQuoteToCart()}
+          className="inline-flex min-h-11 shrink-0 items-center rounded-md border border-cyan px-3 text-sm font-semibold disabled:opacity-40"
+        >
+          Teklifi sepete ekle
+        </button>
+      ) : (
+        <button
+          type="button"
+          disabled={!rights || submitting || technology === "SLA"}
+          onClick={() => void submitJob()}
+          className="inline-flex min-h-11 shrink-0 items-center rounded-md bg-cobalt px-3 text-sm font-semibold text-light-text disabled:opacity-40"
+        >
+          {submitting ? "Gönderiliyor" : "Analiz ve dilimlemeyi başlat"}
+        </button>
+      )
+    ) : (
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        className="inline-flex min-h-11 shrink-0 items-center rounded-md bg-cobalt px-4 text-sm font-semibold text-light-text"
+      >
+        Yapılandır
+      </button>
+    );
 
   return (
-    <div className="grid min-w-0 bg-midnight text-light-text lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]">
+    <div
+      data-testid="configurator-shell"
+      className="flex h-[calc(100svh-4rem)] min-h-[calc(100svh-4rem)] min-w-0 flex-col bg-midnight text-light-text lg:grid lg:h-auto lg:min-h-0 lg:grid-cols-[minmax(0,1.2fr)_minmax(22rem,0.8fr)]"
+    >
       <section
+        data-testid="mesh-viewer"
         className={cn(
-          "relative overflow-hidden lg:min-h-[calc(100svh-4rem)]",
-          mobileOpen && !isDesktop ? "min-h-[38svh] max-h-[42svh]" : "min-h-[28rem]",
+          "relative min-h-0 overflow-hidden lg:min-h-[calc(100svh-4rem)]",
+          !isDesktop && mobileOpen
+            ? "h-[38%] min-h-[38%] shrink-0"
+            : !isDesktop
+              ? "min-h-[42%] flex-1"
+              : "min-h-[28rem]",
         )}
       >
         <FoundryGrid variant="measure" />
@@ -827,7 +892,7 @@ export function ModelConfigurator() {
         <div
           className={cn(
             "relative lg:min-h-[calc(100svh-8rem)]",
-            mobileOpen && !isDesktop ? "min-h-[32svh]" : "min-h-[24rem]",
+            !isDesktop ? "h-[calc(100%-3.25rem)] min-h-[12rem]" : "min-h-[24rem]",
           )}
           onDragOver={(event) => event.preventDefault()}
           onDrop={onDrop}
@@ -892,45 +957,76 @@ export function ModelConfigurator() {
         </aside>
       ) : null}
 
-      <div className="sticky bottom-0 z-30 border-t border-white/10 bg-carbon lg:hidden">
-        {stepNav("mobile", true)}
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">
-              {file?.name ?? "Dosya seçilmedi"}
-            </p>
-            <p className="text-xs text-muted-light">{priceHint}</p>
-          </div>
+      {!isDesktop ? (
+      <div
+        data-testid="config-drawer"
+        data-expanded={mobileOpen ? "true" : "false"}
+        className={cn(
+          "z-30 flex flex-col border-t border-white/10 bg-carbon pb-[env(safe-area-inset-bottom)] lg:hidden",
+          mobileOpen ? "min-h-0 max-h-[62%] flex-1" : "shrink-0",
+        )}
+      >
+        <button
+          type="button"
+          aria-label="Yapılandırma panelini sürükle"
+          onPointerDown={onDrawerHandlePointerDown}
+          onPointerUp={onDrawerHandlePointerUp}
+          className="flex min-h-8 touch-none items-center justify-center pt-2"
+        >
+          <GripHorizontal className="size-5 text-muted-light" aria-hidden="true" />
+        </button>
+        <div className="flex items-center justify-between gap-2 px-4 pb-2">
+          <p className="min-w-0 truncate text-sm font-semibold">
+            {file?.name ?? "Dosya seçilmedi"}
+            {scaledDims
+              ? ` · ${formatMm(scaledDims.x)} × ${formatMm(scaledDims.y)} × ${formatMm(scaledDims.z)}`
+              : ""}
+          </p>
           <button
             type="button"
-            onClick={() => setMobileOpen(true)}
-            className="inline-flex min-h-11 items-center rounded-md bg-cobalt px-4 text-sm font-semibold text-light-text"
+            aria-expanded={mobileOpen}
+            aria-controls="config-drawer-panel"
+            onClick={() => setMobileOpen((open) => !open)}
+            className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md px-3 text-sm font-semibold"
           >
-            Yapılandır
+            {mobileOpen ? "Küçült" : "Genişlet"}
+            <ChevronDown
+              aria-hidden="true"
+              className={cn("size-4 transition-transform", mobileOpen && "rotate-180 motion-reduce:transition-none")}
+            />
           </button>
         </div>
-      </div>
-
-      {mobileOpen && !isDesktop ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 flex max-h-[min(32rem,58svh)] flex-col overflow-x-hidden rounded-t-2xl border-t border-white/10 bg-carbon text-light-text shadow-[0_-16px_40px_rgba(0,0,0,0.4)] lg:hidden">
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-            <p className="min-w-0 truncate font-heading text-xl font-bold">
-              {step + 1}. {steps[step]}
-            </p>
-            <button
-              type="button"
-              aria-label="Kapat"
-              onClick={() => setMobileOpen(false)}
-              className="grid size-11 shrink-0 place-items-center"
-            >
-              <X />
-            </button>
-          </div>
-          {stepNav("mobile-sheet", true)}
-          <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-5 pb-8">
-            {stepContent}
-          </div>
+        <label className="flex items-start gap-3 px-4 pb-2 text-xs leading-5">
+          <input
+            type="checkbox"
+            checked={rights}
+            onChange={(event) => setRights(event.target.checked)}
+            className="mt-1"
+          />
+          <span>{RIGHTS_COPY}</span>
+        </label>
+        <div className="flex items-center justify-between gap-3 px-4 pb-3">
+          <p className="min-w-0 truncate text-xs text-muted-light">{priceHint}</p>
+          {collapsedPrimaryAction}
         </div>
+        {error ? (
+          <p role="alert" className="flex gap-2 px-4 pb-3 text-sm text-error">
+            <AlertCircle aria-hidden="true" className="size-4 shrink-0" />
+            {error}
+          </p>
+        ) : null}
+        {mobileOpen ? (
+          <div
+            id="config-drawer-panel"
+            className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
+          >
+            {stepNav("mobile-sheet", true)}
+            <div className="space-y-6 p-5 pb-8">{stepContent}</div>
+          </div>
+        ) : (
+          <div className="px-3 pb-3">{stepNav("mobile", true)}</div>
+        )}
+      </div>
       ) : null}
     </div>
   );

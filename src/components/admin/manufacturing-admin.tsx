@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { AdminPageHeader } from "@/components/admin/admin-page";
+import { PricingCalibrationForm } from "@/components/admin/pricing-calibration-form";
 import { formatMoney } from "@/lib/money";
 
 interface AdminPayload {
@@ -18,17 +19,61 @@ interface AdminPayload {
     flags: string[];
     metrics: { grams: number; seconds: number } | null;
   }>;
-  pricing: Array<{ version: number; activatedAt: string | null; isDevelopmentSeed: boolean }>;
+  pricing: Array<{
+    version: number;
+    formulaId?: string;
+    activatedAt: string | null;
+    isDevelopmentSeed: boolean;
+    status?: string;
+  }>;
   active: {
     version: number;
     isDevelopmentSeed: boolean;
-    rates: {
+    formulaId?: string;
+    rates?: {
       materialPricePerGramMinor: number;
       machineHourlyRateMinor: number;
       vatRate: number;
       minimumOrderNetMinor: number;
     };
   } | null;
+  pricingAudit?: {
+    notes: string[];
+    scenarios: Array<{
+      id: string;
+      label: string;
+      quantity: number;
+      grams: number;
+      seconds: number;
+      materialMinor: number;
+      machineMinor: number;
+      energyMinor: number;
+      setupMinor: number;
+      postMinor: number;
+      packagingMinor: number;
+      supportMinor: number;
+      directMinor: number;
+      riskAdjustedMinor: number;
+      netMinor: number;
+      vatMinor: number;
+      grossMinor: number;
+      shippingMinor: number;
+      cartTotalMinor: number;
+      unitGrossMinor: number;
+    }>;
+    inactiveOptions: Array<{
+      id: string;
+      label: string;
+      status: "inactive";
+      summary: string;
+      materialPricePerGramMinor: number;
+      machineHourlyRateMinor: number;
+      targetMarginRate: number;
+      setupFeeMinor: number;
+    }>;
+  } | null;
+  canCalibrate?: boolean;
+  showInternal?: boolean;
 }
 
 export function ManufacturingAdmin({
@@ -94,12 +139,15 @@ export function ManufacturingAdmin({
           <p className="text-sm">
             Aktif sürüm: {data.active ? `v${data.active.version}` : "yok"}
           </p>
-          {data.active ? (
+          {data.active?.rates ? (
             <p className="mt-2 text-sm">
               PLA {formatMoney(data.active.rates.materialPricePerGramMinor)}/g · makine{" "}
               {formatMoney(data.active.rates.machineHourlyRateMinor)}/sa · min{" "}
               {formatMoney(data.active.rates.minimumOrderNetMinor)} · KDV %{" "}
               {Math.round(data.active.rates.vatRate * 100)}
+              <span className="block text-muted-foreground">
+                Bu satır geliştirme tohumudur (bc-quote-v1). Üretim kalibrasyonu değildir.
+              </span>
             </p>
           ) : null}
           <p className="mt-4 text-sm text-muted-foreground">
@@ -111,9 +159,88 @@ export function ManufacturingAdmin({
               <li key={item.version}>
                 v{item.version} {item.activatedAt ? "etkin" : "taslak"}
                 {item.isDevelopmentSeed ? " · tohum" : ""}
+                {item.formulaId ? ` · ${item.formulaId}` : ""}
               </li>
             ))}
           </ul>
+          {data.pricingAudit ? (
+            <div className="mt-8 space-y-6">
+              <section>
+                <h2 className="font-heading text-xl">Canlı küp dönüşümü</h2>
+                <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                  {data.pricingAudit.notes.map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
+                </ul>
+              </section>
+              <section className="overflow-x-auto">
+                <h2 className="font-heading text-xl">Senaryo tablosu</h2>
+                <table className="mt-3 min-w-[64rem] text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="py-2 pr-3">Senaryo</th>
+                      <th className="py-2 pr-3">Malzeme</th>
+                      <th className="py-2 pr-3">Makine</th>
+                      <th className="py-2 pr-3">Enerji</th>
+                      <th className="py-2 pr-3">Kurulum</th>
+                      <th className="py-2 pr-3">Son işlem</th>
+                      <th className="py-2 pr-3">Paket</th>
+                      <th className="py-2 pr-3">Destek</th>
+                      <th className="py-2 pr-3">Net</th>
+                      <th className="py-2 pr-3">KDV</th>
+                      <th className="py-2 pr-3">Brüt</th>
+                      <th className="py-2 pr-3">Kargo</th>
+                      <th className="py-2 pr-3">Birim</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.pricingAudit.scenarios.map((row) => (
+                      <tr key={row.id} className="border-b border-white/5">
+                        <td className="py-2 pr-3">{row.label}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.materialMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.machineMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.energyMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.setupMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.postMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.packagingMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.supportMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.netMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.vatMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.grossMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.shippingMinor)}</td>
+                        <td className="py-2 pr-3">{formatMoney(row.unitGrossMinor)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+              <section>
+                <h2 className="font-heading text-xl">Etkin olmayan tarif önerileri</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Bu seçenekler kaydedilmez ve aktif oranı değiştirmez. Sahip açıkça
+                  seçene kadar hepsi inactive kalır.
+                </p>
+                <ul className="mt-4 grid gap-3 md:grid-cols-3">
+                  {data.pricingAudit.inactiveOptions.map((option) => (
+                    <li key={option.id} className="rounded-2xl border border-dashed border-white/15 p-4">
+                      <p className="text-xs font-bold tracking-[0.14em] text-warm uppercase">
+                        {option.status}
+                      </p>
+                      <p className="mt-2 font-heading text-lg">{option.label}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">{option.summary}</p>
+                      <p className="mt-3 text-xs">
+                        {formatMoney(option.materialPricePerGramMinor)}/g ·{" "}
+                        {formatMoney(option.machineHourlyRateMinor)}/sa · marj %{" "}
+                        {Math.round(option.targetMarginRate * 100)} · kurulum{" "}
+                        {formatMoney(option.setupFeeMinor)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          ) : null}
+          <PricingCalibrationForm canCalibrate={Boolean(data.canCalibrate)} />
         </section>
       ) : null}
       {mode === "jobs" ? (

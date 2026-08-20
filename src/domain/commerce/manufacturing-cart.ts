@@ -16,6 +16,7 @@ function quoteVerifySecret() {
 
 export function pricedManufacturingLine(
   quote: ManufacturingQuoteRecord,
+  options?: { revoked?: boolean },
 ): PricedCartLine {
   const signatureOk = verifyQuoteSignature(
     {
@@ -37,7 +38,13 @@ export function pricedManufacturingLine(
   const expired = Date.parse(quote.expiresAt) <= Date.now() || quote.status === "expired";
   const licenseBlocked =
     quote.provenance.source === "thingiverse" && !quotePurchasable(quote);
-  const available = signatureOk && !expired && !licenseBlocked && quote.status !== "cancelled";
+  const revoked = options?.revoked ?? false;
+  const available =
+    signatureOk &&
+    !expired &&
+    !licenseBlocked &&
+    quote.status !== "cancelled" &&
+    !revoked;
   const displayKind =
     quote.provenance.source === "thingiverse" ? "licensed" : "uploaded";
   const name =

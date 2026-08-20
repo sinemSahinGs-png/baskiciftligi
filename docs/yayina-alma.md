@@ -29,6 +29,14 @@ Ayrı production projesi kullanın. `NEXT_PUBLIC_SUPABASE_URL` ve
 `SUPABASE_SERVICE_ROLE_KEY` yalnız sunucuda kalır; `NEXT_PUBLIC_` öneki almaz.
 Auth Site URL: `https://baskiciftligi.com`.
 
+İzinli redirect URL’ler (wildcard yok):
+
+- `http://localhost:3000/auth/callback`
+- `https://baskiciftligi.com/auth/callback`
+- `https://www.baskiciftligi.com/auth/callback`
+
+Şifre kurtarma PKCE akışı: `resetPasswordForEmail` → `/auth/callback?next=/sifre-yenile` → `/sifre-yenile`. Implicit `access_token` hash kabul edilmez.
+
 ## 3. Ortam değişkeni adları
 
 Zorunlu üretim:

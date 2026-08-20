@@ -21,7 +21,10 @@ import {
 } from "@/lib/catalog/category-image";
 import { assertUniqueSlug } from "@/lib/catalog/slug";
 import { catalogMediaPublicUrl } from "@/lib/catalog/media-url";
+import { removeLocalCatalogMediaForProduct } from "@/lib/catalog/media-store";
 import { isDevelopmentDemoMode, isSupabaseConfigured } from "@/lib/env";
+import { canViewAdminCatalog } from "@/lib/catalog/authorization";
+import { createServiceRoleSupabaseClient } from "@/lib/supabase/admin";
 import {
   loadDemoCatalog,
   removeDemoCategory,
@@ -30,7 +33,6 @@ import {
   upsertDemoCategory,
   upsertDemoProduct,
 } from "@/lib/demo/catalog-store";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getViewer } from "@/lib/auth/session";
 import type {
   CategoryFormInput,
@@ -290,12 +292,14 @@ function mapDatabaseProduct(row: AdminProductRow): Product {
 }
 
 async function requiredSupabase() {
-  const supabase = await createServerSupabaseClient();
-
+  const viewer = await getViewer();
+  if (!viewer || !canViewAdminCatalog(viewer.role)) {
+    throw new Error("Katalog yönetimi için yetkili oturum gerekir.");
+  }
+  const supabase = createServiceRoleSupabaseClient();
   if (!supabase) {
     throw new Error("Supabase katalog bağlantısı yapılandırılmadı.");
   }
-
   return supabase;
 }
 
@@ -1070,6 +1074,7 @@ export async function archiveAdminProduct(productId: string): Promise<void> {
 export async function deleteAdminProduct(productId: string): Promise<void> {
   if (isDevelopmentDemoMode) {
     await removeDemoProduct(productId);
+    await removeLocalCatalogMediaForProduct(productId);
     return;
   }
 
@@ -1087,7 +1092,7 @@ export async function duplicateAdminProduct(productId: string): Promise<Product>
 
   const suffix = Date.now().toString(36);
   const input: ProductFormInput = {
-    name: `${source.name} — Kopya`,
+    name: `${source.name} — Kopya`.slice(0, 180),
     slug: `${source.slug.replace(/-kopya-[a-z0-9]+$/, "")}-kopya-${suffix}`.slice(
       0,
       180,

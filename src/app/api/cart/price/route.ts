@@ -3,8 +3,9 @@ import { z } from "zod";
 
 import { getCatalogSnapshot } from "@/domain/catalog/repository";
 import { priceCart, type PricedCartLine } from "@/domain/commerce/cart-pricing";
+import { computeCartShippingMinor } from "@/domain/commerce/shipping-policy";
 import { pricedManufacturingLine } from "@/domain/commerce/manufacturing-cart";
-import { getManufacturingQuote } from "@/domain/manufacturing/repository";
+import { getManufacturingQuote, getQuoteRevocation } from "@/domain/manufacturing/repository";
 import { getManufacturingActor, ownsRecord } from "@/lib/manufacturing/session";
 import { assertMinorUnits } from "@/lib/money";
 
@@ -44,6 +45,23 @@ export async function POST(request: Request) {
         fields: parsed.error.flatten().fieldErrors,
       },
       { status: 422 },
+    );
+  }
+
+  const bodyRecord =
+    payload && typeof payload === "object" && !Array.isArray(payload)
+      ? (payload as Record<string, unknown>)
+      : null;
+  if (
+    bodyRecord &&
+    ("estimatedShippingMinor" in bodyRecord ||
+      "shippingMinor" in bodyRecord ||
+      "totalMinor" in bodyRecord ||
+      "subtotalMinor" in bodyRecord)
+  ) {
+    return NextResponse.json(
+      { error: "İstemci kargo veya toplam tutarı kabul edilmez." },
+      { status: 409 },
     );
   }
 
@@ -94,7 +112,11 @@ export async function POST(request: Request) {
       });
       continue;
     }
-    manufacturingPriced.push(pricedManufacturingLine(quote));
+    manufacturingPriced.push(
+      pricedManufacturingLine(quote, {
+        revoked: Boolean(await getQuoteRevocation(quoteId)),
+      }),
+    );
   }
 
   const lines = [...catalogResult.lines, ...manufacturingPriced];
@@ -104,10 +126,7 @@ export async function POST(request: Request) {
       0,
     ),
   );
-  const estimatedShippingMinor =
-    subtotalMinor === 0 || subtotalMinor >= catalogResult.freeShippingThresholdMinor
-      ? 0
-      : catalogResult.estimatedShippingMinor || 8990;
+  const estimatedShippingMinor = computeCartShippingMinor(subtotalMinor);
 
   return NextResponse.json(
     {

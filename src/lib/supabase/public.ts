@@ -2,20 +2,20 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 
-import { isSupabaseConfigured, publicEnv } from "@/lib/env";
+import { isSupabaseConfigured, publicEnv, supabasePublishableKey } from "@/lib/env";
 
 export function createPublicSupabaseClient() {
   if (
     !isSupabaseConfigured ||
     !publicEnv.NEXT_PUBLIC_SUPABASE_URL ||
-    !publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    !supabasePublishableKey
   ) {
     return null;
   }
 
   return createClient(
     publicEnv.NEXT_PUBLIC_SUPABASE_URL,
-    publicEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublishableKey,
     {
       auth: {
         persistSession: false,
