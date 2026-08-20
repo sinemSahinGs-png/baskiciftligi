@@ -37,6 +37,7 @@ const navigationGroups = [
       { href: "/admin/yayina-alma", label: "Yayına alma", icon: Rocket },
       { href: "/admin/urunler", label: "Ürünler", icon: ShoppingBag },
       { href: "/admin/kategoriler", label: "Kategoriler", icon: Tags },
+      { href: "/admin/harici-modeller", label: "Harici modeller", icon: GalleryVerticalEnd },
     ],
   },
   {

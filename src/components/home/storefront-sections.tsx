@@ -1,11 +1,8 @@
 import type { Route } from "next";
 import Link from "next/link";
 
-import { PackageOpen } from "lucide-react";
-
 import { FoundryGrid } from "@/components/brand/foundry-grid";
 import { EmptyCatalogState } from "@/components/catalog/empty-catalog-state";
-import { EmptyState } from "@/components/feedback/empty-state";
 import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { CategoryCard } from "@/components/catalog/category-card";
 import { ProductStage } from "@/components/catalog/product-stage";
@@ -16,15 +13,14 @@ import { MediaReveal } from "@/components/motion/media-reveal";
 import { RevealBlock } from "@/components/motion/reveal-copy";
 import { ScrollSection, SectionAtmosphere } from "@/components/motion/scroll-section";
 import { StaggerGrid, StaggerItem } from "@/components/motion/stagger-grid";
-import { siteConfig } from "@/config/site";
 import { isDevelopmentDemoMode } from "@/lib/env";
 import type { Category, Product } from "@/domain/catalog/types";
+import type { CuratedModelRecord } from "@/domain/curated-models/types";
 import {
   homepageCorporateOffers,
   homepageDemoReviews,
   homepageFeaturedCollections,
   homepageGallery,
-  homepagePrintLibrary,
   homepageShopCategorySlugs,
 } from "@/domain/home/homepage";
 import { stageForCategory, type StagePreset } from "@/domain/visual/stages";
@@ -234,7 +230,23 @@ export function CategoriesSection({
   );
 }
 
-export function PrintLibrarySection() {
+export function PrintLibrarySection({
+  curatedModels = [],
+}: {
+  curatedModels?: CuratedModelRecord[];
+}) {
+  const cards = curatedModels
+    .filter((model) => model.listingKind === "curated_external")
+    .slice(0, 4)
+    .map((model) => ({
+      id: model.id,
+      name: model.titleTr,
+      category: model.categoryLabel ?? "Küratörlü",
+      imageUrl: model.previewImageUrl,
+      imageAlt: model.imageAlt || model.titleTr,
+      href: `/hazir-modeller/katalog/${model.slug}` as Route,
+    }));
+
   return (
     <ScrollSection className="atmosphere-violet relative overflow-hidden section-space">
       <SectionAtmosphere tone="violet" />
@@ -243,50 +255,48 @@ export function PrintLibrarySection() {
         <SectionIntro
           light
           title="Modelini seç, biz üretelim."
-          description={`${siteConfig.collectionLabel} kobalt; lisanslı iş mercan; Thingiverse ayrı ve nötr.`}
+          description="Küratörlü hazır modelleri inceleyin veya kendi dosyanızı yükleyin."
           action={{ href: "/hazir-modeller" as Route, label: "Hazır modeller" }}
         />
-        <StaggerGrid className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {isDevelopmentDemoMode ? (
-            homepagePrintLibrary.map((model) => (
-            <StaggerItem as="article" key={model.id} className="flex flex-col">
-              <ProductStage
-                  stage="violet"
-                  src={model.imageUrl}
-                  alt=""
-                  isolated
-                  ratio="square"
-                  className="rounded-lg"
-                />
-              <p className="mt-3 text-xs text-muted-light">
-                {model.creator} · {model.licenseLabel}
-              </p>
-              <h3 className="mt-1 text-lg font-semibold">{model.name}</h3>
-              <p className="mt-1 text-sm text-muted-light">
-                Başlangıç fiyatı yok
-              </p>
-              <Link
-                href={model.href}
-                className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline-offset-4 hover:underline"
-              >
-                Üretim seçeneklerini belirle
-              </Link>
-            </StaggerItem>
-            ))
-          ) : (
-            <StaggerItem as="div" className="xl:col-span-4">
-              <EmptyState
-                icon={<PackageOpen className="size-6" aria-hidden="true" />}
-                title="Hazır model koleksiyonu henüz yayınlanmadı"
-                description="Stüdyo modelleri ve lisanslı kayıtlar burada görünecek. Geliştirme demosu production vitrine taşınmaz."
-                action={{ href: "/hazir-modeller" as Route, label: "Hazır modeller" }}
-              />
-            </StaggerItem>
-          )}
-        </StaggerGrid>
+        {cards.length > 0 ? (
+          <StaggerGrid className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+            {cards.map((model) => (
+              <StaggerItem as="article" key={model.id} className="flex flex-col">
+                <div className="relative overflow-hidden rounded-lg">
+                  <ProductStage
+                    stage="violet"
+                    src={model.imageUrl ?? undefined}
+                    alt={model.imageAlt}
+                    isolated
+                    ratio="standard"
+                    className="rounded-lg"
+                    imageClassName="object-cover"
+                  />
+                </div>
+                <p className="mt-3 text-xs text-muted-light">{model.category}</p>
+                <h3 className="mt-1 text-lg font-semibold">{model.name}</h3>
+                <Link
+                  href={model.href}
+                  className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline-offset-4 hover:underline"
+                >
+                  Modeli incele
+                </Link>
+              </StaggerItem>
+            ))}
+          </StaggerGrid>
+        ) : (
+          <div className="mt-2">
+            <Link
+              href={"/hazir-modeller" as Route}
+              className="inline-flex min-h-12 items-center rounded-md bg-coral px-6 text-sm font-semibold text-light-text"
+            >
+              Hazır modellere göz at
+            </Link>
+          </div>
+        )}
         <aside className="mt-10 border-t border-white/15 pt-6 text-sm text-muted-light">
-          Thingiverse yalnız resmî API ile ayrı sekmede keşfedilir. Dış modeller
-          kazınmaz ve izin doğrulanmadan satılmaz.
+          Küratörlü modeller harici kaynaklara atıf ile listelenir; Baskı Çiftliği
+          tasarımı gibi gösterilmez.
         </aside>
       </div>
     </ScrollSection>

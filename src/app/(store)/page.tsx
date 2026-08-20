@@ -21,6 +21,7 @@ import {
   listMaterials,
   listProducts,
 } from "@/domain/catalog/repository";
+import { listPublishedCuratedModels } from "@/domain/curated-models/repository";
 import { faqItems } from "@/components/home/faq-data";
 import { getSiteContent } from "@/domain/site/content-repository";
 
@@ -36,11 +37,12 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [products, categories, materials, content] = await Promise.all([
+  const [products, categories, materials, content, curatedModels] = await Promise.all([
     listProducts(),
     listCategories(),
     listMaterials(),
     getSiteContent(),
+    listPublishedCuratedModels(4, "curated_external"),
   ]);
 
   const faqJsonLd = {
@@ -68,7 +70,7 @@ export default async function HomePage() {
       />
       <ThreePathsSection />
       <UploadPromoSection />
-      <PrintLibrarySection />
+      <PrintLibrarySection curatedModels={curatedModels} />
       <ProcessSection />
       <MaterialsSection materials={materials} />
       <B2bSection />
