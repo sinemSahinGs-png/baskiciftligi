@@ -4,7 +4,10 @@ import { redirect } from "next/navigation";
 
 import { siteConfig } from "@/config/site";
 import { resolveAdminAccess } from "@/lib/auth/admin-access";
-import { resolveAuthoritativeViewer } from "@/lib/auth/staff-role";
+import {
+  resolveAuthoritativeViewer,
+  type AppRole,
+} from "@/lib/auth/staff-role";
 import {
   canAccessLaunchCenter,
   canCalibratePricing,
