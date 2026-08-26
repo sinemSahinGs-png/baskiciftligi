@@ -28,4 +28,5 @@ export type UnifiedSearchPayload = {
   categories?: string[];
   thingiverseConnected?: boolean;
   thingiverseStatus?: string;
+  categoryRelaxed?: boolean;
 };

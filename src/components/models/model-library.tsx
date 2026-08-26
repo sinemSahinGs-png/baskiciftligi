@@ -154,15 +154,33 @@ function mergeUnique(
 function normalizeModels(raw: unknown): UnifiedDiscoveryResult[] {
   if (!Array.isArray(raw)) return [];
   const out: UnifiedDiscoveryResult[] = [];
+  const seen = new Set<string>();
   for (const item of raw) {
     if (!item || typeof item !== "object") continue;
     const row = item as Record<string, unknown>;
-    if (row.kind === "thingiverse" && typeof row.id === "string") {
-      out.push(item as UnifiedDiscoveryResult);
+    const id =
+      typeof row.id === "string"
+        ? row.id
+        : typeof row.id === "number"
+          ? String(row.id)
+          : null;
+    if (!id) continue;
+    if (row.kind === "thingiverse") {
+      const key = `thingiverse:${id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ ...(item as ThingiverseLibraryCardData), kind: "thingiverse", id });
       continue;
     }
-    if (row.kind === "curated" && typeof row.id === "string") {
-      out.push(item as UnifiedDiscoveryResult);
+    if (row.kind === "curated") {
+      const key = `curated:${id}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({
+        ...(item as CuratedCatalogCardData),
+        kind: "curated",
+        id,
+      });
     }
   }
   return out;
@@ -274,6 +292,11 @@ export function ModelLibrary({
   const ctaRefs = useRef(new Map<string, HTMLButtonElement>());
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const requestSeq = useRef(0);
+  const initialCardsRef = useRef(initialCards);
+
+  useEffect(() => {
+    initialCardsRef.current = initialCards;
+  }, [initialCards]);
 
   const sourceTabs = useMemo(() => {
     const tabs: Array<{ id: LibrarySource; label: string; tone: string }> = [
@@ -370,7 +393,9 @@ export function ModelLibrary({
     })
       .then(async (response) => {
         if (!response.ok) throw new Error("Arama başarısız");
-        return (await response.json()) as UnifiedSearchPayload;
+        return (await response.json()) as UnifiedSearchPayload & {
+          categoryRelaxed?: boolean;
+        };
       })
       .then((payload) => {
         if (seq !== requestSeq.current) return;
@@ -388,16 +413,26 @@ export function ModelLibrary({
         setHasMore(Boolean(next.hasMore));
         setSoftError(next.softError ?? null);
         if (payload.thingiverseConnected) setCommunityFromApi(true);
+        if (payload.categoryRelaxed && category) {
+          setCategory("");
+          const params = buildLibrarySearch({
+            query: committedQuery,
+            source,
+            category: "",
+          });
+          const target = params.toString() ? `${pathname}?${params}` : pathname;
+          window.history.replaceState(null, "", target);
+        }
       })
       .catch((error: Error) => {
         if (error.name === "AbortError") return;
         if (seq !== requestSeq.current) return;
-        // Keep curated seed when community fails on the unified tab.
+        const seed = initialCardsRef.current;
         if (source === "all" || source === "owned" || source === "curated") {
           const fallback =
             source === "all"
-              ? initialCards
-              : initialCards.filter((item) => {
+              ? seed
+              : seed.filter((item) => {
                   if (item.kind !== "curated") return false;
                   if (source === "owned") return item.listingKind === "studio";
                   return item.listingKind === "curated_external";
@@ -421,13 +456,13 @@ export function ModelLibrary({
         );
       })
       .finally(() => {
-        if (!controller.signal.aborted && seq === requestSeq.current) {
+        if (seq === requestSeq.current) {
           setLoading(false);
         }
       });
 
     return () => controller.abort();
-  }, [committedQuery, source, category, initialCards]);
+  }, [committedQuery, source, category, pathname]);
 
   async function loadMore() {
     if (!hasMore || loadingMore || source !== "thingiverse") return;
@@ -482,7 +517,12 @@ export function ModelLibrary({
   }) {
     const params = buildLibrarySearch(next);
     const target = params.toString() ? `${pathname}?${params}` : pathname;
-    window.history.replaceState(null, "", target);
+    const current =
+      window.location.pathname +
+      (window.location.search || "") +
+      (window.location.hash || "");
+    if (current === target) return;
+    window.history.pushState(null, "", target);
   }
 
   function commitSearch(
@@ -491,9 +531,12 @@ export function ModelLibrary({
     nextCategory = category,
   ) {
     const trimmed = nextQuery.trim();
+    // Text search must not keep a sticky category that blanks community hits.
+    const categoryForSearch = trimmed ? "" : nextCategory;
+    if (categoryForSearch !== category) {
+      setCategory(categoryForSearch);
+    }
     setCommittedQuery(trimmed);
-    // Clear stale category filters on fresh text search so community hits survive.
-    const categoryForSearch = trimmed ? nextCategory : nextCategory;
     persistHistory({
       query: trimmed,
       source: nextSource,

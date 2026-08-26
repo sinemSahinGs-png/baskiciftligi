@@ -57,6 +57,17 @@ function mapThingiverse(item: ExternalModelSummary) {
   };
 }
 
+function dedupeMappedById<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const item of items) {
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    out.push(item);
+  }
+  return out;
+}
+
 function matchCategory(label: string | null | undefined, category: string) {
   if (!category) return true;
   return (
@@ -94,9 +105,28 @@ export async function GET(request: Request) {
         { page, query: english },
         { correlationId: crypto.randomUUID() },
       );
-      const items = browse.items
-        .map(mapThingiverse)
-        .filter((item) => matchCategory(item.categoryLabel, category));
+      const items = dedupeMappedById(
+        browse.items
+          .map(mapThingiverse)
+          .filter((item) => matchCategory(item.categoryLabel, category)),
+      );
+      // Free-text search + sticky category must not blank the community tab.
+      if (category && q && items.length === 0) {
+        const unfiltered = dedupeMappedById(browse.items.map(mapThingiverse));
+        if (unfiltered.length > 0) {
+          return NextResponse.json({
+            models: unfiltered,
+            page: browse.page,
+            hasMore: browse.hasMore,
+            thingiverseStatus: "connected",
+            thingiverseConnected: true,
+            categories,
+            categoryRelaxed: true,
+            softError:
+              "Kategori filtresi bu aramada sonuç vermedi; topluluk sonuçları tüm kategorilerden gösteriliyor.",
+          });
+        }
+      }
       return NextResponse.json({
         models: items,
         page: browse.page,
@@ -143,6 +173,7 @@ export async function GET(request: Request) {
 
   let softError: string | undefined;
   let resolvedTvStatus = tvStatus;
+  let categoryRelaxed = false;
 
   if (source === "all" && thingiverseConnected) {
     try {
@@ -153,12 +184,23 @@ export async function GET(request: Request) {
         { page: 1, query: english },
         { correlationId: crypto.randomUUID() },
       );
-      const tv = browse.items
-        .map(mapThingiverse)
-        .filter((item) => matchCategory(item.categoryLabel, category));
-      // Prefer a generous community mix on the unified "Tümü" tab.
+      let tv = dedupeMappedById(browse.items.map(mapThingiverse));
+      const filteredTv = tv.filter((item) =>
+        matchCategory(item.categoryLabel, category),
+      );
+      // Sticky category chips + free-text search often zero the pool (e.g. Anahtarlık + vazo).
+      // Prefer showing real community hits over a false empty state.
+      if (category && q && filteredTv.length === 0 && tv.length > 0) {
+        categoryRelaxed = true;
+      } else {
+        tv = filteredTv;
+      }
       models.push(...tv.slice(0, q ? 24 : 16));
       resolvedTvStatus = "connected";
+      if (categoryRelaxed) {
+        softError =
+          "Kategori filtresi bu aramada sonuç vermedi; topluluk sonuçları tüm kategorilerden gösteriliyor.";
+      }
     } catch (error) {
       resolvedTvStatus =
         error instanceof ThingiverseApiError
@@ -179,5 +221,6 @@ export async function GET(request: Request) {
     thingiverseConnected,
     categories,
     softError,
+    categoryRelaxed: categoryRelaxed || undefined,
   });
 }
