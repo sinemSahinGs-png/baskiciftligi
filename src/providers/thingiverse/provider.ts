@@ -148,6 +148,84 @@ export function mapThingiverseHttpStatus(
   return "api_unavailable";
 }
 
+/**
+ * List/search payloads often omit `license`. Enrich a small budget so CC0/CC BY
+ * cards can open the quote modal without N+1-stalling the whole page.
+ */
+async function fillMissingLicensesBudgeted(
+  things: ThingiverseThing[],
+  options: { max: number; concurrency: number; budgetMs: number },
+) {
+  const missing = things
+    .filter((thing) => thing.id && !thing.license)
+    .slice(0, options.max);
+  if (missing.length === 0) {
+    return things;
+  }
+
+  const byId = new Map<number, Pick<ThingiverseThing, "license" | "license_url">>();
+  const deadline = Date.now() + options.budgetMs;
+
+  for (let index = 0; index < missing.length; index += options.concurrency) {
+    if (Date.now() >= deadline) {
+      break;
+    }
+    const batch = missing.slice(index, index + options.concurrency);
+    const remainingMs = Math.max(250, deadline - Date.now());
+    const settled = await Promise.race([
+      Promise.allSettled(
+        batch.map(async (thing) => {
+          const detailed = await getThing(String(thing.id));
+          return {
+            id: thing.id as number,
+            license: detailed.license,
+            license_url: detailed.license_url,
+          };
+        }),
+      ),
+      new Promise<null>((resolve) => {
+        setTimeout(() => resolve(null), remainingMs);
+      }),
+    ]);
+    if (!settled) {
+      break;
+    }
+    let hitRateLimit = false;
+    for (const result of settled) {
+      if (result.status === "fulfilled") {
+        byId.set(result.value.id, result.value);
+        continue;
+      }
+      const reason = result.reason;
+      if (reason instanceof ThingiverseApiError && reason.status === 429) {
+        hitRateLimit = true;
+        break;
+      }
+    }
+    if (hitRateLimit) {
+      break;
+    }
+  }
+
+  if (byId.size === 0) {
+    return things;
+  }
+  return things.map((thing) => {
+    if (!thing.id || thing.license) {
+      return thing;
+    }
+    const filled = byId.get(thing.id);
+    if (!filled) {
+      return thing;
+    }
+    return {
+      ...thing,
+      license: filled.license ?? thing.license,
+      license_url: filled.license_url ?? thing.license_url,
+    };
+  });
+}
+
 export const thingiverseProvider: BrowsableExternalModelProvider = {
   source,
   async search(query, context) {
@@ -174,10 +252,13 @@ export const thingiverseProvider: BrowsableExternalModelProvider = {
     const things = searchQuery
       ? await searchThings(searchQuery, page)
       : await listPopularThings(page);
-    // Do not N+1 GET /things/{id} on browse — it times out production search
-    // and leaves /hazir-modeller empty. Missing license ⇒ pricingAllowed false.
+    const withLicenses = await fillMissingLicensesBudgeted(things, {
+      max: 10,
+      concurrency: 3,
+      budgetMs: 2800,
+    });
     const items = (
-      await Promise.all(things.map((thing) => mapThing(thing)))
+      await Promise.all(withLicenses.map((thing) => mapThing(thing)))
     ).filter((item): item is ExternalModelSummary => Boolean(item));
     return {
       items,
