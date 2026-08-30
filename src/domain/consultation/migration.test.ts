@@ -50,6 +50,13 @@ describe("model_consultation_requests migrations", () => {
     expect(sql).not.toMatch(/drop table/i);
   });
 
+  it("pricing state migration adds column idempotently", () => {
+    const sql = readMigration("20260830300000_model_consultation_pricing_state.sql");
+    expect(sql).toMatch(/add column if not exists pricing_state/i);
+    expect(sql).not.toMatch(/drop table/i);
+    expect(sql).not.toMatch(/public\.profiles/i);
+  });
+
   it("fix migration drops legacy staff policy before creating service policy", () => {
     const sql = readMigration("20260830220000_model_consultation_requests_rls_fix.sql");
     const staffDrop = sql.indexOf("drop policy if exists model_consultation_requests_staff_all");

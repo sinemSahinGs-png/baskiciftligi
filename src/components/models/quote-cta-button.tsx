@@ -1,0 +1,72 @@
+"use client";
+
+import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { cn } from "@/lib/utils";
+
+export function QuoteCtaButton({
+  onClick,
+  loading = false,
+  success = false,
+  disabled = false,
+  className,
+  "data-testid": dataTestId,
+}: {
+  onClick: () => void;
+  loading?: boolean;
+  success?: boolean;
+  disabled?: boolean;
+  className?: string;
+  "data-testid"?: string;
+}) {
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  return (
+    <button
+      type="button"
+      data-production-request-cta=""
+      data-testid={dataTestId}
+      disabled={disabled || loading || success}
+      onClick={onClick}
+      className={cn(
+        "group relative inline-flex min-h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-coral px-5 text-base font-semibold text-midnight shadow-[0_8px_24px_-12px_rgba(255,107,74,0.8)] transition duration-200 hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_12px_28px_-10px_rgba(255,107,74,0.85)] active:translate-y-0 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2 focus-visible:ring-offset-carbon disabled:pointer-events-none disabled:opacity-60 sm:min-h-[3.5rem]",
+        className,
+      )}
+    >
+      {!reducedMotion ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -translate-x-full animate-[quote-shine_5s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/25 to-transparent"
+        />
+      ) : null}
+      {loading ? (
+        <>
+          <Loader2 aria-hidden="true" className="size-5 animate-spin" />
+          Gönderiliyor…
+        </>
+      ) : success ? (
+        <>
+          <Check aria-hidden="true" className="size-5" />
+          Talebin alındı
+        </>
+      ) : (
+        <>
+          Baskı Teklifi Al
+          <ArrowRight
+            aria-hidden="true"
+            className="size-5 transition-transform duration-200 group-hover:translate-x-1"
+          />
+        </>
+      )}
+    </button>
+  );
+}

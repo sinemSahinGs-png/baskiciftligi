@@ -972,6 +972,17 @@ html.motion-ready:not([data-reduced-motion="true"]) [data-motion-item="visible"]
   animation: editorUploadSuccess 0.7s ease-out 1;
 }
 
+@keyframes quote-shine {
+  0%,
+  78% {
+    transform: translateX(-120%);
+  }
+  88%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .editor-autosave-pulse,
   .category-card-selected-pulse,

@@ -86,6 +86,21 @@ export async function GET(request: Request) {
   const thingiverseConnected = tvStatus === "connected";
   const categories = thingiverseConnected ? [...THINGIVERSE_CATEGORY_LABELS] : [];
 
+  if (source === "internal") {
+    let curated = await searchPublishedCuratedModels(q, 48, undefined);
+    curated = curated.filter((model) =>
+      matchCategory(model.categoryLabel, category),
+    );
+    return NextResponse.json({
+      models: curated.map(mapCurated),
+      page: 1,
+      hasMore: false,
+      thingiverseStatus: tvStatus,
+      thingiverseConnected,
+      categories,
+    });
+  }
+
   if (source === "thingiverse") {
     if (!thingiverseConnected) {
       return NextResponse.json({

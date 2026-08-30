@@ -56,6 +56,7 @@ export async function createConsultationRequest(
       quantity: input.quantity,
       customer_note: input.customerNote ?? null,
       estimated_gross_minor: input.estimatedGrossMinor ?? null,
+      pricing_state: input.pricingState ?? "unanalysed",
       production_options: input.productionOptions ?? {},
       status: "pending_license_review",
     })

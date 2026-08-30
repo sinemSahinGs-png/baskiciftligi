@@ -1,4 +1,5 @@
 import type { LicenseEvaluationCode } from "@/domain/consultation/license-evaluation";
+import type { PricingState } from "@/domain/external-models/pricing-state";
 
 export const CONSULTATION_STATUSES = [
   "pending_license_review",
@@ -42,6 +43,7 @@ export interface ModelConsultationRequest {
   quantity: number;
   customerNote: string | null;
   estimatedGrossMinor: number | null;
+  pricingState: PricingState;
   productionOptions: Record<string, unknown>;
   status: ConsultationStatus;
   adminNote: string | null;
@@ -69,6 +71,7 @@ export interface CreateConsultationInput {
   quantity: number;
   customerNote?: string | null;
   estimatedGrossMinor?: number | null;
+  pricingState?: PricingState;
   productionOptions?: Record<string, unknown>;
 }
 

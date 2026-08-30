@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createConsultationRequest } from "@/domain/consultation/repository";
 import { resolveLicenseEvaluationFromCode } from "@/domain/consultation/license-evaluation";
 import { estimateProductionPrice, PRINT_SIZE_PRESETS } from "@/domain/external-models/production-estimate";
+import { PRICING_STATES } from "@/domain/external-models/pricing-state";
 import { clientKey, rateLimit } from "@/lib/manufacturing/rate-limit";
 
 export const runtime = "nodejs";
@@ -26,6 +27,7 @@ const bodySchema = z.object({
   sizePreset: z.enum(["kucuk", "orta", "buyuk"]),
   quantity: z.number().int().min(1).max(99),
   customerNote: z.string().max(800).optional().nullable(),
+  pricingState: z.enum(PRICING_STATES).optional(),
 });
 
 function cleanText(value: string | null | undefined) {
@@ -90,6 +92,7 @@ export async function POST(request: Request) {
       quantity: input.quantity,
       customerNote: cleanText(input.customerNote),
       estimatedGrossMinor: estimate.grossMinor,
+      pricingState: input.pricingState ?? "unanalysed",
       productionOptions: {
         sizePreset: input.sizePreset,
         material: input.material,

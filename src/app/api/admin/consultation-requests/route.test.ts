@@ -22,6 +22,7 @@ const sampleRequest = {
   quantity: 1,
   customerNote: null,
   estimatedGrossMinor: 9900,
+  pricingState: "unanalysed" as const,
   productionOptions: {},
   status: "pending_license_review" as const,
   adminNote: null,
