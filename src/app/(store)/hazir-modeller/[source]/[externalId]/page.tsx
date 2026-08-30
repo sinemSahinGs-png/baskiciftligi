@@ -19,6 +19,7 @@ import { ModelLibraryState } from "@/components/models/model-library-state";
 import { ModelSourceBadge } from "@/components/models/model-source-badge";
 import { PermissionReviewPanel } from "@/components/models/permission-review";
 import { ThingiverseDetail } from "@/components/models/thingiverse-detail";
+import { ThingiverseDetailUnavailable } from "@/components/models/thingiverse-detail-unavailable";
 import { siteConfig } from "@/config/site";
 import { ThingiverseApiError } from "@/providers/thingiverse/client";
 import {
@@ -115,15 +116,9 @@ export default async function ExternalModelPage({
     }
     if (fetchStatus) {
       return (
-        <ContentPage
-          eyebrow="Harici kaynak · Thingiverse"
-          title={thingiverseStatusCopy[fetchStatus].title}
-          description={thingiverseStatusCopy[fetchStatus].body}
-          status={{ label: fetchStatus, tone: "warning" }}
-          actions={[
-            { href: "/hazir-modeller", label: "Model kütüphanesine dönün", variant: "outline" },
-          ]}
-          backLink={{ href: "/hazir-modeller", label: "Hazır modeller" }}
+        <ThingiverseDetailUnavailable
+          externalId={externalId}
+          status={fetchStatus}
         />
       );
     }

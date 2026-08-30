@@ -20,6 +20,10 @@ import {
   searchThings,
   ThingiverseApiError,
 } from "@/providers/thingiverse/client";
+import {
+  coerceThingiverseString,
+  coerceThingiverseTags,
+} from "@/providers/thingiverse/normalize-detail";
 import { mapThingiverseCategory } from "@/providers/thingiverse/categories";
 import {
   identifyThingiverseUrl,
@@ -75,8 +79,10 @@ async function mapThing(thing: ThingiverseThing): Promise<ExternalModelSummary |
   const externalId = String(thing.id);
   const stored = getExternalPermission(source, externalId);
   // Browse/list path: avoid per-item DB review (N parallel queries stall /hazir-modeller).
-  const licenseVerdict = normalizeLicense(thing.license);
-  const licenseLabel = thing.license || "Lisans API’de belirtilmedi";
+  const licenseVerdict = normalizeLicense(coerceThingiverseString(thing.license));
+  const licenseLabel =
+    coerceThingiverseString(thing.license) ??
+    "Lisans API’de belirtilmedi";
   const pricingAllowed = canAutomaticallyQuoteLicense(licenseVerdict);
   const permission = stored?.status ?? (pricingAllowed
     ? "discovery_only"
@@ -100,8 +106,17 @@ async function mapThing(thing: ThingiverseThing): Promise<ExternalModelSummary |
   const categoryLabel = mapThingiverseCategory({
     name: thing.name,
     description: thing.description,
-    tags: [...(thing.tags ?? []), ...(thing.categories ?? [])],
+    tags: [
+      ...coerceThingiverseTags(thing.tags),
+      ...coerceThingiverseTags(thing.categories),
+    ],
   });
+
+  const thumbnailUrl =
+    thing.thumbnail ||
+    (typeof thing.default_image === "string"
+      ? thing.default_image
+      : thing.default_image?.url);
 
   return {
     source,
@@ -113,7 +128,7 @@ async function mapThing(thing: ThingiverseThing): Promise<ExternalModelSummary |
       ? `https://www.thingiverse.com/${thing.creator.name}`
       : undefined,
     sourceUrl,
-    thumbnailUrl: thing.thumbnail || thing.default_image?.url,
+    thumbnailUrl,
     licenseLabel,
     licenseUrl: thing.license_url,
     licenseCode: licenseVerdict.code,
@@ -271,8 +286,21 @@ export const thingiverseProvider: BrowsableExternalModelProvider = {
     if (!canCallThingiverse()) {
       return null;
     }
-    const thing = await getThing(externalId);
-    const mapped = await mapThing(thing);
+    let thing: ThingiverseThing;
+    try {
+      thing = await getThing(externalId);
+    } catch (error) {
+      if (error instanceof ThingiverseApiError) {
+        throw error;
+      }
+      throw new ThingiverseApiError(502, "Thingiverse modeli alınamadı.");
+    }
+    let mapped: ExternalModelSummary | null;
+    try {
+      mapped = await mapThing(thing);
+    } catch {
+      throw new ThingiverseApiError(502, "Thingiverse modeli işlenemedi.");
+    }
     if (!mapped) {
       return null;
     }
@@ -282,18 +310,14 @@ export const thingiverseProvider: BrowsableExternalModelProvider = {
         .map((image) => image.url)
         .filter((url): url is string => Boolean(url))
         .slice(0, 6);
-    } catch (error) {
-      if (!(error instanceof ThingiverseApiError)) {
-        throw error;
-      }
+    } catch {
+      // Optional enrichment — must not blank the detail page.
     }
     try {
       const files = await getThingFiles(externalId);
       mapped.fileCount = printableFiles(files).length;
-    } catch (error) {
-      if (!(error instanceof ThingiverseApiError)) {
-        throw error;
-      }
+    } catch {
+      // Optional enrichment — must not blank the detail page.
     }
     return mapped;
   },

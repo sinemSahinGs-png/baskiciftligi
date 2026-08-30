@@ -68,6 +68,7 @@ export default defineConfig({
       PORT: "3000",
       ALLOW_DEMO_ADMIN_MUTATIONS: "true",
       BC_FORCE_LOCAL_PERSISTENCE: "true",
+      THINGIVERSE_FIXTURE_MODE: "true",
     },
   },
 });
