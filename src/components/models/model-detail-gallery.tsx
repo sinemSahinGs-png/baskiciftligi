@@ -110,7 +110,7 @@ function GalleryThumb({
           alt=""
           fill
           sizes="72px"
-          quality={65}
+          quality={70}
           imageKey={candidate.id}
           fallbackLabel=""
           showSkeleton={false}
@@ -149,7 +149,7 @@ function ModelDetailGalleryInner({
             fill
             priority={priority}
             sizes="(max-width: 1024px) 100vw, 900px"
-            quality={72}
+            quality={75}
             imageKey={gallery.activeCandidate.id}
             className="object-contain p-4 sm:p-6"
             fallbackLabel="Görsel yakında"

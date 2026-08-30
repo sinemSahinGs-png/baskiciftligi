@@ -39,7 +39,7 @@ export function ModelCardMedia({
         fill
         priority={priority}
         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
-        quality={68}
+        quality={70}
         className="object-cover transition-transform duration-200 group-hover:scale-[1.03]"
         fallbackLabel=""
         showSkeleton
