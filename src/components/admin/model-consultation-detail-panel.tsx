@@ -8,6 +8,10 @@ import { Copy, ExternalLink } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/admin-page";
 import { SafeImage } from "@/components/media/safe-image";
 import {
+  licenseEvaluationGuidance,
+  licenseEvaluationLabel,
+} from "@/domain/consultation/license-evaluation";
+import {
   CONSULTATION_STATUSES,
   CONSULTATION_STATUS_LABELS,
   type ConsultationStatus,
@@ -148,6 +152,16 @@ export function ModelConsultationDetailPanel({
               <p className="mt-3 text-sm">
                 <span className="text-muted-foreground">Lisans: </span>
                 {request.licenseLabel ?? "Bilinmiyor"}
+              </p>
+              <p className="mt-2 text-sm">
+                <span className="text-muted-foreground">Lisans değerlendirmesi: </span>
+                {licenseEvaluationLabel(request.licenseEvaluation)}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                {licenseEvaluationGuidance(
+                  request.licenseEvaluation,
+                  request.licenseCode,
+                )}
               </p>
             </div>
           </div>

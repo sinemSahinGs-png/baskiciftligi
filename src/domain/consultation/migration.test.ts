@@ -12,12 +12,12 @@ function readMigration(name: string) {
 }
 
 describe("model_consultation_requests migrations", () => {
-  const files = [
+  const rlsFiles = [
     "20260830190000_model_consultation_requests.sql",
     "20260830220000_model_consultation_requests_rls_fix.sql",
   ] as const;
 
-  for (const file of files) {
+  for (const file of rlsFiles) {
     it(`${file} does not query public.profiles`, () => {
       const sql = readMigration(file);
       expect(sql).not.toMatch(/from\s+public\.profiles/i);
@@ -43,6 +43,12 @@ describe("model_consultation_requests migrations", () => {
       expect(sql).toMatch(/for all\s+to service_role/i);
     });
   }
+
+  it("license evaluation migration adds column idempotently", () => {
+    const sql = readMigration("20260830230000_model_consultation_license_evaluation.sql");
+    expect(sql).toMatch(/add column if not exists license_evaluation/i);
+    expect(sql).not.toMatch(/drop table/i);
+  });
 
   it("fix migration drops legacy staff policy before creating service policy", () => {
     const sql = readMigration("20260830220000_model_consultation_requests_rls_fix.sql");

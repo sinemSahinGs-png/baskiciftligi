@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 
 import { AdminPageHeader } from "@/components/admin/admin-page";
+import { licenseEvaluationLabel } from "@/domain/consultation/license-evaluation";
 import {
   CONSULTATION_STATUS_LABELS,
   type ConsultationStatus,
@@ -33,7 +34,7 @@ export function ModelConsultationAdminList({
       <AdminPageHeader
         eyebrow="Operasyon"
         title="Model danışma talepleri"
-        description="Lisans incelemesi gereken topluluk modelleri için müşteri danışma talepleri."
+        description="Topluluk modelleri için müşteri üretim talepleri."
       />
 
       <div className="overflow-x-auto rounded-2xl border border-white/10">
@@ -43,7 +44,7 @@ export function ModelConsultationAdminList({
               <th className="px-4 py-3">Tarih</th>
               <th className="px-4 py-3">Müşteri</th>
               <th className="px-4 py-3">Model</th>
-              <th className="px-4 py-3">Lisans</th>
+              <th className="px-4 py-3">Lisans değerlendirmesi</th>
               <th className="px-4 py-3">Tahmini fiyat</th>
               <th className="px-4 py-3">Adet</th>
               <th className="px-4 py-3">Durum</th>
@@ -54,7 +55,7 @@ export function ModelConsultationAdminList({
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-8 text-muted-foreground">
-                  Henüz danışma talebi yok.
+                  Henüz üretim talebi yok.
                 </td>
               </tr>
             ) : (
@@ -73,8 +74,8 @@ export function ModelConsultationAdminList({
                       {row.creatorName ?? "—"}
                     </div>
                   </td>
-                  <td className="max-w-[10rem] truncate px-4 py-3 text-muted-foreground">
-                    {row.licenseLabel ?? "Bilinmiyor"}
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {licenseEvaluationLabel(row.licenseEvaluation)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {row.estimatedGrossMinor != null

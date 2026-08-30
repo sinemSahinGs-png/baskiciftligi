@@ -67,7 +67,7 @@ export function ModelConsultationModal({
           customerNote: note || null,
         }),
       });
-      const payload = (await response.json()) as { ok?: boolean; error?: string };
+      const payload = (await response.json()) as { ok?: boolean; error?: string; message?: string };
       if (!response.ok || !payload.ok) {
         setError(payload.error ?? "Talep gönderilemedi.");
         return;
@@ -84,15 +84,14 @@ export function ModelConsultationModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg border-white/10 bg-carbon text-light-text">
         <DialogHeader>
-          <DialogTitle>Üretim uygunluğunu danış</DialogTitle>
+          <DialogTitle>Üretim talebi oluştur</DialogTitle>
           <DialogDescription className="text-muted-light">
-            Ödeme alınmaz. Talebiniz incelendikten sonra size dönüş yapılır.
+            İletişim bilgilerinizi bırakın; talebiniz incelendikten sonra size dönüş yapılır.
           </DialogDescription>
         </DialogHeader>
         {done ? (
           <p className="text-sm leading-6">
-            Talebiniz incelemeye alındı. Üretim ve lisans uygunluğu kontrol
-            edildikten sonra sizinle iletişime geçeceğiz.
+            Talebiniz alındı. İncelendikten sonra kesin fiyat ve üretim bilgisi paylaşılacaktır.
           </p>
         ) : (
           <form

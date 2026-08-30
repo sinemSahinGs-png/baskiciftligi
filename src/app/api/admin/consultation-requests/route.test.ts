@@ -11,6 +11,7 @@ const sampleRequest = {
   sourceUrl: "https://www.thingiverse.com/thing:2002",
   licenseLabel: "NC",
   licenseCode: "cc_by_nc",
+  licenseEvaluation: "permission_required" as const,
   thumbnailUrl: null,
   customerName: "Ali",
   customerPhone: "+905551112233",

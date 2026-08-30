@@ -95,8 +95,7 @@ test.describe("Hazır modeller community search", () => {
     await expect(page.locator("[data-search-empty]")).toHaveCount(0);
     await expect(page).toHaveURL(/q=vazo/);
     await expect(page).not.toHaveURL(/category=/);
-    await expect(page.locator("[data-external-quote-cta]").first()).toBeVisible();
-    await expect(page.locator("[data-consultation-card-cta]").first()).toBeVisible();
+    await expect(page.locator("[data-production-request-card-cta]").first()).toBeVisible();
 
     const overflow = await page.evaluate(() => {
       const el = document.documentElement;
@@ -166,7 +165,7 @@ test.describe("Hazır modeller community search", () => {
     await expect(page.getByText("Sonuç bulunamadı.")).toBeVisible();
   });
 
-  test("CC BY opens quote modal; NC does not", async ({ page }) => {
+  test("community cards use unified production request CTA", async ({ page }) => {
     await page.route("**/api/hazir-modeller/search**", async (route) => {
       await fulfill(route, {
         models: [vase, nc],
@@ -181,13 +180,8 @@ test.describe("Hazır modeller community search", () => {
       timeout: 15_000,
     });
 
-    await page.locator("[data-external-quote-cta]").first().click();
-    await expect(
-      page.getByRole("dialog").or(page.locator("[data-external-price-modal]")),
-    ).toBeVisible({ timeout: 10_000 });
-
-    await expect(page.locator("[data-consultation-card-cta]")).toBeVisible();
-    await expect(page.locator("[data-external-quote-cta]")).toHaveCount(1);
+    await expect(page.locator("[data-production-request-card-cta]")).toHaveCount(2);
+    await expect(page.locator("[data-external-quote-cta]")).toHaveCount(0);
 
     const overflow = await page.evaluate(() => {
       const el = document.documentElement;
