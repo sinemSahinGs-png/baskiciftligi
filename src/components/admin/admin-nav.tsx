@@ -8,6 +8,7 @@ import {
   ChartNoAxesCombined,
   ChevronRight,
   CirclePercent,
+  ClipboardList,
   FileBox,
   FileText,
   GalleryVerticalEnd,
@@ -45,6 +46,7 @@ const navigationGroups = [
     items: [
       { href: "/admin/siparisler", label: "Siparişler", icon: Package },
       { href: "/admin/teklifler", label: "Teklifler", icon: FileText },
+      { href: "/admin/model-danisma", label: "Model danışma", icon: ClipboardList },
       { href: "/admin/yazicilar", label: "Yazıcılar", icon: Boxes },
       { href: "/admin/yuklemeler", label: "Yüklemeler", icon: FileBox },
       { href: "/admin/musteriler", label: "Müşteriler", icon: Users },

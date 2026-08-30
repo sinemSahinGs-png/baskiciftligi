@@ -32,6 +32,9 @@ function loadLocalEnv() {
 
 loadLocalEnv();
 
+const devPort = process.env.PLAYWRIGHT_DEV_PORT ?? "3000";
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${devPort}`;
+
 export default defineConfig({
   testDir: "./e2e",
   outputDir: "test-results/playwright",
@@ -41,7 +44,7 @@ export default defineConfig({
   workers: 1,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000",
+    baseURL,
     locale: "tr-TR",
     timezoneId: "Europe/Istanbul",
     trace: "retain-on-failure",
@@ -59,13 +62,13 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev -- --port 3000",
-    url: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000",
+    command: `npm run dev -- --port ${devPort}`,
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
       ...process.env,
-      PORT: "3000",
+      PORT: devPort,
       ALLOW_DEMO_ADMIN_MUTATIONS: "true",
       BC_FORCE_LOCAL_PERSISTENCE: "true",
       THINGIVERSE_FIXTURE_MODE: "true",
