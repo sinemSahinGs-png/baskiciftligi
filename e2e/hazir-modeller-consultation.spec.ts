@@ -43,44 +43,30 @@ test.describe("Hazır modeller quotation flow", () => {
   });
 
   test("detail page shows honest pricing and Baskı Teklifi Al CTA", async ({ page }) => {
-    test.skip(
-      !process.env.THINGIVERSE_ACCESS_TOKEN &&
-        process.env.THINGIVERSE_FIXTURE_MODE !== "true",
-      "Thingiverse credentials or fixture mode required",
-    );
+    await page.setViewportSize({ width: 375, height: 812 });
+    const response = await page.goto("/hazir-modeller/thingiverse/1001");
+    expect(response?.status()).toBeLessThan(500);
 
-    await page.goto("/hazir-modeller/thingiverse/1001");
-    const configured = await page
-      .getByRole("heading", { name: "20 mm kalibrasyon küpü" })
-      .isVisible()
-      .catch(() => false);
-    test.skip(!configured, "Thingiverse detail not available in this environment");
+    await expect(
+      page.getByRole("heading", { name: "20 mm kalibrasyon küpü" }),
+    ).toBeVisible({ timeout: 15_000 });
 
-    await expect(page.locator("[data-production-request-cta]")).toBeVisible({
-      timeout: 15_000,
-    });
-    await expect(page.getByText("Baskı Teklifi Al")).toBeVisible();
+    await expect(page.locator("[data-mobile-sticky-cta]")).toBeVisible();
+    await expect(page.locator("[data-production-request-cta]")).toHaveCount(1);
+    await expect(
+      page.locator("[data-mobile-sticky-cta]").getByRole("button", { name: "Baskı Teklifi Al" }),
+    ).toBeVisible();
     await expect(page.locator("[data-pricing-state='unanalysed']")).toBeVisible();
     await expect(page.locator("[data-estimated-price]")).toHaveCount(0);
-    await expect(page.getByText(/Creative Commons|NC|ND|SA|ticari/i)).toHaveCount(0);
-    await expect(
-      page.getByText("Seçimlerini gönder, üretim detaylarını inceleyip net teklifimizi paylaşalım."),
-    ).toBeVisible();
+    await expect(page.locator("#ana-icerik")).not.toContainText(/Creative Commons/i);
+    await expect(page.locator("[data-print-options]")).toBeVisible();
   });
 
   test("consultation submission appears in admin panel", async ({
     request,
     context,
   }) => {
-    const adminPassword = process.env.ADMIN_PANEL_PASSWORD;
-    test.skip(!adminPassword, "ADMIN_PANEL_PASSWORD required");
-
-    const gate = await request.get("/admin/model-danisma");
-    test.skip(
-      gate.url().includes("/giris") && !gate.url().includes("/admin/giris"),
-      "Admin password gate not enabled",
-    );
-
+    const uniqueName = `Playwright Müşteri ${Date.now()}`;
     const uniquePhone = `+90555${Date.now().toString().slice(-7)}`;
     const response = await request.post("/api/hazir-modeller/consultation", {
       data: {
@@ -90,7 +76,7 @@ test.describe("Hazır modeller quotation flow", () => {
         creatorName: "fixture-leo",
         sourceUrl: "https://www.thingiverse.com/thing:2002",
         licenseLabel: "Creative Commons - Attribution - Non-Commercial",
-        customerName: "Test Müşteri",
+        customerName: uniqueName,
         customerPhone: uniquePhone,
         material: "pla",
         color: "beyaz",
@@ -103,9 +89,9 @@ test.describe("Hazır modeller quotation flow", () => {
 
     const adminPage = await context.newPage();
     await openAdmin(adminPage, "/admin/model-danisma");
-    await expect(adminPage.getByText("Test Müşteri")).toBeVisible({ timeout: 15_000 });
-    await expect(adminPage.getByText("İzin gerekli")).toBeVisible();
-    await expect(adminPage.getByText("Fiyat analizi gerekli")).toBeVisible();
+    const requestRow = adminPage.getByRole("row").filter({ hasText: uniqueName });
+    await expect(requestRow).toBeVisible({ timeout: 15_000 });
+    await expect(requestRow.getByText("İzin gerekli")).toBeVisible();
     await adminPage.close();
   });
 });

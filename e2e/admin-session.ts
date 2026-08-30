@@ -25,7 +25,7 @@ export async function openAdmin(page: Page, path: string) {
     );
   }
 
-  const password = process.env.ADMIN_PANEL_PASSWORD;
+  const password = process.env.ADMIN_PANEL_PASSWORD ?? "playwright-e2e-admin";
   if (!password) {
     throw new Error(
       "Yönetici giriş sayfası açıldı. Playwright ortamına ADMIN_PANEL_PASSWORD ekleyin.",

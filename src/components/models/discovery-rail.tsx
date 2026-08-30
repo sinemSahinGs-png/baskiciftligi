@@ -27,6 +27,7 @@ const DISCOVERY_ITEMS: Array<{ term: string; icon: LucideIcon }> = [
 
 export function DiscoveryRail({ onSelect }: { onSelect: (term: string) => void }) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -51,7 +52,7 @@ export function DiscoveryRail({ onSelect }: { onSelect: (term: string) => void }
         raf = requestAnimationFrame(step);
         return;
       }
-      offset += 0.25;
+      offset += 0.18;
       const half = track!.scrollWidth / 2;
       if (half > 0 && offset >= half) offset = 0;
       track!.style.transform = `translateX(-${offset}px)`;
@@ -62,15 +63,22 @@ export function DiscoveryRail({ onSelect }: { onSelect: (term: string) => void }
     return () => cancelAnimationFrame(raf);
   }, [reducedMotion, paused]);
 
-  const items = [...DISCOVERY_ITEMS, ...DISCOVERY_ITEMS];
+  const items = reducedMotion ? DISCOVERY_ITEMS : [...DISCOVERY_ITEMS, ...DISCOVERY_ITEMS];
 
   return (
-    <section className="mx-auto mt-8 w-full max-w-[72rem]" aria-label="Şu anda keşfedilenler">
-      <p className="text-center text-xs font-medium tracking-wide text-muted-light uppercase">
+    <section
+      className="mx-auto mt-6 w-full max-w-[72rem] px-4 sm:mt-8"
+      aria-label="Şu anda keşfedilenler"
+    >
+      <p className="text-center text-sm font-medium text-muted-light">
         Şu anda keşfedilenler
       </p>
       <div
-        className="relative mt-3 overflow-hidden"
+        ref={scrollerRef}
+        className={cn(
+          "relative mt-3",
+          reducedMotion && "overflow-x-auto overscroll-x-contain",
+        )}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
@@ -78,32 +86,39 @@ export function DiscoveryRail({ onSelect }: { onSelect: (term: string) => void }
         onTouchStart={() => setPaused(true)}
         onTouchEnd={() => setPaused(false)}
       >
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-12 bg-gradient-to-r from-carbon to-transparent sm:block" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden w-12 bg-gradient-to-l from-carbon to-transparent sm:block" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-gradient-to-r from-carbon to-transparent sm:w-10" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-gradient-to-l from-carbon to-transparent sm:w-10" />
         <div
-          ref={trackRef}
           className={cn(
-            "flex w-max gap-2 px-1 pb-1",
-            reducedMotion && "w-full max-w-full overflow-x-auto",
+            "overflow-hidden",
+            reducedMotion && "overflow-x-auto px-1",
           )}
-          role="list"
         >
-          {items.map((item, index) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={`${item.term}-${index}`}
-                type="button"
-                role="listitem"
-                data-discovery-pill=""
-                onClick={() => onSelect(item.term.toLocaleLowerCase("tr-TR"))}
-                className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-light-text backdrop-blur-sm transition hover:border-coral/30 hover:bg-coral/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60"
-              >
-                <Icon aria-hidden="true" className="size-3.5 text-coral/80" />
-                {item.term}
-              </button>
-            );
-          })}
+          <div
+            ref={trackRef}
+            className={cn(
+              "flex w-max gap-2.5 px-2 pb-1",
+              reducedMotion && "w-auto",
+            )}
+            role="list"
+          >
+            {items.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={`${item.term}-${index}`}
+                  type="button"
+                  role="listitem"
+                  data-discovery-pill=""
+                  onClick={() => onSelect(item.term.toLocaleLowerCase("tr-TR"))}
+                  className="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-sm text-light-text backdrop-blur-sm transition hover:border-coral/30 hover:bg-coral/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/60"
+                >
+                  <Icon aria-hidden="true" className="size-3.5 text-coral/80" />
+                  {item.term}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

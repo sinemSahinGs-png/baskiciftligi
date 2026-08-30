@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AtSign, Mail, MapPin, Phone, Play, Truck } from "lucide-react";
 
 import { Logo } from "@/components/site/logo";
+import { SiteFooterMobile } from "@/components/site/site-footer-mobile";
 import { siteConfig } from "@/config/site";
 import { homepageShopCategorySlugs } from "@/domain/home/homepage";
 
@@ -38,8 +39,10 @@ export function SiteFooter({
       data-site-footer
       className="relative bg-deep-ink text-light-text"
     >
-      <div aria-hidden="true" className="grid-corner pointer-events-none absolute inset-0 opacity-70" />
-      <div className="shell relative py-10 sm:py-12">
+      <SiteFooterMobile description={footerDescription} />
+
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden opacity-70 md:block grid-corner" />
+      <div className="shell relative hidden py-10 sm:py-12 md:block">
         <div className="grid gap-8 border-b border-white/10 pb-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.9fr)]">
           <div className="max-w-lg">
             <Logo inverted />

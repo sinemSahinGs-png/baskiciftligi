@@ -8,12 +8,17 @@ import {
 } from "@/domain/external-models/production-estimate";
 import { useMemo } from "react";
 
+import { cn } from "@/lib/utils";
+
 export interface ProductionOptionsValue {
   material: string;
   color: string;
   sizePreset: PrintSizePresetId;
   quantity: number;
 }
+
+const fieldClass =
+  "min-h-12 w-full rounded-lg border border-white/15 bg-midnight/40 px-3 text-base";
 
 export function PrintProductionOptions({
   value,
@@ -33,15 +38,15 @@ export function PrintProductionOptions({
 
   return (
     <div className="space-y-4" data-print-options="">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 min-[390px]:grid-cols-2">
         <label className="block text-sm">
-          <span className="mb-1 block text-muted-light">Malzeme</span>
+          <span className="mb-1.5 block text-sm text-muted-light">Malzeme</span>
           <select
             value={value.material}
             onChange={(event) =>
               onChange({ ...value, material: event.target.value })
             }
-            className="min-h-11 w-full rounded-lg border border-white/15 bg-midnight/40 px-3"
+            className={fieldClass}
           >
             {PRINT_MATERIALS.map((item) => (
               <option key={item.id} value={item.id}>
@@ -51,11 +56,11 @@ export function PrintProductionOptions({
           </select>
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-muted-light">Renk</span>
+          <span className="mb-1.5 block text-sm text-muted-light">Renk</span>
           <select
             value={value.color}
             onChange={(event) => onChange({ ...value, color: event.target.value })}
-            className="min-h-11 w-full rounded-lg border border-white/15 bg-midnight/40 px-3"
+            className={fieldClass}
           >
             {PRINT_COLORS.map((item) => (
               <option key={item.id} value={item.id}>
@@ -65,7 +70,7 @@ export function PrintProductionOptions({
           </select>
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-muted-light">Boyut</span>
+          <span className="mb-1.5 block text-sm text-muted-light">Boyut</span>
           <select
             value={value.sizePreset}
             onChange={(event) =>
@@ -74,7 +79,7 @@ export function PrintProductionOptions({
                 sizePreset: event.target.value as PrintSizePresetId,
               })
             }
-            className="min-h-11 w-full rounded-lg border border-white/15 bg-midnight/40 px-3"
+            className={fieldClass}
           >
             {sizeOptions.map((item) => (
               <option key={item.id} value={item.id}>
@@ -83,10 +88,11 @@ export function PrintProductionOptions({
             ))}
           </select>
         </label>
-        <label className="block text-sm">
-          <span className="mb-1 block text-muted-light">Adet</span>
+        <label className={cn("block text-sm", "min-[390px]:col-span-1")}>
+          <span className="mb-1.5 block text-sm text-muted-light">Adet</span>
           <input
             type="number"
+            inputMode="numeric"
             min={1}
             max={99}
             value={value.quantity}
@@ -96,7 +102,7 @@ export function PrintProductionOptions({
                 quantity: Math.max(1, Math.min(99, Number(event.target.value) || 1)),
               })
             }
-            className="min-h-11 w-full rounded-lg border border-white/15 bg-midnight/40 px-3"
+            className={fieldClass}
           />
         </label>
       </div>

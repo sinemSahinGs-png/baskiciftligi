@@ -10,6 +10,7 @@ export function QuoteCtaButton({
   loading = false,
   success = false,
   disabled = false,
+  variant = "default",
   className,
   "data-testid": dataTestId,
 }: {
@@ -17,6 +18,7 @@ export function QuoteCtaButton({
   loading?: boolean;
   success?: boolean;
   disabled?: boolean;
+  variant?: "default" | "sticky";
   className?: string;
   "data-testid"?: string;
 }) {
@@ -38,7 +40,10 @@ export function QuoteCtaButton({
       disabled={disabled || loading || success}
       onClick={onClick}
       className={cn(
-        "group relative inline-flex min-h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-coral px-5 text-base font-semibold text-midnight shadow-[0_8px_24px_-12px_rgba(255,107,74,0.8)] transition duration-200 hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_12px_28px_-10px_rgba(255,107,74,0.85)] active:translate-y-0 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2 focus-visible:ring-offset-carbon disabled:pointer-events-none disabled:opacity-60 sm:min-h-[3.5rem]",
+        "group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-coral font-semibold text-midnight transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2 focus-visible:ring-offset-carbon disabled:pointer-events-none disabled:opacity-60",
+        variant === "sticky"
+          ? "min-h-12 px-4 text-base shadow-none active:scale-[0.99]"
+          : "min-h-12 px-5 text-base shadow-[0_8px_24px_-12px_rgba(255,107,74,0.8)] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_12px_28px_-10px_rgba(255,107,74,0.85)] active:translate-y-0 active:scale-[0.99] sm:min-h-[3.5rem]",
         className,
       )}
     >
