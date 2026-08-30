@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const DETAIL_IDS = ["1587568", "1001", "2002"] as const;
+const DETAIL_IDS = ["1587568", "1001", "2002", "50204"] as const;
 
 async function assertNoRoutePolicyCrash(page: import("@playwright/test").Page) {
   await expect(page.getByText("Page changed from static to dynamic")).toHaveCount(0);

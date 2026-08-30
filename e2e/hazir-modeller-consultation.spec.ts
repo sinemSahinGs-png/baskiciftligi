@@ -24,8 +24,8 @@ function fulfill(route: import("@playwright/test").Route, body: unknown) {
   });
 }
 
-test.describe("Hazır modeller unified production request", () => {
-  test("search cards use single production request path", async ({ page }) => {
+test.describe("Hazır modeller quotation flow", () => {
+  test("search cards use Modeli İncele action", async ({ page }) => {
     await page.route("**/api/hazir-modeller/search**", async (route) => {
       await fulfill(route, {
         models: [communityModel],
@@ -38,11 +38,11 @@ test.describe("Hazır modeller unified production request", () => {
     await expect(page.locator("[data-thingiverse-card]")).toHaveCount(1, {
       timeout: 15_000,
     });
-    await expect(page.locator("[data-production-request-card-cta]")).toBeVisible();
+    await expect(page.locator("[data-model-card-cta]")).toBeVisible();
     await expect(page.locator("[data-external-quote-cta]")).toHaveCount(0);
   });
 
-  test("detail page shows unified CTA without license jargon", async ({ page }) => {
+  test("detail page shows honest pricing and Baskı Teklifi Al CTA", async ({ page }) => {
     test.skip(
       !process.env.THINGIVERSE_ACCESS_TOKEN &&
         process.env.THINGIVERSE_FIXTURE_MODE !== "true",
@@ -59,11 +59,12 @@ test.describe("Hazır modeller unified production request", () => {
     await expect(page.locator("[data-production-request-cta]")).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByText("Üretim talebi oluştur")).toBeVisible();
+    await expect(page.getByText("Baskı Teklifi Al")).toBeVisible();
+    await expect(page.locator("[data-pricing-state='unanalysed']")).toBeVisible();
+    await expect(page.locator("[data-estimated-price]")).toHaveCount(0);
     await expect(page.getByText(/Creative Commons|NC|ND|SA|ticari/i)).toHaveCount(0);
-    await expect(page.locator("[data-external-quote-cta]")).toHaveCount(0);
     await expect(
-      page.getByText("Talebiniz incelendikten sonra kesin fiyat ve üretim bilgisi paylaşılır."),
+      page.getByText("Seçimlerini gönder, üretim detaylarını inceleyip net teklifimizi paylaşalım."),
     ).toBeVisible();
   });
 
@@ -95,6 +96,7 @@ test.describe("Hazır modeller unified production request", () => {
         color: "beyaz",
         sizePreset: "orta",
         quantity: 1,
+        pricingState: "unanalysed",
       },
     });
     expect(response.ok()).toBeTruthy();
@@ -103,6 +105,7 @@ test.describe("Hazır modeller unified production request", () => {
     await openAdmin(adminPage, "/admin/model-danisma");
     await expect(adminPage.getByText("Test Müşteri")).toBeVisible({ timeout: 15_000 });
     await expect(adminPage.getByText("İzin gerekli")).toBeVisible();
+    await expect(adminPage.getByText("Fiyat analizi gerekli")).toBeVisible();
     await adminPage.close();
   });
 });

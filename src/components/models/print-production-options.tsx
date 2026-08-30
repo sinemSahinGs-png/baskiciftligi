@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-
 import {
   PRINT_COLORS,
   PRINT_MATERIALS,
   PRINT_SIZE_PRESETS,
   type PrintSizePresetId,
 } from "@/domain/external-models/production-estimate";
-import { formatMoney } from "@/lib/money";
+import { useMemo } from "react";
 
 export interface ProductionOptionsValue {
   material: string;
@@ -20,32 +18,10 @@ export interface ProductionOptionsValue {
 export function PrintProductionOptions({
   value,
   onChange,
-  onEstimate,
 }: {
   value: ProductionOptionsValue;
   onChange: (next: ProductionOptionsValue) => void;
-  onEstimate?: (grossMinor: number, disclaimerTr: string) => void;
 }) {
-  useEffect(() => {
-    const controller = new AbortController();
-    const params = new URLSearchParams({
-      size: value.sizePreset,
-      quantity: String(value.quantity),
-    });
-    void fetch(`/api/hazir-modeller/estimate?${params}`, {
-      signal: controller.signal,
-      cache: "no-store",
-    })
-      .then((response) => response.json())
-      .then((payload: { grossMinor?: number; disclaimerTr?: string }) => {
-        if (payload.grossMinor != null && payload.disclaimerTr) {
-          onEstimate?.(payload.grossMinor, payload.disclaimerTr);
-        }
-      })
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [value.sizePreset, value.quantity, onEstimate]);
-
   const sizeOptions = useMemo(
     () =>
       Object.entries(PRINT_SIZE_PRESETS).map(([id, preset]) => ({
@@ -124,25 +100,6 @@ export function PrintProductionOptions({
           />
         </label>
       </div>
-    </div>
-  );
-}
-
-export function EstimatedPriceBlock({
-  grossMinor,
-  disclaimerTr,
-}: {
-  grossMinor: number | null;
-  disclaimerTr: string;
-}) {
-  if (grossMinor == null) return null;
-  return (
-    <div className="rounded-xl bg-white/[0.04] px-4 py-3" data-estimated-price="">
-      <p className="text-xs uppercase tracking-wide text-muted-light">Tahmini fiyat</p>
-      <p className="mt-1 font-heading text-3xl font-bold text-coral">
-        {formatMoney(grossMinor)}
-      </p>
-      <p className="mt-2 text-xs leading-5 text-muted-light">{disclaimerTr}</p>
     </div>
   );
 }

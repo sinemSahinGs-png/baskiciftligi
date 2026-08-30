@@ -17,6 +17,7 @@ import {
   type ConsultationStatus,
   type ModelConsultationRequest,
 } from "@/domain/consultation/types";
+import { pricingStateLabel } from "@/domain/external-models/pricing-state";
 import { formatMoney } from "@/lib/money";
 
 function buildWhatsAppMessage(request: ModelConsultationRequest, finalQuoteMinor: number | null) {
@@ -205,16 +206,20 @@ export function ModelConsultationDetailPanel({
                 <dd>{request.sizeLabel}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Adet</dt>
-                <dd>{request.quantity}</dd>
+                <dt className="text-xs text-muted-foreground">Müşteri fiyat durumu</dt>
+                <dd>{pricingStateLabel(request.pricingState)}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">Tahmini fiyat</dt>
+                <dt className="text-xs text-muted-foreground">İç tahmin (preset)</dt>
                 <dd>
                   {request.estimatedGrossMinor != null
                     ? formatMoney(request.estimatedGrossMinor)
                     : "—"}
                 </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Adet</dt>
+                <dd>{request.quantity}</dd>
               </div>
             </dl>
           </div>

@@ -2,15 +2,18 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { ChevronDown, ExternalLink } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { ModelConsultationModal } from "@/components/models/model-consultation-modal";
+import { PricingStatusBlock } from "@/components/models/pricing-status-block";
 import {
-  EstimatedPriceBlock,
   PrintProductionOptions,
   type ProductionOptionsValue,
 } from "@/components/models/print-production-options";
+import { QuoteCtaButton } from "@/components/models/quote-cta-button";
 import { SafeImage } from "@/components/media/safe-image";
+import { communityModelPricing } from "@/domain/external-models/pricing-state";
 import type { ExternalModelSummary } from "@/providers/contracts";
 import { cn } from "@/lib/utils";
 
@@ -21,16 +24,10 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
     sizePreset: "orta",
     quantity: 1,
   });
-  const [estimateMinor, setEstimateMinor] = useState<number | null>(null);
-  const [disclaimerTr, setDisclaimerTr] = useState(
-    "Tahmini üretim bedeli — sipariş onayı değildir.",
-  );
   const [requestOpen, setRequestOpen] = useState(false);
+  const [techOpen, setTechOpen] = useState(false);
 
-  const handleEstimate = useCallback((grossMinor: number, disclaimer: string) => {
-    setEstimateMinor(grossMinor);
-    setDisclaimerTr(disclaimer);
-  }, []);
+  const pricing = useMemo(() => communityModelPricing(), []);
 
   const images = useMemo(() => {
     const urls = new Set<string>();
@@ -43,18 +40,18 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
   const [activeImage, setActiveImage] = useState(images[0] ?? null);
 
   return (
-    <main id="ana-icerik" className="relative pb-20 text-light-text">
+    <main id="ana-icerik" className="relative pb-28 text-light-text lg:pb-10">
       <article className="shell relative py-8 sm:py-10">
         <Link
           href={"/hazir-modeller" as Route}
-          className="text-sm text-muted-light hover:text-light-text"
+          className="text-sm text-muted-light transition hover:text-light-text"
         >
           ← Hazır modeller
         </Link>
 
-        <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)]">
+        <div className="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] lg:gap-10">
           <div className="min-w-0 space-y-4">
-            <div className="relative aspect-square overflow-hidden rounded-2xl bg-midnight/70">
+            <div className="relative aspect-square max-h-[min(72vh,42rem)] overflow-hidden rounded-2xl bg-midnight/70">
               {activeImage ? (
                 <SafeImage
                   src={activeImage}
@@ -77,7 +74,7 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
                       type="button"
                       onClick={() => setActiveImage(url)}
                       className={cn(
-                        "relative size-16 overflow-hidden rounded-lg border",
+                        "relative size-16 overflow-hidden rounded-lg border transition",
                         activeImage === url ? "border-coral" : "border-white/10",
                       )}
                     >
@@ -89,7 +86,7 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
             ) : null}
           </div>
 
-          <aside className="min-w-0 space-y-6 lg:sticky lg:top-24">
+          <aside className="min-w-0 space-y-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-1">
             <div>
               <h1 className="font-heading text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
                 {model.title}
@@ -102,34 +99,68 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
             <PrintProductionOptions
               value={productionOptions}
               onChange={setProductionOptions}
-              onEstimate={handleEstimate}
             />
 
-            <EstimatedPriceBlock grossMinor={estimateMinor} disclaimerTr={disclaimerTr} />
+            <PricingStatusBlock pricing={pricing} />
 
-            <button
-              type="button"
-              data-production-request-cta=""
-              onClick={() => setRequestOpen(true)}
-              className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-coral text-base font-semibold text-midnight"
-            >
-              Üretim talebi oluştur
-            </button>
-            <p className="text-xs leading-5 text-muted-light">
-              Talebiniz incelendikten sonra kesin fiyat ve üretim bilgisi paylaşılır.
-            </p>
+            <div className="hidden lg:block space-y-3">
+              <QuoteCtaButton onClick={() => setRequestOpen(true)} />
+              <p className="text-xs leading-5 text-muted-light">
+                Seçimlerini gönder, üretim detaylarını inceleyip net teklifimizi paylaşalım.
+              </p>
+              <a
+                href={model.sourceUrl}
+                rel="noreferrer"
+                target="_blank"
+                className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-muted-light transition hover:text-light-text"
+              >
+                Orijinal modeli görüntüle
+                <ExternalLink aria-hidden="true" className="size-3.5" />
+              </a>
+            </div>
 
-            <a
-              href={model.sourceUrl}
-              rel="noreferrer"
-              target="_blank"
-              className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4"
-            >
-              Orijinal modeli görüntüle
-            </a>
+            <div className="rounded-xl border border-white/10 bg-white/[0.02]">
+              <button
+                type="button"
+                aria-expanded={techOpen}
+                onClick={() => setTechOpen((prev) => !prev)}
+                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold"
+              >
+                Teknik model bilgisi
+                <ChevronDown
+                  aria-hidden="true"
+                  className={cn("size-4 transition", techOpen && "rotate-180")}
+                />
+              </button>
+              {techOpen ? (
+                <dl className="space-y-2 border-t border-white/10 px-4 py-3 text-xs text-muted-light">
+                  <div className="flex justify-between gap-4">
+                    <dt>Kaynak</dt>
+                    <dd className="text-right text-light-text">Topluluk</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt>Model ID</dt>
+                    <dd className="text-right text-light-text">{model.externalId}</dd>
+                  </div>
+                  {model.fileCount != null ? (
+                    <div className="flex justify-between gap-4">
+                      <dt>Dosya sayısı</dt>
+                      <dd className="text-right text-light-text">{model.fileCount}</dd>
+                    </div>
+                  ) : null}
+                </dl>
+              ) : null}
+            </div>
           </aside>
         </div>
       </article>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-carbon/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-md lg:hidden">
+        <QuoteCtaButton onClick={() => setRequestOpen(true)} />
+        <p className="mt-2 text-center text-[11px] leading-4 text-muted-light">
+          Seçimlerini gönder, net teklifimizi paylaşalım.
+        </p>
+      </div>
 
       <ModelConsultationModal
         open={requestOpen}
@@ -145,7 +176,7 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
           thumbnailUrl: model.thumbnailUrl,
         }}
         productionOptions={productionOptions}
-        estimatedGrossMinor={estimateMinor}
+        pricingState={pricing.state}
       />
     </main>
   );

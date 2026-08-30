@@ -46,7 +46,7 @@ function fulfill(route: import("@playwright/test").Route, body: unknown) {
 }
 
 test.describe("Hazır modeller community search", () => {
-  test("sticky category + vazo clears category and shows community cards", async ({
+  test("vazo search clears sticky category and shows community cards", async ({
     page,
   }) => {
     await page.route("**/api/hazir-modeller/search**", async (route) => {
@@ -54,7 +54,6 @@ test.describe("Hazır modeller community search", () => {
       const q = url.searchParams.get("q") ?? "";
       const category = url.searchParams.get("category") ?? "";
 
-      // After commitSearch, category must be cleared client-side.
       if (q === "vazo" && !category) {
         await fulfill(route, {
           models: [vase, nc],
@@ -95,7 +94,7 @@ test.describe("Hazır modeller community search", () => {
     await expect(page.locator("[data-search-empty]")).toHaveCount(0);
     await expect(page).toHaveURL(/q=vazo/);
     await expect(page).not.toHaveURL(/category=/);
-    await expect(page.locator("[data-production-request-card-cta]").first()).toBeVisible();
+    await expect(page.locator("[data-model-card-cta]").first()).toBeVisible();
 
     const overflow = await page.evaluate(() => {
       const el = document.documentElement;
@@ -104,9 +103,7 @@ test.describe("Hazır modeller community search", () => {
     expect(overflow).toBe(false);
   });
 
-  test("category chip without text search keeps category filter", async ({
-    page,
-  }) => {
+  test("legacy category URL param still filters results", async ({ page }) => {
     await page.route("**/api/hazir-modeller/search**", async (route) => {
       const url = new URL(route.request().url());
       const q = url.searchParams.get("q") ?? "";
@@ -118,10 +115,7 @@ test.describe("Hazır modeller community search", () => {
       });
     });
 
-    await page.goto("/hazir-modeller?source=thingiverse");
-    await expect(page.locator("[data-model-library-root]")).toBeVisible();
-    await page.getByRole("button", { name: "Anahtarlık" }).click();
-    await expect(page).toHaveURL(/category=Anahtarl(%C4%B1|ı)k/);
+    await page.goto("/hazir-modeller?source=thingiverse&category=Anahtarl%C4%B1k");
     await expect(page.locator("[data-thingiverse-card]")).toHaveCount(1, {
       timeout: 15_000,
     });
@@ -158,6 +152,7 @@ test.describe("Hazır modeller community search", () => {
     await page.click('button[type="submit"]');
 
     await expect(page.locator("[data-search-empty]")).toHaveCount(0);
+    await expect(page.locator('[data-model-library] [aria-busy="true"]')).toBeVisible();
     releaseSearch?.();
     await expect(page.locator("[data-search-empty]")).toBeVisible({
       timeout: 15_000,
@@ -165,7 +160,7 @@ test.describe("Hazır modeller community search", () => {
     await expect(page.getByText("Sonuç bulunamadı.")).toBeVisible();
   });
 
-  test("community cards use unified production request CTA", async ({ page }) => {
+  test("community cards show Modeli İncele CTA", async ({ page }) => {
     await page.route("**/api/hazir-modeller/search**", async (route) => {
       await fulfill(route, {
         models: [vase, nc],
@@ -180,7 +175,7 @@ test.describe("Hazır modeller community search", () => {
       timeout: 15_000,
     });
 
-    await expect(page.locator("[data-production-request-card-cta]")).toHaveCount(2);
+    await expect(page.locator("[data-model-card-cta]")).toHaveCount(2);
     await expect(page.locator("[data-external-quote-cta]")).toHaveCount(0);
 
     const overflow = await page.evaluate(() => {
@@ -188,6 +183,23 @@ test.describe("Hazır modeller community search", () => {
       return el.scrollWidth > el.clientWidth + 1;
     });
     expect(overflow).toBe(false);
+  });
+
+  test("discovery pill triggers search", async ({ page }) => {
+    await page.route("**/api/hazir-modeller/search**", async (route) => {
+      const url = new URL(route.request().url());
+      const q = url.searchParams.get("q") ?? "";
+      await fulfill(route, {
+        models: q === "figür" ? [vase] : [],
+        thingiverseConnected: true,
+        thingiverseStatus: "connected",
+      });
+    });
+
+    await page.goto("/hazir-modeller");
+    await page.locator("[data-discovery-pill]", { hasText: "Figür" }).first().click();
+    await expect(page).toHaveURL(/q=fig%C3%BCr|q=figür/);
+    await expect(page.locator("[data-model-search-input]")).toHaveValue(/figür/i);
   });
 
   test("back/forward keeps query and category consistent", async ({ page }) => {
@@ -210,7 +222,7 @@ test.describe("Hazır modeller community search", () => {
       });
     });
 
-    await page.goto("/hazir-modeller?category=Anahtarlık");
+    await page.goto("/hazir-modeller?category=Anahtarl%C4%B1k");
     await expect(page.locator("[data-thingiverse-card]").first()).toBeVisible({
       timeout: 15_000,
     });

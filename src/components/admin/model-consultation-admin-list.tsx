@@ -10,6 +10,7 @@ import {
   type ConsultationStatus,
   type ModelConsultationRequest,
 } from "@/domain/consultation/types";
+import { pricingStateLabel } from "@/domain/external-models/pricing-state";
 import { formatMoney } from "@/lib/money";
 
 function formatDate(value: string) {
@@ -45,7 +46,8 @@ export function ModelConsultationAdminList({
               <th className="px-4 py-3">Müşteri</th>
               <th className="px-4 py-3">Model</th>
               <th className="px-4 py-3">Lisans değerlendirmesi</th>
-              <th className="px-4 py-3">Tahmini fiyat</th>
+              <th className="px-4 py-3">Fiyat durumu</th>
+              <th className="px-4 py-3">İç tahmin</th>
               <th className="px-4 py-3">Adet</th>
               <th className="px-4 py-3">Durum</th>
               <th className="px-4 py-3" />
@@ -54,7 +56,7 @@ export function ModelConsultationAdminList({
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-muted-foreground">
+                <td colSpan={9} className="px-4 py-8 text-muted-foreground">
                   Henüz üretim talebi yok.
                 </td>
               </tr>
@@ -76,6 +78,9 @@ export function ModelConsultationAdminList({
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {licenseEvaluationLabel(row.licenseEvaluation)}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {pricingStateLabel(row.pricingState)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {row.estimatedGrossMinor != null

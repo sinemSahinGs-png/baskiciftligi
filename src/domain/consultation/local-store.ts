@@ -13,6 +13,7 @@ import {
   resolveLicenseEvaluationFromCode,
   type LicenseEvaluationCode,
 } from "@/domain/consultation/license-evaluation";
+import type { PricingState } from "@/domain/external-models/pricing-state";
 
 const storePath = path.join(process.cwd(), ".octo-data", "consultation-requests.json");
 
@@ -47,6 +48,14 @@ function resolveStoredLicenseEvaluation(row: Record<string, unknown>): LicenseEv
   ).code;
 }
 
+function resolveStoredPricingState(row: Record<string, unknown>): PricingState {
+  const stored = row.pricing_state ?? row.pricingState;
+  if (stored === "unanalysed" || stored === "rough_range" || stored === "analysed") {
+    return stored;
+  }
+  return "unanalysed";
+}
+
 function mapRow(row: Record<string, unknown>): ModelConsultationRequest {
   return {
     id: String(row.id),
@@ -73,6 +82,7 @@ function mapRow(row: Record<string, unknown>): ModelConsultationRequest {
         : row.estimatedGrossMinor != null
           ? Number(row.estimatedGrossMinor)
           : null,
+    pricingState: resolveStoredPricingState(row),
     productionOptions:
       (row.production_options as Record<string, unknown>) ??
       (row.productionOptions as Record<string, unknown>) ??
@@ -118,6 +128,7 @@ export async function localCreateConsultation(
     quantity: input.quantity,
     customerNote: input.customerNote ?? null,
     estimatedGrossMinor: input.estimatedGrossMinor ?? null,
+    pricingState: input.pricingState ?? "unanalysed",
     productionOptions: input.productionOptions ?? {},
     status: "pending_license_review",
     adminNote: null,
