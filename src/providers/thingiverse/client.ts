@@ -4,10 +4,12 @@ import { parseStrictEnvBoolean } from "@/lib/env-boolean";
 import { serverEnv } from "@/lib/env.server";
 import { touchIntegration } from "@/domain/manufacturing/repository";
 import { assertSafeThingiverseUrl, SsrfError } from "@/lib/manufacturing/ssrf";
-import type {
-  ThingiverseFile,
-  ThingiverseThing,
-} from "@/providers/thingiverse/types";
+import type { ThingiverseThing } from "@/providers/thingiverse/types";
+import {
+  normalizeThingDetail,
+  normalizeThingFiles,
+  normalizeThingImages,
+} from "@/providers/thingiverse/normalize-detail";
 import { normalizeThingList as normalizeThingListShape } from "@/providers/thingiverse/normalize-list";
 
 const defaultBase = "https://api.thingiverse.com";
@@ -170,19 +172,31 @@ export async function searchThings(query: string, page: number) {
 }
 
 export async function getThing(id: string) {
-  return thingiverseFetch<ThingiverseThing>(`/things/${encodeURIComponent(id)}`);
+  const payload = await thingiverseFetch<unknown>(
+    `/things/${encodeURIComponent(id)}`,
+  );
+  try {
+    return normalizeThingDetail(payload);
+  } catch (error) {
+    throw new ThingiverseApiError(
+      502,
+      error instanceof Error ? error.message : "Thingiverse model biçimi beklenmeyen.",
+    );
+  }
 }
 
 export async function getThingImages(id: string) {
-  return thingiverseFetch<Array<{ url?: string }>>(
+  const payload = await thingiverseFetch<unknown>(
     `/things/${encodeURIComponent(id)}/images`,
   );
+  return normalizeThingImages(payload);
 }
 
 export async function getThingFiles(id: string) {
-  return thingiverseFetch<ThingiverseFile[]>(
+  const payload = await thingiverseFetch<unknown>(
     `/things/${encodeURIComponent(id)}/files`,
   );
+  return normalizeThingFiles(payload);
 }
 
 export async function getCreator(username: string) {

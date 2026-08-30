@@ -28,6 +28,20 @@ const ncThing: ThingiverseThing = {
   is_nsfw: false,
 };
 
+const detail1587568: ThingiverseThing = {
+  id: 1587568,
+  name: "Low Poly Vase",
+  public_url: "https://www.thingiverse.com/thing:1587568",
+  thumbnail: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png",
+  creator: { name: "fixture-vase" },
+  license: "Creative Commons - Attribution",
+  description: "Production regression fixture for single-image API shape.",
+  like_count: 120,
+  collect_count: 40,
+  file_count: 1,
+  is_nsfw: false,
+};
+
 const filesByThing: Record<string, ThingiverseFile[]> = {
   "1001": [
     {
@@ -48,6 +62,15 @@ const filesByThing: Record<string, ThingiverseFile[]> = {
       formatted_size: "684 B",
     },
   ],
+  "1587568": [
+    {
+      id: 158,
+      name: "Low_Poly_Vase.stl",
+      size: 2048,
+      download_url: "https://api.thingiverse.com/files/158",
+      formatted_size: "2 KB",
+    },
+  ],
 };
 
 export async function loadThingiverseFixture<T>(path: string): Promise<T> {
@@ -60,7 +83,18 @@ export async function loadThingiverseFixture<T>(path: string): Promise<T> {
   if (path === "/things/2002") {
     return ncThing as T;
   }
+  if (path === "/things/1587568") {
+    return detail1587568 as T;
+  }
   if (path.endsWith("/images")) {
+    const thingId = path.match(/^\/things\/(\d+)\/images$/)?.[1];
+    if (thingId === "1587568") {
+      // Production API often returns a single image object, not an array.
+      return {
+        id: 501,
+        url: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png",
+      } as T;
+    }
     return [{ url: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png" }] as T;
   }
   if (path === "/things/1001/files") {
@@ -68,6 +102,9 @@ export async function loadThingiverseFixture<T>(path: string): Promise<T> {
   }
   if (path === "/things/2002/files") {
     return filesByThing["2002"] as T;
+  }
+  if (path === "/things/1587568/files") {
+    return filesByThing["1587568"] as T;
   }
   if (path.startsWith("/things/")) {
     const error = new Error("Thingiverse kaydı yok veya kaldırılmış.");
