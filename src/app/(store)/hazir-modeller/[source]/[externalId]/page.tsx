@@ -6,7 +6,6 @@ import { Ban, Box, FileQuestion, KeyRound, Scale } from "lucide-react";
 import { FoundryGrid } from "@/components/brand/foundry-grid";
 import {
   getOctoDemoModel,
-  octoDemoModels,
 } from "@/components/content/content-data";
 import {
   ContentCard,
@@ -29,26 +28,15 @@ import {
 } from "@/providers/thingiverse/provider";
 import { thingiverseStatusCopy } from "@/providers/thingiverse/status";
 
+/** Runtime Thingiverse API fetch — must not be statically generated at build. */
+export const dynamic = "force-dynamic";
+
 type ExternalModelPageProps = {
   params: Promise<{
     source: string;
     externalId: string;
   }>;
 };
-
-export function generateStaticParams() {
-  const thingiverseStatus = [{ source: "thingiverse", externalId: "durum" }];
-  if (process.env.NODE_ENV === "production") {
-    return thingiverseStatus;
-  }
-  return [
-    ...octoDemoModels.map((model) => ({
-      source: "octo-demo",
-      externalId: model.externalId,
-    })),
-    ...thingiverseStatus,
-  ];
-}
 
 export async function generateMetadata({
   params,
