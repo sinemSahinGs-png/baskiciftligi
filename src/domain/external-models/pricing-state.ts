@@ -76,9 +76,14 @@ export function resolveCustomerPricing(
   };
 }
 
-/** Community / preset-only flows never qualify for customer-facing exact prices. */
+/** Community / preset-only flows require an uploaded file before pricing. */
 export function communityModelPricing(): CustomerPricingDisplay {
-  return resolveCustomerPricing({ hasSlicerAnalysis: false });
+  return {
+    state: "unanalysed",
+    labelTr: "Fiyat için dosya gerekli",
+    mainTextTr:
+      "Dosya analizinden sonra malzeme kullanımı, baskı süresi ve üretim detaylarına göre net fiyat hesaplanır.",
+  };
 }
 
 export function pricingStateLabel(state: PricingState): string {

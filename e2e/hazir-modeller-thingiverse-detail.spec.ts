@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const DETAIL_IDS = ["1587568", "1001", "2002", "50204"] as const;
+const DETAIL_IDS = ["1587568", "1001", "2002", "50204", "763622"] as const;
 
 async function assertNoRoutePolicyCrash(page: import("@playwright/test").Page) {
   await expect(page.getByText("Page changed from static to dynamic")).toHaveCount(0);
@@ -17,7 +17,7 @@ test.describe("Thingiverse model detail", () => {
 
       await expect(
         page
-          .getByRole("heading", { name: /Low Poly Vase|20 mm kalibrasyon|Ticari olmayan vazo|Telefon tutucu/i })
+          .getByRole("heading", { name: /Low Poly Vase|20 mm kalibrasyon|Ticari olmayan vazo|Telefon tutucu|3DBenchy/i })
           .or(page.getByRole("heading", { name: /Thingiverse bağlantısı henüz yapılandırılmadı/i }))
           .or(page.getByRole("heading", { name: /Geçici olarak kullanılamıyor|Model bulunamadı/i })),
       ).toBeVisible({ timeout: 15_000 });

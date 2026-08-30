@@ -46,7 +46,7 @@ describe("normalizeThingImages", () => {
   it("accepts arrays", () => {
     expect(
       normalizeThingImages([{ url: "https://cdn.example/a.jpg" }]),
-    ).toEqual([{ url: "https://cdn.example/a.jpg" }]);
+    ).toEqual([{ id: undefined, url: "https://cdn.example/a.jpg" }]);
   });
 
   it("accepts a single image object (production bug shape)", () => {
@@ -55,7 +55,7 @@ describe("normalizeThingImages", () => {
         id: 9,
         url: "https://cdn.example/one.jpg",
       }),
-    ).toEqual([{ url: "https://cdn.example/one.jpg" }]);
+    ).toEqual([{ id: 9, url: "https://cdn.example/one.jpg" }]);
   });
 
   it("returns empty for nullish payloads", () => {

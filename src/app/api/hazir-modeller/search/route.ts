@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 
 import { searchPublishedCuratedModels } from "@/domain/curated-models/repository";
 import {
+  DISCOVERY_MAX_PROVIDER_PAGES,
+  DISCOVERY_VISIBLE_PAGE_SIZE,
+  fillVisibleThingiverseDiscovery,
+} from "@/domain/external-models/discovery-visible";
+import { hasUsableThingiverseThumbnail } from "@/domain/external-models/thingiverse-images";
+import {
   platformLabel,
   type CuratedListingKind,
 } from "@/domain/curated-models/types";
@@ -42,6 +48,9 @@ function mapCurated(
 }
 
 function mapThingiverse(item: ExternalModelSummary) {
+  if (!hasUsableThingiverseThumbnail(item.thumbnailUrl)) {
+    return null;
+  }
   return {
     kind: "thingiverse" as const,
     id: item.externalId,
@@ -116,23 +125,59 @@ export async function GET(request: Request) {
       const english = q
         ? translateTurkishToEnglishPhrase(q).englishQuery || q
         : "";
-      const browse = await thingiverseProvider.browse(
-        { page, query: english },
-        { correlationId: crypto.randomUUID() },
-      );
-      const items = dedupeMappedById(
-        browse.items
-          .map(mapThingiverse)
-          .filter((item) => matchCategory(item.categoryLabel, category)),
+      let filledPage = page;
+      let filledHasMore = false;
+      let mappedItems: Array<NonNullable<ReturnType<typeof mapThingiverse>>> = [];
+
+      if (page <= 1) {
+        const filled = await fillVisibleThingiverseDiscovery({
+          targetCount: DISCOVERY_VISIBLE_PAGE_SIZE,
+          maxProviderPages: DISCOVERY_MAX_PROVIDER_PAGES,
+          fetchPage: async (providerPage) => {
+            const browse = await thingiverseProvider.browse(
+              { page: providerPage, query: english },
+              { correlationId: crypto.randomUUID() },
+            );
+            return { items: browse.items, hasMore: browse.hasMore };
+          },
+        });
+        filledPage = filled.page;
+        filledHasMore = filled.hasMore;
+        mappedItems = dedupeMappedById(
+          filled.items
+            .map(mapThingiverse)
+            .filter((item): item is NonNullable<ReturnType<typeof mapThingiverse>> =>
+              Boolean(item),
+            ),
+        );
+      } else {
+        const browse = await thingiverseProvider.browse(
+          { page, query: english },
+          { correlationId: crypto.randomUUID() },
+        );
+        filledPage = browse.page;
+        filledHasMore = browse.hasMore;
+        mappedItems = dedupeMappedById(
+          browse.items
+            .map(mapThingiverse)
+            .filter((item): item is NonNullable<ReturnType<typeof mapThingiverse>> =>
+              Boolean(item),
+            ),
+        );
+      }
+
+      const items = mappedItems.filter((item) =>
+        matchCategory(item.categoryLabel, category),
       );
       // Free-text search + sticky category must not blank the community tab.
       if (category && q && items.length === 0) {
-        const unfiltered = dedupeMappedById(browse.items.map(mapThingiverse));
+        const unfiltered = mappedItems;
         if (unfiltered.length > 0) {
           return NextResponse.json({
             models: unfiltered,
-            page: browse.page,
-            hasMore: browse.hasMore,
+            page: filledPage,
+            hasMore: filledHasMore,
+            visibleCount: unfiltered.length,
             thingiverseStatus: "connected",
             thingiverseConnected: true,
             categories,
@@ -144,8 +189,9 @@ export async function GET(request: Request) {
       }
       return NextResponse.json({
         models: items,
-        page: browse.page,
-        hasMore: browse.hasMore,
+        page: filledPage,
+        hasMore: filledHasMore,
+        visibleCount: items.length,
         thingiverseStatus: "connected",
         thingiverseConnected: true,
         categories,
@@ -195,11 +241,27 @@ export async function GET(request: Request) {
       const english = q
         ? translateTurkishToEnglishPhrase(q).englishQuery || q
         : "";
-      const browse = await thingiverseProvider.browse(
-        { page: 1, query: english },
-        { correlationId: crypto.randomUUID() },
+      const filled = await fillVisibleThingiverseDiscovery({
+        targetCount: q ? 24 : 16,
+        maxProviderPages: DISCOVERY_MAX_PROVIDER_PAGES,
+        fetchPage: async (providerPage) => {
+          const browse = await thingiverseProvider.browse(
+            { page: providerPage, query: english },
+            { correlationId: crypto.randomUUID() },
+          );
+          return {
+            items: browse.items,
+            hasMore: browse.hasMore,
+          };
+        },
+      });
+      let tv = dedupeMappedById(
+        filled.items
+          .map(mapThingiverse)
+          .filter((item): item is NonNullable<ReturnType<typeof mapThingiverse>> =>
+            Boolean(item),
+          ),
       );
-      let tv = dedupeMappedById(browse.items.map(mapThingiverse));
       const filteredTv = tv.filter((item) =>
         matchCategory(item.categoryLabel, category),
       );
@@ -210,7 +272,7 @@ export async function GET(request: Request) {
       } else {
         tv = filteredTv;
       }
-      models.push(...tv.slice(0, q ? 24 : 16));
+      models.push(...tv);
       resolvedTvStatus = "connected";
       if (categoryRelaxed) {
         softError =

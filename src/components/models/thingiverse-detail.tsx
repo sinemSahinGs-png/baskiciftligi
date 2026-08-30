@@ -3,17 +3,19 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { ChevronDown, ExternalLink } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { ExternalModelPriceModal } from "@/components/models/external-model-price-modal";
 import { ModelConsultationModal } from "@/components/models/model-consultation-modal";
+import { ModelDetailGallery } from "@/components/models/model-detail-gallery";
 import { PricingStatusBlock } from "@/components/models/pricing-status-block";
 import {
   PrintProductionOptions,
   type ProductionOptionsValue,
 } from "@/components/models/print-production-options";
 import { QuoteCtaButton } from "@/components/models/quote-cta-button";
-import { SafeImage } from "@/components/media/safe-image";
 import { communityModelPricing } from "@/domain/external-models/pricing-state";
+import type { ExternalQuoteModelContext } from "@/lib/models/external-quote-context";
 import type { ExternalModelSummary } from "@/providers/contracts";
 import { cn } from "@/lib/utils";
 
@@ -24,9 +26,11 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
     sizePreset: "orta",
     quantity: 1,
   });
-  const [requestOpen, setRequestOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [consultOpen, setConsultOpen] = useState(false);
   const [techOpen, setTechOpen] = useState(false);
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
+  const uploadCtaRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 1024px)");
@@ -38,22 +42,32 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
 
   const pricing = useMemo(() => communityModelPricing(), []);
 
-  const images = useMemo(() => {
-    const urls = new Set<string>();
-    if (model.thumbnailUrl) urls.add(model.thumbnailUrl);
-    for (const url of model.imageUrls ?? []) {
-      if (url) urls.add(url);
-    }
-    return [...urls];
-  }, [model.thumbnailUrl, model.imageUrls]);
-  const [activeImage, setActiveImage] = useState(images[0] ?? null);
+  const quoteContext = useMemo<ExternalQuoteModelContext>(
+    () => ({
+      externalModelId: model.externalId,
+      sourceType: "thingiverse",
+      sourceUrl: model.sourceUrl,
+      title: model.title,
+      categoryLabel: model.categoryLabel ?? null,
+      previewImageUrl: model.thumbnailUrl ?? null,
+      imageAlt: model.title,
+      attribution: model.attributionText,
+      licenseName: model.licenseCode ?? null,
+      licenseVerified: Boolean(model.automaticManufacturingAllowed),
+      platformLabel: "Thingiverse",
+      productionOptions,
+    }),
+    [model, productionOptions],
+  );
+
+  const modalOpen = uploadOpen || consultOpen;
 
   return (
     <main
       id="ana-icerik"
       className={cn(
         "relative text-light-text lg:pb-10",
-        !requestOpen && "pb-[calc(5rem+env(safe-area-inset-bottom))]",
+        !modalOpen && !isDesktopLayout && "pb-[calc(5rem+env(safe-area-inset-bottom))]",
       )}
     >
       <article className="relative px-4 py-6 sm:px-5 lg:shell lg:py-10">
@@ -65,42 +79,13 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
         </Link>
 
         <div className="mt-5 space-y-5 lg:mt-8 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] lg:items-start lg:gap-10">
-          <section className="min-w-0 space-y-3 lg:space-y-4">
-            <div className="relative mx-auto aspect-square w-full max-h-[min(60svh,28rem)] overflow-hidden rounded-2xl bg-midnight/70 lg:max-h-[min(62svh,42rem)]">
-              {activeImage ? (
-                <SafeImage
-                  src={activeImage}
-                  alt={model.title}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 55vw"
-                  className="object-contain p-4 sm:p-6"
-                  fallbackLabel="Görsel yakında"
-                />
-              ) : (
-                <div className="grid h-full place-items-center text-sm text-muted-light">
-                  Görsel yakında
-                </div>
-              )}
-            </div>
-            {images.length > 1 ? (
-              <ul className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-                {images.map((url) => (
-                  <li key={url} className="shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setActiveImage(url)}
-                      aria-label="Görsel seç"
-                      className={cn(
-                        "relative size-14 overflow-hidden rounded-lg border-2 transition sm:size-[3.75rem]",
-                        activeImage === url ? "border-coral" : "border-white/10",
-                      )}
-                    >
-                      <SafeImage src={url} alt="" fill sizes="60px" className="object-cover" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+          <section className="min-w-0">
+            <ModelDetailGallery
+              title={model.title}
+              thumbnailUrl={model.thumbnailUrl}
+              imageUrls={model.imageUrls}
+              priority
+            />
           </section>
 
           <aside className="min-w-0 space-y-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-1">
@@ -121,8 +106,18 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
             <PricingStatusBlock pricing={pricing} />
 
             <p className="text-sm leading-6 text-muted-light lg:hidden">
-              Seçimlerini gönder, üretim detaylarını inceleyip net teklifimizi paylaşalım.
+              Model dosyasını yüklediğinde baskı süresi ve malzeme kullanımı analiz
+              edilerek fiyat hesaplanır.
             </p>
+
+            <button
+              type="button"
+              data-consultation-fallback=""
+              className="text-sm font-semibold text-muted-light underline-offset-2 hover:text-light-text hover:underline lg:hidden"
+              onClick={() => setConsultOpen(true)}
+            >
+              Dosyan yok mu? Yardım iste
+            </button>
 
             <div className="rounded-xl border border-white/10 bg-white/[0.02]">
               <button
@@ -169,9 +164,18 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
 
             {isDesktopLayout ? (
               <div className="space-y-3">
-                <QuoteCtaButton onClick={() => setRequestOpen(true)} />
+                <QuoteCtaButton onClick={() => setUploadOpen(true)} />
+                <button
+                  type="button"
+                  data-consultation-fallback=""
+                  className="text-sm font-semibold text-muted-light underline-offset-2 hover:text-light-text hover:underline"
+                  onClick={() => setConsultOpen(true)}
+                >
+                  Dosyan yok mu? Yardım iste
+                </button>
                 <p className="text-sm leading-6 text-muted-light">
-                  Seçimlerini gönder, üretim detaylarını inceleyip net teklifimizi paylaşalım.
+                  Model dosyasını yüklediğinde baskı süresi ve malzeme kullanımı analiz
+                  edilerek fiyat hesaplanır.
                 </p>
                 <a
                   href={model.sourceUrl}
@@ -188,19 +192,26 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
         </div>
       </article>
 
-      {!requestOpen && !isDesktopLayout ? (
+      {!modalOpen && !isDesktopLayout ? (
         <div
           className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-carbon/90 px-4 pt-3 backdrop-blur-md"
           style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
           data-mobile-sticky-cta=""
         >
-          <QuoteCtaButton variant="sticky" onClick={() => setRequestOpen(true)} />
+          <QuoteCtaButton variant="sticky" onClick={() => setUploadOpen(true)} />
         </div>
       ) : null}
 
+      <ExternalModelPriceModal
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        model={quoteContext}
+        returnFocusRef={uploadCtaRef}
+      />
+
       <ModelConsultationModal
-        open={requestOpen}
-        onOpenChange={setRequestOpen}
+        open={consultOpen}
+        onOpenChange={setConsultOpen}
         model={{
           source: model.source,
           externalId: model.externalId,

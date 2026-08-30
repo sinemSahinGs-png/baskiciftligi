@@ -81,6 +81,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${jakarta.variable} ${bricolage.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="dns-prefetch" href="https://cdn.thingiverse.com" />
+        <link rel="preconnect" href="https://cdn.thingiverse.com" crossOrigin="" />
+      </head>
       <body className="min-h-full bg-midnight text-light-text">
         <JsonLd
           data={[

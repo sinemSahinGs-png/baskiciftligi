@@ -1,11 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+const FIXTURE_THUMB =
+  "https://cdn.thingiverse.com/assets/fixture/ab/cd/model/display_medium.jpg";
+
 const vase = {
   kind: "thingiverse" as const,
   id: "2376777",
   title: "Curved honeycomb vase",
   creatorName: "eggnot",
-  thumbnailUrl: null,
+  thumbnailUrl: FIXTURE_THUMB,
   sourceUrl: "https://www.thingiverse.com/thing:2376777",
   categoryLabel: "Ev ve Dekorasyon",
   licenseLabel: "Creative Commons - Attribution",
@@ -28,7 +31,7 @@ const keychain = {
   id: "1001",
   title: "Minimal Keychain",
   creatorName: "maker",
-  thumbnailUrl: null,
+  thumbnailUrl: FIXTURE_THUMB,
   sourceUrl: "https://www.thingiverse.com/thing:1001",
   categoryLabel: "Anahtarlık",
   licenseLabel: "CC0",
@@ -158,6 +161,31 @@ test.describe("Hazır modeller community search", () => {
       timeout: 15_000,
     });
     await expect(page.getByText("Sonuç bulunamadı.")).toBeVisible();
+  });
+
+  test("excludes imageless community cards from grid", async ({ page }) => {
+    await page.route("**/api/hazir-modeller/search**", async (route) => {
+      await fulfill(route, {
+        models: [
+          vase,
+          {
+            ...nc,
+            id: "9999",
+            title: "Görseli olmayan model",
+            thumbnailUrl: null,
+          },
+        ],
+        thingiverseConnected: true,
+        thingiverseStatus: "connected",
+        visibleCount: 1,
+      });
+    });
+
+    await page.goto("/hazir-modeller?q=vazo&source=thingiverse");
+    await expect(page.locator("[data-thingiverse-card]")).toHaveCount(1, {
+      timeout: 15_000,
+    });
+    await expect(page.getByText("Görseli olmayan model")).toHaveCount(0);
   });
 
   test("community cards show Modeli İncele CTA", async ({ page }) => {

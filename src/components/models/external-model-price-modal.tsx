@@ -175,7 +175,7 @@ export function ExternalModelPriceModal({
                 id={titleId}
                 className="mt-1 font-heading text-xl font-bold tracking-[-0.03em] sm:text-2xl"
               >
-                Model dosyanı yükle, fiyatını hesaplayalım
+                Dosyayı yükle, fiyatını hesaplayalım
               </DialogPrimitive.Title>
             </div>
             <DialogPrimitive.Close
@@ -209,7 +209,8 @@ export function ExternalModelPriceModal({
                   {model.title}
                 </p>
                 <p className="mt-2 text-xs text-muted-light">
-                  Dosya yüklenmeden fiyat gösterilmez.
+                  STL, 3MF veya desteklenen model dosyanı yükle. Baskı süresi ve malzeme
+                  kullanımı analiz edildikten sonra net fiyatını gösterelim.
                 </p>
               </div>
             </div>
@@ -232,8 +233,8 @@ export function ExternalModelPriceModal({
               <li className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
                 <p className="font-semibold text-coral">3. Dosyayı yükle</p>
                 <p className="mt-1 text-muted-light">
-                  İndirdiğin dosyayı aşağıdaki alana yükle. Teknik analizden önce
-                  fiyat gösterilmez.
+                  İndirdiğin dosyayı aşağıdaki alana yükle. Model dosyasını yüklediğinde
+                  baskı süresi ve malzeme kullanımı analiz edilerek fiyat hesaplanır.
                 </p>
               </li>
             </ol>
@@ -325,7 +326,7 @@ export function ExternalModelPriceModal({
               className="inline-flex min-h-11 flex-1 items-center justify-center rounded-md bg-coral px-4 text-sm font-semibold text-light-text disabled:cursor-not-allowed disabled:opacity-40"
               onClick={continueToConfigurator}
             >
-              Analize geç
+              Analize geç ve fiyatı gör
             </button>
           </div>
         </DialogPrimitive.Popup>

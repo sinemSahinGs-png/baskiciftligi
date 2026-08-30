@@ -7,7 +7,7 @@ const communityModel = {
   id: "1001",
   title: "20 mm kalibrasyon küpü",
   creatorName: "fixture-ada",
-  thumbnailUrl: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png",
+  thumbnailUrl: "https://cdn.thingiverse.com/assets/fixture/ab/cd/model/display_medium.jpg",
   sourceUrl: "https://www.thingiverse.com/thing:1001",
   categoryLabel: "Araçlar",
   licenseLabel: "Creative Commons - Attribution",
@@ -42,7 +42,7 @@ test.describe("Hazır modeller quotation flow", () => {
     await expect(page.locator("[data-external-quote-cta]")).toHaveCount(0);
   });
 
-  test("detail page shows honest pricing and Baskı Teklifi Al CTA", async ({ page }) => {
+  test("detail page shows file-required pricing and upload CTA", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     const response = await page.goto("/hazir-modeller/thingiverse/1001");
     expect(response?.status()).toBeLessThan(500);
@@ -54,12 +54,19 @@ test.describe("Hazır modeller quotation flow", () => {
     await expect(page.locator("[data-mobile-sticky-cta]")).toBeVisible();
     await expect(page.locator("[data-production-request-cta]")).toHaveCount(1);
     await expect(
-      page.locator("[data-mobile-sticky-cta]").getByRole("button", { name: "Baskı Teklifi Al" }),
+      page
+        .locator("[data-mobile-sticky-cta]")
+        .getByRole("button", { name: /Dosya Yükle, Fiyatı Gör/i }),
     ).toBeVisible();
-    await expect(page.locator("[data-pricing-state='unanalysed']")).toBeVisible();
+    await expect(page.getByText("Fiyat için dosya gerekli")).toBeVisible();
     await expect(page.locator("[data-estimated-price]")).toHaveCount(0);
     await expect(page.locator("#ana-icerik")).not.toContainText(/Creative Commons/i);
     await expect(page.locator("[data-print-options]")).toBeVisible();
+    await expect(page.locator("[data-model-gallery-thumbs]")).toHaveCount(0);
+
+    await page.locator("[data-mobile-sticky-cta]").getByRole("button").click();
+    await expect(page.locator("[data-external-price-modal]")).toBeVisible();
+    await expect(page.getByText("Dosyayı yükle, fiyatını hesaplayalım")).toBeVisible();
   });
 
   test("consultation submission appears in admin panel", async ({

@@ -33,24 +33,46 @@ vi.mock("@/lib/model-discovery/printables-redirect", () => ({
   }),
 }));
 
+const FIXTURE_THUMB =
+  "https://cdn.thingiverse.com/assets/fixture/ab/cd/model/display_medium.jpg";
+
+function thingiverseItem(
+  overrides: Partial<{
+    externalId: string;
+    title: string;
+    categoryLabel: string;
+    licenseCode: string;
+    licenseLabel: string;
+    pricingAllowed: boolean;
+    creatorName: string;
+    thumbnailUrl: string | null;
+  }> = {},
+) {
+  const externalId = overrides.externalId ?? "1";
+  return {
+    source: "thingiverse",
+    externalId,
+    title: overrides.title ?? "Spiral Vase",
+    creatorName: overrides.creatorName ?? "maker",
+    sourceUrl: `https://www.thingiverse.com/thing:${externalId}`,
+    thumbnailUrl:
+      overrides.thumbnailUrl === undefined ? FIXTURE_THUMB : overrides.thumbnailUrl,
+    categoryLabel: overrides.categoryLabel ?? "Ev ve Dekorasyon",
+    licenseLabel: overrides.licenseLabel ?? "Creative Commons - Attribution",
+    licenseCode: overrides.licenseCode ?? "cc_by",
+    pricingAllowed: overrides.pricingAllowed ?? true,
+    attributionText: "attribution",
+    permissionStatus: "discovery_only" as const,
+    isPurchasable: false,
+  };
+}
+
 describe("GET /api/hazir-modeller/search category relaxation", () => {
   beforeEach(() => {
     getStatus.mockReturnValue("connected");
     searchCurated.mockResolvedValue([]);
     browse.mockResolvedValue({
-      items: [
-        {
-          source: "thingiverse",
-          externalId: "1",
-          title: "Spiral Vase",
-          creatorName: "maker",
-          sourceUrl: "https://www.thingiverse.com/thing:1",
-          categoryLabel: "Ev ve Dekorasyon",
-          licenseLabel: "Creative Commons - Attribution",
-          licenseCode: "cc_by",
-          pricingAllowed: true,
-        },
-      ],
+      items: [thingiverseItem()],
       page: 1,
       perPage: 20,
       hasMore: false,
@@ -73,17 +95,13 @@ describe("GET /api/hazir-modeller/search category relaxation", () => {
   it("keeps category filter when it still matches", async () => {
     browse.mockResolvedValue({
       items: [
-        {
-          source: "thingiverse",
+        thingiverseItem({
           externalId: "2",
           title: "Keychain",
-          creatorName: "maker",
-          sourceUrl: "https://www.thingiverse.com/thing:2",
           categoryLabel: "Anahtarlık",
           licenseLabel: "CC0",
           licenseCode: "cc0",
-          pricingAllowed: true,
-        },
+        }),
       ],
       page: 1,
       perPage: 20,
@@ -115,26 +133,12 @@ describe("GET /api/hazir-modeller/search category relaxation", () => {
   it("dedupes Thingiverse models by canonical id", async () => {
     browse.mockResolvedValue({
       items: [
-        {
-          source: "thingiverse",
-          externalId: "9",
-          title: "Vase A",
-          creatorName: "a",
-          sourceUrl: "https://www.thingiverse.com/thing:9",
-          categoryLabel: "Ev ve Dekorasyon",
-          licenseCode: "cc_by",
-          pricingAllowed: true,
-        },
-        {
-          source: "thingiverse",
+        thingiverseItem({ externalId: "9", title: "Vase A", creatorName: "a" }),
+        thingiverseItem({
           externalId: "9",
           title: "Vase A duplicate",
           creatorName: "a",
-          sourceUrl: "https://www.thingiverse.com/thing:9",
-          categoryLabel: "Ev ve Dekorasyon",
-          licenseCode: "cc_by",
-          pricingAllowed: true,
-        },
+        }),
       ],
       page: 1,
       perPage: 20,

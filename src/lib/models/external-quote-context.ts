@@ -11,6 +11,13 @@ export type ExternalQuoteSourceType =
   | "myminifactory"
   | "other";
 
+export interface ExternalProductionOptions {
+  material: string;
+  color: string;
+  sizePreset: string;
+  quantity: number;
+}
+
 export interface ExternalQuoteModelContext {
   externalModelId: string;
   sourceType: ExternalQuoteSourceType;
@@ -24,6 +31,7 @@ export interface ExternalQuoteModelContext {
   licenseVerified: boolean;
   platformLabel: string;
   slug?: string | null;
+  productionOptions?: ExternalProductionOptions | null;
 }
 
 const SESSION_KEY = "bc-external-quote-modal-v1";

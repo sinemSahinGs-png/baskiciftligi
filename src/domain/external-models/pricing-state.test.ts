@@ -19,8 +19,10 @@ describe("resolveCustomerPricing", () => {
   it("never shows exact price from size presets alone", () => {
     const display = communityModelPricing();
     expect(display.state).toBe("unanalysed");
+    expect(display.labelTr).toBe("Fiyat için dosya gerekli");
     expect(display.exactGrossMinor).toBeUndefined();
     expect(display.mainTextTr).not.toMatch(/₺[\d.,]+/);
+    expect(display.mainTextTr).toMatch(/dosya/i);
   });
 
   it("returns rough_range when defensible min/max exist", () => {
