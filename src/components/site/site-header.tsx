@@ -135,7 +135,7 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
                 : "border-hairline bg-porcelain/92 text-ink backdrop-blur-sm md:backdrop-blur-md",
         )}
       >
-        <div className="shell flex h-16 items-center gap-3 sm:h-[4.25rem]">
+        <div className="shell flex h-14 items-center gap-2 sm:h-16 md:gap-3">
           <Logo inverted={darkShell} className="mr-auto" />
 
           <nav aria-label="Ana menü" className="hidden items-center gap-1 xl:flex">
@@ -303,7 +303,7 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
             <Link
               href={"/sepet" as Route}
               aria-label={cartHydrated ? `Sepet, ${cartCount}` : "Sepet"}
-              className="relative inline-flex size-11 items-center justify-center"
+              className="relative hidden size-11 items-center justify-center md:inline-flex"
             >
               <ShoppingBag aria-hidden="true" className="size-5" />
               {cartHydrated && cartCount > 0 ? (
@@ -402,6 +402,15 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
                 Favoriler
                 <span className="tabular text-muted-light">
                   {favoritesHydrated ? favoriteCount : "—"}
+                </span>
+              </Link>
+              <Link
+                href={"/sepet" as Route}
+                className="flex min-h-12 items-center justify-between rounded-md bg-white/8 px-4 text-sm font-semibold"
+              >
+                Sepet
+                <span className="tabular text-muted-light">
+                  {cartHydrated ? cartCount : "—"}
                 </span>
               </Link>
             </div>

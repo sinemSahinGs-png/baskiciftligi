@@ -19,7 +19,7 @@ function isLocalMediaSrc(src: string) {
 export function SafeImage({
   src,
   alt,
-  fallbackLabel = "Görsel hazırlanıyor",
+  fallbackLabel = "Görsel yakında",
   className,
   ...props
 }: SafeImageProps) {

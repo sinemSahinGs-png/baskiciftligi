@@ -42,6 +42,19 @@ const detail1587568: ThingiverseThing = {
   is_nsfw: false,
 };
 
+const detail50204: ThingiverseThing = {
+  id: 50204,
+  name: "Telefon tutucu",
+  public_url: "https://www.thingiverse.com/thing:50204",
+  thumbnail: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png",
+  creator: { name: "fixture-phone" },
+  license: "Creative Commons - Attribution",
+  description: "Mobile regression fixture.",
+  like_count: 8,
+  file_count: 1,
+  is_nsfw: false,
+};
+
 const filesByThing: Record<string, ThingiverseFile[]> = {
   "1001": [
     {
@@ -71,6 +84,15 @@ const filesByThing: Record<string, ThingiverseFile[]> = {
       formatted_size: "2 KB",
     },
   ],
+  "50204": [
+    {
+      id: 502,
+      name: "phone_stand.stl",
+      size: 1024,
+      download_url: "https://api.thingiverse.com/files/502",
+      formatted_size: "1 KB",
+    },
+  ],
 };
 
 export async function loadThingiverseFixture<T>(path: string): Promise<T> {
@@ -85,6 +107,9 @@ export async function loadThingiverseFixture<T>(path: string): Promise<T> {
   }
   if (path === "/things/1587568") {
     return detail1587568 as T;
+  }
+  if (path === "/things/50204") {
+    return detail50204 as T;
   }
   if (path.endsWith("/images")) {
     const thingId = path.match(/^\/things\/(\d+)\/images$/)?.[1];
@@ -105,6 +130,9 @@ export async function loadThingiverseFixture<T>(path: string): Promise<T> {
   }
   if (path === "/things/1587568/files") {
     return filesByThing["1587568"] as T;
+  }
+  if (path === "/things/50204/files") {
+    return filesByThing["50204"] as T;
   }
   if (path.startsWith("/things/")) {
     const error = new Error("Thingiverse kaydı yok veya kaldırılmış.");

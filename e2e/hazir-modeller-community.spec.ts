@@ -202,6 +202,23 @@ test.describe("Hazır modeller community search", () => {
     await expect(page.locator("[data-model-search-input]")).toHaveValue(/figür/i);
   });
 
+  test("mobile source filter opens bottom sheet", async ({ page }) => {
+    await page.route("**/api/hazir-modeller/search**", async (route) => {
+      await fulfill(route, {
+        models: [vase],
+        thingiverseConnected: true,
+        thingiverseStatus: "connected",
+      });
+    });
+
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto("/hazir-modeller");
+    await page.getByRole("button", { name: /Kaynak:/ }).click();
+    await expect(page.getByRole("dialog", { name: "Kaynak filtresi" })).toBeVisible();
+    await page.getByRole("button", { name: "Topluluk" }).click();
+    await expect(page).toHaveURL(/source=thingiverse/);
+  });
+
   test("back/forward keeps query and category consistent", async ({ page }) => {
     await page.route("**/api/hazir-modeller/search**", async (route) => {
       const url = new URL(route.request().url());

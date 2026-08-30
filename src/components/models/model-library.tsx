@@ -190,7 +190,7 @@ const ModelResultsGrid = memo(function ModelResultsGrid({
     <StaggerGrid
       as="ul"
       data-model-results=""
-      className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4"
+      className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-4"
     >
       {models.map((model) => (
         <StaggerItem as="li" key={`${model.kind}-${model.id}`} className="h-full">
@@ -215,7 +215,7 @@ const ModelResultsGrid = memo(function ModelResultsGrid({
 function SkeletonGrid() {
   return (
     <ul
-      className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4"
+      className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-4"
       aria-hidden="true"
       data-model-skeleton=""
     >
@@ -521,7 +521,7 @@ export function ModelLibrary({
       data-community-enabled={communityEnabled ? "true" : "false"}
     >
       <FoundryGrid variant="blueprint" className="pointer-events-none opacity-30" />
-      <div className="shell relative py-6 sm:py-10" data-model-library>
+      <div className="shell relative py-5 sm:py-10" data-model-library>
         <DiscoveryHero
           query={query}
           onQueryChange={(value) => {
@@ -539,19 +539,19 @@ export function ModelLibrary({
 
         <DiscoveryRail onSelect={runSearch} />
 
-        <div className="mx-auto mt-10 w-full max-w-[72rem]">
-          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4">
+        <div className="mx-auto mt-8 w-full max-w-[72rem] px-1 sm:mt-10 sm:px-0">
+          <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <h2 className="font-heading text-lg font-semibold sm:text-xl">
+              <h2 className="font-heading text-base font-semibold sm:text-xl">
                 {resultsTitle(committedQuery)}
               </h2>
               {!loading && sortedResults.length > 0 ? (
-                <p className="mt-1 text-xs text-muted-light">
+                <p className="mt-1 text-sm text-muted-light">
                   {sortedResults.length} model
                 </p>
               ) : null}
             </div>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
               <SourceFilter
                 value={source}
                 communityEnabled={communityEnabled}
@@ -568,7 +568,7 @@ export function ModelLibrary({
             </div>
           </div>
 
-          <div className="mt-5 space-y-5" aria-busy={loading}>
+          <div className="mt-4 space-y-4 sm:mt-5 sm:space-y-5" aria-busy={loading}>
             {softError ? (
               <p
                 role="status"

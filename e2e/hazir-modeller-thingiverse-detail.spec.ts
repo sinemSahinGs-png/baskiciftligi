@@ -17,7 +17,7 @@ test.describe("Thingiverse model detail", () => {
 
       await expect(
         page
-          .getByRole("heading", { name: /Low Poly Vase|20 mm kalibrasyon|Ticari olmayan vazo/i })
+          .getByRole("heading", { name: /Low Poly Vase|20 mm kalibrasyon|Ticari olmayan vazo|Telefon tutucu/i })
           .or(page.getByRole("heading", { name: /Thingiverse bağlantısı henüz yapılandırılmadı/i }))
           .or(page.getByRole("heading", { name: /Geçici olarak kullanılamıyor|Model bulunamadı/i })),
       ).toBeVisible({ timeout: 15_000 });
