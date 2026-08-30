@@ -1,6 +1,6 @@
--- Model consultation requests from Hazır Modeller discovery flow.
--- Additive only; does not modify existing permission tables.
--- Access: server-side service role only (public POST via Next.js API route).
+-- Idempotent fix for production runs where 20260830190000 failed on profiles-based RLS.
+-- Safe when: table never created, table created without policies, or partial policy failure.
+-- Does not drop data or recreate existing rows.
 
 do $$
 begin
@@ -52,8 +52,10 @@ create index if not exists model_consultation_requests_model_idx
 
 alter table public.model_consultation_requests enable row level security;
 
+-- Remove failed or legacy staff policy that referenced public.profiles.
 drop policy if exists model_consultation_requests_staff_all
   on public.model_consultation_requests;
+
 drop policy if exists model_consultation_requests_service
   on public.model_consultation_requests;
 
