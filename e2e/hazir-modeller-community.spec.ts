@@ -96,7 +96,7 @@ test.describe("Hazır modeller community search", () => {
     await expect(page).toHaveURL(/q=vazo/);
     await expect(page).not.toHaveURL(/category=/);
     await expect(page.locator("[data-external-quote-cta]").first()).toBeVisible();
-    await expect(page.locator("[data-external-source-only-cta]").first()).toBeVisible();
+    await expect(page.locator("[data-consultation-card-cta]").first()).toBeVisible();
 
     const overflow = await page.evaluate(() => {
       const el = document.documentElement;
@@ -185,6 +185,9 @@ test.describe("Hazır modeller community search", () => {
     await expect(
       page.getByRole("dialog").or(page.locator("[data-external-price-modal]")),
     ).toBeVisible({ timeout: 10_000 });
+
+    await expect(page.locator("[data-consultation-card-cta]")).toBeVisible();
+    await expect(page.locator("[data-external-quote-cta]")).toHaveCount(1);
 
     const overflow = await page.evaluate(() => {
       const el = document.documentElement;

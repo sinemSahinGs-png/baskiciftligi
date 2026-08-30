@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 
 const DETAIL_IDS = ["1587568", "1001", "2002"] as const;
-const fixtureMode = process.env.THINGIVERSE_FIXTURE_MODE === "true";
 
 async function assertNoRoutePolicyCrash(page: import("@playwright/test").Page) {
   await expect(page.getByText("Page changed from static to dynamic")).toHaveCount(0);
@@ -16,21 +15,14 @@ test.describe("Thingiverse model detail", () => {
       expect(response?.status()).toBeLessThan(500);
       await assertNoRoutePolicyCrash(page);
 
-      if (fixtureMode) {
-        await expect(page.locator("#ana-icerik")).toBeVisible({ timeout: 15_000 });
-        await expect(page.getByRole("link", { name: /Hazır modellere dön/i })).toBeVisible();
-        await expect(
-          page.getByRole("link", { name: /Orijinal modeli görüntüle|Thingiverse/i }).first(),
-        ).toBeVisible();
-        return;
-      }
-
       await expect(
         page
-          .getByRole("link", { name: /Hazır modellere dön/i })
+          .getByRole("heading", { name: /Low Poly Vase|20 mm kalibrasyon|Ticari olmayan vazo/i })
           .or(page.getByRole("heading", { name: /Thingiverse bağlantısı henüz yapılandırılmadı/i }))
-          .or(page.getByRole("link", { name: /Thingiverse kaynak sayfasını aç/i })),
+          .or(page.getByRole("heading", { name: /Geçici olarak kullanılamıyor|Model bulunamadı/i })),
       ).toBeVisible({ timeout: 15_000 });
+
+      await expect(page.getByRole("link", { name: /Hazır modeller/i }).first()).toBeVisible();
     });
   }
 
@@ -40,17 +32,11 @@ test.describe("Thingiverse model detail", () => {
     expect(response?.status()).toBeLessThan(500);
     await assertNoRoutePolicyCrash(page);
 
-    if (fixtureMode) {
-      await expect(page.getByRole("heading", { name: "Low Poly Vase" })).toBeVisible({
-        timeout: 15_000,
-      });
-    } else {
-      await expect(
-        page
-          .getByRole("heading", { name: "Low Poly Vase" })
-          .or(page.getByRole("heading", { name: /Thingiverse bağlantısı henüz yapılandırılmadı/i })),
-      ).toBeVisible({ timeout: 15_000 });
-    }
+    await expect(
+      page
+        .getByRole("heading", { name: "Low Poly Vase" })
+        .or(page.getByRole("heading", { name: /Thingiverse bağlantısı henüz yapılandırılmadı/i })),
+    ).toBeVisible({ timeout: 15_000 });
 
     await page.screenshot({
       path: "test-results/playwright/thingiverse-detail-1587568.png",

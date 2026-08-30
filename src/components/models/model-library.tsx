@@ -42,7 +42,7 @@ const trending = [
 
 type LibrarySource = "all" | "owned" | "curated" | "thingiverse";
 
-const SEARCH_DEBOUNCE_MS = 400;
+const SEARCH_DEBOUNCE_MS = 350;
 
 function toCard(model: CuratedModelRecord): CuratedCatalogCardData {
   return {
@@ -201,7 +201,7 @@ const ModelResultsGrid = memo(function ModelResultsGrid({
     <StaggerGrid
       as="ul"
       data-model-results=""
-      className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+      className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4"
     >
       {models.map((model) => (
         <StaggerItem as="li" key={`${model.kind}-${model.id}`} className="h-full">
@@ -233,7 +233,7 @@ const ModelResultsGrid = memo(function ModelResultsGrid({
 function SkeletonGrid() {
   return (
     <ul
-      className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+      className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4"
       aria-hidden="true"
     >
       {Array.from({ length: 8 }).map((_, index) => (
@@ -583,20 +583,19 @@ export function ModelLibrary({
           </h1>
 
           <form
-            className="mt-5 flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-stretch"
+            className="mt-6 max-w-3xl"
             role="search"
             onSubmit={(event) => {
               event.preventDefault();
               if (debounceRef.current) clearTimeout(debounceRef.current);
-              // Text search from the unified pool unless user pinned a tab.
               commitSearch(query, source === "owned" || source === "curated" ? source : source, category);
             }}
           >
-            <label className="relative block min-w-0 flex-1">
+            <label className="relative block">
               <span className="sr-only">Model ara</span>
               <Search
                 aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-muted-light"
+                className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-light"
               />
               <input
                 data-model-search-input
@@ -609,18 +608,18 @@ export function ModelLibrary({
                     commitSearch(value, source, category);
                   }, SEARCH_DEBOUNCE_MS);
                 }}
-                placeholder="Örn. figür, telefon tutucu, vazo"
-                className="h-12 w-full rounded-md border border-white/15 bg-white/8 pr-4 pl-11 text-base text-light-text outline-none placeholder:text-muted-light focus-visible:ring-2 focus-visible:ring-coral/60"
+                placeholder="Vazo, telefon standı, figür…"
+                className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.04] pr-28 pl-12 text-base text-light-text outline-none placeholder:text-muted-light focus-visible:ring-2 focus-visible:ring-coral/60"
                 autoComplete="off"
                 enterKeyHint="search"
               />
+              <button
+                type="submit"
+                className="absolute top-1/2 right-2 inline-flex min-h-10 -translate-y-1/2 items-center justify-center rounded-xl bg-coral px-4 text-sm font-semibold text-midnight"
+              >
+                Ara
+              </button>
             </label>
-            <button
-              type="submit"
-              className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-md bg-coral px-5 text-sm font-semibold text-light-text"
-            >
-              Ara
-            </button>
           </form>
 
           <p className="mt-3 text-xs text-muted-light">Popüler aramalar</p>
