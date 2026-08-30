@@ -13,6 +13,8 @@ export function QuoteCtaButton({
   variant = "default",
   className,
   "data-testid": dataTestId,
+  label,
+  mobileLabel,
 }: {
   onClick: () => void;
   loading?: boolean;
@@ -21,6 +23,8 @@ export function QuoteCtaButton({
   variant?: "default" | "sticky";
   className?: string;
   "data-testid"?: string;
+  label?: string;
+  mobileLabel?: string;
 }) {
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -31,6 +35,11 @@ export function QuoteCtaButton({
     mq.addEventListener("change", sync);
     return () => mq.removeEventListener("change", sync);
   }, []);
+
+  const ctaLabel =
+    variant === "sticky"
+      ? (mobileLabel ?? label ?? "Dosya Yükle, Fiyatı Gör")
+      : (label ?? "Dosyayı Yükle ve Fiyatı Gör");
 
   return (
     <button
@@ -65,7 +74,7 @@ export function QuoteCtaButton({
         </>
       ) : (
         <>
-          Baskı Teklifi Al
+          {ctaLabel}
           <ArrowRight
             aria-hidden="true"
             className="size-5 transition-transform duration-200 group-hover:translate-x-1"

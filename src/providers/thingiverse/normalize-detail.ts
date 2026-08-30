@@ -118,7 +118,9 @@ export function normalizeThingDetail(payload: unknown): ThingiverseThing {
 }
 
 /** Images endpoint returns an array OR a single image object. */
-export function normalizeThingImages(payload: unknown): Array<{ url?: string }> {
+export function normalizeThingImages(
+  payload: unknown,
+): Array<{ id?: number; url?: string }> {
   const list = unwrapList(payload, ["images", "hits", "objects", "results"]);
   if (list.length > 0) {
     return list.map((item) => {
@@ -129,6 +131,7 @@ export function normalizeThingImages(payload: unknown): Array<{ url?: string }> 
         return {};
       }
       return {
+        id: typeof item.id === "number" ? item.id : Number(item.id) || undefined,
         url: coerceThingiverseString(item.url ?? item.public_url ?? item.thumbnail),
       };
     });
@@ -136,6 +139,10 @@ export function normalizeThingImages(payload: unknown): Array<{ url?: string }> 
   if (isRecord(payload) && ("url" in payload || "id" in payload || "public_url" in payload)) {
     return [
       {
+        id:
+          typeof payload.id === "number"
+            ? payload.id
+            : Number(payload.id) || undefined,
         url: coerceThingiverseString(
           payload.url ?? payload.public_url ?? payload.thumbnail,
         ),

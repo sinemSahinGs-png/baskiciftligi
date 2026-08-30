@@ -1,11 +1,14 @@
 import { createBinaryStlCube } from "@/domain/manufacturing/mesh";
 import type { ThingiverseFile, ThingiverseThing } from "@/providers/thingiverse/types";
 
+const FIXTURE_IMAGE =
+  "https://cdn.thingiverse.com/assets/fixture/ab/cd/model/display_medium.jpg";
+
 const ccByThing: ThingiverseThing = {
   id: 1001,
   name: "20 mm kalibrasyon küpü",
   public_url: "https://www.thingiverse.com/thing:1001",
-  thumbnail: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png",
+  thumbnail: FIXTURE_IMAGE,
   creator: { name: "fixture-ada" },
   license: "Creative Commons - Attribution",
   description: "CI fikstürü. Canlı API değildir.",
@@ -19,7 +22,7 @@ const ncThing: ThingiverseThing = {
   id: 2002,
   name: "Ticari olmayan vazo",
   public_url: "https://www.thingiverse.com/thing:2002",
-  thumbnail: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png",
+  thumbnail: FIXTURE_IMAGE,
   creator: { name: "fixture-leo" },
   license: "Creative Commons - Attribution - Non-Commercial",
   description: "Lisans reddi fikstürü.",
@@ -32,7 +35,7 @@ const detail1587568: ThingiverseThing = {
   id: 1587568,
   name: "Low Poly Vase",
   public_url: "https://www.thingiverse.com/thing:1587568",
-  thumbnail: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png",
+  thumbnail: FIXTURE_IMAGE,
   creator: { name: "fixture-vase" },
   license: "Creative Commons - Attribution",
   description: "Production regression fixture for single-image API shape.",
@@ -46,11 +49,24 @@ const detail50204: ThingiverseThing = {
   id: 50204,
   name: "Telefon tutucu",
   public_url: "https://www.thingiverse.com/thing:50204",
-  thumbnail: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png",
+  thumbnail: FIXTURE_IMAGE,
   creator: { name: "fixture-phone" },
   license: "Creative Commons - Attribution",
   description: "Mobile regression fixture.",
   like_count: 8,
+  file_count: 1,
+  is_nsfw: false,
+};
+
+const benchyThing: ThingiverseThing = {
+  id: 763622,
+  name: "#3DBenchy - The jolly 3D printing torture-test",
+  public_url: "https://www.thingiverse.com/thing:763622",
+  thumbnail: FIXTURE_IMAGE,
+  creator: { name: "fixture-benchy" },
+  license: "Creative Commons - Attribution",
+  description: "Benchy regression fixture.",
+  like_count: 5000,
   file_count: 1,
   is_nsfw: false,
 };
@@ -97,7 +113,7 @@ const filesByThing: Record<string, ThingiverseFile[]> = {
 
 export async function loadThingiverseFixture<T>(path: string): Promise<T> {
   if (path.startsWith("/popular") || path.startsWith("/search/")) {
-    return [ccByThing, ncThing] as T;
+    return [ccByThing, ncThing, benchyThing] as T;
   }
   if (path === "/things/1001") {
     return ccByThing as T;
@@ -111,16 +127,25 @@ export async function loadThingiverseFixture<T>(path: string): Promise<T> {
   if (path === "/things/50204") {
     return detail50204 as T;
   }
+  if (path === "/things/763622") {
+    return benchyThing as T;
+  }
   if (path.endsWith("/images")) {
     const thingId = path.match(/^\/things\/(\d+)\/images$/)?.[1];
     if (thingId === "1587568") {
-      // Production API often returns a single image object, not an array.
       return {
         id: 501,
-        url: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png",
+        url: "https://cdn.thingiverse.com/assets/fixture/ab/cd/vase/display_large.jpg",
       } as T;
     }
-    return [{ url: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png" }] as T;
+    if (thingId === "1001") {
+      return [
+        { id: 1, url: "https://cdn.thingiverse.com/assets/fixture/ab/cd/model/display_large.jpg" },
+        { id: 1, url: "https://cdn.thingiverse.com/assets/fixture/ab/cd/model/display_medium.jpg" },
+        { id: 2, url: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png" },
+      ] as T;
+    }
+    return [{ id: 99, url: FIXTURE_IMAGE }] as T;
   }
   if (path === "/things/1001/files") {
     return filesByThing["1001"] as T;

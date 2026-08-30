@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type ImageProps } from "next/image";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Box } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -10,20 +10,53 @@ interface SafeImageProps extends Omit<ImageProps, "src" | "alt"> {
   src?: string | null;
   alt: string;
   fallbackLabel?: string;
+  imageKey?: string;
+  quality?: number;
+  onVerifiedLoad?: (src: string) => void;
+  onPermanentFail?: (src: string) => void;
+  showSkeleton?: boolean;
 }
 
 function isLocalMediaSrc(src: string) {
   return src.startsWith("/catalog-media/") || src.startsWith("/demo/");
 }
 
-export function SafeImage({
+function SafeImageInner({
   src,
   alt,
   fallbackLabel = "Görsel yakında",
   className,
+  quality = 70,
+  onVerifiedLoad,
+  onPermanentFail,
+  showSkeleton = true,
+  priority,
+  onLoad,
+  onError,
   ...props
 }: SafeImageProps) {
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const reportedRef = useRef<{ load?: string; fail?: string }>({});
+
+  const reportLoad = useCallback(
+    (mediaSrc: string) => {
+      if (reportedRef.current.load === mediaSrc) return;
+      reportedRef.current.load = mediaSrc;
+      onVerifiedLoad?.(mediaSrc);
+    },
+    [onVerifiedLoad],
+  );
+
+  const reportFail = useCallback(
+    (mediaSrc: string) => {
+      if (reportedRef.current.fail === mediaSrc) return;
+      reportedRef.current.fail = mediaSrc;
+      onPermanentFail?.(mediaSrc);
+    },
+    [onPermanentFail],
+  );
+
   const showImage = Boolean(src) && !failed;
 
   if (!showImage) {
@@ -36,9 +69,9 @@ export function SafeImage({
       >
         <div className="px-4 text-center text-muted-foreground">
           <Box aria-hidden="true" className="mx-auto size-8 opacity-70" />
-          <span className="mt-3 block text-xs font-semibold">
-            {fallbackLabel}
-          </span>
+          {fallbackLabel ? (
+            <span className="mt-3 block text-xs font-semibold">{fallbackLabel}</span>
+          ) : null}
         </div>
       </div>
     );
@@ -47,19 +80,47 @@ export function SafeImage({
   const mediaSrc = src as string;
 
   return (
-    <Image
-      src={mediaSrc}
-      alt={alt}
-      unoptimized={isLocalMediaSrc(mediaSrc)}
-      onError={() => setFailed(true)}
-      onLoad={(event) => {
-        const image = event.currentTarget;
-        if (image.naturalWidth < 8 || image.naturalHeight < 8) {
+    <>
+      {showSkeleton && !loaded ? (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 animate-pulse bg-white/[0.04] motion-reduce:animate-none"
+        />
+      ) : null}
+      <Image
+        src={mediaSrc}
+        alt={alt}
+        unoptimized={isLocalMediaSrc(mediaSrc)}
+        quality={quality}
+        priority={priority}
+        onError={(event) => {
           setFailed(true);
-        }
-      }}
-      className={className}
-      {...props}
-    />
+          reportFail(mediaSrc);
+          onError?.(event);
+        }}
+        onLoad={(event) => {
+          const image = event.currentTarget;
+          if (image.naturalWidth < 8 || image.naturalHeight < 8) {
+            setFailed(true);
+            reportFail(mediaSrc);
+            return;
+          }
+          setLoaded(true);
+          reportLoad(mediaSrc);
+          onLoad?.(event);
+        }}
+        className={cn(
+          "transition-opacity duration-300 motion-reduce:transition-none",
+          loaded ? "opacity-100" : "opacity-0",
+          className,
+        )}
+        {...props}
+      />
+    </>
   );
+}
+
+export function SafeImage(props: SafeImageProps) {
+  const remountKey = `${props.src ?? ""}:${props.imageKey ?? ""}`;
+  return <SafeImageInner key={remountKey} {...props} />;
 }

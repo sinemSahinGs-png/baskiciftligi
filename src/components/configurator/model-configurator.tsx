@@ -29,6 +29,7 @@ import {
   peekPendingExternalUpload,
   type ExternalQuoteModelContext,
 } from "@/lib/models/external-quote-context";
+import { applyExternalProductionOptions } from "@/lib/models/apply-production-options";
 import { announceStatus } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart-store";
@@ -217,6 +218,13 @@ export function ModelConfigurator() {
     queueMicrotask(() => {
       setExternalContext(pending.context);
       setRights(true);
+      applyExternalProductionOptions({
+        material: setMaterial,
+        colorId: setColorId,
+        scalePercent: setScalePercent,
+        quantity: setQuantity,
+        options: pending.context.productionOptions,
+      });
       acceptFile(pending.file, { rightsAlreadyConfirmed: true });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot handoff

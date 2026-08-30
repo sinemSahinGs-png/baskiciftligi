@@ -9,7 +9,7 @@ describe("Thingiverse fixtures", () => {
     const things = await loadThingiverseFixture<Array<{ id: number; license?: string }>>(
       "/popular?page=1",
     );
-    expect(things).toHaveLength(2);
+    expect(things).toHaveLength(3);
     expect(normalizeLicense(things[0]?.license).automaticManufacturingAllowed).toBe(true);
     expect(normalizeLicense(things[1]?.license).commercialUse).toBe("prohibited");
   });
@@ -23,7 +23,10 @@ describe("Thingiverse fixtures", () => {
     const raw = await loadThingiverseFixture<unknown>("/things/1587568/images");
     expect(Array.isArray(raw)).toBe(false);
     expect(normalizeThingImages(raw)).toEqual([
-      { url: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png" },
+      {
+        id: 501,
+        url: "https://cdn.thingiverse.com/assets/fixture/ab/cd/vase/display_large.jpg",
+      },
     ]);
   });
 });

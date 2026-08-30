@@ -26,6 +26,10 @@ import {
 } from "@/providers/thingiverse/normalize-detail";
 import { mapThingiverseCategory } from "@/providers/thingiverse/categories";
 import {
+  cardImageFromCandidate,
+  collectThingiverseGalleryCandidates,
+} from "@/domain/external-models/thingiverse-images";
+import {
   identifyThingiverseUrl,
   resolveThingiverseConfigStatus,
   type ThingiverseIntegrationStatus,
@@ -112,11 +116,16 @@ async function mapThing(thing: ThingiverseThing): Promise<ExternalModelSummary |
     ],
   });
 
-  const thumbnailUrl =
+  const rawThumbnail =
     thing.thumbnail ||
     (typeof thing.default_image === "string"
       ? thing.default_image
       : thing.default_image?.url);
+  const thumbnailUrl =
+    cardImageFromCandidate(
+      collectThingiverseGalleryCandidates({ thumbnailUrl: rawThumbnail })[0] ??
+        null,
+    ) ?? undefined;
 
   return {
     source,
@@ -306,10 +315,13 @@ export const thingiverseProvider: BrowsableExternalModelProvider = {
     }
     try {
       const images = await getThingImages(externalId);
-      mapped.imageUrls = images
-        .map((image) => image.url)
-        .filter((url): url is string => Boolean(url))
-        .slice(0, 6);
+      mapped.imageUrls = collectThingiverseGalleryCandidates({
+        thumbnailUrl: mapped.thumbnailUrl,
+        imageMeta: images.map((image) => ({
+          id: image.id,
+          url: image.url,
+        })),
+      }).map((candidate) => candidate.url);
     } catch {
       // Optional enrichment — must not blank the detail page.
     }

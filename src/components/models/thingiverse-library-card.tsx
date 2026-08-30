@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { ModelCardMedia } from "@/components/models/model-card-media";
+import { hasUsableThingiverseThumbnail } from "@/domain/external-models/thingiverse-images";
 import { cn } from "@/lib/utils";
 
 export interface ThingiverseLibraryCardData {
@@ -28,6 +29,7 @@ export function ThingiverseLibraryCard({
   className?: string;
 }) {
   if (!model.id || !model.title?.trim()) return null;
+  if (!hasUsableThingiverseThumbnail(model.thumbnailUrl)) return null;
 
   const detailHref = `/hazir-modeller/thingiverse/${model.id}` as Route;
 
