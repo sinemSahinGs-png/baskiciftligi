@@ -4,6 +4,8 @@ import { z } from "zod";
 import { finalizePricedJob } from "@/domain/manufacturing/quote-service";
 import { duplicateWorkerResultAction } from "@/domain/manufacturing/job-lifecycle";
 import { actualSupportGenerated, GCODE_PARSER_VERSION } from "@/domain/manufacturing/gcode";
+import { computeOrientedBounds } from "@/domain/manufacturing/transform-math";
+import { dimensionsWithinTolerance } from "@/domain/manufacturing/transform";
 import { getQuoteJob, transitionQuoteJob } from "@/domain/manufacturing/repository";
 import type { ReviewFlag, SlicingMetrics } from "@/domain/manufacturing/types";
 import { assertSlicerWorker } from "@/lib/manufacturing/worker-auth";
@@ -101,6 +103,30 @@ export async function POST(
     gcodeParserVersion: incoming.gcodeParserVersion ?? GCODE_PARSER_VERSION,
   } as SlicingMetrics;
   const flags = (parsed.data.flags ?? []) as ReviewFlag[];
+  if (
+    job.configuration.manufacturingTransform &&
+    job.analysis?.dimensionsMm
+  ) {
+    const expected = computeOrientedBounds(
+      job.analysis.dimensionsMm,
+      job.configuration.manufacturingTransform,
+    ).dimensions;
+    if (!dimensionsWithinTolerance(expected, metrics.dimensionsMm)) {
+      await transitionQuoteJob(job.id, "needs_review", {
+        metrics,
+        reviewFlags: [...flags, "slicer_warning"],
+        errorCode: "transform_mismatch",
+        errorMessage: "Önizleme boyutları ile dilimleme sonucu uyuşmadı.",
+        lockedAt: null,
+        lockedBy: null,
+      });
+      return NextResponse.json({
+        ok: true,
+        status: "needs_review",
+        code: "transform_mismatch",
+      });
+    }
+  }
   await transitionQuoteJob(job.id, "pricing", { metrics, reviewFlags: flags });
   const quote = await finalizePricedJob({ job: { ...job, metrics }, metrics, flags });
   return NextResponse.json({ ok: true, quoteId: quote.id, status: quote.status });

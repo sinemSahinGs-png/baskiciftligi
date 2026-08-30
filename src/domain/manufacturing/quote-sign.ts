@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { assertMinorUnits } from "@/lib/money";
 import type { PrintConfiguration } from "@/domain/manufacturing/types";
+import { serializeTransformForUpload } from "@/domain/manufacturing/transform";
 
 export interface QuoteSignaturePayload {
   quoteId: string;
@@ -30,6 +31,9 @@ export function canonicalConfiguration(configuration: PrintConfiguration): strin
     configuration.quantity,
     configuration.unit,
     configuration.customScale ?? "",
+    configuration.manufacturingTransform
+      ? serializeTransformForUpload(configuration.manufacturingTransform)
+      : "",
   ].join("|");
 }
 

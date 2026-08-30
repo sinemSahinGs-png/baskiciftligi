@@ -133,7 +133,16 @@ async function processJob(job) {
       "utf8",
     );
 
-    const rotateX = job.analysis?.flags?.includes("does_not_fit") ? 90 : 0;
+    const transform = config.manufacturingTransform ?? null;
+    const rotateX = transform?.rotationDeg.x ?? (job.analysis?.flags?.includes("does_not_fit") ? 90 : 0);
+    const rotateY = transform?.rotationDeg.y ?? 0;
+    const rotateZ = transform?.rotationDeg.z ?? 0;
+    const centerX = transform
+      ? 128 + (transform.positionMm?.x ?? 0)
+      : 128;
+    const centerY = transform
+      ? 128 + (transform.positionMm?.y ?? 0)
+      : 128;
     const args = [
       "--export-gcode",
       "--output",
@@ -147,10 +156,16 @@ async function processJob(job) {
       "--load",
       overridePath,
       "--center",
-      "128,128",
+      `${centerX},${centerY}`,
     ];
     if (rotateX) {
       args.push("--rotate-x", String(rotateX));
+    }
+    if (rotateY) {
+      args.push("--rotate-y", String(rotateY));
+    }
+    if (rotateZ) {
+      args.push("--rotate", String(rotateZ));
     }
     args.push(inputPath);
 
@@ -182,7 +197,7 @@ async function processJob(job) {
           materialId: "pla",
           qualityId: config.qualityId,
           quantity: config.quantity,
-          orientation: { rotateX, rotateY: 0, rotateZ: 0 },
+          orientation: { rotateX, rotateY, rotateZ: rotateZ },
           engine: { name: "PrusaSlicer", version: parsed.engineVersion ?? `PrusaSlicer ${PRUSA_PINNED}` },
           profileChecksum: checksum,
           warnings: [],

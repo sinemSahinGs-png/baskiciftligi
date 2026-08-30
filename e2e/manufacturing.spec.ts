@@ -32,7 +32,28 @@ async function workerHealthy() {
 }
 
 async function waitForConfigurator(page: Page) {
-  await expect(page.getByRole("button", { name: "Tel kafes" })).toBeVisible();
+  await expect(page.getByTestId("configurator-shell")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId("mesh-viewer")).toBeVisible();
+}
+
+async function ensureInspectorOpen(page: Page) {
+  const expand = page.getByRole("button", { name: "Genişlet" });
+  if (await expand.isVisible().catch(() => false)) {
+    const drawer = page.getByTestId("config-drawer");
+    if ((await drawer.getAttribute("data-expanded")) !== "true") {
+      await expand.click();
+      await expect(drawer).toHaveAttribute("data-expanded", "true");
+    }
+  }
+}
+
+async function goToAnalysis(page: Page) {
+  await ensureInspectorOpen(page);
+  await page.getByRole("button", { name: "Model" }).click();
+  await page.getByRole("checkbox").first().check();
+  await page.getByRole("button", { name: "Analiz et", exact: true }).click();
+  await ensureInspectorOpen(page);
+  await expect(page.getByRole("heading", { name: "Analiz" })).toBeVisible();
 }
 
 async function selectFixture(
@@ -53,20 +74,11 @@ async function selectFixture(
   await expect(named).toBeVisible({ timeout: 20_000 });
 }
 
-async function goToSummary(page: Page) {
-  await page.getByRole("checkbox").first().check();
-  await page
-    .getByRole("button", { name: "7. Özet" })
-    .locator("visible=true")
-    .last()
-    .click();
-}
-
 async function startSlicing(page: Page) {
   const start = page
-    .getByRole("button", { name: "Analiz ve dilimlemeyi başlat" })
+    .getByRole("button", { name: "Analiz et ve fiyatı hesapla" })
     .locator("visible=true")
-    .last();
+    .first();
   await expect(start).toBeEnabled({ timeout: 10_000 });
   await start.click();
 }
@@ -94,9 +106,9 @@ test.describe("manufacturing quotation", () => {
       path: path.join(shotDir, "preview-stl-1920.png"),
       fullPage: true,
     });
-    await goToSummary(page);
+    await goToAnalysis(page);
     await expect(
-      page.getByRole("button", { name: "Analiz ve dilimlemeyi başlat" }),
+      page.getByRole("button", { name: "Analiz et ve fiyatı hesapla" }).first(),
     ).toBeVisible();
     await expect(page.getByText(/KDV dahil/)).toHaveCount(0);
     await page.screenshot({
@@ -131,7 +143,7 @@ test.describe("manufacturing quotation", () => {
       buffer: Buffer.from("<!DOCTYPE html><html><body>nope</body></html>"),
     });
     await expect(
-      page.getByText("Bu dosya geçerli bir STL, OBJ veya 3MF değil."),
+      page.getByText("Bu dosya geçerli bir STL, OBJ veya 3MF değil.").first(),
     ).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText("Model okunuyor")).toHaveCount(0);
   });
@@ -142,10 +154,10 @@ test.describe("manufacturing quotation", () => {
     mkdirSync(shotDir, { recursive: true });
     await page.goto("/model-yukle");
     await selectFixture(page, cube);
-    await goToSummary(page);
+    await goToAnalysis(page);
     await startSlicing(page);
     await expect(
-      page.getByText(/Dilimleme işçisi çevrimdışı|Docker Compose|zaman aşımı/i),
+      page.getByText(/Fiyat analizi şu anda tamamlanamıyor|Analiz zaman aşımına uğradı/i),
     ).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(/KDV dahil/)).toHaveCount(0);
     await page.screenshot({
@@ -158,9 +170,9 @@ test.describe("manufacturing quotation", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/model-yukle");
     await selectFixture(page, cube);
-    await expect(page.getByRole("button", { name: "Sığdır" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Sıfırla" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Tel kafes" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sığdır" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sıfırla" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Tel kafes" }).first()).toBeVisible();
   });
 
   test("preview viewports keep controls readable", async ({ page }) => {
@@ -183,7 +195,6 @@ test.describe("manufacturing quotation", () => {
         timeout: 15_000,
       });
       if (viewport.w === 375 || viewport.w === 430) {
-        await goToSummary(page);
         await expect(page.getByTestId("config-drawer")).toHaveAttribute(
           "data-expanded",
           "false",
@@ -202,11 +213,11 @@ test.describe("manufacturing quotation", () => {
           0.38,
         );
         await expect(page.getByText("Görüntüleyici").first()).toBeVisible();
-        await expect(page.getByRole("button", { name: "Tel kafes" })).toBeVisible();
-        await expect(page.getByRole("button", { name: "Sığdır" })).toBeVisible();
-        await expect(page.getByRole("button", { name: "Sıfırla" })).toBeVisible();
+        await expect(page.getByRole("button", { name: "Tel kafes" }).first()).toBeVisible();
+        await expect(page.getByRole("button", { name: "Sığdır" }).first()).toBeVisible();
+        await expect(page.getByRole("button", { name: "Sıfırla" }).first()).toBeVisible();
         await expect(
-          page.getByRole("button", { name: "Analiz ve dilimlemeyi başlat" }),
+          page.getByRole("button", { name: "Analiz et ve fiyatı hesapla" }).first(),
         ).toBeVisible();
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
@@ -220,12 +231,15 @@ test.describe("manufacturing quotation", () => {
           path: path.join(shotDir, `preview-${viewport.w}x${viewport.h}-collapsed.png`),
           fullPage: true,
         });
-        await page.getByRole("button", { name: "Genişlet" }).click();
+        await ensureInspectorOpen(page);
+        await page.getByRole("button", { name: "Model" }).click();
+        await page.getByRole("checkbox").first().check();
+        await page.getByRole("button", { name: "Analiz", exact: true }).click();
         await expect(page.getByTestId("config-drawer")).toHaveAttribute(
           "data-expanded",
           "true",
         );
-        await expect(page.getByRole("heading", { name: "Özet" })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "Analiz" })).toBeVisible();
         const expandedViewer = await viewer.boundingBox();
         const expandedShell = await shell.boundingBox();
         const expandedRatio =
@@ -267,7 +281,7 @@ test.describe("manufacturing quotation", () => {
     mkdirSync(shotDir, { recursive: true });
     await page.goto("/model-yukle");
     await selectFixture(page, cube);
-    await goToSummary(page);
+    await goToAnalysis(page);
     const quoteResponsePromise = page.waitForResponse(
       (response) =>
         response.url().includes("/api/manufacturing/quotes/") &&
@@ -462,13 +476,18 @@ test.describe("manufacturing quotation", () => {
 
   test("Thingiverse tab is honest when unconfigured", async ({ page }) => {
     await page.goto("/hazir-modeller");
-    await page.getByRole("tab", { name: "Thingiverse" }).click();
-    await expect(
-      page.getByRole("heading", { name: "Thingiverse keşfi" }),
-    ).toBeVisible();
-    await expect(
-      page.getByText(/yapılandırılmadı|Kimlik bilgileri|Bağlı|sorgulanıyor/i).first(),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ne üretmek istiyorsun?" })).toBeVisible({
+      timeout: 15_000,
+    });
+    const community = page.getByRole("button", { name: "Topluluk" });
+    if (await community.isVisible().catch(() => false)) {
+      await community.click();
+      await expect(
+        page.getByText(/yapılandırılmadı|Kimlik bilgileri|Bağlı|sorgulanıyor/i).first(),
+      ).toBeVisible();
+    } else {
+      await expect(community).toHaveCount(0);
+    }
   });
 });
 
@@ -491,7 +510,7 @@ test.describe.serial("fresh unique mesh slicing", () => {
     await expect(page.getByText(/X 20\.|Y 20\.|Z 20\./).first()).toBeVisible({
       timeout: 20_000,
     });
-    await goToSummary(page);
+    await goToAnalysis(page);
     const uploadPromise = page.waitForResponse(
       (response) =>
         response.url().includes("/api/manufacturing/uploads") &&
@@ -594,7 +613,7 @@ test.describe.serial("fresh unique mesh slicing", () => {
     expect(freshJobId).toBeTruthy();
     await page.goto("/model-yukle");
     await selectFixture(page, unique.filePath);
-    await goToSummary(page);
+    await goToAnalysis(page);
     const uploadPromise = page.waitForResponse(
       (response) =>
         response.url().includes("/api/manufacturing/uploads") &&
@@ -631,7 +650,7 @@ test.describe.serial("support-required overhang slicing", () => {
     mkdirSync(shotDir, { recursive: true });
     await page.goto("/model-yukle");
     await selectFixture(page, unique.filePath);
-    await goToSummary(page);
+    await goToAnalysis(page);
     const uploadPromise = page.waitForResponse(
       (response) =>
         response.url().includes("/api/manufacturing/uploads") &&

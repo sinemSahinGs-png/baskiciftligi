@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { analyzeMesh, MeshValidationError, sha256Hex } from "@/domain/manufacturing/mesh";
+import {
+  parseManufacturingTransform,
+  transformFromLegacyScalePercent,
+  uniformScalePercent,
+  serializeTransformForUpload,
+} from "@/domain/manufacturing/transform";
+import { computeOrientedBounds } from "@/domain/manufacturing/transform-math";
+import { evaluateBuildVolumeFit } from "@/domain/manufacturing/build-volume-fit";
 import { JOB_MAX_ATTEMPTS, type ManufacturingFileRecord, type PrintConfiguration } from "@/domain/manufacturing/types";
 import { ALLOWED_INFILL, QUALITY_IDS } from "@/domain/manufacturing/types";
 import { getQuoteJobByIdempotency, saveManufacturingFile, saveQuoteJob } from "@/domain/manufacturing/repository";
@@ -72,13 +80,28 @@ export async function POST(request: Request) {
   const unit = (form.get("unit") as string | null) ?? "mm";
   const customScaleRaw = form.get("customScale");
   const scalePercent = Number(form.get("scalePercent") ?? 100);
+  const transformRaw = form.get("manufacturingTransform");
+  let manufacturingTransform =
+    typeof transformRaw === "string"
+      ? (() => {
+          try {
+            return parseManufacturingTransform(JSON.parse(transformRaw));
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+  if (!manufacturingTransform) {
+    manufacturingTransform = transformFromLegacyScalePercent(scalePercent);
+  }
+  const effectiveScalePercent = uniformScalePercent(manufacturingTransform);
   const parsedConfig = configSchema.safeParse({
     materialId: form.get("materialId") ?? "pla",
     colorId: form.get("colorId") ?? "black",
     qualityId: form.get("qualityId") ?? "standart",
     infillPercent: Number(form.get("infillPercent") ?? 20),
     supports: form.get("supports") ?? "auto",
-    scalePercent,
+    scalePercent: effectiveScalePercent,
     quantity: Number(form.get("quantity") ?? 1),
     unit,
     customScale: customScaleRaw ? Number(customScaleRaw) : null,
@@ -94,9 +117,23 @@ export async function POST(request: Request) {
       declaredMime: blob.type,
       unit: parsedConfig.data.unit,
       customScale: parsedConfig.data.customScale,
-      scalePercent: parsedConfig.data.scalePercent,
+      scalePercent: effectiveScalePercent,
       buildVolumeMm: printerBuildVolume(),
     });
+    const buildVolume = printerBuildVolume();
+    const previewBounds = computeOrientedBounds(
+      analysis.dimensionsMm,
+      manufacturingTransform,
+    );
+    const fit = evaluateBuildVolumeFit(
+      analysis.dimensionsMm,
+      manufacturingTransform,
+      buildVolume,
+    );
+    if (!fit.fits) {
+      analysis.flags = [...new Set([...analysis.flags, "does_not_fit" as const])];
+    }
+    analysis.fitsBuildVolume = fit.fits;
     const actor = await getManufacturingActor();
     const fileId = crypto.randomUUID();
     const storageKey = `${actor.sessionId}/${fileId}/source.${analysis.format}`;
@@ -164,7 +201,10 @@ export async function POST(request: Request) {
     };
     await saveManufacturingFile(file);
 
-    const idempotencyKey = String(form.get("idempotencyKey") ?? `upload:${file.checksumSha256}:${JSON.stringify(parsedConfig.data)}`);
+    const idempotencyKey = String(
+      form.get("idempotencyKey") ??
+        `upload:${file.checksumSha256}:${serializeTransformForUpload(manufacturingTransform)}:${JSON.stringify(parsedConfig.data)}`,
+    );
     const existing = await getQuoteJobByIdempotency(idempotencyKey);
     if (existing) {
       return NextResponse.json({ fileId: file.id, jobId: existing.id, analysis, existing: true });
@@ -174,6 +214,7 @@ export async function POST(request: Request) {
       ...parsedConfig.data,
       printerProfileId: DEVELOPMENT_PRINTER.id,
       printerProfileVersion: DEVELOPMENT_PRINTER.version,
+      manufacturingTransform,
     };
     const jobId = crypto.randomUUID();
     await saveQuoteJob({
@@ -200,7 +241,12 @@ export async function POST(request: Request) {
       completedAt: null,
     });
 
-    return NextResponse.json({ fileId: file.id, jobId, analysis });
+    return NextResponse.json({
+      fileId: file.id,
+      jobId,
+      analysis,
+      previewDimensionsMm: previewBounds.dimensions,
+    });
   } catch (error) {
     if (error instanceof MeshValidationError) {
       return NextResponse.json({ error: error.message, code: error.code }, { status: 422 });

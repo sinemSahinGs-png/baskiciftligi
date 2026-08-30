@@ -118,6 +118,7 @@ export interface PrintConfiguration {
   quantity: number;
   unit: MeshUnit;
   customScale: number | null;
+  manufacturingTransform?: import("@/domain/manufacturing/transform").ManufacturingTransform;
 }
 
 export interface SlicingMetrics {
