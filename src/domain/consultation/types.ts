@@ -1,3 +1,5 @@
+import type { LicenseEvaluationCode } from "@/domain/consultation/license-evaluation";
+
 export const CONSULTATION_STATUSES = [
   "pending_license_review",
   "reviewing",
@@ -29,6 +31,7 @@ export interface ModelConsultationRequest {
   sourceUrl: string;
   licenseLabel: string | null;
   licenseCode: string | null;
+  licenseEvaluation: LicenseEvaluationCode;
   thumbnailUrl: string | null;
   customerName: string;
   customerPhone: string;
@@ -55,6 +58,7 @@ export interface CreateConsultationInput {
   sourceUrl: string;
   licenseLabel?: string | null;
   licenseCode?: string | null;
+  licenseEvaluation?: LicenseEvaluationCode;
   thumbnailUrl?: string | null;
   customerName: string;
   customerPhone: string;

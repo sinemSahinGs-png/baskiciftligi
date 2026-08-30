@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createConsultationRequest } from "@/domain/consultation/repository";
+import { resolveLicenseEvaluationFromCode } from "@/domain/consultation/license-evaluation";
 import { estimateProductionPrice, PRINT_SIZE_PRESETS } from "@/domain/external-models/production-estimate";
 import { clientKey, rateLimit } from "@/lib/manufacturing/rate-limit";
 
@@ -66,6 +67,10 @@ export async function POST(request: Request) {
   });
 
   try {
+    const licenseEvaluation = resolveLicenseEvaluationFromCode(
+      cleanText(input.licenseCode),
+      cleanText(input.licenseLabel),
+    ).code;
     const record = await createConsultationRequest({
       source: input.source,
       externalId: input.externalId,
@@ -74,6 +79,7 @@ export async function POST(request: Request) {
       sourceUrl: input.sourceUrl,
       licenseLabel: cleanText(input.licenseLabel),
       licenseCode: cleanText(input.licenseCode),
+      licenseEvaluation,
       thumbnailUrl: input.thumbnailUrl ?? null,
       customerName: cleanText(input.customerName),
       customerPhone: cleanText(input.customerPhone),
@@ -94,7 +100,7 @@ export async function POST(request: Request) {
       ok: true,
       id: record.id,
       message:
-        "Talebiniz incelemeye alındı. Üretim ve lisans uygunluğu kontrol edildikten sonra sizinle iletişime geçeceğiz.",
+        "Talebiniz alındı. İncelendikten sonra kesin fiyat ve üretim bilgisi paylaşılacaktır.",
     });
   } catch {
     return NextResponse.json(

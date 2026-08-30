@@ -3,7 +3,6 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
 
 import { ModelConsultationModal } from "@/components/models/model-consultation-modal";
 import {
@@ -11,37 +10,11 @@ import {
   PrintProductionOptions,
   type ProductionOptionsValue,
 } from "@/components/models/print-production-options";
-import { ExternalModelPriceModal } from "@/components/models/external-model-price-modal";
 import { SafeImage } from "@/components/media/safe-image";
-import { resolveLicenseCommercePolicyFromLabel } from "@/domain/external-models/license-commerce";
-import {
-  labelForSourceType,
-  type ExternalQuoteModelContext,
-} from "@/lib/models/external-quote-context";
 import type { ExternalModelSummary } from "@/providers/contracts";
 import { cn } from "@/lib/utils";
 
-function toQuoteContext(model: ExternalModelSummary): ExternalQuoteModelContext {
-  return {
-    externalModelId: model.externalId,
-    sourceType: "thingiverse",
-    sourceUrl: model.sourceUrl,
-    title: model.title,
-    categoryLabel: model.categoryLabel ?? null,
-    previewImageUrl: model.thumbnailUrl ?? null,
-    imageAlt: model.title,
-    attribution: model.attributionText ?? null,
-    licenseName: model.licenseLabel ?? null,
-    licenseVerified: Boolean(model.pricingAllowed),
-    platformLabel: labelForSourceType("thingiverse"),
-  };
-}
-
 export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
-  const policy = useMemo(
-    () => resolveLicenseCommercePolicyFromLabel(model.licenseLabel),
-    [model.licenseLabel],
-  );
   const [productionOptions, setProductionOptions] = useState<ProductionOptionsValue>({
     material: "pla",
     color: "beyaz",
@@ -52,9 +25,7 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
   const [disclaimerTr, setDisclaimerTr] = useState(
     "Tahmini üretim bedeli — sipariş onayı değildir.",
   );
-  const [consultOpen, setConsultOpen] = useState(false);
-  const [quoteOpen, setQuoteOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
 
   const handleEstimate = useCallback((grossMinor: number, disclaimer: string) => {
     setEstimateMinor(grossMinor);
@@ -120,52 +91,33 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
 
           <aside className="min-w-0 space-y-6 lg:sticky lg:top-24">
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-light">
-                Thingiverse · {model.creatorName}
-              </p>
-              <h1 className="mt-2 font-heading text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
+              <h1 className="font-heading text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
                 {model.title}
               </h1>
-              <p className="mt-3 text-sm text-muted-light">{policy.statusLineTr}</p>
+              <p className="mt-2 text-sm text-muted-light">
+                Tasarımcı: {model.creatorName}
+              </p>
             </div>
 
             <PrintProductionOptions
               value={productionOptions}
               onChange={setProductionOptions}
-              onEstimate={policy.showEstimate ? handleEstimate : undefined}
+              onEstimate={handleEstimate}
             />
 
-            {policy.showEstimate ? (
-              <EstimatedPriceBlock
-                grossMinor={estimateMinor}
-                disclaimerTr={disclaimerTr}
-              />
-            ) : null}
+            <EstimatedPriceBlock grossMinor={estimateMinor} disclaimerTr={disclaimerTr} />
 
-            {policy.allowPayment ? (
-              <button
-                type="button"
-                data-external-quote-cta=""
-                onClick={() => setQuoteOpen(true)}
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-coral text-base font-semibold text-midnight"
-              >
-                {policy.primaryCtaTr}
-              </button>
-            ) : policy.allowConsultation ? (
-              <>
-                <button
-                  type="button"
-                  data-consultation-cta=""
-                  onClick={() => setConsultOpen(true)}
-                  className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-coral text-base font-semibold text-midnight"
-                >
-                  {policy.primaryCtaTr}
-                </button>
-                <p className="text-xs leading-5 text-muted-light">
-                  Ödeme alınmaz. Talebiniz incelendikten sonra size dönüş yapılır.
-                </p>
-              </>
-            ) : null}
+            <button
+              type="button"
+              data-production-request-cta=""
+              onClick={() => setRequestOpen(true)}
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-coral text-base font-semibold text-midnight"
+            >
+              Üretim talebi oluştur
+            </button>
+            <p className="text-xs leading-5 text-muted-light">
+              Talebiniz incelendikten sonra kesin fiyat ve üretim bilgisi paylaşılır.
+            </p>
 
             <a
               href={model.sourceUrl}
@@ -175,51 +127,13 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
             >
               Orijinal modeli görüntüle
             </a>
-
-            <div className="border-t border-white/10 pt-4">
-              <button
-                type="button"
-                onClick={() => setDetailsOpen((value) => !value)}
-                className="flex w-full items-center justify-between text-sm font-semibold"
-                aria-expanded={detailsOpen}
-              >
-                Model bilgileri
-                <ChevronDown
-                  className={cn("size-4 transition-transform", detailsOpen && "rotate-180")}
-                />
-              </button>
-              {detailsOpen ? (
-                <dl className="mt-3 space-y-2 text-xs text-muted-light">
-                  <div className="flex justify-between gap-4">
-                    <dt>Model ID</dt>
-                    <dd>{model.externalId}</dd>
-                  </div>
-                  {typeof model.fileCount === "number" ? (
-                    <div className="flex justify-between gap-4">
-                      <dt>Dosya sayısı</dt>
-                      <dd>{model.fileCount}</dd>
-                    </div>
-                  ) : null}
-                  <div>
-                    <dt className="mb-1">Atıf</dt>
-                    <dd className="break-all">{model.attributionText}</dd>
-                  </div>
-                  {model.description ? (
-                    <div>
-                      <dt className="mb-1">Açıklama</dt>
-                      <dd>{model.description}</dd>
-                    </div>
-                  ) : null}
-                </dl>
-              ) : null}
-            </div>
           </aside>
         </div>
       </article>
 
       <ModelConsultationModal
-        open={consultOpen}
-        onOpenChange={setConsultOpen}
+        open={requestOpen}
+        onOpenChange={setRequestOpen}
         model={{
           source: model.source,
           externalId: model.externalId,
@@ -232,12 +146,6 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
         }}
         productionOptions={productionOptions}
         estimatedGrossMinor={estimateMinor}
-      />
-
-      <ExternalModelPriceModal
-        open={quoteOpen}
-        onOpenChange={setQuoteOpen}
-        model={toQuoteContext(model)}
       />
     </main>
   );

@@ -117,25 +117,6 @@ function curatedToQuoteContext(
   };
 }
 
-function thingiverseToQuoteContext(
-  model: ThingiverseLibraryCardData,
-): ExternalQuoteModelContext {
-  return {
-    externalModelId: model.id,
-    sourceType: "thingiverse",
-    sourceUrl: model.sourceUrl,
-    title: model.title,
-    categoryLabel: model.categoryLabel,
-    previewImageUrl: model.thumbnailUrl ?? null,
-    imageAlt: model.title,
-    attribution: model.attributionText ?? null,
-    licenseName: model.licenseLabel ?? null,
-    licenseVerified: Boolean(model.pricingAllowed),
-    platformLabel: "Thingiverse",
-    slug: null,
-  };
-}
-
 function mergeUnique(
   existing: UnifiedDiscoveryResult[],
   incoming: UnifiedDiscoveryResult[],
@@ -189,12 +170,10 @@ function normalizeModels(raw: unknown): UnifiedDiscoveryResult[] {
 const ModelResultsGrid = memo(function ModelResultsGrid({
   models,
   onExternalQuote,
-  onThingiverseQuote,
   ctaRefs,
 }: {
   models: UnifiedDiscoveryResult[];
   onExternalQuote: (model: CuratedCatalogCardData) => void;
-  onThingiverseQuote: (model: ThingiverseLibraryCardData) => void;
   ctaRefs: React.MutableRefObject<Map<string, HTMLButtonElement>>;
 }) {
   return (
@@ -215,14 +194,7 @@ const ModelResultsGrid = memo(function ModelResultsGrid({
               }}
             />
           ) : (
-            <ThingiverseLibraryCard
-              model={model}
-              onQuote={onThingiverseQuote}
-              ref={(node) => {
-                if (node) ctaRefs.current.set(`tv-${model.id}`, node);
-                else ctaRefs.current.delete(`tv-${model.id}`);
-              }}
-            />
+            <ThingiverseLibraryCard model={model} />
           )}
         </StaggerItem>
       ))}
@@ -555,14 +527,6 @@ export function ModelLibrary({
     setModalOpen(true);
   }
 
-  function openThingiverseQuote(model: ThingiverseLibraryCardData) {
-    if (!model.pricingAllowed) return;
-    setReturnFocusKey(`tv-${model.id}`);
-    returnFocusRef.current = ctaRefs.current.get(`tv-${model.id}`) ?? null;
-    setModalModel(thingiverseToQuoteContext(model));
-    setModalOpen(true);
-  }
-
   const showEmptyQueryMiss =
     !loading && Boolean(committedQuery) && results.length === 0 && !softError;
   const showSoftEmpty =
@@ -737,7 +701,6 @@ export function ModelLibrary({
             <ModelResultsGrid
               models={results}
               onExternalQuote={openCuratedQuote}
-              onThingiverseQuote={openThingiverseQuote}
               ctaRefs={ctaRefs}
             />
           ) : showEmptyQueryMiss || showSoftEmpty ? (

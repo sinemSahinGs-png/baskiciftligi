@@ -44,7 +44,7 @@ describe("POST /api/hazir-modeller/consultation", () => {
     expect(response.status).toBe(200);
     const body = (await response.json()) as { ok?: boolean; message?: string };
     expect(body.ok).toBe(true);
-    expect(body.message).toContain("incelemeye alındı");
+    expect(body.message).toContain("Talebiniz alındı");
   });
 
   it("rejects invalid phone", async () => {

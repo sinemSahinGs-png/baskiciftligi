@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { openAdmin } from "./admin-session";
 
-const ccBy = {
+const communityModel = {
   kind: "thingiverse" as const,
   id: "1001",
   title: "20 mm kalibrasyon küpü",
@@ -16,29 +16,6 @@ const ccBy = {
   pricingAllowed: true,
 };
 
-const nc = {
-  kind: "thingiverse" as const,
-  id: "2002",
-  title: "Ticari olmayan vazo",
-  creatorName: "fixture-leo",
-  thumbnailUrl: "https://cdn.thingiverse.com/site/img/thingiverse_logo.png",
-  sourceUrl: "https://www.thingiverse.com/thing:2002",
-  categoryLabel: "Ev ve Dekorasyon",
-  licenseLabel: "Creative Commons - Attribution - Non-Commercial",
-  licenseCode: "cc_by_nc",
-  attributionText: "attribution",
-  pricingAllowed: false,
-};
-
-const unknownLicense = {
-  ...ccBy,
-  id: "999001",
-  title: "Unknown License Figurine",
-  licenseLabel: "All Rights Reserved",
-  licenseCode: "unknown",
-  pricingAllowed: false,
-};
-
 function fulfill(route: import("@playwright/test").Route, body: unknown) {
   return route.fulfill({
     status: 200,
@@ -47,11 +24,11 @@ function fulfill(route: import("@playwright/test").Route, body: unknown) {
   });
 }
 
-test.describe("Hazır modeller license and consultation", () => {
-  test("CC BY card opens quote modal", async ({ page }) => {
+test.describe("Hazır modeller unified production request", () => {
+  test("search cards use single production request path", async ({ page }) => {
     await page.route("**/api/hazir-modeller/search**", async (route) => {
       await fulfill(route, {
-        models: [ccBy],
+        models: [communityModel],
         thingiverseConnected: true,
         thingiverseStatus: "connected",
       });
@@ -61,59 +38,33 @@ test.describe("Hazır modeller license and consultation", () => {
     await expect(page.locator("[data-thingiverse-card]")).toHaveCount(1, {
       timeout: 15_000,
     });
-    await page.locator("[data-external-quote-cta]").click();
-    await expect(
-      page.getByRole("dialog").or(page.locator("[data-external-price-modal]")),
-    ).toBeVisible({ timeout: 10_000 });
-  });
-
-  test("NC search card shows consult path, not payment", async ({ page }) => {
-    await page.route("**/api/hazir-modeller/search**", async (route) => {
-      await fulfill(route, {
-        models: [nc],
-        thingiverseConnected: true,
-        thingiverseStatus: "connected",
-      });
-    });
-
-    await page.goto("/hazir-modeller?q=vazo&source=thingiverse");
-    await expect(page.locator("[data-consultation-card-cta]")).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.locator("[data-production-request-card-cta]")).toBeVisible();
     await expect(page.locator("[data-external-quote-cta]")).toHaveCount(0);
   });
 
-  test("unknown license search card routes to detail consult", async ({ page }) => {
-    await page.route("**/api/hazir-modeller/search**", async (route) => {
-      await fulfill(route, {
-        models: [unknownLicense],
-        thingiverseConnected: true,
-        thingiverseStatus: "connected",
-      });
-    });
+  test("detail page shows unified CTA without license jargon", async ({ page }) => {
+    test.skip(
+      !process.env.THINGIVERSE_ACCESS_TOKEN &&
+        process.env.THINGIVERSE_FIXTURE_MODE !== "true",
+      "Thingiverse credentials or fixture mode required",
+    );
 
-    await page.goto("/hazir-modeller?q=figur&source=thingiverse");
-    await expect(page.locator("[data-consultation-card-cta]")).toBeVisible({
-      timeout: 15_000,
-    });
-  });
-
-  test("NC detail shows consult CTA without payment", async ({ page }) => {
-    test.skip(!process.env.THINGIVERSE_ACCESS_TOKEN && process.env.THINGIVERSE_FIXTURE_MODE !== "true", "Thingiverse credentials or fixture mode required");
-
-    await page.goto("/hazir-modeller/thingiverse/2002");
+    await page.goto("/hazir-modeller/thingiverse/1001");
     const configured = await page
-      .getByRole("heading", { name: "Ticari olmayan vazo" })
+      .getByRole("heading", { name: "20 mm kalibrasyon küpü" })
       .isVisible()
       .catch(() => false);
     test.skip(!configured, "Thingiverse detail not available in this environment");
 
-    await expect(page.locator("[data-consultation-cta]")).toBeVisible({
+    await expect(page.locator("[data-production-request-cta]")).toBeVisible({
       timeout: 15_000,
     });
+    await expect(page.getByText("Üretim talebi oluştur")).toBeVisible();
+    await expect(page.getByText(/Creative Commons|NC|ND|SA|ticari/i)).toHaveCount(0);
     await expect(page.locator("[data-external-quote-cta]")).toHaveCount(0);
-    await expect(page.getByText("Ödeme alınmaz")).toBeVisible();
-    await expect(page.getByText("Tahmini üretim bedeli")).toBeVisible();
+    await expect(
+      page.getByText("Talebiniz incelendikten sonra kesin fiyat ve üretim bilgisi paylaşılır."),
+    ).toBeVisible();
   });
 
   test("consultation submission appears in admin panel", async ({
@@ -151,7 +102,7 @@ test.describe("Hazır modeller license and consultation", () => {
     const adminPage = await context.newPage();
     await openAdmin(adminPage, "/admin/model-danisma");
     await expect(adminPage.getByText("Test Müşteri")).toBeVisible({ timeout: 15_000 });
-    await expect(adminPage.getByText("Ticari olmayan vazo")).toBeVisible();
+    await expect(adminPage.getByText("İzin gerekli")).toBeVisible();
     await adminPage.close();
   });
 });

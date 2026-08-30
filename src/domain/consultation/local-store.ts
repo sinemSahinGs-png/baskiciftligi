@@ -9,6 +9,10 @@ import type {
   ModelConsultationRequest,
   UpdateConsultationInput,
 } from "@/domain/consultation/types";
+import {
+  resolveLicenseEvaluationFromCode,
+  type LicenseEvaluationCode,
+} from "@/domain/consultation/license-evaluation";
 
 const storePath = path.join(process.cwd(), ".octo-data", "consultation-requests.json");
 
@@ -27,6 +31,22 @@ async function writeStore(rows: ModelConsultationRequest[]) {
   await writeFile(storePath, JSON.stringify(rows, null, 2), "utf8");
 }
 
+function resolveStoredLicenseEvaluation(row: Record<string, unknown>): LicenseEvaluationCode {
+  const stored = row.license_evaluation ?? row.licenseEvaluation;
+  if (
+    typeof stored === "string" &&
+    ["auto_suitable", "suitable_unmodified", "permission_required", "manual_review"].includes(
+      stored,
+    )
+  ) {
+    return stored as LicenseEvaluationCode;
+  }
+  return resolveLicenseEvaluationFromCode(
+    (row.license_code ?? row.licenseCode) as string | null,
+    (row.license_label ?? row.licenseLabel) as string | null,
+  ).code;
+}
+
 function mapRow(row: Record<string, unknown>): ModelConsultationRequest {
   return {
     id: String(row.id),
@@ -37,6 +57,7 @@ function mapRow(row: Record<string, unknown>): ModelConsultationRequest {
     sourceUrl: String(row.source_url ?? row.sourceUrl),
     licenseLabel: (row.license_label ?? row.licenseLabel) as string | null,
     licenseCode: (row.license_code ?? row.licenseCode) as string | null,
+    licenseEvaluation: resolveStoredLicenseEvaluation(row),
     thumbnailUrl: (row.thumbnail_url ?? row.thumbnailUrl) as string | null,
     customerName: String(row.customer_name ?? row.customerName),
     customerPhone: String(row.customer_phone ?? row.customerPhone),
@@ -74,6 +95,9 @@ export async function localCreateConsultation(
 ): Promise<ModelConsultationRequest> {
   const rows = await readStore();
   const now = new Date().toISOString();
+  const evaluation =
+    input.licenseEvaluation ??
+    resolveLicenseEvaluationFromCode(input.licenseCode, input.licenseLabel).code;
   const record: ModelConsultationRequest = {
     id: crypto.randomUUID(),
     source: input.source,
@@ -83,6 +107,7 @@ export async function localCreateConsultation(
     sourceUrl: input.sourceUrl,
     licenseLabel: input.licenseLabel ?? null,
     licenseCode: input.licenseCode ?? null,
+    licenseEvaluation: evaluation,
     thumbnailUrl: input.thumbnailUrl ?? null,
     customerName: input.customerName,
     customerPhone: input.customerPhone,

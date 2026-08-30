@@ -2,6 +2,9 @@ import "server-only";
 
 import { isSupabaseConfigured } from "@/lib/env";
 import { createServiceRoleSupabaseClient } from "@/lib/supabase/admin";
+import {
+  resolveLicenseEvaluationFromCode,
+} from "@/domain/consultation/license-evaluation";
 import type {
   CreateConsultationInput,
   ModelConsultationRequest,
@@ -29,6 +32,9 @@ export async function createConsultationRequest(
   if (!client) {
     return localCreateConsultation(input);
   }
+  const licenseEvaluation =
+    input.licenseEvaluation ??
+    resolveLicenseEvaluationFromCode(input.licenseCode, input.licenseLabel).code;
   const { data, error } = await client
     .from("model_consultation_requests")
     .insert({
@@ -39,6 +45,7 @@ export async function createConsultationRequest(
       source_url: input.sourceUrl,
       license_label: input.licenseLabel ?? null,
       license_code: input.licenseCode ?? null,
+      license_evaluation: licenseEvaluation,
       thumbnail_url: input.thumbnailUrl ?? null,
       customer_name: input.customerName,
       customer_phone: input.customerPhone,
