@@ -5,15 +5,18 @@ import {
   normalizeTransform,
   transformToWorkerSliceArgs,
   validateTransformForSlicing,
-} from "../../../apps/slicer-worker/src/transform-pipeline.mjs";
+} from "./transform-pipeline.mjs";
+import { parseGcodeBounds } from "./parse-gcode-bounds.mjs";
 import {
   computeExpectedSlicedDimensions as tsExpected,
   transformToWorkerSliceArgs as tsArgs,
   validateTransformForSlicing as tsValidate,
-} from "./transform-pipeline";
-import { DEFAULT_MANUFACTURING_TRANSFORM, normalizeTransform as tsNormalize } from "./transform";
-import { parseGcodeBounds } from "../../../apps/slicer-worker/src/parse-gcode-bounds.mjs";
-import { DEVELOPMENT_PRINTER } from "./profiles";
+} from "../../../src/domain/manufacturing/transform-pipeline.ts";
+import {
+  DEFAULT_MANUFACTURING_TRANSFORM,
+  normalizeTransform as tsNormalize,
+} from "../../../src/domain/manufacturing/transform.ts";
+import { DEVELOPMENT_PRINTER } from "../../../src/domain/manufacturing/profiles.ts";
 
 const cuboid = { x: 20, y: 30, z: 40 };
 
