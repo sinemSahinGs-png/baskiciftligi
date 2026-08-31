@@ -6,12 +6,21 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { GCODE_PARSER_VERSION, parseGcode } from "./parse-gcode.mjs";
+import { parseGcodeBounds } from "./parse-gcode-bounds.mjs";
+import {
+  buildPrusaSliceArgs,
+  computeExpectedSlicedDimensions,
+  rawDimensionsFromAnalysis,
+  validateTransformForSlicing,
+} from "./transform-pipeline.mjs";
+
+const BUILD_VOLUME_MM = { x: 256, y: 256, z: 256 };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORKER_VERSION = "0.2.0";
 const PRUSA_PINNED = "2.8.1";
 const APP_BASE_URL = process.env.APP_BASE_URL ?? "http://127.0.0.1:3000";
-const SECRET = process.env.SLICER_WORKER_SECRET ?? "";
+const SECRET = (process.env.SLICER_WORKER_SECRET ?? "").trim().replace(/^["']|["']$/g, "").trim();
 const WORKER_ID = process.env.SLICER_WORKER_ID ?? `slicer-${process.pid}`;
 const BIN =
   process.env.PRUSA_SLICER_BIN ??
@@ -90,6 +99,32 @@ function sanitizeLog(text) {
     .slice(0, 2000);
 }
 
+function logTickFailure(details) {
+  console.error(
+    JSON.stringify({
+      event: "slicer_tick_failed",
+      ...details,
+    }),
+  );
+}
+
+function describeFetchError(error) {
+  if (!(error instanceof Error)) {
+    return { message: String(error).slice(0, 200) };
+  }
+  const cause = error.cause;
+  return {
+    message: error.message.slice(0, 200),
+    code: "code" in error ? String(error.code) : undefined,
+    cause:
+      cause instanceof Error
+        ? cause.message.slice(0, 200)
+        : cause
+          ? String(cause).slice(0, 200)
+          : undefined,
+  };
+}
+
 async function processJob(job) {
   const dir = path.join(JOB_ROOT, job.id);
   await mkdir(dir, { recursive: true });
@@ -122,43 +157,53 @@ async function processJob(job) {
     const support =
       config.supports === "off" ? "0" : "1";
     const auto = config.supports === "auto" ? "1" : "0";
+    const scalePercent = config.scalePercent ?? 100;
     await writeFile(
       overridePath,
       [
         `fill_density = ${config.infillPercent}%`,
         `support_material = ${support}`,
         `support_material_auto = ${auto}`,
-        `scale = ${config.scalePercent}%`,
+        `scale = ${scalePercent}%`,
       ].join("\n"),
       "utf8",
     );
 
-    const rotateX = job.analysis?.flags?.includes("does_not_fit") ? 90 : 0;
-    const args = [
-      "--export-gcode",
-      "--output",
-      outputPath,
-      "--load",
-      path.join(PROFILE_ROOT, "printer/bambu-a1-dev.ini"),
-      "--load",
-      path.join(PROFILE_ROOT, "filament/pla.ini"),
-      "--load",
-      path.join(PROFILE_ROOT, `print/${config.qualityId}.ini`),
-      "--load",
-      overridePath,
-      "--center",
-      "128,128",
-    ];
-    if (rotateX) {
-      args.push("--rotate-x", String(rotateX));
-    }
-    args.push(inputPath);
+    const transform = config.manufacturingTransform ?? null;
+    const rawDimensionsMm = rawDimensionsFromAnalysis(
+      job.analysis?.dimensionsMm ?? { x: 0, y: 0, z: 0 },
+      job.analysis?.scalePercent ?? scalePercent,
+    );
 
-    const slicer = await runSlicer(args, dir, SLICE_TIMEOUT_MS);
+    const validation = validateTransformForSlicing(transform);
+    if (!validation.ok) {
+      throw new Error(`transform_unsupported:${validation.code}`);
+    }
+
+    const slicePlan = buildPrusaSliceArgs({
+      transform,
+      config,
+      profileRoot: PROFILE_ROOT,
+      overridePath,
+      inputPath,
+      outputPath,
+      buildVolumeMm: BUILD_VOLUME_MM,
+      rawDimensionsMm,
+      legacyRotateX: job.analysis?.flags?.includes("does_not_fit") ? 90 : 0,
+    });
+    if (!slicePlan.ok) {
+      throw new Error(`transform_unsupported:${slicePlan.validation.code}`);
+    }
+
+    const { sliceTransform } = slicePlan;
+    const slicer = await runSlicer(slicePlan.args, dir, SLICE_TIMEOUT_MS);
     const gcode = await readFile(outputPath, "utf8");
     const parsed = parseGcode(gcode);
+    const gcodeBounds = parseGcodeBounds(gcode);
     const checksum = await profileChecksum();
-    const dims = job.analysis?.dimensionsMm ?? { x: 0, y: 0, z: 0 };
+    const expectedDimensions = transform
+      ? computeExpectedSlicedDimensions(rawDimensionsMm, transform)
+      : rawDimensionsMm;
 
     await fetch(new URL(`/api/internal/slicer/jobs/${job.id}/result`, APP_BASE_URL), {
       method: "POST",
@@ -168,7 +213,9 @@ async function processJob(job) {
         logsSanitized: sanitizeLog(`${slicer.stdout}\n${slicer.stderr}`),
         flags: job.analysis?.flags ?? [],
         metrics: {
-          dimensionsMm: dims,
+          dimensionsMm: gcodeBounds.dimensions,
+          expectedDimensionsMm: expectedDimensions,
+          boundsMm: { min: gcodeBounds.min, max: gcodeBounds.max },
           filamentLengthMm: parsed.filamentLengthMm,
           filamentWeightGrams: parsed.filamentWeightGrams,
           estimatedDurationSeconds: parsed.estimatedDurationSeconds,
@@ -182,7 +229,11 @@ async function processJob(job) {
           materialId: "pla",
           qualityId: config.qualityId,
           quantity: config.quantity,
-          orientation: { rotateX, rotateY: 0, rotateZ: 0 },
+          orientation: {
+            rotateX: sliceTransform.rotateX,
+            rotateY: sliceTransform.rotateY,
+            rotateZ: sliceTransform.rotateZ,
+          },
           engine: { name: "PrusaSlicer", version: parsed.engineVersion ?? `PrusaSlicer ${PRUSA_PINNED}` },
           profileChecksum: checksum,
           warnings: [],
@@ -191,13 +242,20 @@ async function processJob(job) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Bilinmeyen işçi hatası.";
+    const transformUnsupported = message.startsWith("transform_unsupported:");
     await fetch(new URL(`/api/internal/slicer/jobs/${job.id}/result`, APP_BASE_URL), {
       method: "POST",
       headers: headers(),
       body: JSON.stringify({
         ok: false,
-        errorCode: message.includes("zaman aşımı") ? "timeout" : "slicer_failure",
-        errorMessage: message.slice(0, 400),
+        errorCode: transformUnsupported
+          ? "transform_unsupported"
+          : message.includes("zaman aşımı")
+            ? "timeout"
+            : "slicer_failure",
+        errorMessage: transformUnsupported
+          ? "Seçilen konumlandırma otomatik dilimlemede desteklenmiyor."
+          : message.slice(0, 400),
         logsSanitized: sanitizeLog(message),
       }),
     });
@@ -221,14 +279,49 @@ async function tick() {
     console.error("SLICER_WORKER_SECRET missing");
     return;
   }
-  const response = await fetch(new URL("/api/internal/slicer/claim", APP_BASE_URL), {
-    method: "POST",
-    headers: headers(),
-  });
-  if (!response.ok) {
+  const claimUrl = new URL("/api/internal/slicer/claim", APP_BASE_URL);
+  let response;
+  try {
+    response = await fetch(claimUrl, {
+      method: "POST",
+      headers: headers(),
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch (error) {
+    logTickFailure({
+      path: claimUrl.pathname,
+      phase: "network",
+      ...describeFetchError(error),
+    });
     return;
   }
-  const payload = await response.json();
+  if (!response.ok) {
+    let body = "";
+    try {
+      body = (await response.text()).slice(0, 240);
+    } catch {
+      body = "";
+    }
+    logTickFailure({
+      path: claimUrl.pathname,
+      phase: "http",
+      status: response.status,
+      body: sanitizeLog(body),
+    });
+    return;
+  }
+  let payload;
+  try {
+    payload = await response.json();
+  } catch (error) {
+    logTickFailure({
+      path: claimUrl.pathname,
+      phase: "json",
+      status: response.status,
+      ...describeFetchError(error),
+    });
+    return;
+  }
   const job = payload?.job;
   if (!job || !isUuid(job.id) || !isUuid(job.fileId)) {
     return;
@@ -247,6 +340,7 @@ function startHealthServer() {
           workerVersion: WORKER_VERSION,
           prusaSlicerPinned: PRUSA_PINNED,
           authenticated: Boolean(SECRET),
+          secretConfigured: Boolean(SECRET),
         }),
       );
       return;
@@ -266,7 +360,11 @@ if (!SECRET) {
   console.log(`slicer-worker ${WORKER_VERSION} polling`);
   pollInterval = setInterval(() => {
     tick().catch((error) =>
-      console.error("tick failed", error instanceof Error ? error.message : error),
+      logTickFailure({
+        path: "/api/internal/slicer/claim",
+        phase: "unexpected",
+        ...describeFetchError(error),
+      }),
     );
   }, 2500);
   tick().catch(() => undefined);

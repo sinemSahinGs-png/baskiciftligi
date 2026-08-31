@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { claimQuoteJob, getManufacturingFile, touchIntegration } from "@/domain/manufacturing/repository";
+import { claimQuoteJob, getManufacturingFile } from "@/domain/manufacturing/repository";
 import { assertSlicerWorker } from "@/lib/manufacturing/worker-auth";
+import { recordWorkerHeartbeat } from "@/lib/manufacturing/worker-readiness";
 
 export async function POST(request: Request) {
   const denied = assertSlicerWorker(request);
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
   const workerId = request.headers.get("x-slicer-worker-id") ?? "worker";
   const workerVersion = request.headers.get("x-slicer-worker-version");
   const prusaVersion = request.headers.get("x-prusa-slicer-version");
-  await touchIntegration({
+  await recordWorkerHeartbeat({
     workerLastSeenAt: new Date().toISOString(),
     workerVersion: workerVersion ?? undefined,
     prusaSlicerVersion: prusaVersion ?? undefined,

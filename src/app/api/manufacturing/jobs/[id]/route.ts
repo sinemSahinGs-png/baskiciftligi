@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 
 import { getJobEvents, getQuoteJob } from "@/domain/manufacturing/repository";
-import { publicJob } from "@/domain/manufacturing/public-dto";
+import { publicJobPoll } from "@/domain/manufacturing/public-dto";
 import { getManufacturingActor, ownsRecord } from "@/lib/manufacturing/session";
 import { clientKey, rateLimit } from "@/lib/manufacturing/rate-limit";
 import { canViewInternalCost } from "@/lib/catalog/authorization";
+import { getWorkerReadiness } from "@/lib/manufacturing/worker-readiness";
 
 export async function GET(
   request: Request,
@@ -28,8 +29,11 @@ export async function GET(
   if (!ownsRecord(actor, job) && !canViewInternalCost(actor.role)) {
     return NextResponse.json({ error: "İş bulunamadı." }, { status: 404 });
   }
-  const events = await getJobEvents(job.id);
-  return NextResponse.json(publicJob(job, events), {
+  const [events, readiness] = await Promise.all([
+    getJobEvents(job.id),
+    getWorkerReadiness(),
+  ]);
+  return NextResponse.json(publicJobPoll(job, events, readiness), {
     headers: { "Cache-Control": "private, no-store" },
   });
 }

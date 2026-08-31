@@ -1,4 +1,6 @@
 import type { ManufacturingQuoteRecord, QuoteJobRecord, QuoteStatusEvent } from "@/domain/manufacturing/types";
+import type { WorkerReadiness } from "@/domain/manufacturing/job-poll";
+import { evaluateQueuedJobPoll } from "@/domain/manufacturing/job-poll";
 
 const JOB_COPY: Record<QuoteJobRecord["state"], string> = {
   created: "Sıraya alındı",
@@ -48,6 +50,7 @@ export function publicJob(job: QuoteJobRecord, events: QuoteStatusEvent[]) {
         }
       : null,
     quoteId: job.quoteId,
+    errorCode: job.errorCode,
     errorMessage: job.errorMessage,
     reviewFlags: job.reviewFlags,
     events: events.map((event) => ({
@@ -56,6 +59,25 @@ export function publicJob(job: QuoteJobRecord, events: QuoteStatusEvent[]) {
       label: JOB_COPY[event.toState],
     })),
     updatedAt: job.updatedAt,
+  };
+}
+
+export function publicJobPoll(
+  job: QuoteJobRecord,
+  events: QuoteStatusEvent[],
+  readiness: WorkerReadiness,
+) {
+  const base = publicJob(job, events);
+  const { pollHint, errorCode } = evaluateQueuedJobPoll(job, readiness);
+  return {
+    ...base,
+    errorCode: errorCode ?? base.errorCode,
+    pollHint,
+    worker: {
+      online: readiness.online,
+      state: readiness.state,
+      version: readiness.workerVersion,
+    },
   };
 }
 

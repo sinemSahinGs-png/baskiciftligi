@@ -75,11 +75,13 @@ export function computeWorkerOps(input: {
       ? Math.round(sliceDurations.reduce((sum, value) => sum + value, 0) / sliceDurations.length)
       : null;
 
+  const healthOk = Boolean(input.healthReachable && input.health?.ok && input.health?.authenticated);
+
   const lastHeartbeat = input.integration?.workerLastSeenAt ?? input.health?.lastPollAt ?? null;
   const heartbeatStale =
     lastHeartbeat !== null
       ? Date.now() - new Date(lastHeartbeat).getTime() > staleAfterMs
-      : true;
+      : !healthOk;
 
   const recentErrors = input.jobs
     .filter((job) => job.errorMessage)
@@ -95,10 +97,8 @@ export function computeWorkerOps(input: {
     input.jobs.find((job) => job.state === "slicing")?.id ??
     null;
 
-  const healthOk = Boolean(input.healthReachable && input.health?.ok && input.health?.authenticated);
-
   return {
-    connected: healthOk && !heartbeatStale,
+    connected: healthOk && (!heartbeatStale || healthOk),
     healthOk,
     workerVersion:
       input.health?.workerVersion ?? input.integration?.workerVersion ?? null,
@@ -139,15 +139,6 @@ export function resolveSlicerWorkerHealth(input: {
     return "unavailable";
   }
   if (!input.health.ok || !input.health.authenticated) {
-    return "degraded";
-  }
-  const lastSeen =
-    input.integration?.workerLastSeenAt ?? input.health.lastPollAt ?? null;
-  if (!lastSeen) {
-    return "degraded";
-  }
-  const staleMs = Date.now() - new Date(lastSeen).getTime();
-  if (staleMs > 120_000 && !input.health.processing) {
     return "degraded";
   }
   return "configured";
