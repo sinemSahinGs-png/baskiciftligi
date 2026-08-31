@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { forceLocalPersistence, isDevelopmentDemoMode, isSupabaseConfigured } from "@/lib/env";
 import { serverEnv, supabaseSecretKey } from "@/lib/env.server";
+import { normalizeWorkerSecret } from "@/lib/manufacturing/worker-secret";
 import {
   MANUFACTURING_MAX_UPLOAD_BYTES,
 } from "@/domain/manufacturing/types";
@@ -74,8 +75,9 @@ export function quoteHmacSecret() {
 }
 
 export function slicerWorkerSecret() {
-  if (serverEnv.SLICER_WORKER_SECRET) {
-    return serverEnv.SLICER_WORKER_SECRET;
+  const fromEnv = normalizeWorkerSecret(serverEnv.SLICER_WORKER_SECRET);
+  if (fromEnv) {
+    return fromEnv;
   }
   if (process.env.NODE_ENV !== "production") {
     return developmentWorkerSecret();

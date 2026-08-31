@@ -20,7 +20,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORKER_VERSION = "0.2.0";
 const PRUSA_PINNED = "2.8.1";
 const APP_BASE_URL = process.env.APP_BASE_URL ?? "http://127.0.0.1:3000";
-const SECRET = process.env.SLICER_WORKER_SECRET ?? "";
+const SECRET = (process.env.SLICER_WORKER_SECRET ?? "").trim().replace(/^["']|["']$/g, "").trim();
 const WORKER_ID = process.env.SLICER_WORKER_ID ?? `slicer-${process.pid}`;
 const BIN =
   process.env.PRUSA_SLICER_BIN ??
@@ -340,6 +340,7 @@ function startHealthServer() {
           workerVersion: WORKER_VERSION,
           prusaSlicerPinned: PRUSA_PINNED,
           authenticated: Boolean(SECRET),
+          secretConfigured: Boolean(SECRET),
         }),
       );
       return;
