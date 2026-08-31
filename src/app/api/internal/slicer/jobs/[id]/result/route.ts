@@ -4,7 +4,10 @@ import { z } from "zod";
 import { finalizePricedJob } from "@/domain/manufacturing/quote-service";
 import { duplicateWorkerResultAction } from "@/domain/manufacturing/job-lifecycle";
 import { actualSupportGenerated, GCODE_PARSER_VERSION } from "@/domain/manufacturing/gcode";
-import { computeOrientedBounds } from "@/domain/manufacturing/transform-math";
+import {
+  computeExpectedSlicedDimensions,
+  rawDimensionsFromAnalysis,
+} from "@/domain/manufacturing/transform-pipeline";
 import { dimensionsWithinTolerance } from "@/domain/manufacturing/transform";
 import { getQuoteJob, transitionQuoteJob } from "@/domain/manufacturing/repository";
 import type { ReviewFlag, SlicingMetrics } from "@/domain/manufacturing/types";
@@ -81,14 +84,22 @@ export async function POST(
   }
 
   if (!parsed.data.ok || !parsed.data.metrics) {
-    await transitionQuoteJob(job.id, "failed", {
-      errorCode: parsed.data.errorCode ?? "slicer_failure",
+    const errorCode = parsed.data.errorCode ?? "slicer_failure";
+    const reviewFlags: ReviewFlag[] =
+      errorCode === "transform_unsupported"
+        ? ["ambiguous_orientation", "slicer_failure"]
+        : ["slicer_failure"];
+    await transitionQuoteJob(job.id, errorCode === "transform_unsupported" ? "needs_review" : "failed", {
+      errorCode,
       errorMessage: parsed.data.errorMessage ?? "Dilimleme tamamlanamadı.",
       lockedAt: null,
       lockedBy: null,
-      reviewFlags: ["slicer_failure"],
+      reviewFlags,
     });
-    return NextResponse.json({ ok: true, state: "failed" });
+    return NextResponse.json({
+      ok: true,
+      state: errorCode === "transform_unsupported" ? "needs_review" : "failed",
+    });
   }
 
   const incoming = parsed.data.metrics;
@@ -107,10 +118,14 @@ export async function POST(
     job.configuration.manufacturingTransform &&
     job.analysis?.dimensionsMm
   ) {
-    const expected = computeOrientedBounds(
+    const rawDimensionsMm = rawDimensionsFromAnalysis(
       job.analysis.dimensionsMm,
+      job.analysis.scalePercent,
+    );
+    const expected = computeExpectedSlicedDimensions(
+      rawDimensionsMm,
       job.configuration.manufacturingTransform,
-    ).dimensions;
+    );
     if (!dimensionsWithinTolerance(expected, metrics.dimensionsMm)) {
       await transitionQuoteJob(job.id, "needs_review", {
         metrics,

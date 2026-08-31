@@ -8,6 +8,10 @@ import {
   uniformScalePercent,
   serializeTransformForUpload,
 } from "@/domain/manufacturing/transform";
+import {
+  rawDimensionsFromAnalysis,
+  validateTransformForSlicing,
+} from "@/domain/manufacturing/transform-pipeline";
 import { computeOrientedBounds } from "@/domain/manufacturing/transform-math";
 import { evaluateBuildVolumeFit } from "@/domain/manufacturing/build-volume-fit";
 import { JOB_MAX_ATTEMPTS, type ManufacturingFileRecord, type PrintConfiguration } from "@/domain/manufacturing/types";
@@ -94,6 +98,13 @@ export async function POST(request: Request) {
   if (!manufacturingTransform) {
     manufacturingTransform = transformFromLegacyScalePercent(scalePercent);
   }
+  const transformValidation = validateTransformForSlicing(manufacturingTransform);
+  if (!transformValidation.ok) {
+    return NextResponse.json(
+      { error: transformValidation.message, code: transformValidation.code },
+      { status: 422 },
+    );
+  }
   const effectiveScalePercent = uniformScalePercent(manufacturingTransform);
   const parsedConfig = configSchema.safeParse({
     materialId: form.get("materialId") ?? "pla",
@@ -121,12 +132,16 @@ export async function POST(request: Request) {
       buildVolumeMm: printerBuildVolume(),
     });
     const buildVolume = printerBuildVolume();
-    const previewBounds = computeOrientedBounds(
+    const rawDimensionsMm = rawDimensionsFromAnalysis(
       analysis.dimensionsMm,
+      analysis.scalePercent,
+    );
+    const previewBounds = computeOrientedBounds(
+      rawDimensionsMm,
       manufacturingTransform,
     );
     const fit = evaluateBuildVolumeFit(
-      analysis.dimensionsMm,
+      rawDimensionsMm,
       manufacturingTransform,
       buildVolume,
     );

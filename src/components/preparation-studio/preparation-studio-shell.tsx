@@ -276,6 +276,11 @@ export function PreparationStudio() {
   async function submitJob() {
     if (!rights) return setError(RIGHTS);
     if (!file) return setError("Önce bir dosya seçin.");
+    if (!placeOnBed) {
+      return setError(
+        "Otomatik fiyat için modelin plakaya oturtulması gerekir. “Plakaya oturt” seçeneğini açın.",
+      );
+    }
     if (submitting) return;
     if (jobId && !quote && !error) return;
     setSubmitting(true);

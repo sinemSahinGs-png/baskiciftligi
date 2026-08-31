@@ -6,6 +6,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { GCODE_PARSER_VERSION, parseGcode } from "./parse-gcode.mjs";
+import { parseGcodeBounds } from "./parse-gcode-bounds.mjs";
+import {
+  buildPrusaSliceArgs,
+  computeExpectedSlicedDimensions,
+  rawDimensionsFromAnalysis,
+  validateTransformForSlicing,
+} from "./transform-pipeline.mjs";
+
+const BUILD_VOLUME_MM = { x: 256, y: 256, z: 256 };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORKER_VERSION = "0.2.0";
@@ -148,58 +157,53 @@ async function processJob(job) {
     const support =
       config.supports === "off" ? "0" : "1";
     const auto = config.supports === "auto" ? "1" : "0";
+    const scalePercent = config.scalePercent ?? 100;
     await writeFile(
       overridePath,
       [
         `fill_density = ${config.infillPercent}%`,
         `support_material = ${support}`,
         `support_material_auto = ${auto}`,
-        `scale = ${config.scalePercent}%`,
+        `scale = ${scalePercent}%`,
       ].join("\n"),
       "utf8",
     );
 
     const transform = config.manufacturingTransform ?? null;
-    const rotateX = transform?.rotationDeg.x ?? (job.analysis?.flags?.includes("does_not_fit") ? 90 : 0);
-    const rotateY = transform?.rotationDeg.y ?? 0;
-    const rotateZ = transform?.rotationDeg.z ?? 0;
-    const centerX = transform
-      ? 128 + (transform.positionMm?.x ?? 0)
-      : 128;
-    const centerY = transform
-      ? 128 + (transform.positionMm?.y ?? 0)
-      : 128;
-    const args = [
-      "--export-gcode",
-      "--output",
-      outputPath,
-      "--load",
-      path.join(PROFILE_ROOT, "printer/bambu-a1-dev.ini"),
-      "--load",
-      path.join(PROFILE_ROOT, "filament/pla.ini"),
-      "--load",
-      path.join(PROFILE_ROOT, `print/${config.qualityId}.ini`),
-      "--load",
-      overridePath,
-      "--center",
-      `${centerX},${centerY}`,
-    ];
-    if (rotateX) {
-      args.push("--rotate-x", String(rotateX));
-    }
-    if (rotateY) {
-      args.push("--rotate-y", String(rotateY));
-    }
-    if (rotateZ) {
-      args.push("--rotate", String(rotateZ));
-    }
-    args.push(inputPath);
+    const rawDimensionsMm = rawDimensionsFromAnalysis(
+      job.analysis?.dimensionsMm ?? { x: 0, y: 0, z: 0 },
+      job.analysis?.scalePercent ?? scalePercent,
+    );
 
-    const slicer = await runSlicer(args, dir, SLICE_TIMEOUT_MS);
+    const validation = validateTransformForSlicing(transform);
+    if (!validation.ok) {
+      throw new Error(`transform_unsupported:${validation.code}`);
+    }
+
+    const slicePlan = buildPrusaSliceArgs({
+      transform,
+      config,
+      profileRoot: PROFILE_ROOT,
+      overridePath,
+      inputPath,
+      outputPath,
+      buildVolumeMm: BUILD_VOLUME_MM,
+      rawDimensionsMm,
+      legacyRotateX: job.analysis?.flags?.includes("does_not_fit") ? 90 : 0,
+    });
+    if (!slicePlan.ok) {
+      throw new Error(`transform_unsupported:${slicePlan.validation.code}`);
+    }
+
+    const { sliceTransform } = slicePlan;
+    const slicer = await runSlicer(slicePlan.args, dir, SLICE_TIMEOUT_MS);
     const gcode = await readFile(outputPath, "utf8");
     const parsed = parseGcode(gcode);
+    const gcodeBounds = parseGcodeBounds(gcode);
     const checksum = await profileChecksum();
-    const dims = job.analysis?.dimensionsMm ?? { x: 0, y: 0, z: 0 };
+    const expectedDimensions = transform
+      ? computeExpectedSlicedDimensions(rawDimensionsMm, transform)
+      : rawDimensionsMm;
 
     await fetch(new URL(`/api/internal/slicer/jobs/${job.id}/result`, APP_BASE_URL), {
       method: "POST",
@@ -209,7 +213,9 @@ async function processJob(job) {
         logsSanitized: sanitizeLog(`${slicer.stdout}\n${slicer.stderr}`),
         flags: job.analysis?.flags ?? [],
         metrics: {
-          dimensionsMm: dims,
+          dimensionsMm: gcodeBounds.dimensions,
+          expectedDimensionsMm: expectedDimensions,
+          boundsMm: { min: gcodeBounds.min, max: gcodeBounds.max },
           filamentLengthMm: parsed.filamentLengthMm,
           filamentWeightGrams: parsed.filamentWeightGrams,
           estimatedDurationSeconds: parsed.estimatedDurationSeconds,
@@ -223,7 +229,11 @@ async function processJob(job) {
           materialId: "pla",
           qualityId: config.qualityId,
           quantity: config.quantity,
-          orientation: { rotateX, rotateY, rotateZ: rotateZ },
+          orientation: {
+            rotateX: sliceTransform.rotateX,
+            rotateY: sliceTransform.rotateY,
+            rotateZ: sliceTransform.rotateZ,
+          },
           engine: { name: "PrusaSlicer", version: parsed.engineVersion ?? `PrusaSlicer ${PRUSA_PINNED}` },
           profileChecksum: checksum,
           warnings: [],
@@ -232,13 +242,20 @@ async function processJob(job) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Bilinmeyen işçi hatası.";
+    const transformUnsupported = message.startsWith("transform_unsupported:");
     await fetch(new URL(`/api/internal/slicer/jobs/${job.id}/result`, APP_BASE_URL), {
       method: "POST",
       headers: headers(),
       body: JSON.stringify({
         ok: false,
-        errorCode: message.includes("zaman aşımı") ? "timeout" : "slicer_failure",
-        errorMessage: message.slice(0, 400),
+        errorCode: transformUnsupported
+          ? "transform_unsupported"
+          : message.includes("zaman aşımı")
+            ? "timeout"
+            : "slicer_failure",
+        errorMessage: transformUnsupported
+          ? "Seçilen konumlandırma otomatik dilimlemede desteklenmiyor."
+          : message.slice(0, 400),
         logsSanitized: sanitizeLog(message),
       }),
     });

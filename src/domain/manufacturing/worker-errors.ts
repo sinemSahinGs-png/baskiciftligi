@@ -80,6 +80,17 @@ export function mapAnalysisError(input: {
     };
   }
 
+  if (code === "transform_unsupported") {
+    return {
+      title: "Konumlandırma otomatik analizde desteklenmiyor",
+      message:
+        "Seçilen döndürme veya konum ayarı şu an otomatik dilimlenemiyor. Manuel inceleme isteyebilirsin.",
+      code: "transform_mismatch",
+      canRetry: false,
+      canManualReview: true,
+    };
+  }
+
   if (code === "invalid_geometry" || code === "mesh_invalid") {
     return {
       title: "Dosya geometrisi geçersiz",

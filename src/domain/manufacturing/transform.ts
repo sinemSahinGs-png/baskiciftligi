@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { Vec3Mm } from "@/domain/manufacturing/types";
+import { transformToWorkerSliceArgs } from "@/domain/manufacturing/transform-pipeline";
 
 export const TRANSFORM_SOURCES = [
   "manual",
@@ -126,21 +127,20 @@ export interface WorkerTransformArgs {
   placeOnBed: boolean;
 }
 
+/** @deprecated Prefer transformToWorkerSliceArgs from transform-pipeline with raw mesh dims. */
 export function transformToWorkerArgs(
   transform: ManufacturingTransform,
   buildVolumeMm: Vec3Mm,
 ): WorkerTransformArgs {
-  const normalized = normalizeTransform(transform);
-  const bedCenterX = buildVolumeMm.x / 2;
-  const bedCenterY = buildVolumeMm.y / 2;
+  const args = transformToWorkerSliceArgs(transform, buildVolumeMm, { x: 1, y: 1, z: 1 });
   return {
-    rotateX: normalized.rotationDeg.x,
-    rotateY: normalized.rotationDeg.y,
-    rotateZ: normalized.rotationDeg.z,
-    scalePercent: uniformScalePercent(normalized),
-    centerX: roundMm(bedCenterX + normalized.positionMm.x),
-    centerY: roundMm(bedCenterY + normalized.positionMm.y),
-    placeOnBed: normalized.placeOnBed,
+    rotateX: args.rotateX,
+    rotateY: args.rotateY,
+    rotateZ: args.rotateZ,
+    scalePercent: args.scalePercent,
+    centerX: args.centerX,
+    centerY: args.centerY,
+    placeOnBed: args.ensureOnBed,
   };
 }
 
