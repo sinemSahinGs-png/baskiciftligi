@@ -18,7 +18,7 @@ test.describe("model preparation studio", () => {
     await expect(
       page.getByRole("button", { name: "Analiz et ve fiyatı hesapla" }).first(),
     ).toBeVisible();
-    await expect(page.getByText(/Fiyat, dilimleme bitince|Fiyat için analiz/i).first()).toBeVisible();
+    await expect(page.getByText(/Analiz servisine şu anda ulaşılamıyor|Fiyat, dilimleme bitince|Fiyat için analiz/i).first()).toBeVisible();
     await expect(page.getByText(/Docker Compose|Dilimleme işçisi çevrimdışı/i)).toHaveCount(0);
   });
 

@@ -69,7 +69,8 @@ import {
 } from "@/domain/manufacturing/transform-history";
 import {
   mapAnalysisError,
-  mapWorkerOfflinePollingError,
+  mapWorkerBusyError,
+  mapWorkerServiceUnavailableError,
 } from "@/domain/manufacturing/worker-errors";
 import { formatMoney } from "@/lib/money";
 import { applyExternalProductionOptions } from "@/lib/models/apply-production-options";
@@ -275,6 +276,8 @@ export function PreparationStudio() {
   async function submitJob() {
     if (!rights) return setError(RIGHTS);
     if (!file) return setError("Önce bir dosya seçin.");
+    if (submitting) return;
+    if (jobId && !quote && !error) return;
     setSubmitting(true);
     setError(null);
     setQuote(null);
@@ -291,6 +294,10 @@ export function PreparationStudio() {
       form.set("quantity", String(quantity));
       form.set("unit", "mm");
       form.set("manufacturingTransform", serializeTransformForUpload(transform));
+      form.set(
+        "idempotencyKey",
+        `studio:${file.name}:${file.size}:${file.lastModified}:${serializeTransformForUpload(transform)}:${preset}:${infill}:${supports}:${quantity}`,
+      );
       if (externalContext) {
         form.set("externalModelId", externalContext.externalModelId);
         form.set("sourceType", externalContext.sourceType);
@@ -303,10 +310,15 @@ export function PreparationStudio() {
         }
       }
       const res = await fetch("/api/manufacturing/uploads", { method: "POST", body: form });
-      const payload = (await res.json()) as { error?: string; jobId?: string };
+      const payload = (await res.json()) as {
+        error?: string;
+        jobId?: string;
+        existing?: boolean;
+      };
       if (!res.ok) throw new Error(payload.error ?? "Yükleme doğrulanamadı.");
       if (!payload.jobId) throw new Error("İş oluşturulamadı.");
       setJobId(payload.jobId);
+      setJobLabel(payload.existing ? "Analiz sırasına alındı" : "Güvenlik kontrolü");
       setAnalysisStale(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gönderim başarısız.");
@@ -322,18 +334,55 @@ export function PreparationStudio() {
     let timer = 0;
     const poll = async () => {
       const res = await fetch(`/api/manufacturing/jobs/${jobId}`, { cache: "no-store" });
-      const p = (await res.json()) as { state?: string; stateLabel?: string; quoteId?: string | null; errorCode?: string | null; errorMessage?: string | null };
+      const p = (await res.json()) as {
+        state?: string;
+        stateLabel?: string;
+        quoteId?: string | null;
+        errorCode?: string | null;
+        errorMessage?: string | null;
+        pollHint?: "queued" | "worker_busy" | "worker_unavailable" | null;
+        worker?: { online?: boolean };
+      };
       if (cancelled) return;
       setJobLabel(p.stateLabel ?? null);
+      if (p.worker?.online !== undefined) {
+        setWorkerOnline(Boolean(p.worker.online));
+      }
       if (p.stateLabel) announceStatus(p.stateLabel);
       if (p.quoteId) {
         const q = (await (await fetch(`/api/manufacturing/quotes/${p.quoteId}`, { cache: "no-store" })).json()) as { id: string; breakdown: { grossMinor: number; netMinor: number; vatMinor: number; productionDurationSeconds: number; reviewRequired: boolean }; metrics: { filamentWeightGrams: number } };
         setQuote({ id: q.id, grossMinor: q.breakdown.grossMinor, netMinor: q.breakdown.netMinor, vatMinor: q.breakdown.vatMinor, duration: q.breakdown.productionDurationSeconds, grams: q.metrics.filamentWeightGrams, reviewRequired: q.breakdown.reviewRequired });
+        setSubmitting(false);
         return;
       }
-      if (p.state === "failed") { const m = mapAnalysisError({ errorCode: p.errorCode, errorMessage: p.errorMessage, state: p.state }); setError(`${m.title}. ${m.message}`); return; }
-      if (Date.now() - started > 600_000) { const m = mapAnalysisError({ errorCode: "timeout" }); setError(`${m.title}. ${m.message}`); return; }
-      if (Date.now() - started > 20_000 && (p.state === "uploaded" || p.state === "created")) { const m = mapWorkerOfflinePollingError(); setError(`${m.title}. ${m.message}`); return; }
+      if (p.state === "failed") {
+        const m = mapAnalysisError({
+          errorCode: p.errorCode,
+          errorMessage: p.errorMessage,
+          state: p.state,
+          workerOnline: p.worker?.online,
+        });
+        setError(`${m.title}. ${m.message}`);
+        setSubmitting(false);
+        return;
+      }
+      if (p.pollHint === "worker_unavailable" || p.errorCode === "worker_unavailable") {
+        const m = mapWorkerServiceUnavailableError();
+        setError(`${m.title}. ${m.message}`);
+        setSubmitting(false);
+        return;
+      }
+      if (p.pollHint === "worker_busy") {
+        const m = mapWorkerBusyError();
+        setJobLabel(m.title);
+        setError(null);
+      }
+      if (Date.now() - started > 600_000) {
+        const m = mapAnalysisError({ errorCode: "timeout" });
+        setError(`${m.title}. ${m.message}`);
+        setSubmitting(false);
+        return;
+      }
       timer = window.setTimeout(() => void poll(), 2000);
     };
     void poll();
@@ -472,7 +521,7 @@ export function PreparationStudio() {
         <>
           <h2 className="font-heading text-xl font-bold">Analiz</h2>
           {fit && !fit.fits ? <p className="text-sm text-warm">Model plakaya sığmıyor.</p> : null}
-          {workerOnline === false ? <p className="rounded-md border border-warm/40 bg-warm/10 px-3 py-2 text-sm">{mapWorkerOfflinePollingError().message}</p> : null}
+          {workerOnline === false ? <p className="rounded-md border border-warm/40 bg-warm/10 px-3 py-2 text-sm">{mapWorkerServiceUnavailableError().message}</p> : null}
           {jobLabel && !quote ? <p className="flex items-center gap-2 text-sm"><FormSignal spinning className="size-4" />{jobLabel}</p> : null}
           {quote ? (
             <div className="space-y-1 rounded-md border border-lime/30 bg-lime/10 px-3 py-2 text-sm">

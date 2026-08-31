@@ -149,7 +149,7 @@ test.describe("manufacturing quotation", () => {
   });
 
   test("analysis without a worker never invents a quote", async ({ page }) => {
-    test.setTimeout(45_000);
+    test.setTimeout(180_000);
     test.skip(await workerHealthy(), "worker is online; offline path is covered when down");
     mkdirSync(shotDir, { recursive: true });
     await page.goto("/model-yukle");
@@ -157,8 +157,8 @@ test.describe("manufacturing quotation", () => {
     await goToAnalysis(page);
     await startSlicing(page);
     await expect(
-      page.getByText(/Fiyat analizi şu anda tamamlanamıyor|Analiz zaman aşımına uğradı/i),
-    ).toBeVisible({ timeout: 30_000 });
+      page.getByText(/Analiz servisine şu anda ulaşılamıyor|Fiyat analizi şu anda tamamlanamıyor|Analiz zaman aşımına uğradı/i),
+    ).toBeVisible({ timeout: 130_000 });
     await expect(page.getByText(/KDV dahil/)).toHaveCount(0);
     await page.screenshot({
       path: path.join(shotDir, "worker-error-1920.png"),

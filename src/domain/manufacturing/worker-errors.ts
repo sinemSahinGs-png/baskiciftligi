@@ -109,6 +109,26 @@ export function mapAnalysisError(input: {
   };
 }
 
+export function mapWorkerServiceUnavailableError(): CustomerFacingAnalysisError {
+  return {
+    title: "Analiz servisine şu anda ulaşılamıyor",
+    message: "Lütfen kısa süre sonra tekrar deneyin.",
+    code: "worker_unavailable",
+    canRetry: true,
+    canManualReview: false,
+  };
+}
+
+export function mapWorkerBusyError(): CustomerFacingAnalysisError {
+  return {
+    title: "Analiz sırası devam ediyor",
+    message: "Dilimleme işçisi başka bir modeli işliyor. Biraz bekleyip tekrar deneyebilirsin.",
+    code: "worker_unavailable",
+    canRetry: true,
+    canManualReview: false,
+  };
+}
+
 export function mapWorkerOfflinePollingError(): CustomerFacingAnalysisError {
-  return mapAnalysisError({ workerOnline: false, errorCode: "worker_unavailable" });
+  return mapWorkerServiceUnavailableError();
 }

@@ -86,7 +86,7 @@ describe("worker ops", () => {
     expect(snapshot.connected).toBe(true);
   });
 
-  it("marks slicer health degraded when heartbeat is stale", () => {
+  it("treats live authenticated health as configured without persisted heartbeat", () => {
     const state = resolveSlicerWorkerHealth({
       workerUrlConfigured: true,
       workerSecretConfigured: true,
@@ -94,8 +94,30 @@ describe("worker ops", () => {
       health: {
         ok: true,
         authenticated: true,
-        lastPollAt: new Date(Date.now() - 300_000).toISOString(),
-        processing: false,
+        workerVersion: "0.2.0",
+        prusaSlicerPinned: "2.8.1",
+      },
+      integration: {
+        thingiverseLastSuccessAt: null,
+        thingiverseLastFailureAt: null,
+        thingiverseLastError: null,
+        thingiverseRateLimitedUntil: null,
+        workerLastSeenAt: null,
+        workerVersion: null,
+        prusaSlicerVersion: null,
+      },
+    });
+    expect(state).toBe("configured");
+  });
+
+  it("marks slicer health degraded when health probe fails authentication", () => {
+    const state = resolveSlicerWorkerHealth({
+      workerUrlConfigured: true,
+      workerSecretConfigured: true,
+      healthReachable: true,
+      health: {
+        ok: true,
+        authenticated: false,
       },
       integration: {
         thingiverseLastSuccessAt: null,

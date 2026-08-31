@@ -90,6 +90,32 @@ function sanitizeLog(text) {
     .slice(0, 2000);
 }
 
+function logTickFailure(details) {
+  console.error(
+    JSON.stringify({
+      event: "slicer_tick_failed",
+      ...details,
+    }),
+  );
+}
+
+function describeFetchError(error) {
+  if (!(error instanceof Error)) {
+    return { message: String(error).slice(0, 200) };
+  }
+  const cause = error.cause;
+  return {
+    message: error.message.slice(0, 200),
+    code: "code" in error ? String(error.code) : undefined,
+    cause:
+      cause instanceof Error
+        ? cause.message.slice(0, 200)
+        : cause
+          ? String(cause).slice(0, 200)
+          : undefined,
+  };
+}
+
 async function processJob(job) {
   const dir = path.join(JOB_ROOT, job.id);
   await mkdir(dir, { recursive: true });
@@ -236,14 +262,49 @@ async function tick() {
     console.error("SLICER_WORKER_SECRET missing");
     return;
   }
-  const response = await fetch(new URL("/api/internal/slicer/claim", APP_BASE_URL), {
-    method: "POST",
-    headers: headers(),
-  });
-  if (!response.ok) {
+  const claimUrl = new URL("/api/internal/slicer/claim", APP_BASE_URL);
+  let response;
+  try {
+    response = await fetch(claimUrl, {
+      method: "POST",
+      headers: headers(),
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch (error) {
+    logTickFailure({
+      path: claimUrl.pathname,
+      phase: "network",
+      ...describeFetchError(error),
+    });
     return;
   }
-  const payload = await response.json();
+  if (!response.ok) {
+    let body = "";
+    try {
+      body = (await response.text()).slice(0, 240);
+    } catch {
+      body = "";
+    }
+    logTickFailure({
+      path: claimUrl.pathname,
+      phase: "http",
+      status: response.status,
+      body: sanitizeLog(body),
+    });
+    return;
+  }
+  let payload;
+  try {
+    payload = await response.json();
+  } catch (error) {
+    logTickFailure({
+      path: claimUrl.pathname,
+      phase: "json",
+      status: response.status,
+      ...describeFetchError(error),
+    });
+    return;
+  }
   const job = payload?.job;
   if (!job || !isUuid(job.id) || !isUuid(job.fileId)) {
     return;
@@ -281,7 +342,11 @@ if (!SECRET) {
   console.log(`slicer-worker ${WORKER_VERSION} polling`);
   pollInterval = setInterval(() => {
     tick().catch((error) =>
-      console.error("tick failed", error instanceof Error ? error.message : error),
+      logTickFailure({
+        path: "/api/internal/slicer/claim",
+        phase: "unexpected",
+        ...describeFetchError(error),
+      }),
     );
   }, 2500);
   tick().catch(() => undefined);
