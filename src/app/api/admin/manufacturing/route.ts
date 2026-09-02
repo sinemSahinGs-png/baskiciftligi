@@ -13,17 +13,16 @@ import {
   getQuoteJob,
   listPricingConfigs,
   listQuoteJobs,
-  savePricingConfig,
   transitionQuoteJob,
 } from "@/domain/manufacturing/repository";
-import { ensureLaunchCalibrationDraft } from "@/domain/manufacturing/pricing-activation";
-import { OWNER_PRODUCTION_PRESET_NAME } from "@/domain/manufacturing/launch-calibration";
 import {
-  calibratedPricingChecksum,
-} from "@/domain/manufacturing/pricing";
+  ensureLaunchCalibrationDraft,
+  saveInactiveOwnerCalibrationDraft,
+} from "@/domain/manufacturing/pricing-activation";
+import { OWNER_PRODUCTION_PRESET_NAME } from "@/domain/manufacturing/launch-calibration";
+import { pricingCalibrationBodySchema } from "@/domain/manufacturing/calibration-input";
 import {
   calibrationIssues,
-  ratesSnapshotFromCalibration,
 } from "@/domain/manufacturing/pricing-calibration";
 import {
   currentPricingAuditRows,
@@ -138,35 +137,8 @@ export async function GET() {
   });
 }
 
-const calibrationSchema = z.object({
-  presetName: z.string().trim().min(1).max(80).optional(),
-  filamentSpoolPriceMinor: z.int().positive(),
-  spoolWeightGrams: z.number().positive(),
-  wastePercent: z.number().min(0).lt(100),
-  printerPurchasePriceMinor: z.int().positive(),
-  depreciationHours: z.number().positive(),
-  maintenanceBasis: z.enum(["hourly", "annual"]),
-  maintenanceMinor: z.int().min(0),
-  expectedAnnualPrintHours: z.number().min(0),
-  electricityPricePerKwhMinor: z.int().positive(),
-  printerPowerWatts: z.number().positive(),
-  laborHourlyMinor: z.int().positive(),
-  setupMinutesPerOrder: z.number().min(0),
-  postProcessingMinutesPerUnit: z.number().min(0),
-  supportRemovalMinutesPerJob: z.number().min(0),
-  packagingMinor: z.int().min(0),
-  packagingBasis: z.enum(["unit", "shipment"]),
-  failedPrintPercent: z.number().min(0).lt(100),
-  targetMarginRate: z.number().min(0).lt(1),
-  minimumOrderNetMinor: z.int().min(0),
-  vatRate: z.number().min(0).max(1),
-  shippingDisplayMinor: z.int().min(0),
-  shippingFreeThresholdMinor: z.int().min(0).nullable(),
-  quoteLifetimeHours: z.int().min(1).max(720),
-});
-
 const bodySchema = z.object({
-  calibration: calibrationSchema,
+  calibration: pricingCalibrationBodySchema,
   activate: z.boolean().optional(),
 });
 
@@ -236,24 +208,11 @@ export async function POST(request: Request) {
       { status: 422 },
     );
   }
-  const previous = await listPricingConfigs();
-  const version = (previous[0]?.version ?? 0) + 1;
-  const config = await savePricingConfig({
-    id: crypto.randomUUID(),
-    version,
-    checksum: calibratedPricingChecksum(calibration),
-    rates: ratesSnapshotFromCalibration(calibration),
-    calibration,
-    formulaId: "bc-quote-v2",
-    isDevelopmentSeed: false,
-    activatedAt: null,
-    activatedBy: null,
-    createdAt: new Date().toISOString(),
-  });
+  const config = await saveInactiveOwnerCalibrationDraft(calibration);
   return NextResponse.json({
     ok: true,
     version: config.version,
-    status: "inactive",
+    status: config.activatedAt ? "active" : "inactive",
     formulaId: config.formulaId,
   });
 }

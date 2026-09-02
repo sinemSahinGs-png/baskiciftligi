@@ -3,6 +3,7 @@ import path from "node:path";
 
 import {
   LAUNCH_ACTIVATION_CONFIRM_PHRASE,
+  LAUNCH_OWNER_CALIBRATION,
   verifyLaunchActivationGates,
 } from "@/domain/manufacturing/launch-calibration";
 import {
@@ -10,13 +11,19 @@ import {
   findMatchingOwnerCalibration,
   nextPricingVersion,
 } from "@/domain/manufacturing/owner-calibration-draft";
-import { calibratedPricingChecksum } from "@/domain/manufacturing/pricing";
+import {
+  calibratedPricingChecksum,
+  normalizePricingCalibration,
+  pricingConfigChecksumMatches,
+  resolveActivationTarget,
+} from "@/domain/manufacturing/pricing-checksum";
 import {
   calibrationIssues,
   isCompleteCalibration,
 } from "@/domain/manufacturing/pricing-calibration";
 import type {
   PricingActivationAuditEntry,
+  PricingCalibrationInputs,
   PricingConfig,
 } from "@/domain/manufacturing/types";
 import {
@@ -55,7 +62,8 @@ export async function backupActivePricingConfig(): Promise<{
 }
 
 export async function activatePricingVersion(input: {
-  version: number;
+  version?: number;
+  calibration?: PricingCalibrationInputs | Record<string, unknown>;
   activatedBy: string;
   confirmPhrase: string;
 }): Promise<{
@@ -68,12 +76,16 @@ export async function activatePricingVersion(input: {
   }
 
   const pricing = await listPricingConfigs();
-  const target = pricing.find((item) => item.version === input.version);
-  if (!target) {
-    throw new Error(`Tarife sürümü ${input.version} bulunamadı.`);
-  }
+  const target = resolveActivationTarget(
+    pricing,
+    {
+      version: input.version,
+      calibration: input.calibration,
+    },
+    LAUNCH_OWNER_CALIBRATION,
+  );
   if (target.activatedAt) {
-    throw new Error(`Tarife sürümü ${input.version} zaten etkin.`);
+    throw new Error(`Tarife sürümü ${target.version} zaten etkin.`);
   }
   if (target.formulaId !== "bc-quote-v2" || !target.calibration) {
     throw new Error("Yalnızca bc-quote-v2 kalibrasyon taslağı etkinleştirilebilir.");
@@ -87,9 +99,17 @@ export async function activatePricingVersion(input: {
     throw new Error(gate.errors.join(" "));
   }
 
-  const expectedChecksum = calibratedPricingChecksum(target.calibration);
-  if (target.checksum !== expectedChecksum) {
+  if (!pricingConfigChecksumMatches(target)) {
     throw new Error("Tarife checksum kalibrasyonla uyuşmuyor.");
+  }
+
+  if (input.calibration) {
+    const requestChecksum = calibratedPricingChecksum(
+      normalizePricingCalibration(input.calibration),
+    );
+    if (target.checksum !== requestChecksum) {
+      throw new Error("Tarife checksum kalibrasyonla uyuşmuyor.");
+    }
   }
 
   const previous =
@@ -119,12 +139,12 @@ export async function activatePricingVersion(input: {
 
   const config = manufacturingUsesLocalPersistence()
     ? await localActivatePricingConfig({
-        version: input.version,
+        version: target.version,
         activatedBy: input.activatedBy,
         auditEntry,
       })
     : await supabaseActivatePricingConfig({
-        version: input.version,
+        version: target.version,
         activatedBy: input.activatedBy,
         auditEntry,
       });
@@ -132,14 +152,29 @@ export async function activatePricingVersion(input: {
   return { config, gate, backupFile };
 }
 
-/** Saves the owner preset as an inactive Supabase/local draft. Never activates. */
-export async function ensureLaunchCalibrationDraft(): Promise<PricingConfig> {
+/** Saves an inactive draft. Reuses an existing row with the same canonical checksum. */
+export async function saveInactiveOwnerCalibrationDraft(
+  calibration: PricingCalibrationInputs | Record<string, unknown>,
+): Promise<PricingConfig> {
+  const normalized = normalizePricingCalibration(calibration);
+  const checksum = calibratedPricingChecksum(normalized);
   const existing = await listPricingConfigs();
-  const matched = findMatchingOwnerCalibration(existing);
-  if (matched) {
+  const matched = findMatchingOwnerCalibration(existing, checksum);
+  if (matched && !matched.activatedAt) {
+    return matched;
+  }
+  if (matched?.activatedAt) {
     return matched;
   }
   return savePricingConfig(
-    buildInactiveOwnerCalibrationDraft({ version: nextPricingVersion(existing) }),
+    buildInactiveOwnerCalibrationDraft({
+      version: nextPricingVersion(existing),
+      calibration: normalized,
+    }),
   );
+}
+
+/** Saves the owner preset as an inactive Supabase/local draft. Never activates. */
+export async function ensureLaunchCalibrationDraft(): Promise<PricingConfig> {
+  return saveInactiveOwnerCalibrationDraft(LAUNCH_OWNER_CALIBRATION);
 }
