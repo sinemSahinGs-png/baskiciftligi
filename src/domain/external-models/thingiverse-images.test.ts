@@ -67,6 +67,18 @@ describe("thingiverse-images", () => {
     const url = "https://cdn.thingiverse.com/assets/x/display_large.jpg";
     expect(selectThingiverseDisplayUrl(url, "card")).toContain("display_medium");
     expect(selectThingiverseDisplayUrl(url, "thumb")).toContain("display_thumb");
+    expect(
+      selectThingiverseDisplayUrl(
+        "https://cdn.thingiverse.com/assets/x/display_medium.jpg",
+        "card",
+      ),
+    ).toContain("display_medium.jpg");
+    expect(
+      selectThingiverseDisplayUrl(
+        "https://cdn.thingiverse.com/assets/x/display_medium.jpg",
+        "card",
+      ),
+    ).not.toContain("display_mediumium");
   });
 
   it("reports usable discovery thumbnails", () => {

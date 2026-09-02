@@ -11,6 +11,7 @@ import { ModelCard } from "@/components/models/model-card";
 import type { ModelCardData } from "@/components/models/model-card";
 import type { PermissionState } from "@/components/models/permission-status";
 import { siteConfig } from "@/config/site";
+import { buildThingiverseDetailPath } from "@/domain/external-models/thingiverse-detail-fallback";
 import type { ExternalModelSummary } from "@/providers/contracts";
 import {
   thingiverseStatusCopy,
@@ -39,7 +40,12 @@ function toPermission(status: ExternalModelSummary["permissionStatus"]): Permiss
 function toCard(item: ExternalModelSummary): ModelCardData {
   return {
     id: item.externalId,
-    href: `/hazir-modeller/thingiverse/${item.externalId}` as Route,
+    href: buildThingiverseDetailPath({
+      externalId: item.externalId,
+      title: item.title,
+      creatorName: item.creatorName,
+      thumbnailUrl: item.thumbnailUrl,
+    }) as Route,
     name: item.title,
     creator: item.creatorName,
     category: "Thingiverse",

@@ -19,7 +19,13 @@ import type { ExternalQuoteModelContext } from "@/lib/models/external-quote-cont
 import type { ExternalModelSummary } from "@/providers/contracts";
 import { cn } from "@/lib/utils";
 
-export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
+export function ThingiverseDetail({
+  model,
+  enrichmentNotice = null,
+}: {
+  model: ExternalModelSummary;
+  enrichmentNotice?: string | null;
+}) {
   const [productionOptions, setProductionOptions] = useState<ProductionOptionsValue>({
     material: "pla",
     color: "beyaz",
@@ -41,6 +47,8 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
   }, []);
 
   const pricing = useMemo(() => communityModelPricing(), []);
+
+  const originalSourceHref = `/api/hazir-modeller/source-open?kind=thingiverse&id=${encodeURIComponent(model.externalId)}`;
 
   const quoteContext = useMemo<ExternalQuoteModelContext>(
     () => ({
@@ -65,6 +73,8 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
   return (
     <main
       id="ana-icerik"
+      data-thingiverse-detail=""
+      data-thingiverse-id={model.externalId}
       className={cn(
         "relative text-light-text lg:pb-10",
         !modalOpen && !isDesktopLayout && "pb-[calc(5rem+env(safe-area-inset-bottom))]",
@@ -102,6 +112,15 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
               value={productionOptions}
               onChange={setProductionOptions}
             />
+
+            {enrichmentNotice ? (
+              <p
+                data-detail-enrichment-notice=""
+                className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm leading-5 text-muted-light"
+              >
+                {enrichmentNotice}
+              </p>
+            ) : null}
 
             <PricingStatusBlock pricing={pricing} />
 
@@ -153,9 +172,10 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
             </div>
 
             <a
-              href={model.sourceUrl}
+              href={originalSourceHref}
               rel="noreferrer"
               target="_blank"
+              data-original-source-link=""
               className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-muted-light transition hover:text-light-text lg:hidden"
             >
               Orijinal modeli görüntüle
@@ -178,9 +198,10 @@ export function ThingiverseDetail({ model }: { model: ExternalModelSummary }) {
                   edilerek fiyat hesaplanır.
                 </p>
                 <a
-                  href={model.sourceUrl}
+                  href={originalSourceHref}
                   rel="noreferrer"
                   target="_blank"
+                  data-original-source-link=""
                   className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-muted-light transition hover:text-light-text"
                 >
                   Orijinal modeli görüntüle

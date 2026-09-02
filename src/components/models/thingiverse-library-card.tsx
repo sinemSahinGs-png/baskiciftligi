@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { ModelCardMedia } from "@/components/models/model-card-media";
+import { buildThingiverseDetailPath } from "@/domain/external-models/thingiverse-detail-fallback";
 import { hasUsableThingiverseThumbnail } from "@/domain/external-models/thingiverse-images";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +32,12 @@ export function ThingiverseLibraryCard({
   if (!model.id || !model.title?.trim()) return null;
   if (!hasUsableThingiverseThumbnail(model.thumbnailUrl)) return null;
 
-  const detailHref = `/hazir-modeller/thingiverse/${model.id}` as Route;
+  const detailHref = buildThingiverseDetailPath({
+    externalId: model.id,
+    title: model.title,
+    creatorName: model.creatorName,
+    thumbnailUrl: model.thumbnailUrl,
+  }) as Route;
 
   return (
     <article

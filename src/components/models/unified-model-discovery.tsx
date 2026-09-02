@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/feedback/empty-state";
 import { ModelCard } from "@/components/models/model-card";
 import type { ModelCardData } from "@/components/models/model-card";
 import { StaggerGrid, StaggerItem } from "@/components/motion/stagger-grid";
+import { buildThingiverseDetailPath } from "@/domain/external-models/thingiverse-detail-fallback";
 import { announceStatus } from "@/lib/motion";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import { cn } from "@/lib/utils";
@@ -58,7 +59,16 @@ function toCard(item: DiscoverItem): ModelCardData {
 
   return {
     id: `${item.source}-${item.externalId}`,
-    href: `/hazir-modeller/${item.source}/${item.externalId}` as Route,
+    href: (
+      item.source === "thingiverse"
+        ? buildThingiverseDetailPath({
+            externalId: item.externalId,
+            title: item.title,
+            creatorName: item.creatorName,
+            thumbnailUrl: item.thumbnailUrl,
+          })
+        : `/hazir-modeller/${item.source}/${item.externalId}`
+    ) as Route,
     name: item.title,
     creator: item.creatorName,
     category: item.automaticManufacturingAllowed ? "Dosya hazır" : "Baskıya uygunluk inceleniyor",

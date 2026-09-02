@@ -12,6 +12,7 @@ import {
   type CuratedListingKind,
 } from "@/domain/curated-models/types";
 import { translateTurkishToEnglishPhrase } from "@/lib/model-discovery/printables-redirect";
+import { rememberThingiverseDiscoveryHits } from "@/domain/external-models/thingiverse-summary-cache";
 import type { ExternalModelSummary } from "@/providers/contracts";
 import { THINGIVERSE_CATEGORY_LABELS } from "@/providers/thingiverse/categories";
 import {
@@ -150,6 +151,7 @@ export async function GET(request: Request) {
               Boolean(item),
             ),
         );
+        rememberThingiverseDiscoveryHits(mappedItems);
       } else {
         const browse = await thingiverseProvider.browse(
           { page, query: english },
@@ -164,6 +166,7 @@ export async function GET(request: Request) {
               Boolean(item),
             ),
         );
+        rememberThingiverseDiscoveryHits(mappedItems);
       }
 
       const items = mappedItems.filter((item) =>
@@ -262,6 +265,7 @@ export async function GET(request: Request) {
             Boolean(item),
           ),
       );
+      rememberThingiverseDiscoveryHits(tv);
       const filteredTv = tv.filter((item) =>
         matchCategory(item.categoryLabel, category),
       );
