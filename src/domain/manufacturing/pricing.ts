@@ -2,10 +2,8 @@ import { createHash } from "node:crypto";
 
 import { assertMinorUnits } from "@/lib/money";
 import {
-  CALIBRATED_FORMULA_ID,
   FORMULA_ID,
   type InternalCostBreakdown,
-  type PricingCalibrationInputs,
   type PricingRates,
   type PublicPriceBreakdown,
   type SlicingMetrics,
@@ -15,11 +13,7 @@ export function pricingChecksum(rates: PricingRates): string {
   return createHash("sha256").update(JSON.stringify(rates)).digest("hex");
 }
 
-export function calibratedPricingChecksum(calibration: PricingCalibrationInputs): string {
-  return createHash("sha256")
-    .update(JSON.stringify({ formulaId: CALIBRATED_FORMULA_ID, calibration }))
-    .digest("hex");
-}
+export { calibratedPricingChecksum } from "@/domain/manufacturing/pricing-checksum";
 
 function roundMinor(value: number): number {
   if (!Number.isFinite(value)) {

@@ -1,20 +1,25 @@
-import { calibratedPricingChecksum } from "@/domain/manufacturing/pricing";
+import {
+  calibratedPricingChecksum,
+  normalizePricingCalibration,
+} from "@/domain/manufacturing/pricing-checksum";
 import { ratesSnapshotFromCalibration } from "@/domain/manufacturing/pricing-calibration";
 import {
   LAUNCH_OWNER_CALIBRATION,
   OWNER_PRODUCTION_PRESET_NAME,
 } from "@/domain/manufacturing/launch-calibration";
-import type { PricingConfig } from "@/domain/manufacturing/types";
+import type {
+  PricingCalibrationInputs,
+  PricingConfig,
+} from "@/domain/manufacturing/types";
 
 export function findMatchingOwnerCalibration(
   pricing: PricingConfig[],
   checksum = calibratedPricingChecksum(LAUNCH_OWNER_CALIBRATION),
 ): PricingConfig | null {
-  return (
-    pricing.find(
-      (item) => item.formulaId === "bc-quote-v2" && item.checksum === checksum,
-    ) ?? null
+  const matches = pricing.filter(
+    (item) => item.formulaId === "bc-quote-v2" && item.checksum === checksum,
   );
+  return matches.find((item) => !item.activatedAt) ?? matches[0] ?? null;
 }
 
 export function nextPricingVersion(pricing: PricingConfig[]): number {
@@ -25,13 +30,17 @@ export function buildInactiveOwnerCalibrationDraft(input: {
   id?: string;
   version: number;
   createdAt?: string;
+  calibration?: PricingCalibrationInputs;
 }): PricingConfig {
+  const calibration = normalizePricingCalibration(
+    input.calibration ?? LAUNCH_OWNER_CALIBRATION,
+  );
   return {
     id: input.id ?? crypto.randomUUID(),
     version: input.version,
-    checksum: calibratedPricingChecksum(LAUNCH_OWNER_CALIBRATION),
-    rates: ratesSnapshotFromCalibration(LAUNCH_OWNER_CALIBRATION),
-    calibration: LAUNCH_OWNER_CALIBRATION,
+    checksum: calibratedPricingChecksum(calibration),
+    rates: ratesSnapshotFromCalibration(calibration),
+    calibration,
     formulaId: "bc-quote-v2",
     isDevelopmentSeed: false,
     activatedAt: null,

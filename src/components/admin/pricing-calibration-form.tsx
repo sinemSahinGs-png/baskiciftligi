@@ -191,16 +191,12 @@ export function PricingCalibrationForm({ canCalibrate }: { canCalibrate: boolean
     setActivateError(null);
     setActivateMessage(null);
     try {
-      const version = await saveDraft();
-      if (!version) {
-        return;
-      }
       const response = await fetch("/api/admin/manufacturing/activate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          version,
           confirmPhrase: LAUNCH_ACTIVATION_CONFIRM_PHRASE,
+          calibration: { ...parsed, presetName: OWNER_PRODUCTION_PRESET_NAME },
         }),
       });
       const payload = (await response.json()) as {

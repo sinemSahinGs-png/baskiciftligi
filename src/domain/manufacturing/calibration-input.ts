@@ -1,0 +1,28 @@
+import { z } from "zod";
+
+export const pricingCalibrationBodySchema = z.object({
+  presetName: z.string().trim().min(1).max(80).optional(),
+  filamentSpoolPriceMinor: z.int().positive(),
+  spoolWeightGrams: z.number().positive(),
+  wastePercent: z.number().min(0).lt(100),
+  printerPurchasePriceMinor: z.int().positive(),
+  depreciationHours: z.number().positive(),
+  maintenanceBasis: z.enum(["hourly", "annual"]),
+  maintenanceMinor: z.int().min(0),
+  expectedAnnualPrintHours: z.number().min(0),
+  electricityPricePerKwhMinor: z.int().positive(),
+  printerPowerWatts: z.number().positive(),
+  laborHourlyMinor: z.int().positive(),
+  setupMinutesPerOrder: z.number().min(0),
+  postProcessingMinutesPerUnit: z.number().min(0),
+  supportRemovalMinutesPerJob: z.number().min(0),
+  packagingMinor: z.int().min(0),
+  packagingBasis: z.enum(["unit", "shipment"]),
+  failedPrintPercent: z.number().min(0).lt(100),
+  targetMarginRate: z.number().min(0).lt(1),
+  minimumOrderNetMinor: z.int().min(0),
+  vatRate: z.number().min(0).max(1),
+  shippingDisplayMinor: z.int().min(0),
+  shippingFreeThresholdMinor: z.int().min(0).nullable(),
+  quoteLifetimeHours: z.int().min(1).max(720),
+});

@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import {
-  activatePricingVersion,
-  ensureLaunchCalibrationDraft,
-} from "@/domain/manufacturing/pricing-activation";
+import { activatePricingVersion } from "@/domain/manufacturing/pricing-activation";
+import { pricingCalibrationBodySchema } from "@/domain/manufacturing/calibration-input";
 import { LAUNCH_ACTIVATION_CONFIRM_PHRASE } from "@/domain/manufacturing/launch-calibration";
 import { requirePricingCalibrator } from "@/lib/auth/session";
 
 const bodySchema = z.object({
   version: z.int().positive().optional(),
+  calibration: pricingCalibrationBodySchema.optional(),
   confirmPhrase: z.literal(LAUNCH_ACTIVATION_CONFIRM_PHRASE),
 });
 
@@ -32,14 +31,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    let version = parsed.data.version;
-    if (version === undefined) {
-      const draft = await ensureLaunchCalibrationDraft();
-      version = draft.version;
-    }
-
     const result = await activatePricingVersion({
-      version,
+      version: parsed.data.version,
+      calibration: parsed.data.calibration,
       activatedBy: viewer.id,
       confirmPhrase: parsed.data.confirmPhrase,
     });
