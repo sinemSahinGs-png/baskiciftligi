@@ -24,9 +24,6 @@
     "catalog:import:supabase": "npx vite-node --config vitest.config.mts scripts/catalog-import-supabase.ts",
     "catalog:import:media": "npx vite-node --config vitest.config.mts scripts/catalog-import-media.ts",
     "catalog:db-ready": "npx vite-node --config vitest.config.mts scripts/catalog-db-ready.ts",
-    "catalog:import:supabase": "npx vite-node --config vitest.config.mts scripts/catalog-import-supabase.ts",
-    "catalog:import:media": "npx vite-node --config vitest.config.mts scripts/catalog-import-media.ts",
-    "catalog:db-ready": "npx vite-node --config vitest.config.mts scripts/catalog-db-ready.ts",
     "quality": "npm run lint && npm run typecheck && npm run test && npm run build",
     "manufacturing:env": "node scripts/ensure-local-manufacturing-env.mjs",
     "manufacturing:up": "node scripts/ensure-local-manufacturing-env.mjs && node scripts/manufacturing-compose.mjs up",
@@ -77,6 +74,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^7.0.1",

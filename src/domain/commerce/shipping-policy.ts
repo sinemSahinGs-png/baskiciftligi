@@ -16,6 +16,13 @@ export const COMMERCE_SHIPPING_POLICY: CommerceShippingPolicy = {
   freeShippingThresholdMinor: null,
 };
 
+/** Null or 0 disables the free-shipping threshold. It is not "always free". */
+export function freeShippingThresholdDisabled(
+  thresholdMinor: number | null | undefined,
+): boolean {
+  return thresholdMinor == null || thresholdMinor <= 0;
+}
+
 function normalizedFreeShippingThresholdMinor(): number {
   return COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor ?? 0;
 }
@@ -29,7 +36,7 @@ export function computeCartShippingMinor(subtotalMinor: number): number {
     return 0;
   }
   const threshold = normalizedFreeShippingThresholdMinor();
-  if (threshold > 0 && subtotalMinor >= threshold) {
+  if (!freeShippingThresholdDisabled(threshold) && subtotalMinor >= threshold) {
     return 0;
   }
   return COMMERCE_SHIPPING_POLICY.standardShippingMinor;
