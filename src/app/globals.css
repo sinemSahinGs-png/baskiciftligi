@@ -983,11 +983,55 @@ html.motion-ready:not([data-reduced-motion="true"]) [data-motion-item="visible"]
   }
 }
 
+.studio-slice-lines {
+  background: repeating-linear-gradient(
+    180deg,
+    rgb(48 213 210 / 0.12) 0 2px,
+    transparent 2px 8px
+  );
+  background-size: 100% 24px;
+  animation: studio-slice 1.4s linear infinite;
+}
+
+.studio-quote-card {
+  animation: studio-rise 0.45s ease-out;
+}
+
+.studio-plate-pulse {
+  animation: studio-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes studio-slice {
+  to {
+    background-position: 0 24px;
+  }
+}
+
+@keyframes studio-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes studio-pulse {
+  50% {
+    opacity: 0.65;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .editor-autosave-pulse,
   .category-card-selected-pulse,
   .editor-upload-success,
-  .editor-step-active {
+  .editor-step-active,
+  .studio-slice-lines,
+  .studio-quote-card,
+  .studio-plate-pulse {
     animation: none;
   }
 

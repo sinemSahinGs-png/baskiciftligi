@@ -4,6 +4,7 @@
  * Exits with a clear message when another next dev instance blocks startup.
  */
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import net from "node:net";
 
 const port = process.env.PLAYWRIGHT_DEV_PORT ?? "3012";
@@ -38,11 +39,29 @@ async function main() {
   }
 
   const command = process.platform === "win32" ? "npx.cmd" : "npx";
-  const child = spawn(command, ["next", "dev", "--port", port], {
-    stdio: "inherit",
-    env: e2eEnv,
-    shell: process.platform === "win32",
-  });
+  const lockPath = ".next/dev/lock";
+  const hasBuild = existsSync(".next/BUILD_ID");
+  const useStart = existsSync(lockPath) && hasBuild;
+  if (existsSync(lockPath) && !hasBuild) {
+    console.error(
+      "[playwright-dev] Another next dev holds this project lock and there is no production build. Stop that server or run npm run build.",
+    );
+    process.exit(1);
+  }
+  if (useStart) {
+    console.info(
+      `[playwright-dev] Reusing production server on :${port} because next dev is already running in this project.`,
+    );
+  }
+  const child = spawn(
+    command,
+    useStart ? ["next", "start", "--port", port] : ["next", "dev", "--port", port],
+    {
+      stdio: "inherit",
+      env: e2eEnv,
+      shell: process.platform === "win32",
+    },
+  );
 
   child.on("exit", (code, signal) => {
     if (signal) {

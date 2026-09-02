@@ -9,7 +9,9 @@ import {
   type ReviewFlag,
   type Vec3Mm,
 } from "@/domain/manufacturing/types";
-import { inspectZip, readZipEntry, ZipValidationError } from "@/domain/manufacturing/zip";
+import { readZipEntry, ZipValidationError } from "@/domain/manufacturing/zip";
+import { loadThreeMfPackage } from "@/domain/manufacturing/threemf/load-package";
+import { ThreeMfError } from "@/domain/manufacturing/threemf/types";
 
 export class MeshValidationError extends Error {
   constructor(
@@ -372,33 +374,43 @@ function parseObj(bytes: Uint8Array) {
 }
 
 function parse3mf(bytes: Uint8Array) {
-  let entries;
   try {
-    entries = inspectZip(bytes);
+    const parsed = loadThreeMfPackage(bytes, readZipEntry);
+    if (parsed.requiresPlateSelection && parsed.plates.length !== 1) {
+      throw new MeshValidationError(
+        "multi_plate",
+        "Bu Bambu Studio projesinde birden fazla plaka var. Analiz edilecek plakayı seçin.",
+      );
+    }
+    const plate = parsed.plates[0];
+    if (!plate || plate.triangleCount === 0) {
+      throw new MeshValidationError("empty_mesh", "Bu dosyada görüntülenebilir bir model bulunamadı.");
+    }
+    const vertices = [];
+    for (let i = 0; i < plate.positions.length; i += 3) {
+      vertices.push({
+        x: plate.positions[i]!,
+        y: plate.positions[i + 1]!,
+        z: plate.positions[i + 2]!,
+      });
+    }
+    return {
+      vertices,
+      triangleCount: plate.triangleCount,
+      shellCount: Math.max(1, parsed.objectCount),
+    };
   } catch (error) {
+    if (error instanceof MeshValidationError) {
+      throw error;
+    }
+    if (error instanceof ThreeMfError) {
+      throw new MeshValidationError(error.code, error.message);
+    }
     if (error instanceof ZipValidationError) {
       throw new MeshValidationError("archive", error.message);
     }
     throw error;
   }
-  const modelEntry = entries.find((entry) => /3d\/.*\.model$/i.test(entry.name) || entry.name.endsWith("3dmodel.model"));
-  if (!modelEntry) {
-    throw new MeshValidationError("empty_mesh", "3MF içinde model geometrisi yok.");
-  }
-  const xml = Buffer.from(readZipEntry(bytes, modelEntry)).toString("utf8");
-  const vertices: Vec3Mm[] = [];
-  const vertexPattern = /<vertex\b[^>]*\bx=["']([^"']+)["'][^>]*\by=["']([^"']+)["'][^>]*\bz=["']([^"']+)["']/gi;
-  let match: RegExpExecArray | null;
-  while ((match = vertexPattern.exec(xml))) {
-    const point = { x: Number(match[1]), y: Number(match[2]), z: Number(match[3]) };
-    if (![point.x, point.y, point.z].every(Number.isFinite)) {
-      throw new MeshValidationError("invalid_coordinates", "NaN veya sonsuz koordinat var.");
-    }
-    vertices.push(point);
-  }
-  const triangleCount = (xml.match(/<triangle\b/gi) ?? []).length;
-  const shellCount = Math.max(1, (xml.match(/<object\b/gi) ?? []).length);
-  return { vertices, triangleCount, shellCount };
 }
 
 function sameVertex(a: Vec3Mm, b: Vec3Mm) {

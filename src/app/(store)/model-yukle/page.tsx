@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { ModelConfigurator } from "@/components/configurator/model-configurator";
+import { ModelConfiguratorClient } from "@/components/preparation-studio/model-configurator-client";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default function ModelUploadPage() {
   return (
     <main id="ana-icerik">
       <Suspense fallback={<p className="p-8 text-sm">Yapılandırıcı yükleniyor.</p>}>
-        <ModelConfigurator />
+        <ModelConfiguratorClient />
       </Suspense>
     </main>
   );

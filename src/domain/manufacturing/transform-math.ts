@@ -163,6 +163,22 @@ export function fitUniformScaleToVolume(
   });
 }
 
+export function applyBedDragDelta(
+  transform: ManufacturingTransform,
+  deltaXMm: number,
+  deltaYMm: number,
+): ManufacturingTransform {
+  return normalizeTransform({
+    ...transform,
+    positionMm: {
+      x: transform.positionMm.x + deltaXMm,
+      y: transform.positionMm.y + deltaYMm,
+      z: transform.positionMm.z,
+    },
+    source: "manual",
+  });
+}
+
 export function applyRotationDelta(
   transform: ManufacturingTransform,
   axis: "x" | "y" | "z",
