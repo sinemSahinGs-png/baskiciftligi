@@ -5,13 +5,17 @@ import { priceCart } from "@/domain/commerce/cart-pricing";
 import {
   COMMERCE_SHIPPING_POLICY,
   computeCartShippingMinor,
+  freeShippingThresholdDisabled,
 } from "@/domain/commerce/shipping-policy";
 
 describe("commerce shipping policy", () => {
-  it("charges the standard 100 TL shipping with no free-shipping threshold", () => {
+  it("treats a 0 free-shipping threshold as disabled, not always-free", () => {
+    expect(freeShippingThresholdDisabled(0)).toBe(true);
+    expect(freeShippingThresholdDisabled(null)).toBe(true);
+    expect(freeShippingThresholdDisabled(150_000)).toBe(false);
+    expect(COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor).toBeNull();
     expect(computeCartShippingMinor(1)).toBe(10_000);
-    expect(computeCartShippingMinor(149_999)).toBe(10_000);
-    expect(computeCartShippingMinor(150_000)).toBe(10_000);
+    expect(computeCartShippingMinor(10_000)).toBe(10_000);
     expect(computeCartShippingMinor(1_000_000)).toBe(10_000);
   });
 
