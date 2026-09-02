@@ -1,30 +1,19 @@
-import { inflateRawSync } from "node:zlib";
+import { inflateSync } from "three/examples/jsm/libs/fflate.module.js";
 
 import { ZIP_MAX_UNCOMPRESSED_BYTES } from "@/domain/manufacturing/types";
-import {
-  inspectZip,
-  zipLocalPayload,
-  ZipValidationError,
-  type ZipEntry,
-} from "@/domain/manufacturing/zip-inspect";
+import { zipLocalPayload, ZipValidationError, type ZipEntry } from "@/domain/manufacturing/zip-inspect";
 
-export { inspectZip, ZipValidationError, type ZipEntry };
-
-export function readZipEntry(bytes: Uint8Array, entry: ZipEntry): Uint8Array {
+export function readZipEntryFflate(bytes: Uint8Array, entry: ZipEntry): Uint8Array {
   const compressed = zipLocalPayload(bytes, entry);
-
   if (entry.compression === 0) {
     return compressed;
   }
   if (entry.compression === 8) {
-    const cap = Math.min(
-      entry.uncompressedSize > 0 ? entry.uncompressedSize : ZIP_MAX_UNCOMPRESSED_BYTES,
-      ZIP_MAX_UNCOMPRESSED_BYTES,
-    );
     try {
-      const inflated = new Uint8Array(
-        inflateRawSync(Buffer.from(compressed), { maxOutputLength: Math.max(cap, 1) }),
-      );
+      const inflated = inflateSync(compressed);
+      if (inflated.byteLength > ZIP_MAX_UNCOMPRESSED_BYTES) {
+        throw new ZipValidationError("ZIP açılım boyutu sınırı aşıldı.");
+      }
       if (entry.uncompressedSize > 0 && inflated.byteLength !== entry.uncompressedSize) {
         throw new ZipValidationError("ZIP açılım boyutu kayıtla uyuşmuyor.");
       }

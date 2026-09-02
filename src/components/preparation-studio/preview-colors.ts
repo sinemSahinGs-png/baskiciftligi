@@ -1,14 +1,17 @@
 import { COLOR_OPTIONS } from "@/domain/manufacturing/profiles";
 
-export const PREVIEW_COLOR_HEX: Record<string, string> = {
-  black: "#2a2f36",
-  white: "#e8edf2",
-  gray: "#8b949e",
-  orange: "#f97316",
+/** Studio default is a light metal so the mesh never disappears on a dark bed. */
+export const STUDIO_DEFAULT_HEX = "#d5dbe3";
+
+const PREVIEW_COLOR_HEX: Record<string, string> = {
+  black: "#c8ced6",
+  white: "#f3f6fa",
+  gray: "#d5dbe3",
+  orange: "#e8b48a",
 };
 
 export function previewColorHex(colorId: string): string {
   const match = COLOR_OPTIONS.find((option) => option.id === colorId);
   void match;
-  return PREVIEW_COLOR_HEX[colorId] ?? PREVIEW_COLOR_HEX.black;
+  return PREVIEW_COLOR_HEX[colorId] ?? STUDIO_DEFAULT_HEX;
 }

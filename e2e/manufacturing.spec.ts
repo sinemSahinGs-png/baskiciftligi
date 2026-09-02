@@ -234,7 +234,7 @@ test.describe("manufacturing quotation", () => {
         await ensureInspectorOpen(page);
         await page.getByRole("button", { name: "Model" }).click();
         await page.getByRole("checkbox").first().check();
-        await page.getByRole("button", { name: "Analiz", exact: true }).click();
+        await page.getByRole("button", { name: "Teklif", exact: true }).click();
         await expect(page.getByTestId("config-drawer")).toHaveAttribute(
           "data-expanded",
           "true",
