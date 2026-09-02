@@ -3,7 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 
 import { formatMoney } from "@/lib/money";
-import { liraStringToMinorUnits } from "@/lib/catalog/money-input";
+import { liraInputFromMinorUnits, liraStringToMinorUnits } from "@/lib/catalog/money-input";
 import {
   CALIBRATION_FIELDS,
   CUBE_CALIBRATION_METRICS,
@@ -13,7 +13,11 @@ import {
   LEGACY_FORMULA_WARNING,
   type CalibratedQuote,
 } from "@/domain/manufacturing/pricing-calibration";
-import { LAUNCH_ACTIVATION_CONFIRM_PHRASE } from "@/domain/manufacturing/launch-calibration";
+import {
+  LAUNCH_ACTIVATION_CONFIRM_PHRASE,
+  LAUNCH_OWNER_CALIBRATION,
+  OWNER_PRODUCTION_PRESET_NAME,
+} from "@/domain/manufacturing/launch-calibration";
 import type { PricingCalibrationInputs } from "@/domain/manufacturing/types";
 
 interface FormState {
@@ -42,31 +46,38 @@ interface FormState {
   quoteLifetimeHours: string;
 }
 
-const emptyForm: FormState = {
-  filamentSpoolPrice: "",
-  spoolWeightGrams: "",
-  wastePercent: "",
-  printerPurchasePrice: "",
-  depreciationHours: "",
-  maintenanceBasis: "",
-  maintenanceAmount: "",
-  expectedAnnualPrintHours: "",
-  electricityPrice: "",
-  printerPowerWatts: "",
-  laborHourly: "",
-  setupMinutesPerOrder: "",
-  postProcessingMinutesPerUnit: "",
-  supportRemovalMinutesPerJob: "",
-  packagingCost: "",
-  packagingBasis: "",
-  failedPrintPercent: "",
-  targetMarginPercent: "",
-  minimumOrderNet: "",
-  vatPercent: "",
-  shippingDisplay: "",
-  shippingFreeThreshold: "",
-  quoteLifetimeHours: "",
-};
+function formStateFromOwnerCalibration(): FormState {
+  const input = LAUNCH_OWNER_CALIBRATION;
+  return {
+    filamentSpoolPrice: liraInputFromMinorUnits(input.filamentSpoolPriceMinor),
+    spoolWeightGrams: String(input.spoolWeightGrams),
+    wastePercent: String(input.wastePercent),
+    printerPurchasePrice: liraInputFromMinorUnits(input.printerPurchasePriceMinor),
+    depreciationHours: String(input.depreciationHours),
+    maintenanceBasis: input.maintenanceBasis,
+    maintenanceAmount: liraInputFromMinorUnits(input.maintenanceMinor),
+    expectedAnnualPrintHours:
+      input.expectedAnnualPrintHours > 0 ? String(input.expectedAnnualPrintHours) : "",
+    electricityPrice: liraInputFromMinorUnits(input.electricityPricePerKwhMinor),
+    printerPowerWatts: String(input.printerPowerWatts),
+    laborHourly: liraInputFromMinorUnits(input.laborHourlyMinor),
+    setupMinutesPerOrder: String(input.setupMinutesPerOrder),
+    postProcessingMinutesPerUnit: String(input.postProcessingMinutesPerUnit),
+    supportRemovalMinutesPerJob: String(input.supportRemovalMinutesPerJob),
+    packagingCost: liraInputFromMinorUnits(input.packagingMinor),
+    packagingBasis: input.packagingBasis,
+    failedPrintPercent: String(input.failedPrintPercent),
+    targetMarginPercent: String(Math.round(input.targetMarginRate * 100)),
+    minimumOrderNet: liraInputFromMinorUnits(input.minimumOrderNetMinor),
+    vatPercent: String(Math.round(input.vatRate * 100)),
+    shippingDisplay: liraInputFromMinorUnits(input.shippingDisplayMinor),
+    shippingFreeThreshold:
+      input.shippingFreeThresholdMinor === null || input.shippingFreeThresholdMinor === undefined
+        ? ""
+        : liraInputFromMinorUnits(input.shippingFreeThresholdMinor),
+    quoteLifetimeHours: String(input.quoteLifetimeHours),
+  };
+}
 
 function parseLira(value: string): number | undefined {
   if (!value.trim()) {
@@ -118,7 +129,7 @@ const inputClass =
   "min-h-11 w-full rounded-md border border-white/15 bg-black/20 px-3 text-sm";
 
 export function PricingCalibrationForm({ canCalibrate }: { canCalibrate: boolean }) {
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const [form, setForm] = useState<FormState>(formStateFromOwnerCalibration);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -225,7 +236,10 @@ export function PricingCalibrationForm({ canCalibrate }: { canCalibrate: boolean
       const response = await fetch("/api/admin/manufacturing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ calibration: parsed, activate: false }),
+        body: JSON.stringify({
+          calibration: { ...parsed, presetName: OWNER_PRODUCTION_PRESET_NAME },
+          activate: false,
+        }),
       });
       const payload = (await response.json()) as {
         error?: string;
@@ -265,14 +279,18 @@ export function PricingCalibrationForm({ canCalibrate }: { canCalibrate: boolean
     <div className="mt-10 space-y-8">
       <section className="rounded-3xl border border-warm/30 bg-warm/5 p-6">
         <h2 className="font-heading text-xl">Sahip kalibrasyonu (etkin değil)</h2>
+        <p className="mt-2 text-sm font-semibold" data-owner-calibration-preset>
+          {OWNER_PRODUCTION_PRESET_NAME}
+        </p>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {LEGACY_FORMULA_WARNING}
         </p>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
           Aşağıdaki sayılar canlı PrusaSlicer küp ölçüleridir ve değiştirilmez:{" "}
           {CUBE_CALIBRATION_METRICS.grams} g · {CUBE_CALIBRATION_METRICS.seconds} sn
-          (20 mm). Yeni tarife, siz gerçek alış fiyatlarını girip açıkça onaylayana
-          kadar üretimde kullanılmaz.
+          (20 mm). Form boş açıldığında Bambu Lab A1 Combo işletme değerleri doldurulur.
+          Taslak Supabase’e kaydedilir; üretim tarifesi siz {LAUNCH_ACTIVATION_CONFIRM_PHRASE}{" "}
+          yazana kadar değişmez.
         </p>
       </section>
 

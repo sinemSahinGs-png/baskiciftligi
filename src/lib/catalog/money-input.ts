@@ -28,6 +28,18 @@ export function liraStringToMinorUnits(value: string): number {
   return assertMinorUnits(signed ? -minor : minor);
 }
 
+export function liraInputFromMinorUnits(amountMinor: number): string {
+  const minor = assertMinorUnits(amountMinor);
+  const sign = minor < 0 ? "-" : "";
+  const abs = Math.abs(minor);
+  const whole = Math.trunc(abs / 100);
+  const fraction = abs % 100;
+  if (fraction === 0) {
+    return `${sign}${whole}`;
+  }
+  return `${sign}${whole}.${String(fraction).padStart(2, "0")}`;
+}
+
 export function minorUnitsFromClientNumber(value: unknown): number {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new TypeError("Tutar kuruş cinsinden tam sayı olmalıdır.");

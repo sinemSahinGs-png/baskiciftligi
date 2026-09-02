@@ -1,4 +1,4 @@
-import { assertMinorUnits } from "@/lib/money";
+import { assertMinorUnits, roundRatioToMinor } from "@/lib/money";
 import {
   CALIBRATED_FORMULA_ID,
   FORMULA_ID,
@@ -27,7 +27,7 @@ export const CALIBRATION_FIELDS: CalibrationFieldSpec[] = [
   {
     key: "filamentSpoolPriceMinor",
     label: "Filament rulo fiyatı",
-    help: "Bir rulo PLA’nın KDV hariç alış tutarı. Gram maliyeti = rulo fiyatı ÷ rulo ağırlığı. Kâr eklenmez.",
+    help: "Bir rulo PLA’nın KDV hariç alış tutarı. İndirilebilir alış KDV’si ikinci kez yazılmaz. Gram maliyeti = rulo fiyatı ÷ rulo ağırlığı. Kâr eklenmez.",
     group: "material",
   },
   {
@@ -45,7 +45,7 @@ export const CALIBRATION_FIELDS: CalibrationFieldSpec[] = [
   {
     key: "printerPurchasePriceMinor",
     label: "Yazıcı alış fiyatı",
-    help: "Makinenin satın alma bedeli. Saatlik yıpranma = alış fiyatı ÷ beklenen ömür saati. İçinde kâr olmamalı.",
+    help: "Makinenin KDV hariç alış/replasman bedeli. İndirilebilir alış KDV’si ikinci kez yazılmaz. Saatlik yıpranma = alış fiyatı ÷ beklenen ömür saati.",
     group: "machine",
   },
   {
@@ -123,7 +123,7 @@ export const CALIBRATION_FIELDS: CalibrationFieldSpec[] = [
   {
     key: "failedPrintPercent",
     label: "Başarısız baskı payı",
-    help: "Fire için maliyet çarpanı: doğrudan maliyet ÷ (1 − pay). Makine saatine kâr gömmez; ayrı bir risk katmanıdır.",
+    help: "Doğrudan üretim maliyetine eklenen başarısız baskı payı (× 1 + pay). Kâr marjı değildir; marj bundan sonra uygulanır.",
     group: "commercial",
   },
   {
@@ -141,7 +141,7 @@ export const CALIBRATION_FIELDS: CalibrationFieldSpec[] = [
   {
     key: "vatRate",
     label: "KDV oranı",
-    help: "Satış KDV’si netin üzerine eklenir. Maliyet kalemlerine karışmaz.",
+    help: "Satış KDV’si yalnızca net ürün fiyatının üzerine, en sonda eklenir. Maliyet kalemlerine ve kargoya karışmaz.",
     group: "commercial",
   },
   {
@@ -231,6 +231,17 @@ export function calibrationIssues(
   const issues: CalibrationIssue[] = [];
   if (!input) {
     return [{ key: "form", message: "Sahip iş girdileri henüz girilmedi." }];
+  }
+  if (
+    input.presetName !== undefined &&
+    (typeof input.presetName !== "string" ||
+      input.presetName.trim().length === 0 ||
+      input.presetName.length > 80)
+  ) {
+    issues.push({
+      key: "presetName",
+      message: "Önayar adı 1–80 karakter olmalıdır.",
+    });
   }
   const requirePositive = (
     key: keyof PricingCalibrationInputs,
@@ -381,39 +392,59 @@ export function computeCalibratedQuote(input: {
   const seconds = input.metrics.estimatedDurationSeconds;
   const printHours = seconds / 3600;
   const derived = derivedHourlyCosts(input.calibration);
-  const waste = input.calibration.wastePercent / 100;
-  const billedGrams = grams * (1 + waste) * quantity;
-  const materialRawMinor = roundMinor(grams * derived.materialPerGramMinor * quantity);
-  const materialMinor = roundMinor(billedGrams * derived.materialPerGramMinor);
+  const milligrams = Math.round(grams * 1000);
+  const billedMilligrams = roundRatioToMinor(
+    milligrams * (100 + input.calibration.wastePercent) * quantity,
+    100,
+  );
+  const billedGrams = billedMilligrams / 1000;
+  const materialRawMinor = roundRatioToMinor(
+    milligrams * input.calibration.filamentSpoolPriceMinor * quantity,
+    input.calibration.spoolWeightGrams * 1000,
+  );
+  const materialMinor = roundRatioToMinor(
+    milligrams *
+      input.calibration.filamentSpoolPriceMinor *
+      (100 + input.calibration.wastePercent) *
+      quantity,
+    input.calibration.spoolWeightGrams * 100 * 1000,
+  );
   const materialWasteMinor = assertMinorUnits(materialMinor - materialRawMinor);
-  const energyMinor = roundMinor(
-    printHours * derived.energyPerHourMinor * quantity,
+  const energyMinor = roundRatioToMinor(
+    seconds *
+      input.calibration.printerPowerWatts *
+      input.calibration.electricityPricePerKwhMinor *
+      quantity,
+    3600 * 1000,
   );
-  const depreciationMinor = roundMinor(
-    printHours * derived.depreciationPerHourMinor * quantity,
+  const depreciationMinor = roundRatioToMinor(
+    seconds * input.calibration.printerPurchasePriceMinor * quantity,
+    input.calibration.depreciationHours * 3600,
   );
-  const maintenanceMinor = roundMinor(
-    printHours * derived.maintenancePerHourMinor * quantity,
+  const maintenanceMinor = roundRatioToMinor(
+    seconds * derived.maintenancePerHourMinor * quantity,
+    3600,
   );
   const machineMinor = assertMinorUnits(depreciationMinor + maintenanceMinor);
-  const setupLaborMinor = roundMinor(
-    (input.calibration.laborHourlyMinor * input.calibration.setupMinutesPerOrder) / 60,
+  const setupLaborMinor = roundRatioToMinor(
+    input.calibration.laborHourlyMinor * input.calibration.setupMinutesPerOrder,
+    60,
   );
-  const postLaborMinor = roundMinor(
-    (input.calibration.laborHourlyMinor *
+  const postLaborMinor = roundRatioToMinor(
+    input.calibration.laborHourlyMinor *
       input.calibration.postProcessingMinutesPerUnit *
-      quantity) /
-      60,
+      quantity,
+    60,
   );
   const supportGenerated = Boolean(
     input.metrics.supportGenerated ?? input.metrics.supportUsed,
   );
   const supportLaborMinor =
     supportGenerated && input.calibration.supportRemovalMinutesPerJob > 0
-      ? roundMinor(
-          (input.calibration.laborHourlyMinor *
-            input.calibration.supportRemovalMinutesPerJob) /
-            60,
+      ? roundRatioToMinor(
+          input.calibration.laborHourlyMinor *
+            input.calibration.supportRemovalMinutesPerJob,
+          60,
         )
       : 0;
   const packagingMinor = roundMinor(
@@ -434,21 +465,27 @@ export function computeCalibratedQuote(input: {
       (input.calibration.packagingBasis === "unit" ? packagingMinor : 0),
   );
   const directMinor = assertMinorUnits(fixedOrderMinor + variableMinor);
-  const failRate = input.calibration.failedPrintPercent / 100;
-  const riskAdjustedMinor = roundMinor(directMinor / (1 - failRate));
+  const failRatePercent = input.calibration.failedPrintPercent;
+  const riskAdjustedMinor = roundRatioToMinor(
+    directMinor * (100 + failRatePercent),
+    100,
+  );
   const riskAllowanceMinor = assertMinorUnits(riskAdjustedMinor - directMinor);
-  const unconstrainedNetMinor = roundMinor(
-    riskAdjustedMinor / (1 - input.calibration.targetMarginRate),
+  const marginPercent = Math.round(input.calibration.targetMarginRate * 100);
+  const unconstrainedNetMinor = roundRatioToMinor(
+    riskAdjustedMinor * 100,
+    100 - marginPercent,
   );
   const minimumApplied = unconstrainedNetMinor < input.calibration.minimumOrderNetMinor;
   const netMinor = assertMinorUnits(
     Math.max(input.calibration.minimumOrderNetMinor, unconstrainedNetMinor),
   );
   const profitMinor = assertMinorUnits(netMinor - riskAdjustedMinor);
-  const vatMinor = roundMinor(netMinor * input.calibration.vatRate);
+  const vatPercent = Math.round(input.calibration.vatRate * 100);
+  const vatMinor = roundRatioToMinor(netMinor * vatPercent, 100);
   const grossMinor = assertMinorUnits(netMinor + vatMinor);
   const shippingMinor = input.calibration.shippingDisplayMinor;
-  const unitGrossMinor = roundMinor(grossMinor / quantity);
+  const unitGrossMinor = roundRatioToMinor(grossMinor, quantity);
 
   const steps: CalibratedStep[] = [
     {
@@ -534,7 +571,7 @@ export function computeCalibratedQuote(input: {
     {
       id: "risk",
       title: "Başarısız baskı payı",
-      detail: `Doğrudan maliyet ÷ (1 − %${input.calibration.failedPrintPercent}). Marjdan önce uygulanır.`,
+      detail: `Doğrudan maliyet × (1 + %${input.calibration.failedPrintPercent}). Marjdan önce uygulanır; kâr değildir.`,
       minor: riskAllowanceMinor,
       kind: "order",
     },
@@ -592,6 +629,14 @@ export function computeCalibratedQuote(input: {
     netSellingPriceMinor: netMinor,
     vatMinor,
     grossPriceMinor: grossMinor,
+    slicerFilamentWeightGrams: grams,
+    slicerDurationSeconds: seconds,
+    slicerQuantity: quantity,
+    slicerSupportGenerated: supportGenerated,
+    materialWasteMinor,
+    depreciationCostMinor: depreciationMinor,
+    maintenanceCostMinor: maintenanceMinor,
+    shippingMinor,
   };
 
   return {

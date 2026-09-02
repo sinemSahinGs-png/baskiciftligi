@@ -16,6 +16,14 @@ export function assertMinorUnits(value: number): number {
   return value;
 }
 
+/** Round a rational amount to integer kuruş without leaving a float money result. */
+export function roundRatioToMinor(numerator: number, denominator: number): number {
+  if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator === 0) {
+    throw new RangeError("Parasal oran geçersiz.");
+  }
+  return assertMinorUnits(Math.round(numerator / denominator));
+}
+
 export function formatMoney(
   amountMinor: number,
   currency: CurrencyCode = "TRY",

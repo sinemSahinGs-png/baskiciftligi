@@ -483,27 +483,39 @@ export function CartView() {
           Sipariş özeti
         </h2>
 
-        <div className="mt-5 rounded-lg bg-porcelain p-4">
-          <div className="flex items-center gap-2 text-sm font-semibold">
-            <Truck aria-hidden="true" className="size-4" />
-            {remainingForFreeShipping === 0
-              ? "Ücretsiz kargo eşiği aşıldı"
-              : `${formatMoney(remainingForFreeShipping, result.currency)} daha ekle`}
-          </div>
-          <div
-            className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted"
-            role="progressbar"
-            aria-label="Ücretsiz kargo ilerlemesi"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(shippingProgress)}
-          >
+        {result.freeShippingThresholdMinor > 0 ? (
+          <div className="mt-5 rounded-lg bg-porcelain p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <Truck aria-hidden="true" className="size-4" />
+              {remainingForFreeShipping === 0
+                ? "Ücretsiz kargo eşiği aşıldı"
+                : `${formatMoney(remainingForFreeShipping, result.currency)} daha ekle`}
+            </div>
             <div
-              className="h-full bg-cobalt"
-              style={{ width: `${shippingProgress}%` }}
-            />
+              className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted"
+              role="progressbar"
+              aria-label="Ücretsiz kargo ilerlemesi"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(shippingProgress)}
+            >
+              <div
+                className="h-full bg-cobalt"
+                style={{ width: `${shippingProgress}%` }}
+              />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mt-5 rounded-lg bg-porcelain p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <Truck aria-hidden="true" className="size-4" />
+              Kargo sepette bir kez gösterilir
+            </div>
+            <p className="mt-2 text-xs leading-5 text-ink-secondary">
+              Ürün fiyatına kargo eklenmez. Aynı siparişte kargo yalnızca bir kez alınır.
+            </p>
+          </div>
+        )}
 
         <dl className="mt-5 space-y-3 text-sm">
           <div className="flex items-center justify-between gap-4">

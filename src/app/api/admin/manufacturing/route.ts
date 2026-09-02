@@ -16,6 +16,8 @@ import {
   savePricingConfig,
   transitionQuoteJob,
 } from "@/domain/manufacturing/repository";
+import { ensureLaunchCalibrationDraft } from "@/domain/manufacturing/pricing-activation";
+import { OWNER_PRODUCTION_PRESET_NAME } from "@/domain/manufacturing/launch-calibration";
 import {
   calibratedPricingChecksum,
 } from "@/domain/manufacturing/pricing";
@@ -42,12 +44,15 @@ export async function GET() {
   if (!viewer || !canViewAdminCatalog(viewer.role)) {
     return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
   }
+  const showInternal = canViewInternalCost(viewer.role);
+  const canCalibrate = canCalibratePricing(viewer.role, viewer.isDemo);
+  if (canCalibrate) {
+    await ensureLaunchCalibrationDraft().catch(() => null);
+  }
   const jobs = await listQuoteJobs().catch(() => []);
   const pricing = await listPricingConfigs().catch(() => []);
   const active = await getActivePricing().catch(() => null);
   const integration = await getIntegrationStatus().catch(() => null);
-  const showInternal = canViewInternalCost(viewer.role);
-  const canCalibrate = canCalibratePricing(viewer.role, viewer.isDemo);
   let workerOnline = false;
   let workerHealth: WorkerHealthPayload | null = null;
   const workerUrl = slicerWorkerUrl();
@@ -134,6 +139,7 @@ export async function GET() {
 }
 
 const calibrationSchema = z.object({
+  presetName: z.string().trim().min(1).max(80).optional(),
   filamentSpoolPriceMinor: z.int().positive(),
   spoolWeightGrams: z.number().positive(),
   wastePercent: z.number().min(0).lt(100),
@@ -219,7 +225,11 @@ export async function POST(request: Request) {
       { status: 409 },
     );
   }
-  const issues = calibrationIssues(parsed.data.calibration);
+  const calibration = {
+    ...parsed.data.calibration,
+    presetName: parsed.data.calibration.presetName ?? OWNER_PRODUCTION_PRESET_NAME,
+  };
+  const issues = calibrationIssues(calibration);
   if (issues.length > 0) {
     return NextResponse.json(
       { error: issues[0]?.message ?? "Kalibrasyon eksik.", issues },
@@ -231,9 +241,9 @@ export async function POST(request: Request) {
   const config = await savePricingConfig({
     id: crypto.randomUUID(),
     version,
-    checksum: calibratedPricingChecksum(parsed.data.calibration),
-    rates: ratesSnapshotFromCalibration(parsed.data.calibration),
-    calibration: parsed.data.calibration,
+    checksum: calibratedPricingChecksum(calibration),
+    rates: ratesSnapshotFromCalibration(calibration),
+    calibration,
     formulaId: "bc-quote-v2",
     isDevelopmentSeed: false,
     activatedAt: null,

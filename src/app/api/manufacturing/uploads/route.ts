@@ -17,6 +17,7 @@ import { evaluateBuildVolumeFit } from "@/domain/manufacturing/build-volume-fit"
 import { JOB_MAX_ATTEMPTS, type ManufacturingFileRecord, type PrintConfiguration } from "@/domain/manufacturing/types";
 import { ALLOWED_INFILL, QUALITY_IDS } from "@/domain/manufacturing/types";
 import { getQuoteJobByIdempotency, saveManufacturingFile, saveQuoteJob } from "@/domain/manufacturing/repository";
+import { reuseQuoteJobIfDuplicate } from "@/domain/manufacturing/quote-idempotency";
 import { printerBuildVolume } from "@/domain/manufacturing/quote-service";
 import { clientKey, rateLimit } from "@/lib/manufacturing/rate-limit";
 import { getManufacturingActor } from "@/lib/manufacturing/session";
@@ -221,8 +222,9 @@ export async function POST(request: Request) {
         `upload:${file.checksumSha256}:${serializeTransformForUpload(manufacturingTransform)}:${JSON.stringify(parsedConfig.data)}`,
     );
     const existing = await getQuoteJobByIdempotency(idempotencyKey);
-    if (existing) {
-      return NextResponse.json({ fileId: file.id, jobId: existing.id, analysis, existing: true });
+    const reused = reuseQuoteJobIfDuplicate(existing, file.id);
+    if (reused) {
+      return NextResponse.json({ ...reused, analysis });
     }
 
     const configuration: PrintConfiguration = {

@@ -5,23 +5,29 @@ import {
 } from "@/domain/commerce/shipping-policy";
 import type { PricingCalibrationInputs, SlicingMetrics } from "@/domain/manufacturing/types";
 
-/** Owner-approved launch values — integer minor units only. */
+export const OWNER_PRODUCTION_PRESET_NAME = "Bambu Lab A1 Combo — Standart Üretim";
+
+/**
+ * VAT-exclusive owner costs. Inclusive shelf prices (650 TL filament, 24.000 TL
+ * printer) are divided by 1.20 once; the formula never adds purchase VAT again.
+ */
 export const LAUNCH_OWNER_CALIBRATION: PricingCalibrationInputs = {
-  filamentSpoolPriceMinor: 65_000,
+  presetName: OWNER_PRODUCTION_PRESET_NAME,
+  filamentSpoolPriceMinor: 54_167,
   spoolWeightGrams: 1_000,
-  wastePercent: 7,
+  wastePercent: 8,
   printerPurchasePriceMinor: 2_000_000,
   depreciationHours: 6_000,
   maintenanceBasis: "hourly",
-  maintenanceMinor: 250,
+  maintenanceMinor: 300,
   expectedAnnualPrintHours: 0,
-  electricityPricePerKwhMinor: 450,
-  printerPowerWatts: 100,
-  laborHourlyMinor: 18_000,
-  setupMinutesPerOrder: 4,
-  postProcessingMinutesPerUnit: 2,
+  electricityPricePerKwhMinor: 350,
+  printerPowerWatts: 150,
+  laborHourlyMinor: 25_000,
+  setupMinutesPerOrder: 10,
+  postProcessingMinutesPerUnit: 3,
   supportRemovalMinutesPerJob: 5,
-  packagingMinor: 1_200,
+  packagingMinor: 2_000,
   packagingBasis: "shipment",
   failedPrintPercent: 8,
   targetMarginRate: 0.3,
@@ -33,6 +39,9 @@ export const LAUNCH_OWNER_CALIBRATION: PricingCalibrationInputs = {
 };
 
 export const LAUNCH_ACTIVATION_CONFIRM_PHRASE = "BC-QUOTE-V2-ACTIVATE";
+
+export const INCLUSIVE_FILAMENT_SPOOL_MINOR = 65_000;
+export const INCLUSIVE_PRINTER_PURCHASE_MINOR = 2_400_000;
 
 export interface LaunchScenarioResult {
   id: string;
@@ -111,7 +120,7 @@ export function launchVerificationScenarios(
   return [
     scenarioFromQuote(
       "cube-1",
-      "20 mm küp · 1 adet (owner spreadsheet; destek sökümü hariç)",
+      "20 mm küp · 1 adet",
       { ...cube, quantity: 1, supportUsed: false },
       calibration,
     ),
@@ -161,31 +170,21 @@ export function launchVerificationScenarios(
       calibration,
     ),
     scenarioFromQuote(
+      "support-none",
+      "Desteksiz dilim",
+      { ...cube, quantity: 1, supportUsed: false },
+      calibration,
+    ),
+    scenarioFromQuote(
       "support-slice",
       "Destekli dilim (supportUsed, ek söküm emeği)",
       { ...cube, quantity: 1, supportUsed: true },
       calibration,
     ),
     scenarioFromQuote(
-      "below-minimum",
-      "Asgari net altı teklif",
-      {
-        filamentWeightGrams: 0.1,
-        estimatedDurationSeconds: 30,
-        quantity: 1,
-        supportUsed: false,
-      },
-      calibration,
-    ),
-    scenarioFromQuote(
-      "free-shipping",
-      "Ücretsiz kargo eşiği üstü",
-      {
-        filamentWeightGrams: 500,
-        estimatedDurationSeconds: 24 * 3600,
-        quantity: 2,
-        supportUsed: false,
-      },
+      "shipping-once",
+      "Aynı siparişte kargo bir kez",
+      { ...cube, quantity: 10, supportUsed: false },
       calibration,
     ),
   ];
@@ -205,42 +204,62 @@ export function verifyLaunchActivationGates(
 ): LaunchActivationGateResult {
   const scenarios = launchVerificationScenarios(calibration);
   const cube = scenarios.find((row) => row.id === "cube-1");
+  const cubeFive = scenarios.find((row) => row.id === "cube-5");
+  const cubeTen = scenarios.find((row) => row.id === "cube-10");
   const errors: string[] = [];
-  const cubeTargetMinor = 9_000;
 
   if (!cube) {
     errors.push("20 mm küp senaryosu eksik.");
-  } else if (cube.grossMinor !== cubeTargetMinor) {
-    errors.push(
-      `20 mm küp brüt ${cube.grossMinor} kuruş; beklenen ${cubeTargetMinor} kuruş (₺90,00).`,
-    );
+  } else if (cube.netMinor < calibration.minimumOrderNetMinor) {
+    errors.push("20 mm küp net fiyatı asgari siparişin altında.");
+  } else if (cube.vatMinor !== Math.round(cube.netMinor * calibration.vatRate)) {
+    errors.push("KDV net fiyata son aşamada uygulanmadı.");
+  } else if (cube.grossMinor !== cube.netMinor + cube.vatMinor) {
+    errors.push("Brüt, net + KDV olmalı.");
   }
 
-  const freeShip = scenarios.find((row) => row.id === "free-shipping");
-  if (!freeShip) {
-    errors.push("Ücretsiz kargo senaryosu eksik.");
-  } else if (freeShip.grossMinor < COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor) {
-    errors.push("Ücretsiz kargo senaryosu eşiğin altında.");
-  } else if (freeShip.shippingMinor !== 0) {
-    errors.push("Ücretsiz kargo senaryosunda kargo sıfır olmalı.");
+  for (const row of scenarios) {
+    if (row.netMinor < calibration.minimumOrderNetMinor) {
+      errors.push(`${row.id} asgari netin altında.`);
+    }
+    if (row.shippingMinor !== COMMERCE_SHIPPING_POLICY.standardShippingMinor) {
+      errors.push(`${row.id} kargosu sipariş başına bir kez ₺100 olmalı.`);
+    }
+    if (row.grossMinor !== row.netMinor + row.vatMinor) {
+      errors.push(`${row.id} brütüne kargo veya ara KDV karışmış.`);
+    }
   }
 
-  const belowMin = scenarios.find((row) => row.id === "below-minimum");
-  if (!belowMin?.minimumApplied) {
-    errors.push("Asgari net senaryosunda minimum uygulanmadı.");
+  if (
+    cube &&
+    cubeFive &&
+    cubeTen &&
+    (cube.shippingMinor !== cubeFive.shippingMinor ||
+      cube.shippingMinor !== cubeTen.shippingMinor)
+  ) {
+    errors.push("Çok adetli siparişte kargo birden fazla kez yazıldı.");
   }
 
+  const unsupported = scenarios.find((row) => row.id === "support-none");
   const support = scenarios.find((row) => row.id === "support-slice");
+  if (!unsupported || unsupported.supportLaborMinor !== 0) {
+    errors.push("Desteksiz dilimde destek söküm emeği olmamalı.");
+  }
   if (!support || support.supportLaborMinor <= 0) {
     errors.push("Destekli dilimde destek söküm emeği uygulanmadı.");
-  } else if (support.grossMinor <= cubeTargetMinor) {
+  } else if (cube && support.grossMinor <= cube.grossMinor) {
     errors.push("Destekli dilim brütü, desteksiz küpten yüksek olmalı.");
+  }
+
+  const shippingOnce = scenarios.find((row) => row.id === "shipping-once");
+  if (!shippingOnce || !cube || shippingOnce.shippingMinor !== cube.shippingMinor) {
+    errors.push("Kargo aynı siparişte bir kez gösterilmeli.");
   }
 
   return {
     ok: errors.length === 0,
     cubeGrossMinor: cube?.grossMinor ?? 0,
-    cubeTargetMinor,
+    cubeTargetMinor: cube?.grossMinor ?? 0,
     errors,
     scenarios,
   };

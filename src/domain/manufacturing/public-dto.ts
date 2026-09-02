@@ -1,6 +1,8 @@
 import type { ManufacturingQuoteRecord, QuoteJobRecord, QuoteStatusEvent } from "@/domain/manufacturing/types";
 import type { WorkerReadiness } from "@/domain/manufacturing/job-poll";
 import { evaluateQueuedJobPoll } from "@/domain/manufacturing/job-poll";
+import { publicShippingPolicyFields } from "@/domain/commerce/shipping-policy";
+import { assertPublicPayloadSafe } from "@/domain/manufacturing/public-payload-security";
 
 const JOB_COPY: Record<QuoteJobRecord["state"], string> = {
   created: "Sıraya alındı",
@@ -82,7 +84,7 @@ export function publicJobPoll(
 }
 
 export function publicQuote(quote: ManufacturingQuoteRecord) {
-  return {
+  const payload = {
     id: quote.id,
     jobId: quote.jobId,
     status: quote.status,
@@ -99,6 +101,10 @@ export function publicQuote(quote: ManufacturingQuoteRecord) {
       engine: quote.metrics.engine,
     },
     breakdown: quote.publicBreakdown,
+    shipping: {
+      status: quote.publicBreakdown.shippingStatus,
+      ...publicShippingPolicyFields(),
+    },
     reviewRequired: quote.reviewRequired,
     reviewFlags: quote.reviewFlags,
     expiresAt: quote.expiresAt,
@@ -112,4 +118,6 @@ export function publicQuote(quote: ManufacturingQuoteRecord) {
       creatorUsername: quote.provenance.creatorUsername,
     },
   };
+  assertPublicPayloadSafe(payload);
+  return payload;
 }

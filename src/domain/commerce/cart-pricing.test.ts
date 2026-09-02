@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import { demoProducts } from "@/domain/catalog/demo-data";
 import {
-  FREE_SHIPPING_THRESHOLD_MINOR,
   STANDARD_SHIPPING_MINOR,
   priceCart,
 } from "@/domain/commerce/cart-pricing";
@@ -61,9 +60,9 @@ describe("server cart pricing", () => {
     expect(result.totalMinor).toBe(0);
   });
 
-  it("applies the free shipping threshold using integer minor units", () => {
+  it("applies standard shipping with no free-shipping threshold", () => {
     const product = structuredClone(demoProducts[0]);
-    product.priceMinor = FREE_SHIPPING_THRESHOLD_MINOR;
+    product.priceMinor = 150_000;
     product.variants = [];
     product.inventoryQuantity = 5;
 
@@ -72,9 +71,9 @@ describe("server cart pricing", () => {
       [product],
     );
 
-    expect(result.estimatedShippingMinor).toBe(0);
-    expect(result.totalMinor).toBe(FREE_SHIPPING_THRESHOLD_MINOR);
-    expect(result.freeShippingThresholdMinor).toBe(150_000);
+    expect(result.estimatedShippingMinor).toBe(STANDARD_SHIPPING_MINOR);
+    expect(result.totalMinor).toBe(150_000 + STANDARD_SHIPPING_MINOR);
+    expect(result.freeShippingThresholdMinor).toBe(0);
   });
 
   it("rejects archived or unpublished products and unknown variants", () => {

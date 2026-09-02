@@ -596,8 +596,8 @@ test.describe.serial("fresh unique mesh slicing", () => {
     };
     expect(cart.lines.some((line) => line.quoteId === quoteJson.id)).toBe(true);
     expect(cart.subtotalMinor).toBe(freshGross);
-    expect(cart.estimatedShippingMinor).toBe(8_990);
-    expect(cart.totalMinor).toBe(freshGross + 8_990);
+    expect(cart.estimatedShippingMinor).toBe(10_000);
+    expect(cart.totalMinor).toBe(freshGross + 10_000);
     await page.screenshot({
       path: path.join(shotDir, "fresh-cart-1920.png"),
       fullPage: true,

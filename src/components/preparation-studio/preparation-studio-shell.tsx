@@ -105,7 +105,16 @@ const TABS = [
 ] as const;
 type TabId = (typeof TABS)[number][0];
 
-type Quote = { id: string; grossMinor: number; netMinor: number; vatMinor: number; duration: number; grams: number; reviewRequired: boolean };
+type Quote = {
+  id: string;
+  grossMinor: number;
+  netMinor: number;
+  vatMinor: number;
+  duration: number;
+  grams: number;
+  reviewRequired: boolean;
+  shippingStatus: "not_included";
+};
 const fmtMm = (v: number) => `${v.toFixed(1)} mm`;
 const fmtDur = (s: number) => { const h = Math.floor(s / 3600); const m = Math.round((s % 3600) / 60); return h <= 0 ? `${m} dk` : `${h} sa ${m} dk`; };
 const allowedFile = (f: File) => ALLOWED.some((ext) => f.name.toLocaleLowerCase("tr-TR").endsWith(ext));
@@ -355,8 +364,28 @@ export function PreparationStudio() {
       }
       if (p.stateLabel) announceStatus(p.stateLabel);
       if (p.quoteId) {
-        const q = (await (await fetch(`/api/manufacturing/quotes/${p.quoteId}`, { cache: "no-store" })).json()) as { id: string; breakdown: { grossMinor: number; netMinor: number; vatMinor: number; productionDurationSeconds: number; reviewRequired: boolean }; metrics: { filamentWeightGrams: number } };
-        setQuote({ id: q.id, grossMinor: q.breakdown.grossMinor, netMinor: q.breakdown.netMinor, vatMinor: q.breakdown.vatMinor, duration: q.breakdown.productionDurationSeconds, grams: q.metrics.filamentWeightGrams, reviewRequired: q.breakdown.reviewRequired });
+        const q = (await (await fetch(`/api/manufacturing/quotes/${p.quoteId}`, { cache: "no-store" })).json()) as {
+          id: string;
+          breakdown: {
+            grossMinor: number;
+            netMinor: number;
+            vatMinor: number;
+            productionDurationSeconds: number;
+            reviewRequired: boolean;
+            shippingStatus: "not_included";
+          };
+          metrics: { filamentWeightGrams: number };
+        };
+        setQuote({
+          id: q.id,
+          grossMinor: q.breakdown.grossMinor,
+          netMinor: q.breakdown.netMinor,
+          vatMinor: q.breakdown.vatMinor,
+          duration: q.breakdown.productionDurationSeconds,
+          grams: q.metrics.filamentWeightGrams,
+          reviewRequired: q.breakdown.reviewRequired,
+          shippingStatus: q.breakdown.shippingStatus,
+        });
         setSubmitting(false);
         return;
       }
@@ -534,6 +563,9 @@ export function PreparationStudio() {
               <p>{formatMoney(quote.grossMinor)} KDV dahil</p>
               <p>{quote.grams.toFixed(2)} g · {fmtDur(quote.duration)}</p>
               <p>Net {formatMoney(quote.netMinor)} · KDV {formatMoney(quote.vatMinor)}</p>
+              {quote.shippingStatus === "not_included" ? (
+                <p>Kargo ürün fiyatına dahil değil; sepette sipariş başına bir kez gösterilir.</p>
+              ) : null}
             </div>
           ) : <p className="rounded-md border border-white/15 px-3 py-2 text-sm">Fiyat, PrusaSlicer çıktısı olmadan gösterilmez.</p>}
           <button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-cobalt text-sm font-semibold text-light-text disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button>

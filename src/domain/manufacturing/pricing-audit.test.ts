@@ -24,7 +24,7 @@ describe("pricing audit of the live 20 mm cube", () => {
     expect(cube?.vatMinor).toBe(3_968);
     expect(cube?.grossMinor).toBe(23_806);
     expect(cube?.shippingMinor).toBe(STANDARD_SHIPPING_MINOR);
-    expect(cube?.cartTotalMinor).toBe(32_796);
+    expect(cube?.cartTotalMinor).toBe(33_806);
     expect(CUBE_SLICE_METRICS.grams).toBe(4.6);
     expect(CUBE_SLICE_METRICS.seconds).toBe(1193);
   });
@@ -53,6 +53,6 @@ describe("pricing audit of the live 20 mm cube", () => {
     const cube = currentPricingAuditRows()[0];
     expect(cube?.grossMinor).toBe(23_806);
     expect(DEVELOPMENT_SEED_RATES.packagingFeeMinor).toBe(2_000);
-    expect(STANDARD_SHIPPING_MINOR).toBe(8_990);
+    expect(STANDARD_SHIPPING_MINOR).toBe(10_000);
   });
 });

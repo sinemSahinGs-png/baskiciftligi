@@ -5,6 +5,7 @@ import type {
   ManufacturingFileRecord,
   ManufacturingQuoteRecord,
   PermissionReviewRecord,
+  PricingActivationAuditEntry,
   PricingConfig,
   QuoteJobRecord,
   QuoteJobState,
@@ -455,6 +456,50 @@ export async function supabaseSavePricing(config: PricingConfig) {
     throwFrom(error, "Tarife kaydedilemedi.");
   }
   return config;
+}
+
+export async function supabaseActivatePricingConfig(input: {
+  version: number;
+  activatedBy: string;
+  auditEntry: PricingActivationAuditEntry;
+}): Promise<PricingConfig> {
+  const client = assertServiceRoleClient();
+  const now = new Date().toISOString();
+  const { data, error } = await client
+    .from("pricing_configs")
+    .update({
+      activated_at: now,
+      activated_by: sqlUuidOrNull(input.activatedBy),
+    })
+    .eq("version", input.version)
+    .is("activated_at", null)
+    .select("*")
+    .maybeSingle();
+  if (error) {
+    throwFrom(error, "Tarife etkinleştirilemedi.");
+  }
+  if (!data) {
+    throw new Error(`Tarife sürümü ${input.version} bulunamadı veya zaten etkin.`);
+  }
+
+  const { error: auditError } = await client.from("pricing_activation_audit").insert({
+    id: input.auditEntry.id,
+    at: input.auditEntry.at,
+    activated_by: sqlUuidOrNull(input.auditEntry.activatedBy),
+    previous_version: input.auditEntry.previousVersion,
+    previous_checksum: input.auditEntry.previousChecksum,
+    new_version: input.auditEntry.newVersion,
+    new_checksum: input.auditEntry.newChecksum,
+    formula_id: input.auditEntry.formulaId,
+    backup_file: input.auditEntry.backupFile,
+    verification_passed: input.auditEntry.verificationPassed,
+    cube_gross_minor: input.auditEntry.cubeGrossMinor,
+  });
+  if (auditError) {
+    throwFrom(auditError, "Etkinleştirme denetim kaydı yazılamadı.");
+  }
+
+  return pricingFromRow(data);
 }
 
 export async function supabaseListPricing() {

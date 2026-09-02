@@ -1,19 +1,24 @@
 /** Owner-approved launch commerce shipping policy — single source of truth. */
-export const COMMERCE_SHIPPING_POLICY_VERSION = 1 as const;
+export const COMMERCE_SHIPPING_POLICY_VERSION = 2 as const;
 
 export interface CommerceShippingPolicy {
   version: typeof COMMERCE_SHIPPING_POLICY_VERSION;
   currency: "TRY";
   standardShippingMinor: number;
-  freeShippingThresholdMinor: number;
+  /** Null or 0 means there is no free-shipping threshold. */
+  freeShippingThresholdMinor: number | null;
 }
 
 export const COMMERCE_SHIPPING_POLICY: CommerceShippingPolicy = {
   version: COMMERCE_SHIPPING_POLICY_VERSION,
   currency: "TRY",
-  standardShippingMinor: 8_990,
-  freeShippingThresholdMinor: 150_000,
+  standardShippingMinor: 10_000,
+  freeShippingThresholdMinor: null,
 };
+
+function normalizedFreeShippingThresholdMinor(): number {
+  return COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor ?? 0;
+}
 
 /** Cart-level shipping from server-calculated subtotal (integer minor units). */
 export function computeCartShippingMinor(subtotalMinor: number): number {
@@ -23,7 +28,8 @@ export function computeCartShippingMinor(subtotalMinor: number): number {
   if (subtotalMinor === 0) {
     return 0;
   }
-  if (subtotalMinor >= COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor) {
+  const threshold = normalizedFreeShippingThresholdMinor();
+  if (threshold > 0 && subtotalMinor >= threshold) {
     return 0;
   }
   return COMMERCE_SHIPPING_POLICY.standardShippingMinor;
@@ -34,7 +40,9 @@ export function publicShippingPolicyFields() {
   return {
     currency: COMMERCE_SHIPPING_POLICY.currency,
     standardShippingMinor: COMMERCE_SHIPPING_POLICY.standardShippingMinor,
-    freeShippingThresholdMinor: COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor,
+    freeShippingThresholdMinor: normalizedFreeShippingThresholdMinor(),
     policyVersion: COMMERCE_SHIPPING_POLICY.version,
+    chargedOncePerShipment: true,
+    includedInProductPrice: false,
   };
 }

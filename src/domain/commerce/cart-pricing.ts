@@ -71,7 +71,7 @@ export interface CartPriceResult {
 }
 
 export const FREE_SHIPPING_THRESHOLD_MINOR =
-  COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor;
+  COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor ?? 0;
 export const STANDARD_SHIPPING_MINOR = COMMERCE_SHIPPING_POLICY.standardShippingMinor;
 
 export function priceCart(
