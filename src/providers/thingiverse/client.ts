@@ -80,10 +80,23 @@ async function recordFailure(status: number, message: string) {
 
 async function thingiverseFetch<T>(path: string): Promise<T> {
   if (thingiverseFixtureMode()) {
-    const { loadThingiverseFixture } = await import(
-      "@/providers/thingiverse/fixtures"
-    );
-    return loadThingiverseFixture<T>(path);
+    try {
+      const { loadThingiverseFixture } = await import(
+        "@/providers/thingiverse/fixtures"
+      );
+      return await loadThingiverseFixture<T>(path);
+    } catch (error) {
+      const status =
+        error && typeof error === "object" && "status" in error
+          ? Number((error as { status: unknown }).status)
+          : 502;
+      const message =
+        error instanceof Error ? error.message : "Thingiverse yanıt vermedi.";
+      throw new ThingiverseApiError(
+        Number.isFinite(status) && status > 0 ? status : 502,
+        message,
+      );
+    }
   }
 
   const token = accessToken();

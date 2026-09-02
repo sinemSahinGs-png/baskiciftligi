@@ -130,6 +130,20 @@ export async function loadThingiverseFixture<T>(path: string): Promise<T> {
   if (path === "/things/763622") {
     return benchyThing as T;
   }
+  if (path === "/things/401001" || path === "/things/403001") {
+    throw Object.assign(new Error("Thingiverse kimliği reddedildi."), {
+      status: path.endsWith("401001") ? 401 : 403,
+    });
+  }
+  if (path === "/things/429001") {
+    throw Object.assign(new Error("Thingiverse hız sınırı."), { status: 429 });
+  }
+  if (path === "/things/500001") {
+    throw Object.assign(new Error("Thingiverse yanıtı 500."), { status: 500 });
+  }
+  if (path === "/things/504001") {
+    throw Object.assign(new Error("Thingiverse zaman aşımı."), { status: 504 });
+  }
   if (path.endsWith("/images")) {
     const thingId = path.match(/^\/things\/(\d+)\/images$/)?.[1];
     if (thingId === "1587568") {

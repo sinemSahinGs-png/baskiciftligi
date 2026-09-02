@@ -81,7 +81,7 @@ export function selectThingiverseDisplayUrl(
     return url
       .replace(/display_large/gi, "display_medium")
       .replace(/display_image/gi, "display_medium")
-      .replace(/display_med/gi, "display_medium");
+      .replace(/display_med(?![ium])/gi, "display_medium");
   }
   if (purpose === "thumb") {
     return url

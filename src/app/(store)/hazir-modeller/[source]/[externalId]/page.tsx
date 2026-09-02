@@ -18,12 +18,11 @@ import { ModelLibraryState } from "@/components/models/model-library-state";
 import { ModelSourceBadge } from "@/components/models/model-source-badge";
 import { PermissionReviewPanel } from "@/components/models/permission-review";
 import { ThingiverseDetail } from "@/components/models/thingiverse-detail";
-import { ThingiverseDetailUnavailable } from "@/components/models/thingiverse-detail-unavailable";
 import { siteConfig } from "@/config/site";
-import { ThingiverseApiError } from "@/providers/thingiverse/client";
+import { loadThingiverseDetailPage } from "@/domain/external-models/thingiverse-detail-load";
+import { parseThingiverseDetailFallback } from "@/domain/external-models/thingiverse-detail-fallback";
 import {
   getThingiverseConfigStatus,
-  mapThingiverseHttpStatus,
   thingiverseProvider,
 } from "@/providers/thingiverse/provider";
 import { thingiverseStatusCopy } from "@/providers/thingiverse/status";
@@ -36,19 +35,32 @@ type ExternalModelPageProps = {
     source: string;
     externalId: string;
   }>;
+  searchParams: Promise<{
+    t?: string | string[];
+    c?: string | string[];
+    img?: string | string[];
+    sourceUrl?: string | string[];
+    description?: string | string[];
+  }>;
 };
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: ExternalModelPageProps): Promise<Metadata> {
   const { source, externalId } = await params;
 
   if (source === "thingiverse") {
+    const query = await searchParams;
+    const fallback = parseThingiverseDetailFallback({
+      externalId,
+      searchParams: query,
+    });
     return createPageMetadata({
       title:
         externalId === "durum"
           ? "Thingiverse Entegrasyon Durumu"
-          : `Thingiverse modeli ${externalId}`,
+          : (fallback?.title ?? `Thingiverse modeli ${externalId}`),
       description:
         "Resmî Thingiverse API keşfi. Ticari üretim ayrı izin kaydı ister.",
       path: `/hazir-modeller/${source}/${externalId}`,
@@ -71,49 +83,35 @@ export async function generateMetadata({
 
 export default async function ExternalModelPage({
   params,
+  searchParams,
 }: ExternalModelPageProps) {
   const { source, externalId } = await params;
 
   if (source === "thingiverse" && externalId !== "durum" && /^\d+$/.test(externalId)) {
+    const query = await searchParams;
+    const fallback = parseThingiverseDetailFallback({
+      externalId,
+      searchParams: query,
+    });
     const configStatus = getThingiverseConfigStatus();
-    if (configStatus !== "connected") {
-      return (
-        <ContentPage
-          eyebrow="Harici kaynak · Thingiverse"
-          title={thingiverseStatusCopy[configStatus].title}
-          description={thingiverseStatusCopy[configStatus].body}
-          status={{ label: configStatus, tone: "warning" }}
-          actions={[
-            { href: "/hazir-modeller", label: "Model kütüphanesine dönün", variant: "outline" },
-          ]}
-          backLink={{ href: "/hazir-modeller", label: "Hazır modeller" }}
-        />
-      );
-    }
-    let model = null;
-    let fetchStatus: ReturnType<typeof mapThingiverseHttpStatus> | null = null;
-    try {
-      model = await thingiverseProvider.getById(externalId, {
-        correlationId: crypto.randomUUID(),
-      });
-    } catch (error) {
-      fetchStatus =
-        error instanceof ThingiverseApiError
-          ? mapThingiverseHttpStatus(error.status)
-          : "api_unavailable";
-    }
-    if (fetchStatus) {
-      return (
-        <ThingiverseDetailUnavailable
-          externalId={externalId}
-          status={fetchStatus}
-        />
-      );
-    }
-    if (!model) {
-      notFound();
-    }
-    return <ThingiverseDetail model={model} />;
+    const result = await loadThingiverseDetailPage(
+      { externalId, fallback },
+      {
+        fetchLive:
+          configStatus === "connected"
+            ? (id) =>
+                thingiverseProvider.getById(id, {
+                  correlationId: crypto.randomUUID(),
+                })
+            : undefined,
+      },
+    );
+    return (
+      <ThingiverseDetail
+        model={result.model}
+        enrichmentNotice={result.notice}
+      />
+    );
   }
 
   if (source === "thingiverse") {
