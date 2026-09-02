@@ -166,6 +166,12 @@ export async function localGetFile(id: string) {
 
 export async function localSaveJob(record: QuoteJobRecord, eventDetail?: string) {
   return mutate((snapshot) => {
+    const duplicate = snapshot.jobs.find(
+      (item) => item.idempotencyKey === record.idempotencyKey && item.id !== record.id,
+    );
+    if (duplicate) {
+      throw new Error("Aynı idempotency anahtarıyla iş zaten var.");
+    }
     const previous = snapshot.jobs.find((item) => item.id === record.id);
     snapshot.jobs = snapshot.jobs.filter((item) => item.id !== record.id);
     snapshot.jobs.push(record);

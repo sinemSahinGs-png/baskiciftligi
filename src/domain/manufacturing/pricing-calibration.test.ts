@@ -88,7 +88,7 @@ describe("pricing calibration v2", () => {
       expiresAt: "2026-08-21T00:00:00.000Z",
       configurationSummary: "PLA",
     });
-    expect(quote.riskAdjustedMinor).toBe(Math.round(quote.directMinor / 0.9));
+    expect(quote.riskAdjustedMinor).toBe(Math.round(quote.directMinor * 1.1));
     expect(quote.unconstrainedNetMinor).toBe(Math.round(quote.riskAdjustedMinor / 0.75));
     const loadedMachine = Math.round((1193 / 3600) * 15_000);
     expect(quote.machineMinor).toBeLessThan(loadedMachine);

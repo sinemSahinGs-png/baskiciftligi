@@ -172,6 +172,14 @@ export interface InternalCostBreakdown {
   netSellingPriceMinor: number;
   vatMinor: number;
   grossPriceMinor: number;
+  slicerFilamentWeightGrams?: number;
+  slicerDurationSeconds?: number;
+  slicerQuantity?: number;
+  slicerSupportGenerated?: boolean;
+  materialWasteMinor?: number;
+  depreciationCostMinor?: number;
+  maintenanceCostMinor?: number;
+  shippingMinor?: number;
 }
 
 export interface PricingRates {
@@ -198,6 +206,7 @@ export type MaintenanceBasis = "hourly" | "annual";
 export type PackagingBasis = "unit" | "shipment";
 
 export interface PricingCalibrationInputs {
+  presetName?: string;
   filamentSpoolPriceMinor: number;
   spoolWeightGrams: number;
   wastePercent: number;

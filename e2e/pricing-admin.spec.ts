@@ -18,6 +18,10 @@ test.describe("pricing calibration admin", () => {
       page.getByRole("heading", { name: "Sahip kalibrasyonu (etkin değil)" }),
     ).toBeVisible();
     await expect(
+      page.getByText("Bambu Lab A1 Combo — Standart Üretim"),
+    ).toBeVisible();
+    await expect(page.getByLabel("Filament rulo fiyatı (₺)")).toHaveValue("541.67");
+    await expect(
       page.getByRole("button", { name: "Üretim tarifesini etkinleştir" }),
     ).toBeDisabled();
     await page.screenshot({

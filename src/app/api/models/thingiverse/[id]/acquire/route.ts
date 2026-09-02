@@ -11,6 +11,7 @@ import {
   saveManufacturingFile,
   saveQuoteJob,
 } from "@/domain/manufacturing/repository";
+import { reuseQuoteJobIfDuplicate } from "@/domain/manufacturing/quote-idempotency";
 import { printerBuildVolume } from "@/domain/manufacturing/quote-service";
 import { DEVELOPMENT_PRINTER } from "@/domain/manufacturing/profiles";
 import {
@@ -150,14 +151,13 @@ export async function POST(
     await saveManufacturingFile(file);
 
     const existing = await getQuoteJobByIdempotency(parsed.data.idempotencyKey);
-    if (existing) {
+    const reused = reuseQuoteJobIfDuplicate(existing, file.id);
+    if (reused) {
       return NextResponse.json({
-        fileId: file.id,
-        jobId: existing.id,
+        ...reused,
         analysis,
         license,
         automaticManufacturingAllowed: canAutomaticallyQuoteLicense(license),
-        existing: true,
       });
     }
 
