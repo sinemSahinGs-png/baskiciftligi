@@ -1,30 +1,14 @@
 import type { Metadata } from "next";
 
-import { Hero } from "@/components/home/hero";
-import {
-  B2bSection,
-  CategoriesSection,
-  FeaturedProductsSection,
-  FaqSection,
-  FinalCtaSection,
-  IdeaSearchSection,
-  MaterialsSection,
-  ProcessSection,
-  ReadyModelsSection,
-  SocialProofSection,
-  ThreePathsSection,
-  UploadPromoSection,
-} from "@/components/home/storefront-sections";
+import { IndustrialHome } from "@/components/home-industrial/industrial-home";
+import { faqItems } from "@/components/home/faq-data";
 import { siteConfig } from "@/config/site";
 import {
-  listCategories,
   listMaterials,
   listProducts,
 } from "@/domain/catalog/repository";
 import { listPublishedCuratedModels } from "@/domain/curated-models/repository";
-import { faqItems } from "@/components/home/faq-data";
 import { homepagePrintLibrary } from "@/domain/home/homepage";
-import { getSiteContent } from "@/domain/site/content-repository";
 
 export const metadata: Metadata = {
   title: siteConfig.tagline,
@@ -38,11 +22,9 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [products, categories, materials, content, curatedModels] = await Promise.all([
+  const [products, materials, curatedModels] = await Promise.all([
     listProducts(),
-    listCategories(),
     listMaterials(),
-    getSiteContent(),
     listPublishedCuratedModels(4, "curated_external"),
   ]);
 
@@ -77,29 +59,11 @@ export default async function HomePage() {
 
   return (
     <main id="ana-icerik">
-      <Hero />
-      <div className="home-studio">
-        <IdeaSearchSection />
-        <ThreePathsSection />
-        <ReadyModelsSection fallback={readyFallback} />
-        <FeaturedProductsSection products={products} />
-        <CategoriesSection
-          categories={categories}
-          products={products}
-          categoriesIntro={{
-            title: "Kategoriler",
-            description:
-              content.categoriesIntroDescription ?? "Koleksiyonu sahne sahne gez.",
-          }}
-        />
-        <ProcessSection />
-        <UploadPromoSection />
-        <MaterialsSection materials={materials} />
-        <B2bSection />
-        <SocialProofSection />
-        <FaqSection />
-        <FinalCtaSection />
-      </div>
+      <IndustrialHome
+        products={products}
+        materials={materials}
+        readyModels={readyFallback}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

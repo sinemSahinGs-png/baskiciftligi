@@ -1,0 +1,52 @@
+import { CompactFaq } from "@/components/home-industrial/compact-faq";
+import { CorporateProduction } from "@/components/home-industrial/corporate-production";
+import { FeaturedProduct } from "@/components/home-industrial/featured-product";
+import { FinalCta } from "@/components/home-industrial/final-cta";
+import { IdeaCommand } from "@/components/home-industrial/idea-command";
+import { IndustrialHeaderEffects } from "@/components/home-industrial/industrial-header";
+import { MaterialsStrip } from "@/components/home-industrial/materials-strip";
+import { MobileStickyCta } from "@/components/home-industrial/mobile-sticky-cta";
+import { ModelArchive } from "@/components/home-industrial/model-archive";
+import { ProductionPaths } from "@/components/home-industrial/production-paths";
+import { ProductionProcess } from "@/components/home-industrial/production-process";
+import { QuoteFlow } from "@/components/home-industrial/quote-flow";
+import { ScrollThemeProvider } from "@/components/home-industrial/scroll-theme-provider";
+import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
+import { TrustStrip } from "@/components/home-industrial/trust-strip";
+import type { ReadyModelCard } from "@/components/home/ready-models-section";
+import type { Material, Product } from "@/domain/catalog/types";
+
+import "./home-industrial.css";
+
+export function IndustrialHome({
+  products,
+  materials,
+  readyModels,
+}: {
+  products: Product[];
+  materials: Material[];
+  readyModels: ReadyModelCard[];
+}) {
+  const featured =
+    products.find((product) => product.featured) ?? products[0] ?? null;
+
+  return (
+    <div className="hi-root pb-20 md:pb-0">
+      <IndustrialHeaderEffects />
+      <ScrollThemeProvider />
+      <TechnicalGrid />
+      <IdeaCommand />
+      <ProductionPaths />
+      <ModelArchive models={readyModels} />
+      <FeaturedProduct product={featured} />
+      <QuoteFlow />
+      <ProductionProcess />
+      <MaterialsStrip materials={materials} />
+      <CorporateProduction />
+      <TrustStrip />
+      <CompactFaq />
+      <FinalCta />
+      <MobileStickyCta />
+    </div>
+  );
+}

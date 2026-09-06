@@ -40,7 +40,7 @@ test.describe("scroll motion language", () => {
     await waitForMotion(page);
 
     const heading = page.getByRole("heading", {
-      name: "Fikrini yükle. Biz üretelim.",
+      name: /FİKRİNİ YAZ/,
     });
     await expect(heading).toBeVisible();
     await expect.poll(async () => opacityOf(page, "h1")).toBeGreaterThan(0.98);

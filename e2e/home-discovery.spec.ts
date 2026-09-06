@@ -16,20 +16,18 @@ async function overflowX(page: Page) {
   );
 }
 
-const heroSection = (page: Page) =>
-  page.locator("section").filter({
-    has: page.getByRole("heading", { name: "Fikrini yükle. Biz üretelim." }),
-  });
+const heroSection = (page: Page) => page.locator("#ne-uretmek-istiyorsun");
+const ideaInput = (page: Page) => page.locator("#ne-uretmek-istiyorsun input[name='idea']");
+const searchButton = (page: Page) =>
+  page.getByRole("button", { name: "Fikrine uygun modelleri bul" });
 
 test.describe("homepage discovery redesign", () => {
-  test("keeps the existing hero copy and CTAs", async ({ page }) => {
+  test("keeps the idea command and production CTAs", async ({ page }) => {
     await readyHome(page);
     const hero = heroSection(page);
-    await expect(
-      hero.getByRole("heading", { name: "Fikrini yükle. Biz üretelim." }),
-    ).toBeVisible();
-    await expect(hero.getByRole("link", { name: "Mağazayı keşfet" })).toBeVisible();
-    await expect(hero.getByRole("link", { name: "Model yükle", exact: true })).toBeVisible();
+    await expect(hero.getByRole("heading", { name: /FİKRİNİ YAZ/i })).toBeVisible();
+    await expect(ideaInput(page)).toBeVisible();
+    await expect(page.getByRole("link", { name: /Modelini yükle/i }).first()).toBeVisible();
   });
 
   test("fills an example idea without auto-searching", async ({ page }) => {
@@ -37,7 +35,7 @@ test.describe("homepage discovery redesign", () => {
     const idea = page.locator("#ne-uretmek-istiyorsun");
     await idea.scrollIntoViewIfNeeded();
     await idea.getByRole("button", { name: "Telefon standı" }).click();
-    await expect(idea.locator("textarea")).toHaveValue("telefon standı");
+    await expect(idea.locator("input[name='idea']")).toHaveValue("telefon standı");
     await expect(idea.getByRole("button", { name: "Daha fazla göster" })).toHaveCount(0);
     await expect(idea.getByRole("link", { name: "Modeli incele" })).toHaveCount(0);
   });
@@ -82,8 +80,8 @@ test.describe("homepage discovery redesign", () => {
     await readyHome(page);
     const idea = page.locator("#ne-uretmek-istiyorsun");
     await idea.scrollIntoViewIfNeeded();
-    await idea.locator("textarea").fill("Ejderha şeklinde telefon standı");
-    await idea.getByRole("button", { name: "Model önerilerini bul" }).click();
+    await idea.locator("input[name='idea']").fill("Ejderha şeklinde telefon standı");
+    await searchButton(page).click();
     await expect(idea.getByRole("link", { name: "Modeli incele" }).first()).toBeVisible({
       timeout: 20_000,
     });
@@ -138,8 +136,8 @@ test.describe("homepage discovery redesign", () => {
     });
     await readyHome(page);
     const idea = page.locator("#ne-uretmek-istiyorsun");
-    await idea.locator("textarea").fill("telefon standı");
-    await idea.getByRole("button", { name: "Model önerilerini bul" }).click();
+    await idea.locator("input[name='idea']").fill("telefon standı");
+    await searchButton(page).click();
     const quoteCard = idea.locator("article").filter({ hasText: "20 mm kalibrasyon küpü" });
     const inspectCard = idea.locator("article").filter({ hasText: "Ticari olmayan vazo" });
     await expect(quoteCard.getByRole("link", { name: "Bununla fiyat al" })).toBeVisible({
@@ -168,8 +166,8 @@ test.describe("homepage discovery redesign", () => {
     });
     await readyHome(page);
     const idea = page.locator("#ne-uretmek-istiyorsun");
-    await idea.locator("textarea").fill("benzersiz bir heykel");
-    await idea.getByRole("button", { name: "Model önerilerini bul" }).click();
+    await idea.locator("input[name='idea']").fill("benzersiz bir heykel");
+    await searchButton(page).click();
     await expect(idea.getByRole("heading", { name: "Tam eşleşme bulamadık" })).toBeVisible();
     await expect(idea.getByRole("link", { name: "Hazır modellere git" })).toBeVisible();
     await expect(idea.getByRole("link", { name: "Dosyanı yükle" })).toBeVisible();
@@ -193,8 +191,8 @@ test.describe("homepage discovery redesign", () => {
     });
     await readyHome(page);
     const idea = page.locator("#ne-uretmek-istiyorsun");
-    await idea.locator("textarea").fill("vazo");
-    await idea.getByRole("button", { name: "Model önerilerini bul" }).click();
+    await idea.locator("input[name='idea']").fill("vazo");
+    await searchButton(page).click();
     await expect(idea.getByText("Bağlantı hatası")).toBeVisible();
     await expect(heroSection(page)).toBeVisible();
     await expect(page.locator("#uc-uretim-yolu")).toBeVisible();
@@ -243,8 +241,8 @@ test.describe("homepage discovery redesign", () => {
     });
     await readyHome(page);
     const idea = page.locator("#ne-uretmek-istiyorsun");
-    await idea.locator("textarea").fill("telefon standı");
-    await idea.locator("textarea").press("Enter");
+    await idea.locator("input[name='idea']").fill("telefon standı");
+    await idea.locator("input[name='idea']").press("Enter");
     await expect(idea.getByRole("link", { name: "Modeli incele" }).first()).toBeVisible({
       timeout: 20_000,
     });
@@ -255,9 +253,9 @@ test.describe("homepage discovery redesign", () => {
   }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await readyHome(page);
-    await page.locator("#ne-uretmek-istiyorsun textarea").focus();
-    await expect(page.locator("#ne-uretmek-istiyorsun textarea")).toBeFocused();
-    await expect(page.getByRole("heading", { name: "Ne üretmek istiyorsun?" })).toBeVisible();
+    await page.locator("#ne-uretmek-istiyorsun input[name='idea']").focus();
+    await expect(page.locator("#ne-uretmek-istiyorsun input[name='idea']")).toBeFocused();
+    await expect(page.getByRole("heading", { name: /FİKRİNİ YAZ/i })).toBeVisible();
     await expect(page.locator("#uc-uretim-yolu [data-journey-panel='01']").first()).toBeVisible();
   });
 

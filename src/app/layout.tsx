@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
+import {
+  Barlow_Condensed,
+  Bricolage_Grotesque,
+  IBM_Plex_Mono,
+  Plus_Jakarta_Sans,
+} from "next/font/google";
 
 import { Providers } from "@/components/providers";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -16,6 +21,20 @@ const jakarta = Plus_Jakarta_Sans({
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
+
+const industrialDisplay = Barlow_Condensed({
+  variable: "--font-bc-display",
+  subsets: ["latin", "latin-ext"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
+const industrialMono = IBM_Plex_Mono({
+  variable: "--font-bc-mono",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -78,7 +97,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="tr"
-      className={`${jakarta.variable} ${bricolage.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${bricolage.variable} ${industrialDisplay.variable} ${industrialMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

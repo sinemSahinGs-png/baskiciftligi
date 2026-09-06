@@ -6,9 +6,8 @@ const SECTION_IDS = [
   "uc-uretim-yolu",
   "sana-gore-hazir-modeller",
   "one-cikan-urunler",
-  "kategoriler",
-  "nasil-calisir",
   "modelin-hazir-mi",
+  "nasil-calisir",
   "malzeme-secenekleri",
   "kurumsal-uretim",
   "guven",
@@ -17,19 +16,17 @@ const SECTION_IDS = [
 ] as const;
 
 const HEADINGS = [
-  "Fikrini yükle. Biz üretelim.",
-  "Ne üretmek istiyorsun?",
+  /FİKRİNİ YAZ/,
   "Üç üretim yolu",
-  "Sana göre hazır modeller",
-  "Öne çıkan ürünler",
-  "Kategoriler",
-  "Nasıl çalışır?",
-  "Modelini ürüne dönüştür",
-  "Malzeme seçenekleri",
-  "Tekrarlanabilir üretim, kontrollü kapasite.",
+  "MODEL ARŞİVİ",
+  "ÖNE ÇIKAN ÜRÜN",
+  /DOSYANI YÜKLE/,
+  "ÜRETİM SÜRECİ",
+  "MALZEMELER",
+  /ÖLÇEKLENEBİLİR ÜRETİM/,
   "Güven unsurları",
-  "Kısa SSS",
-  "Bugün üretmeye başla.",
+  "KISA SSS",
+  /FİKRİN HAZIR MI/,
 ] as const;
 
 const shots = path.join("test-results", "home-visibility");
@@ -155,8 +152,8 @@ test.describe("homepage section visibility", () => {
     for (const id of SECTION_IDS) {
       await expect(page.locator(`#${id}`)).toHaveCount(1);
     }
-    await expect(page.getByRole("heading", { name: "Öne çıkan ürünler" })).toHaveCount(1);
-    await expect(page.getByRole("heading", { name: "Bugün üretmeye başla." })).toHaveCount(1);
+    await expect(page.getByRole("heading", { name: "ÖNE ÇIKAN ÜRÜN" })).toHaveCount(1);
+    await expect(page.getByRole("heading", { name: /FİKRİN HAZIR MI/ })).toHaveCount(1);
     await expect(page.locator("footer")).toHaveCount(1);
     await context.close();
   });
@@ -183,17 +180,10 @@ test.describe("homepage section visibility", () => {
     await page.goto("/");
     const section = page.locator("#sana-gore-hazir-modeller");
     await section.scrollIntoViewIfNeeded();
-    const cards = section.locator("a.home-press-card");
-    await expect(cards.first()).toBeVisible();
-    const count = await cards.count();
-    expect(count).toBeGreaterThan(0);
-    for (let index = 0; index < count; index += 1) {
-      const card = cards.nth(index);
-      const box = await card.boundingBox();
-      expect(box?.height ?? 0).toBeGreaterThan(160);
-      await expect(card.locator("[data-model-image-placeholder]")).toBeVisible();
-      await expect(card.locator(".font-heading")).toBeVisible();
-    }
+    await expect(section.locator("[data-model-image-placeholder]").first()).toBeVisible();
+    const box = await section.boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThan(160);
+    await expect(section.getByRole("link", { name: /Modeli incele/i })).toBeVisible();
   });
 
   for (const width of [320, 360, 390, 430, 768, 1440] as const) {

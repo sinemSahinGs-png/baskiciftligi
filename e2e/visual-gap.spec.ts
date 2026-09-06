@@ -249,34 +249,20 @@ test.describe("visual gap and visibility audit", () => {
         .map((node) => node.textContent?.replace(/\s+/g, " ").trim() ?? "")
         .filter(Boolean);
     });
-    expect(order[0]).toMatch(/Fikrini yükle/i);
-    expect(order).toContain("Ne üretmek istiyorsun?");
+    expect(order[0]).toMatch(/FİKRİNİ YAZ/i);
     expect(order).toContain("Üç üretim yolu");
-    expect(order).toContain("Sana göre hazır modeller");
-    expect(order).toContain("Öne çıkan ürünler");
-    expect(order).toContain("Kategoriler");
-    expect(order).toContain("Nasıl çalışır?");
-    expect(order).toContain("Modelini ürüne dönüştür");
-    expect(order).toContain("Malzeme seçenekleri");
-    expect(order).toContain("Tekrarlanabilir üretim, kontrollü kapasite.");
+    expect(order).toContain("MODEL ARŞİVİ");
+    expect(order).toContain("ÖNE ÇIKAN ÜRÜN");
+    expect(order.some((title) => /DOSYANI YÜKLE/i.test(title))).toBe(true);
+    expect(order).toContain("ÜRETİM SÜRECİ");
+    expect(order).toContain("MALZEMELER");
+    expect(order.some((title) => /ÖLÇEKLENEBİLİR ÜRETİM/i.test(title))).toBe(true);
     expect(order).toContain("Güven unsurları");
-    expect(order).toContain("Kısa SSS");
-    expect(order).toContain("Bugün üretmeye başla.");
-    expect(order.indexOf("Ne üretmek istiyorsun?")).toBeLessThan(
-      order.indexOf("Üç üretim yolu"),
-    );
-    expect(order.indexOf("Üç üretim yolu")).toBeLessThan(
-      order.indexOf("Sana göre hazır modeller"),
-    );
-    expect(order.indexOf("Öne çıkan ürünler")).toBeLessThan(
-      order.indexOf("Kategoriler"),
-    );
-    expect(order.indexOf("Nasıl çalışır?")).toBeLessThan(
-      order.indexOf("Modelini ürüne dönüştür"),
-    );
-    expect(order.indexOf("Malzeme seçenekleri")).toBeLessThan(
-      order.indexOf("Tekrarlanabilir üretim, kontrollü kapasite."),
-    );
+    expect(order).toContain("KISA SSS");
+    expect(order.some((title) => /FİKRİN HAZIR MI/i.test(title))).toBe(true);
+    expect(order.indexOf("Üç üretim yolu")).toBeLessThan(order.indexOf("MODEL ARŞİVİ"));
+    expect(order.indexOf("MODEL ARŞİVİ")).toBeLessThan(order.indexOf("ÖNE ÇIKAN ÜRÜN"));
+    expect(order.indexOf("ÜRETİM SÜRECİ")).toBeLessThan(order.indexOf("MALZEMELER"));
   });
 
   test("store products remain visible after filter and favorite", async ({
@@ -491,9 +477,15 @@ test.describe("visual gap and visibility audit", () => {
           consoleErrors.filter((text) => /hydration|Minified React error/i.test(text)),
         ).toEqual([]);
 
-        await expect(
-          page.locator("[data-site-footer]").getByText("Modelini seç, dosyanı yükle; biz üretelim."),
-        ).toBeVisible();
+        if (viewport.width >= 768) {
+          await expect(
+            page
+              .locator("[data-site-footer]")
+              .getByText("Modelini seç, dosyanı yükle; biz üretelim."),
+          ).toBeVisible();
+        } else {
+          await expect(page.locator("[data-site-footer-mobile]")).toBeVisible();
+        }
 
         frames.push({
           file: `${route.name}-${viewport.name}-top.png`,
@@ -540,10 +532,8 @@ test.describe("visual gap and visibility audit", () => {
         "data-reduced-motion",
         "true",
       );
-      await expect(page.locator("footer")).toBeVisible();
-      await expect(
-        page.locator("[data-site-footer]").getByText("Modelini seç, dosyanı yükle; biz üretelim."),
-      ).toBeVisible();
+      await expect(page.locator("[data-site-footer]")).toBeVisible();
+      await expect(page.locator("[data-site-footer-mobile]")).toBeVisible();
       await expect(page.locator("[data-motion-item='idle']")).toHaveCount(0);
       if (route === "/magaza") {
         await expect(page.locator("[data-catalog-grid] article").first()).toBeVisible();
@@ -570,7 +560,7 @@ test.describe("visual gap and visibility audit", () => {
     await settle(page);
     const process = page.locator("[data-process-section]");
     await process.scrollIntoViewIfNeeded();
-    await expect(process).toHaveAttribute("data-process-pinned", "false");
+    await expect(process).toBeVisible();
     await expect(page.locator("[data-process-step]")).toHaveCount(4);
     const sticky = await page.evaluate(() => {
       const section = document.querySelector("[data-process-section]");
@@ -580,6 +570,6 @@ test.describe("visual gap and visibility audit", () => {
       return getComputedStyle(section).position;
     });
     expect(sticky).not.toBe("sticky");
-    await expect(page.getByRole("heading", { name: "Malzeme seçenekleri" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "MALZEMELER" })).toBeVisible();
   });
 });

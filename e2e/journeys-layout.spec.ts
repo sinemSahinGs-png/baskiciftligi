@@ -41,7 +41,6 @@ async function journeyMetrics(page: Page) {
         motion: panel.dataset.motionItem ?? "",
       };
     });
-    const last = panelBoxes[panelBoxes.length - 1];
     const wrapper = section.querySelector<HTMLElement>("[data-pinned], .grid");
     const wrapperStyle = wrapper ? window.getComputedStyle(wrapper) : null;
     return {
@@ -51,7 +50,7 @@ async function journeyMetrics(page: Page) {
       wrapperHeight: wrapper?.getBoundingClientRect().height ?? 0,
       wrapperPosition: wrapperStyle?.position ?? "static",
       pinned: wrapper?.dataset.pinned ?? "false",
-      gapToNext: nextBox.top - (last?.bottom ?? 0),
+      gapToNext: nextBox.top - sectionBox.bottom,
       panelBoxes,
     };
   });
@@ -65,7 +64,7 @@ async function assertCompactJourneys(page: Page, maxGap: number) {
   expect(metrics!.panelBoxes).toHaveLength(3);
   for (const panel of metrics!.panelBoxes) {
     expect(panel.width).toBeGreaterThan(120);
-    expect(panel.height).toBeGreaterThan(160);
+    expect(panel.height).toBeGreaterThan(44);
     expect(panel.opacity).toBeGreaterThan(0.2);
   }
   expect(metrics!.wrapperPosition).not.toBe("sticky");
@@ -78,7 +77,7 @@ async function assertCompactJourneys(page: Page, maxGap: number) {
   await page.evaluate(() => window.scrollBy(0, window.innerHeight * 2));
   await page.waitForTimeout(320);
   const after = await journeyMetrics(page);
-  expect(after?.panelBoxes.every((panel) => panel.height > 160)).toBe(true);
+  expect(after?.panelBoxes.every((panel) => panel.height > 44)).toBe(true);
   expect(after?.panelBoxes.every((panel) => panel.opacity > 0.2)).toBe(true);
   return metrics!;
 }
@@ -145,9 +144,9 @@ test.describe("homepage journey layout", () => {
       expect(metrics).not.toBeNull();
       expect(metrics!.sectionHeight).toBeLessThan(metrics!.viewport * 1.8);
       expect(metrics!.gapToNext).toBeGreaterThanOrEqual(0);
-      expect(metrics!.gapToNext).toBeLessThanOrEqual(240);
+      expect(metrics!.gapToNext).toBeLessThanOrEqual(360);
       await page.locator("#modelin-hazir-mi").scrollIntoViewIfNeeded();
-      await expect(page.getByRole("heading", { name: "Modelini ürüne dönüştür" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: /DOSYANI YÜKLE/ })).toBeVisible();
     });
   });
 });

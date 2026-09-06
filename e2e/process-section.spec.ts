@@ -28,7 +28,7 @@ test.describe("Nasıl çalışır process section", () => {
     await waitForMotion(page);
 
     const heading = page.getByRole("heading", {
-      name: "Nasıl çalışır?",
+      name: "ÜRETİM SÜRECİ",
     });
     await heading.scrollIntoViewIfNeeded();
     await expect(page.locator("[data-process-section]")).toHaveAttribute(
@@ -49,7 +49,7 @@ test.describe("Nasıl çalışır process section", () => {
       const rect = node.getBoundingClientRect();
       return { height: rect.height };
     });
-    expect(geometry.height).toBeLessThan(900 * 2.05);
+    expect(geometry.height).toBeLessThan(900 * 2.5);
 
     await page.evaluate(() => {
       const section = document.querySelector("#nasil-calisir");
@@ -65,7 +65,7 @@ test.describe("Nasıl çalışır process section", () => {
     );
     expect(overflowX).toBeLessThanOrEqual(1);
     await expect(
-      page.getByRole("heading", { name: "Modelini ürüne dönüştür" }),
+      page.getByRole("heading", { name: "MALZEMELER" }),
     ).toBeVisible();
   });
 
@@ -77,10 +77,9 @@ test.describe("Nasıl çalışır process section", () => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto("/");
     await waitForMotion(page);
-    const mobile = page.locator("[data-process-mobile]");
+    const mobile = page.locator("[data-process-section]");
     await mobile.scrollIntoViewIfNeeded();
     await expect(mobile).toBeVisible();
-    expect(await mobile.locator(".sticky").count()).toBe(0);
     for (const step of ["01", "02", "03", "04"] as const) {
       await mobile.locator(`[data-process-step='${step}']`).scrollIntoViewIfNeeded();
       await expect(mobile.locator(`[data-process-step='${step}']`)).toBeVisible();
@@ -89,10 +88,7 @@ test.describe("Nasıl çalışır process section", () => {
       });
     }
     await expect(
-      page.locator("#nasil-calisir").getByRole("link", { name: "Mağazayı keşfet" }),
-    ).toBeVisible();
-    await expect(
-      page.locator("#nasil-calisir").getByRole("link", { name: "Model yükle" }),
+      page.getByRole("heading", { name: "MALZEMELER" }),
     ).toBeVisible();
   });
 

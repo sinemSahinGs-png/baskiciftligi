@@ -14,14 +14,14 @@ test.describe("storefront phase 1", () => {
       page.getByRole("banner").getByRole("link", { name: "Baskı Çiftliği ana sayfa" }),
     ).toBeVisible();
 
-    const shopCta = page
-      .locator("section")
-      .filter({
-        has: page.getByRole("heading", { name: "Fikrini yükle. Biz üretelim." }),
-      })
-      .getByRole("link", { name: "Mağazayı keşfet" });
-    await expect(shopCta).toBeVisible();
-    await shopCta.click();
+    const header = page.getByRole("banner");
+    const desktopShop = header.getByRole("link", { name: "Mağaza" });
+    if (await desktopShop.isVisible()) {
+      await desktopShop.click();
+    } else {
+      await header.getByRole("button", { name: /Menüyü aç/ }).click();
+      await page.getByRole("link", { name: "Mağaza" }).first().click();
+    }
     await expect(page).toHaveURL(/\/magaza/, { timeout: 15_000 });
     await expect(
       page.getByRole("heading", { name: "Tüm ürünler" }),
