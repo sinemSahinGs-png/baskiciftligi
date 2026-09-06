@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 
@@ -43,15 +44,17 @@ export function BackgroundVideo({
   overlayClassName,
 }: BackgroundVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [posterReady, setPosterReady] = useState(false);
   const canPlayVideo = useSyncExternalStore(
     emptySubscribe,
     canAutoplayVideo,
     () => false,
   );
+  const showVideo = canPlayVideo && posterReady;
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !canPlayVideo) {
+    if (!video || !showVideo) {
       return;
     }
 
@@ -91,28 +94,33 @@ export function BackgroundVideo({
       document.removeEventListener("visibilitychange", updatePlayback);
       video.pause();
     };
-  }, [canPlayVideo, mp4Src, webmSrc]);
+  }, [showVideo, mp4Src, webmSrc]);
 
   return (
     <div className={cn("absolute inset-0 overflow-hidden bg-ink", className)}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={posterSrc}
         alt=""
-        className="absolute inset-0 size-full object-cover"
+        fill
+        priority
+        fetchPriority="high"
+        sizes="100vw"
+        quality={70}
+        className="object-cover"
+        onLoad={() => setPosterReady(true)}
+        onError={() => setPosterReady(true)}
       />
-      {canPlayVideo ? (
+      {showVideo ? (
         <video
           ref={videoRef}
           muted
           loop
           playsInline
           autoPlay
-          preload="auto"
-          poster={posterSrc}
+          preload="none"
           tabIndex={-1}
           aria-hidden="true"
-          className="absolute inset-0 size-full object-cover"
+          className="absolute inset-0 size-full bg-transparent object-cover"
         >
           <source src={mp4Src} type="video/mp4" />
           {webmSrc ? <source src={webmSrc} type="video/webm" /> : null}

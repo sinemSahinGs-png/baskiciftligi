@@ -1017,9 +1017,8 @@ html.motion-ready:not([data-reduced-motion="true"]) [data-motion-item="visible"]
   border-top: 1px solid rgb(255 255 255 / 0.06);
 }
 
-.home-studio > .home-section:nth-child(n + 3) {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 32rem;
+.home-studio > .home-section:first-child {
+  border-top: none;
 }
 
 .home-paths-viewport {
@@ -1309,15 +1308,15 @@ html.motion-ready:not([data-reduced-motion="true"]) [data-motion-item="visible"]
 .home-result-card,
 .home-reveal-card,
 .home-chip-in {
-  animation: home-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: home-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .home-mask-reveal {
-  animation: home-mask 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: home-mask 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .home-media-reveal {
-  animation: home-media-scale 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: home-media-scale 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .home-shimmer {
@@ -1376,6 +1375,9 @@ html.motion-ready:not([data-reduced-motion="true"]) [data-motion-item="visible"]
 
   .home-media-reveal,
   .home-mask-reveal,
+  .home-reveal-card,
+  .home-result-card,
+  .home-chip-in,
   .home-pipeline-node {
     opacity: 1;
     transform: none;

@@ -2,8 +2,8 @@
 
 import Image, { type ImageProps } from "next/image";
 import { useCallback, useRef, useState } from "react";
-import { Box } from "lucide-react";
 
+import { ModelImagePlaceholder } from "@/components/media/model-image-placeholder";
 import { cn } from "@/lib/utils";
 
 interface SafeImageProps extends Omit<ImageProps, "src" | "alt"> {
@@ -17,14 +17,15 @@ interface SafeImageProps extends Omit<ImageProps, "src" | "alt"> {
   showSkeleton?: boolean;
 }
 
-function isLocalMediaSrc(src: string) {
-  return src.startsWith("/catalog-media/") || src.startsWith("/demo/");
+function shouldUnoptimize(src: string) {
+  if (src.startsWith("/catalog-media/")) return true;
+  return src.startsWith("/demo/") && /\.svg(?:\?|$)/i.test(src);
 }
 
 function SafeImageInner({
   src,
   alt,
-  fallbackLabel = "Görsel yakında",
+  fallbackLabel = "3D model",
   className,
   quality = 70,
   onVerifiedLoad,
@@ -59,63 +60,46 @@ function SafeImageInner({
 
   const showImage = Boolean(src) && !failed;
 
-  if (!showImage) {
-    return (
-      <div
-        className={cn(
-          "absolute inset-0 grid place-items-center bg-[radial-gradient(circle_at_50%_38%,rgba(33,212,253,0.14),transparent_46%),linear-gradient(160deg,#171c22,#0b0f13)]",
-          className,
-        )}
-      >
-        <div className="px-4 text-center text-muted-foreground">
-          <Box aria-hidden="true" className="mx-auto size-8 opacity-70" />
-          {fallbackLabel ? (
-            <span className="mt-3 block text-xs font-semibold">{fallbackLabel}</span>
-          ) : null}
-        </div>
-      </div>
-    );
-  }
-
-  const mediaSrc = src as string;
-
   return (
     <>
-      {showSkeleton && !loaded ? (
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 animate-pulse bg-white/[0.04] motion-reduce:animate-none"
+      {showSkeleton || !showImage || !loaded ? (
+        <ModelImagePlaceholder
+          label={!showImage || failed ? fallbackLabel : ""}
         />
       ) : null}
-      <Image
-        src={mediaSrc}
-        alt={alt}
-        unoptimized={isLocalMediaSrc(mediaSrc)}
-        quality={quality}
-        priority={priority}
-        onError={(event) => {
-          setFailed(true);
-          reportFail(mediaSrc);
-          onError?.(event);
-        }}
-        onLoad={(event) => {
-          const image = event.currentTarget;
-          if (image.naturalWidth < 8 || image.naturalHeight < 8) {
+      {showImage ? (
+        <Image
+          {...props}
+          src={src as string}
+          alt={alt}
+          unoptimized={shouldUnoptimize(src as string)}
+          quality={quality}
+          priority={priority}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "low"}
+          onError={(event) => {
             setFailed(true);
-            reportFail(mediaSrc);
-            return;
-          }
-          setLoaded(true);
-          reportLoad(mediaSrc);
-          onLoad?.(event);
-        }}
-        className={cn(
-          "transition-opacity duration-300 motion-reduce:transition-none",
-          loaded ? "opacity-100" : "opacity-0",
-          className,
-        )}
-        {...props}
-      />
+            reportFail(src as string);
+            onError?.(event);
+          }}
+          onLoad={(event) => {
+            const image = event.currentTarget;
+            if (image.naturalWidth < 8 || image.naturalHeight < 8) {
+              setFailed(true);
+              reportFail(src as string);
+              return;
+            }
+            setLoaded(true);
+            reportLoad(src as string);
+            onLoad?.(event);
+          }}
+          className={cn(
+            "transition-opacity duration-300 motion-reduce:transition-none",
+            loaded ? "opacity-100" : "opacity-0",
+            className,
+          )}
+        />
+      ) : null}
     </>
   );
 }

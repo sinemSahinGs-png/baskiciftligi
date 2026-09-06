@@ -70,13 +70,13 @@ function ReadyCard({ model }: { model: ReadyModelCard }) {
       href={model.href as Route}
       className="home-press-card home-reveal-card group flex h-full flex-col overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#f3efe6] text-[#14161c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
     >
-      <span className="relative block aspect-[4/5] bg-[#11161c]">
+      <span className="relative block aspect-[4/5] bg-[#ece6d8]">
         <SafeImage
           src={model.imageUrl}
           alt={model.name}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
-          fallbackLabel="Model görseli"
+          fallbackLabel="3D model"
           className="object-cover"
         />
       </span>
