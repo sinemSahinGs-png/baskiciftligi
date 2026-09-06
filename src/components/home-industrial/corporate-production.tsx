@@ -1,6 +1,7 @@
 import type { Route } from "next";
 
 import { HomeTrackLink } from "@/components/home/home-track-link";
+import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 
 export function CorporateProduction() {
@@ -8,19 +9,19 @@ export function CorporateProduction() {
     <section
       id="kurumsal-uretim"
       data-home-theme="mono"
-      className="hi-section relative overflow-hidden"
+      className="hi-section hi-corporate relative overflow-hidden"
       aria-labelledby="corporate-heading"
     >
-      <div className="absolute inset-0">
+      <div className="hi-corporate-media" data-industrial-asset="printer-farm">
         <SlotImage
-          src="/images/home-industrial/printer-farm.avif"
+          src={industrialAssets.printerFarm}
           alt=""
           fill
           sizes="100vw"
-          className="object-cover opacity-45"
+          className="object-cover object-center opacity-55"
         />
       </div>
-      <div className="hi-shell relative py-8">
+      <div className="hi-shell hi-corporate-copy">
         <h2 id="corporate-heading" className="hi-title max-w-[12ch]">
           ÖLÇEKLENEBİLİR ÜRETİM<span className="hi-dot">.</span>
           <br />

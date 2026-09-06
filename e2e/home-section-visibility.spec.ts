@@ -5,6 +5,7 @@ const SECTION_IDS = [
   "ne-uretmek-istiyorsun",
   "uc-uretim-yolu",
   "sana-gore-hazir-modeller",
+  "mevcut-urunler",
   "one-cikan-urunler",
   "modelin-hazir-mi",
   "nasil-calisir",
@@ -19,6 +20,7 @@ const HEADINGS = [
   /FİKRİNİ YAZ/,
   "Üç üretim yolu",
   "MODEL ARŞİVİ",
+  "MAĞAZA ÜRÜNLERİ",
   "ÖNE ÇIKAN ÜRÜN",
   /DOSYANI YÜKLE/,
   "ÜRETİM SÜRECİ",
@@ -170,7 +172,11 @@ test.describe("homepage section visibility", () => {
     });
     await page.route("**/_next/image**", async (route) => {
       const url = route.request().url();
-      if (url.includes("hero") || url.includes("poster")) {
+      if (
+        url.includes("home-industrial") ||
+        url.includes("hero") ||
+        url.includes("poster")
+      ) {
         await route.continue();
         return;
       }
@@ -178,12 +184,12 @@ test.describe("homepage section visibility", () => {
     });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
-    const section = page.locator("#sana-gore-hazir-modeller");
+    const section = page.locator("#mevcut-urunler");
     await section.scrollIntoViewIfNeeded();
     await expect(section.locator("[data-model-image-placeholder]").first()).toBeVisible();
     const box = await section.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThan(160);
-    await expect(section.getByRole("link", { name: /Modeli incele/i })).toBeVisible();
+    await expect(section.locator("[data-real-product-slug]").first()).toBeVisible();
   });
 
   for (const width of [320, 360, 390, 430, 768, 1440] as const) {

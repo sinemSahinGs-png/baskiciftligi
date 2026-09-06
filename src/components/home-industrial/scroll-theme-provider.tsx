@@ -15,7 +15,10 @@ export function ScrollThemeProvider() {
         const box = node.getBoundingClientRect();
         const visible = Math.min(box.bottom, vh) - Math.max(box.top, 0);
         const ratio = Math.max(0, Math.min(1, visible / Math.max(1, Math.min(box.height, vh * 0.92))));
-        const fill = node.dataset.homeTheme === "orange" ? Math.round(ratio * 100) : 0;
+        const fill =
+          node.dataset.homeTheme === "orange"
+            ? Math.max(85, Math.round(ratio * 100))
+            : 0;
         node.style.setProperty("--hi-fill", `${fill}%`);
       }
     };

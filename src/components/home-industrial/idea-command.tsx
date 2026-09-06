@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useCallback, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
-import { CadFrame, TechnicalGrid, TechnicalPlaceholder } from "@/components/home-industrial/technical-grid";
+import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
 import { SlotImage } from "@/components/home-industrial/slot-image";
+import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { externalQuoteCtaLabel } from "@/domain/external-models/quote-action";
 import { trackHomeEvent } from "@/lib/home/analytics";
 import { announceStatus } from "@/lib/motion";
@@ -220,40 +221,35 @@ export function IdeaCommand() {
     <section
       id="ne-uretmek-istiyorsun"
       data-home-theme="mono"
-      className="hi-section relative overflow-hidden pt-6"
+      className="hi-section relative pt-6"
       aria-labelledby="idea-command-heading"
     >
       <TechnicalGrid />
       <div className="hi-shell relative">
-        <p className="hi-mono mb-4">+ TASARLA ÜRET YAŞAT</p>
-        <div className="relative">
-          <div className="pointer-events-none absolute top-[-8%] right-[-6%] h-[78%] w-[58%] max-w-md opacity-40">
-            <CadFrame className="relative h-full min-h-40">
-              <TechnicalPlaceholder />
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 160 200"
-                className="absolute inset-[12%] h-auto w-[76%] text-[color:var(--bc-white)]"
-              >
-                <ellipse cx="80" cy="28" rx="26" ry="8" fill="none" stroke="currentColor" strokeWidth="1.2" />
-                <path
-                  d="M54 28 C50 70 42 118 58 176 H102 C118 118 110 70 106 28"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                />
-                <path d="M62 92 H98 M58 128 H102" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.7" />
-                <ellipse cx="80" cy="176" rx="22" ry="6" fill="none" stroke="currentColor" strokeWidth="1.2" />
-              </svg>
-            </CadFrame>
+        <div className="hi-hero-layout">
+          <div
+            className="hi-hero-visual"
+            data-industrial-asset="hero-wireframe-vase"
+            aria-hidden="true"
+          >
+            <SlotImage
+              src={industrialAssets.heroWireframeVase}
+              alt=""
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 52vw"
+              className="object-cover object-[100%_18%]"
+            />
+            <span className="hi-frame pointer-events-none absolute inset-0" />
           </div>
-          <h1 id="idea-command-heading" className="hi-display relative max-w-[11ch]">
-            FİKRİNİ YAZ<span className="hi-dot">.</span>
-            <br />
-            BİZ ÜRETELİM<span className="hi-dot">.</span>
-          </h1>
-        </div>
-        <p className="hi-lede">Hayalinden gerçeğe, 3D üretim burada başlar.</p>
+          <div className="hi-hero-copy">
+            <p className="hi-mono mb-4">+ TASARLA ÜRET YAŞAT</p>
+            <h1 id="idea-command-heading" className="hi-display relative max-w-[11ch]">
+              FİKRİNİ YAZ<span className="hi-dot">.</span>
+              <br />
+              BİZ ÜRETELİM<span className="hi-dot">.</span>
+            </h1>
+            <p className="hi-lede">Hayalinden gerçeğe, 3D üretim burada başlar.</p>
 
         <form onSubmit={onSubmit} className="relative mt-6 max-w-2xl">
           <label htmlFor={inputId} className="sr-only">
@@ -304,6 +300,8 @@ export function IdeaCommand() {
               {chip.label}
             </button>
           ))}
+        </div>
+          </div>
         </div>
 
         {status === "searching" ? (

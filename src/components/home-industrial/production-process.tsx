@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
+import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { CadFrame } from "@/components/home-industrial/technical-grid";
 
@@ -17,12 +18,20 @@ export function ProductionProcess() {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
+  const [wide, setWide] = useState(false);
   const stageIndex = Math.min(3, Math.floor(progress * 4));
-  const stage = STAGES[stageIndex] ?? STAGES[0];
-  const pinned = reduce === false;
+  const pinned = reduce === false && wide;
 
   useEffect(() => {
-    if (reduce) return;
+    const media = window.matchMedia("(min-width: 768px)");
+    const update = () => setWide(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!pinned) return;
     const node = ref.current;
     if (!node) return;
     const onScroll = () => {
@@ -35,7 +44,7 @@ export function ProductionProcess() {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [reduce]);
+  }, [pinned]);
 
   return (
     <section
@@ -44,7 +53,7 @@ export function ProductionProcess() {
       data-home-theme="cyan-scan"
       data-process-section=""
       data-process-pinned={pinned ? "true" : "false"}
-      data-stage={stage.id}
+      data-stage={STAGES[stageIndex]?.id}
       className="hi-section hi-process"
       aria-labelledby="process-heading"
     >
@@ -53,27 +62,22 @@ export function ProductionProcess() {
         <h2 id="process-heading" className="hi-title mt-2">
           ÜRETİM SÜRECİ
         </h2>
-        <CadFrame className="relative mt-5 aspect-[16/10] min-h-48 overflow-hidden bg-[color:var(--bc-panel)]">
+        <CadFrame
+          className="hi-process-scene mt-5 overflow-hidden bg-[color:var(--bc-panel)]"
+          data-industrial-asset="production-tunnel"
+        >
           <SlotImage
-            src="/images/home-industrial/production-tunnel.avif"
+            src={industrialAssets.productionTunnel}
             alt=""
             fill
             sizes="100vw"
+            className="object-cover object-[center_70%]"
           />
-          <div className="hi-scan-beam pointer-events-none absolute inset-x-[18%] top-0 z-10 h-1/2 w-px" />
-          <svg
+          <div className="hi-scan-beam pointer-events-none absolute inset-y-0 left-[42%] z-10 w-px" />
+          <div
+            className="hi-vase pointer-events-none absolute bottom-[16%] left-[8%] z-10 h-[8%] w-[18%] border border-[color:var(--bc-cyan)]"
             aria-hidden="true"
-            viewBox="0 0 200 80"
-            className="hi-vase pointer-events-none absolute bottom-[18%] left-[8%] z-10 w-[28%] text-[color:var(--bc-white)]"
-          >
-            <path
-              d="M70 8 H130 L118 72 H82 Z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.4"
-            />
-            <ellipse cx="100" cy="8" rx="30" ry="6" fill="none" stroke="currentColor" />
-          </svg>
+          />
         </CadFrame>
         <div className="hi-rail mt-4" aria-hidden="true">
           <span />

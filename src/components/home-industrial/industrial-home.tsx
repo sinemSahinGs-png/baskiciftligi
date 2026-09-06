@@ -10,6 +10,7 @@ import { ModelArchive } from "@/components/home-industrial/model-archive";
 import { ProductionPaths } from "@/components/home-industrial/production-paths";
 import { ProductionProcess } from "@/components/home-industrial/production-process";
 import { QuoteFlow } from "@/components/home-industrial/quote-flow";
+import { RealProducts } from "@/components/home-industrial/real-products";
 import { ScrollThemeProvider } from "@/components/home-industrial/scroll-theme-provider";
 import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
 import { TrustStrip } from "@/components/home-industrial/trust-strip";
@@ -38,6 +39,7 @@ export function IndustrialHome({
       <IdeaCommand />
       <ProductionPaths />
       <ModelArchive models={readyModels} />
+      <RealProducts products={products} />
       <FeaturedProduct product={featured} />
       <QuoteFlow />
       <ProductionProcess />

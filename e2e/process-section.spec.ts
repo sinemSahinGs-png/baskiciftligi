@@ -33,7 +33,7 @@ test.describe("Nasıl çalışır process section", () => {
     await heading.scrollIntoViewIfNeeded();
     await expect(page.locator("[data-process-section]")).toHaveAttribute(
       "data-process-pinned",
-      "false",
+      "true",
     );
     await page.screenshot({ path: path.join(shots, "desktop-before.png") });
 

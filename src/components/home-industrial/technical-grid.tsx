@@ -1,3 +1,5 @@
+import type { HTMLAttributes } from "react";
+
 import { cn } from "@/lib/utils";
 
 export function TechnicalGrid({ className }: { className?: string }) {
@@ -7,11 +9,13 @@ export function TechnicalGrid({ className }: { className?: string }) {
 export function CadFrame({
   children,
   className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return <div className={cn("hi-frame", className)}>{children}</div>;
+  ...props
+}: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn("hi-frame", className)} {...props}>
+      {children}
+    </div>
+  );
 }
 
 export function TechnicalPlaceholder({ className }: { className?: string }) {

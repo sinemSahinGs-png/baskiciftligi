@@ -1,19 +1,20 @@
 "use client";
 
 import type { Route } from "next";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-import { CadFrame } from "@/components/home-industrial/technical-grid";
+import { HomeTrackLink } from "@/components/home/home-track-link";
+import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
-import { trackHomeEvent } from "@/lib/home/analytics";
+import { CadFrame } from "@/components/home-industrial/technical-grid";
 
 const PATHS = [
   {
     id: "01",
     title: "FİKRİNİ ANLAT",
     copy: "Aklındaki fikri yaz, birlikte şekillendirelim.",
-    image: "/images/home-industrial/path-idea-dragon.avif",
+    image: industrialAssets.pathIdeaDragon,
+    asset: "path-idea-dragon",
     meta: "FİKİR > MODEL > GERÇEK",
     action: "focus" as const,
   },
@@ -21,7 +22,8 @@ const PATHS = [
     id: "02",
     title: "HAZIR MODEL SEÇ",
     copy: "Binlerce model seni bekliyor.",
-    image: "/images/home-industrial/path-ready-model.avif",
+    image: industrialAssets.pathReadyModel,
+    asset: "path-ready-model",
     meta: "ARŞİV / HAZIR MODEL",
     href: "/hazir-modeller" as Route,
     action: "link" as const,
@@ -30,7 +32,8 @@ const PATHS = [
     id: "03",
     title: "DOSYANI YÜKLE",
     copy: "Kendi dosyanla hemen başla.",
-    image: "/images/home-industrial/path-upload-object.avif",
+    image: industrialAssets.pathUploadObject,
+    asset: "path-upload-object",
     meta: "STL / 3MF",
     href: "/model-yukle" as Route,
     action: "link" as const,
@@ -38,13 +41,14 @@ const PATHS = [
 ] as const;
 
 export function ProductionPaths() {
-  const router = useRouter();
   const [active, setActive] = useState(0);
+  const manualRef = useRef(false);
 
   useEffect(() => {
     const section = document.getElementById("uc-uretim-yolu");
     if (!section) return;
     const onScroll = () => {
+      if (manualRef.current) return;
       const box = section.getBoundingClientRect();
       const vh = window.innerHeight;
       const progress = Math.max(0, Math.min(1, (vh * 0.45 - box.top) / Math.max(box.height, 1)));
@@ -56,20 +60,13 @@ export function ProductionPaths() {
   }, []);
 
   function select(index: number) {
+    manualRef.current = true;
     setActive(index);
     const path = PATHS[index];
     if (path.action === "focus") {
       document.getElementById("idea-command-input")?.focus();
       document.getElementById("ne-uretmek-istiyorsun")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
     }
-    if (path.href === "/model-yukle") {
-      trackHomeEvent({ name: "upload_cta_clicked" });
-    }
-    if (path.href === "/hazir-modeller") {
-      trackHomeEvent({ name: "ready_model_cta_clicked" });
-    }
-    router.push(path.href);
   }
 
   const current = PATHS[active] ?? PATHS[0];
@@ -82,7 +79,7 @@ export function ProductionPaths() {
       className="hi-section"
       aria-labelledby="paths-heading"
     >
-      <div className="hi-shell grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] md:items-center">
+      <div className="hi-shell grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] md:items-center">
         <div>
           <h2 id="paths-heading" className="sr-only">
             Üç üretim yolu
@@ -105,16 +102,42 @@ export function ProductionPaths() {
               </span>
             </button>
           ))}
+          {current.action === "link" && current.href === "/hazir-modeller" ? (
+            <HomeTrackLink
+              event="ready_model_cta_clicked"
+              href={current.href}
+              className="hi-link mt-2"
+            >
+              Hazır modellere git →
+            </HomeTrackLink>
+          ) : null}
+          {current.action === "link" && current.href === "/model-yukle" ? (
+            <HomeTrackLink
+              event="upload_cta_clicked"
+              href={current.href}
+              className="hi-link mt-2"
+            >
+              Dosyanı yükle →
+            </HomeTrackLink>
+          ) : null}
         </div>
-        <CadFrame className="relative aspect-[4/5] min-h-56 overflow-hidden bg-[color:var(--bc-panel)] md:aspect-[5/6]">
-          <SlotImage
-            key={current.image}
-            src={current.image}
-            alt=""
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover"
-          />
+        <CadFrame className="hi-path-stage">
+          {PATHS.map((path, index) => (
+            <div
+              key={path.image}
+              className="absolute inset-0"
+              data-active={index === active ? "true" : "false"}
+              data-industrial-asset={path.asset}
+            >
+              <SlotImage
+                src={path.image}
+                alt=""
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover object-center"
+              />
+            </div>
+          ))}
           <p className="hi-mono absolute right-3 bottom-3 z-10">{current.meta}</p>
           <p className="hi-mono absolute top-3 right-3 z-10">
             {current.id} / 03

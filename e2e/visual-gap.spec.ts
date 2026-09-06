@@ -252,6 +252,7 @@ test.describe("visual gap and visibility audit", () => {
     expect(order[0]).toMatch(/FİKRİNİ YAZ/i);
     expect(order).toContain("Üç üretim yolu");
     expect(order).toContain("MODEL ARŞİVİ");
+    expect(order).toContain("MAĞAZA ÜRÜNLERİ");
     expect(order).toContain("ÖNE ÇIKAN ÜRÜN");
     expect(order.some((title) => /DOSYANI YÜKLE/i.test(title))).toBe(true);
     expect(order).toContain("ÜRETİM SÜRECİ");
@@ -261,7 +262,8 @@ test.describe("visual gap and visibility audit", () => {
     expect(order).toContain("KISA SSS");
     expect(order.some((title) => /FİKRİN HAZIR MI/i.test(title))).toBe(true);
     expect(order.indexOf("Üç üretim yolu")).toBeLessThan(order.indexOf("MODEL ARŞİVİ"));
-    expect(order.indexOf("MODEL ARŞİVİ")).toBeLessThan(order.indexOf("ÖNE ÇIKAN ÜRÜN"));
+    expect(order.indexOf("MODEL ARŞİVİ")).toBeLessThan(order.indexOf("MAĞAZA ÜRÜNLERİ"));
+    expect(order.indexOf("MAĞAZA ÜRÜNLERİ")).toBeLessThan(order.indexOf("ÖNE ÇIKAN ÜRÜN"));
     expect(order.indexOf("ÜRETİM SÜRECİ")).toBeLessThan(order.indexOf("MALZEMELER"));
   });
 

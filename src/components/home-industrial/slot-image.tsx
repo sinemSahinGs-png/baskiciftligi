@@ -3,7 +3,6 @@
 import Image, { type ImageProps } from "next/image";
 import { useState } from "react";
 
-import { industrialSlotSrc } from "@/components/home-industrial/industrial-slots";
 import { TechnicalPlaceholder } from "@/components/home-industrial/technical-grid";
 import { cn } from "@/lib/utils";
 
@@ -11,14 +10,6 @@ type SlotImageProps = Omit<ImageProps, "src" | "alt"> & {
   src?: string | null;
   alt: string;
 };
-
-function resolveSrc(src?: string | null) {
-  if (!src) return undefined;
-  if (src.startsWith("/images/home-industrial/") && src.endsWith(".avif")) {
-    return industrialSlotSrc(src.slice("/images/home-industrial/".length));
-  }
-  return src;
-}
 
 export function SlotImage({
   src,
@@ -29,40 +20,32 @@ export function SlotImage({
   onLoad,
   ...props
 }: SlotImageProps) {
-  const resolved = resolveSrc(src);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
-  const failed = !resolved || failedSrc === resolved;
-  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
-  const loaded = Boolean(resolved) && loadedSrc === resolved && !failed;
-  const showImage = Boolean(resolved) && !failed;
+  const failed = !src || failedSrc === src;
+  const showImage = Boolean(src) && !failed;
 
   return (
     <>
-      {!loaded || failed ? <TechnicalPlaceholder /> : null}
+      {failed ? <TechnicalPlaceholder /> : null}
       {showImage ? (
         <Image
           {...props}
-          src={resolved as string}
+          src={src as string}
           alt={alt}
           priority={priority}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "low"}
-          className={cn(
-            "hi-mono-img object-cover",
-            loaded ? "opacity-100" : "opacity-0",
-            className,
-          )}
+          className={cn("object-cover", className)}
           onError={(event) => {
-            if (resolved) setFailedSrc(resolved);
+            if (src) setFailedSrc(src);
             onError?.(event);
           }}
           onLoad={(event) => {
             const image = event.currentTarget;
-            if (image.naturalWidth < 8) {
-              if (resolved) setFailedSrc(resolved);
+            if (image.naturalWidth < 8 && src) {
+              setFailedSrc(src);
               return;
             }
-            if (resolved) setLoadedSrc(resolved);
             onLoad?.(event);
           }}
         />

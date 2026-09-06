@@ -331,22 +331,92 @@ html[data-home-industrial] footer {
   text-transform: uppercase;
 }
 
+.hi-hero-layout {
+  display: grid;
+  align-items: start;
+}
+
+.hi-hero-visual {
+  grid-area: 1 / 1;
+  position: relative;
+  z-index: 0;
+  width: calc(100% + 1rem);
+  min-height: 22.5rem;
+  aspect-ratio: 4 / 5;
+  justify-self: end;
+  margin-right: -1rem;
+  pointer-events: none;
+}
+
+.hi-hero-visual img {
+  object-fit: cover;
+  object-position: 100% 18%;
+}
+
+.hi-hero-copy {
+  grid-area: 1 / 1;
+  position: relative;
+  z-index: 1;
+  padding-right: 34%;
+}
+
+@media (min-width: 768px) {
+  .hi-hero-visual {
+    width: min(58%, 34rem);
+    min-height: 28rem;
+    margin-right: 0;
+  }
+
+  .hi-hero-visual img {
+    object-position: 100% 22%;
+  }
+
+  .hi-hero-copy {
+    padding-right: 42%;
+  }
+}
+
+.hi-path-stage {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--bc-panel);
+}
+
+.hi-path-stage > div {
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 480ms ease, clip-path 700ms ease;
+  clip-path: inset(0 10% 0 10%);
+}
+
+.hi-path-stage > div[data-active="true"] {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+}
+
 .hi-featured {
+  --hi-fill: 100%;
   background: color-mix(
     in srgb,
-    var(--bc-black) calc(100% - var(--hi-fill, 0%)),
-    var(--bc-orange) var(--hi-fill, 0%)
+    var(--bc-black) calc(100% - var(--hi-fill, 100%)),
+    var(--bc-orange) var(--hi-fill, 100%)
   );
   color: color-mix(
     in srgb,
-    var(--bc-white) calc(100% - var(--hi-fill, 0%)),
-    var(--bc-dark-text) var(--hi-fill, 0%)
+    var(--bc-white) calc(100% - var(--hi-fill, 100%)),
+    var(--bc-dark-text) var(--hi-fill, 100%)
   );
   border-bottom-color: color-mix(
     in srgb,
-    var(--bc-line) calc(100% - var(--hi-fill, 0%)),
-    rgb(8 10 11 / 0.28) var(--hi-fill, 0%)
+    var(--bc-line) calc(100% - var(--hi-fill, 100%)),
+    rgb(8 10 11 / 0.28) var(--hi-fill, 100%)
   );
+}
+
+.hi-featured .type-price,
+.hi-featured .tabular {
+  color: inherit;
 }
 
 .hi-featured .hi-btn {
@@ -354,19 +424,44 @@ html[data-home-industrial] footer {
   color: var(--bc-white);
 }
 
-.hi-process-pin {
-  min-height: 100svh;
+.hi-featured-art {
+  position: relative;
+  aspect-ratio: 1173 / 1341;
+  min-height: 18rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
+.hi-featured-art img {
+  mix-blend-mode: multiply;
+}
+
+.hi-corporate {
+  min-height: 18rem;
+}
+
+.hi-corporate-media {
+  position: absolute;
+  inset: 0;
+}
+
+.hi-corporate-copy {
+  position: relative;
+  z-index: 1;
+  padding-block: 2rem;
+}
+
+.hi-process-scene {
+  position: relative;
+  aspect-ratio: 1619 / 971;
+}
+
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
   .hi-process[data-process-pinned="true"] {
-    min-height: 220vh;
+    min-height: 200vh;
   }
 
   .hi-process[data-process-pinned="true"] .hi-process-pin {
     position: sticky;
     top: 3.5rem;
-    height: calc(100svh - 3.5rem);
   }
 }
 
@@ -403,15 +498,14 @@ html[data-home-industrial] footer {
   to { transform: translateY(140%); }
 }
 
-.hi-material img,
-.hi-mono-img {
-  filter: grayscale(1);
+.hi-material img {
+  filter: grayscale(0.45);
   transition: filter 500ms ease;
 }
 
 .hi-material[data-active="true"] img,
 .hi-material:hover img {
-  filter: grayscale(0.25);
+  filter: grayscale(0);
 }
 
 .hi-reveal {
