@@ -1,5 +1,3 @@
-"use client";
-
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -101,10 +99,7 @@ function CategoryTile({
           alt=""
           fill
           sizes={large ? "(max-width: 768px) 50vw, 50vw" : "(max-width: 768px) 50vw, 33vw"}
-          className={cn(
-            categoryImageFitClass(presentation.fit),
-            "home-media-reveal brightness-110 contrast-[1.04] transition duration-200 group-active:scale-[1.04] group-hover:scale-[1.03]",
-          )}
+          className={categoryImageFitClass(presentation.fit)}
           style={categoryImageStyle(presentation)}
         />
         <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />

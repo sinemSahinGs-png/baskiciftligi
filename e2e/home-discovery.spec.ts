@@ -87,9 +87,67 @@ test.describe("homepage discovery redesign", () => {
     await expect(idea.getByRole("link", { name: "Modeli incele" }).first()).toBeVisible({
       timeout: 20_000,
     });
-    await expect(idea.getByRole("link", { name: "Bununla fiyat al" }).first()).toBeVisible();
+    await expect(idea.getByRole("link", { name: "Uygunluğu kontrol et" }).first()).toBeVisible();
+    await expect(idea.getByRole("link", { name: "Bununla fiyat al" })).toHaveCount(0);
     await idea.getByRole("link", { name: "Modeli incele" }).first().click();
     await expect(page).toHaveURL(/\/hazir-modeller\/thingiverse\//);
+  });
+
+  test("shows quote CTA only when quoteAction is quote", async ({ page }) => {
+    await page.route("**/api/home/idea-search", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          status: "ok",
+          category: "masaüstü",
+          variants: ["phone stand"],
+          chips: ["phone stand"],
+          items: [
+            {
+              externalId: "1001",
+              title: "20 mm kalibrasyon küpü",
+              creatorName: "fixture-ada",
+              thumbnailUrl:
+                "https://cdn.thingiverse.com/assets/fixture/ab/cd/model/display_medium.jpg",
+              likeCount: 12,
+              collectCount: null,
+              source: "thingiverse",
+              detailPath: "/hazir-modeller/thingiverse/1001",
+              pricingAllowed: true,
+              quoteAction: "quote",
+            },
+            {
+              externalId: "2002",
+              title: "Ticari olmayan vazo",
+              creatorName: "fixture-leo",
+              thumbnailUrl:
+                "https://cdn.thingiverse.com/assets/fixture/ab/cd/model/display_medium.jpg",
+              likeCount: 4,
+              collectCount: null,
+              source: "thingiverse",
+              detailPath: "/hazir-modeller/thingiverse/2002",
+              pricingAllowed: false,
+              quoteAction: "inspect",
+            },
+          ],
+          closest: false,
+          hasMore: false,
+        }),
+      });
+    });
+    await readyHome(page);
+    const idea = page.locator("#ne-uretmek-istiyorsun");
+    await idea.locator("textarea").fill("telefon standı");
+    await idea.getByRole("button", { name: "Model önerilerini bul" }).click();
+    const quoteCard = idea.locator("article").filter({ hasText: "20 mm kalibrasyon küpü" });
+    const inspectCard = idea.locator("article").filter({ hasText: "Ticari olmayan vazo" });
+    await expect(quoteCard.getByRole("link", { name: "Bununla fiyat al" })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(inspectCard.getByRole("link", { name: "Modeli incele" })).toBeVisible();
+    await expect(inspectCard.getByRole("link", { name: "Bununla fiyat al" })).toHaveCount(0);
+    await expect(inspectCard.getByRole("link", { name: "Uygunluğu kontrol et" })).toHaveCount(0);
   });
 
   test("empty results offer alternatives", async ({ page }) => {

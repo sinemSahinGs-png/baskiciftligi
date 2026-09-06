@@ -313,6 +313,7 @@ export const thingiverseProvider: BrowsableExternalModelProvider = {
     if (!mapped) {
       return null;
     }
+    mapped.fileCount = undefined;
     try {
       const images = await getThingImages(externalId);
       mapped.imageUrls = collectThingiverseGalleryCandidates({

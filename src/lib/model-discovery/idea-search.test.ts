@@ -5,6 +5,7 @@ import {
   IDEA_SEARCH_MAX_VARIANTS,
   planIdeaSearch,
   rankAndDedupeIdeaResults,
+  requiredTokensForObject,
   sanitizeIdeaQuery,
   validateIdeaQuery,
 } from "@/lib/model-discovery/idea-search";
@@ -108,6 +109,7 @@ describe("planIdeaSearch", () => {
     expect(planIdeaSearch("Masaüstü kulaklık standı").variants.join(" ")).toMatch(
       /headphone|headset/i,
     );
+    expect(requiredTokensForObject("headphone stand")).toEqual(["headphone", "headset"]);
     expect(planIdeaSearch("İsme özel anahtarlık").variants).toEqual([
       "personalized keychain",
       "custom keychain",
@@ -140,5 +142,21 @@ describe("rankAndDedupeIdeaResults", () => {
       ["dragon phone stand"],
     );
     expect(ranked.map((item) => item.externalId)).toEqual(["2", "1", "3"]);
+  });
+
+  it("requires headphone or headset for desktop headphone stand queries", () => {
+    const ranked = rankAndDedupeIdeaResults(
+      [
+        summary({ externalId: "1", title: "SpecStand Vertical Desktop Eyeglass Holder" }),
+        summary({ externalId: "2", title: "Headphone/Headset desktop holder" }),
+        summary({ externalId: "3", title: "Desktop phone stand" }),
+      ],
+      ["desktop headphone stand", "desktop headset holder", "headphone stand desktop"],
+      ["headphone", "headset"],
+    );
+    expect(ranked[0]?.externalId).toBe("2");
+    expect(ranked.map((item) => item.title).slice(0, 1).join(" ")).toMatch(
+      /headphone|headset/i,
+    );
   });
 });

@@ -1,5 +1,3 @@
-"use client";
-
 import { homepageDemoReviews, homepageTrustSignals } from "@/domain/home/homepage";
 import { isDevelopmentDemoMode } from "@/lib/env";
 

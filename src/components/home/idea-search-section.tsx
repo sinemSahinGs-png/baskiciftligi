@@ -7,6 +7,7 @@ import { ArrowRight, Loader2, Search, Upload } from "lucide-react";
 
 import { SafeImage } from "@/components/media/safe-image";
 import { ModelCardMedia } from "@/components/models/model-card-media";
+import { externalQuoteCtaLabel } from "@/domain/external-models/quote-action";
 import {
   homepageIdeaExamples,
   homepageIdeaPlaceholders,
@@ -200,7 +201,7 @@ export function IdeaSearchSection() {
       className="home-section relative overflow-hidden"
       aria-labelledby="idea-search-heading"
     >
-      <div className="pointer-events-none absolute inset-0 home-tech-grid opacity-50" />
+      <div className="pointer-events-none absolute inset-0 home-tech-grid opacity-25" />
       <div className="home-shell relative">
         <p className="text-[0.8125rem] font-semibold tracking-[0.14em] text-cyan uppercase">
           Keşif
@@ -296,9 +297,15 @@ export function IdeaSearchSection() {
             {status === "ok" && visibleItems.length > 0 ? (
               <div className="mt-3 border-t border-white/8 px-1 pt-4 pb-2">
                 {closest ? (
-                  <p className="mb-3 px-2 text-base leading-7 text-white/80">
-                    Tam eşleşme bulamadık. Bunlar fikrine yakın modeller.
-                  </p>
+                  <div className="mb-3 px-2">
+                    <h3 className="font-heading text-xl font-semibold tracking-[-0.03em]">
+                      Yakın sonuçlar
+                    </h3>
+                    <p className="mt-1.5 text-base leading-7 text-white/80">
+                      Tam eşleşme yok. Bunlar fikrine en yakın modeller; ana nesne
+                      her başlıkta geçmeyebilir.
+                    </p>
+                  </div>
                 ) : null}
                 <ul className="grid gap-3 sm:grid-cols-2">
                   {visibleItems.map((item, index) => (
@@ -476,13 +483,22 @@ function emptyTitle(status: SearchUiStatus) {
   return "Tam eşleşme bulamadık";
 }
 
+function ideaQuoteAction(item: IdeaSearchCard) {
+  if (item.quoteAction) return item.quoteAction;
+  return item.pricingAllowed ? "verify" : "inspect";
+}
+
 function IdeaResultCard({ item }: { item: IdeaSearchCard }) {
+  const action = ideaQuoteAction(item);
+  const quoteLabel = externalQuoteCtaLabel(action);
+
   return (
     <article className="home-press-card flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#f3efe6] text-[#14161c]">
       <ModelCardMedia
         src={item.thumbnailUrl}
         alt={item.title}
         badge="Hazır 3D model"
+        sizes="(max-width: 640px) 100vw, 50vw"
         className="aspect-[4/5] rounded-none bg-[#11161c] sm:rounded-none"
       />
       <div className="flex min-w-0 flex-1 flex-col p-3.5">
@@ -491,7 +507,7 @@ function IdeaResultCard({ item }: { item: IdeaSearchCard }) {
         </h3>
         {item.likeCount != null ? (
           <p className="mt-1 text-[0.8125rem] leading-5 text-[#3d4148]">
-            <CountUp value={item.likeCount} /> beğeni
+            {item.likeCount} beğeni
           </p>
         ) : null}
         <div className="mt-3 flex flex-col gap-2">
@@ -503,43 +519,24 @@ function IdeaResultCard({ item }: { item: IdeaSearchCard }) {
             Modeli incele
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
-          <Link
-            href={item.detailPath as Route}
-            onClick={() => trackHomeEvent({ name: "idea_result_quote_started" })}
-            className="home-cta-press inline-flex min-h-11 items-center justify-center rounded-xl border border-black/12 px-3 text-[0.9375rem] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
-          >
-            Bununla fiyat al
-          </Link>
+          {quoteLabel ? (
+            <Link
+              href={item.detailPath as Route}
+              onClick={() => trackHomeEvent({ name: "idea_result_quote_started" })}
+              className="home-cta-press inline-flex min-h-11 items-center justify-center rounded-xl border border-black/12 px-3 text-[0.9375rem] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
+            >
+              {quoteLabel}
+            </Link>
+          ) : null}
         </div>
-        {!item.pricingAllowed ? (
+        {action !== "quote" ? (
           <p className="mt-2 text-[0.8125rem] leading-5 text-[#3d4148]">
-            Fiyat, lisans ve indirilebilir üretim dosyası doğrulanınca netleşir.
+            {action === "inspect"
+              ? "Bu model otomatik fiyata uygun değil. Önce detayı incele."
+              : "Fiyat, lisans ve indirilebilir üretim dosyası doğrulanınca netleşir."}
           </p>
         ) : null}
       </div>
     </article>
   );
-}
-
-function CountUp({ value }: { value: number }) {
-  const [shown, setShown] = useState(0);
-
-  useEffect(() => {
-    let frame = 0;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const start = performance.now();
-    const tick = (now: number) => {
-      if (reduced) {
-        setShown(value);
-        return;
-      }
-      const t = Math.min(1, (now - start) / 420);
-      setShown(Math.round(value * t));
-      if (t < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [value]);
-
-  return <span className="tabular-nums">{shown}</span>;
 }

@@ -1,42 +1,37 @@
 "use client";
 
-import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import useEmblaCarousel from "embla-carousel-react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Box, Search, Upload } from "lucide-react";
 
+import { HomeTrackLink } from "@/components/home/home-track-link";
 import { homepageJourneys } from "@/domain/home/homepage";
-import { trackHomeEvent } from "@/lib/home/analytics";
 import { cn } from "@/lib/utils";
 
 const icons = [Search, Box, Upload] as const;
 const accents = ["text-cyan", "text-violet", "text-orange"] as const;
 
 export function ThreePathsSection() {
+  const trackRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState(0);
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "start",
-    containScroll: "trimSnaps",
-    dragFree: false,
-    breakpoints: {
-      "(min-width: 1024px)": { active: false },
-    },
-  });
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSelected(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
 
   useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.on("select", onSelect);
-    emblaApi.on("reInit", onSelect);
-    return () => {
-      emblaApi.off("select", onSelect);
-      emblaApi.off("reInit", onSelect);
-    };
-  }, [emblaApi, onSelect]);
+    const track = trackRef.current;
+    if (!track) return;
+    const slides = [...track.children];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible?.target) return;
+        const index = slides.indexOf(visible.target);
+        if (index >= 0) setSelected(index);
+      },
+      { root: track, threshold: [0.55, 0.75] },
+    );
+    slides.forEach((slide) => observer.observe(slide));
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section
@@ -49,16 +44,12 @@ export function ThreePathsSection() {
         <p className="home-lede">Yaz, seç veya yükle. Hepsi aynı stüdyoda üretime bağlanır.</p>
 
         <div
-          className="mt-5 overflow-hidden lg:overflow-visible"
+          className="home-paths-viewport mt-5"
           data-pinned="false"
-          ref={emblaRef}
         >
-          <div className="flex gap-3 lg:grid lg:grid-cols-3 lg:gap-3">
+          <div ref={trackRef} className="home-paths-track">
             {homepageJourneys.map((path, index) => (
-              <div
-                key={path.id}
-                className="min-w-0 shrink-0 basis-[calc(100%-1.15rem)] lg:basis-auto"
-              >
+              <div key={path.id} className="home-paths-slide">
                 <PathCard path={path} index={index} active={selected === index} />
               </div>
             ))}
@@ -77,7 +68,11 @@ export function ThreePathsSection() {
               role="tab"
               aria-selected={selected === index}
               aria-label={`${index + 1}. ${path.title}`}
-              onClick={() => emblaApi?.scrollTo(index)}
+              onClick={() => {
+                const slide = trackRef.current?.children[index] as HTMLElement | undefined;
+                slide?.scrollIntoView({ inline: "start", block: "nearest", behavior: "smooth" });
+                setSelected(index);
+              }}
               className="grid size-11 place-items-center"
             >
               <span
@@ -104,15 +99,19 @@ function PathCard({
   active: boolean;
 }) {
   const Icon = icons[index] ?? Search;
+  const event =
+    path.id === "model-yukle"
+      ? ("upload_cta_clicked" as const)
+      : path.id === "hazir-model"
+        ? ("ready_model_cta_clicked" as const)
+        : undefined;
+
   return (
-    <Link
+    <HomeTrackLink
+      event={event}
       href={path.href}
       data-journey-panel={String(index + 1).padStart(2, "0")}
       data-motion-item="visible"
-      onClick={() => {
-        if (path.id === "model-yukle") trackHomeEvent({ name: "upload_cta_clicked" });
-        if (path.id === "hazir-model") trackHomeEvent({ name: "ready_model_cta_clicked" });
-      }}
       className={cn(
         "home-press-card group relative flex min-h-[13.5rem] flex-col overflow-hidden rounded-[1.25rem] border bg-[#141a21] p-5 sm:min-h-[15rem]",
         active ? "border-cyan/45" : "border-white/10",
@@ -130,6 +129,6 @@ function PathCard({
         {path.cta}
         <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
       </span>
-    </Link>
+    </HomeTrackLink>
   );
 }

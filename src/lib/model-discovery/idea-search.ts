@@ -384,16 +384,69 @@ export function ideaSearchCacheKey(plan: IdeaSearchPlan, page: number) {
   return `${plan.normalized}:${plan.variants.join("|")}:${page}`;
 }
 
-export function scoreIdeaResult(item: ExternalModelSummary, variants: string[]) {
-  const haystack = `${item.title} ${item.description ?? ""}`.toLocaleLowerCase("en-US");
+const GENERIC_SCORE_TERMS = new Set([
+  "desktop",
+  "holder",
+  "stand",
+  "wall",
+  "mount",
+  "custom",
+  "personalized",
+  "name",
+  "cute",
+  "lucky",
+  "vertical",
+]);
+
+const REQUIRED_OBJECT_TOKENS: Record<string, string[]> = {
+  "phone stand": ["phone", "smartphone"],
+  "headphone stand": ["headphone", "headset"],
+  "guitar hanger": ["guitar"],
+  planter: ["planter", "pot"],
+  keychain: ["keychain", "keyring"],
+  "pet bowl": ["bowl", "feeder"],
+  vase: ["vase"],
+  "desk organizer": ["organizer", "organiser"],
+  figurine: ["figurine", "figure", "statue", "sculpture"],
+  lamp: ["lamp", "lampshade"],
+  "candle holder": ["candle", "tealight"],
+  "wall decor": ["decor", "art", "sculpture"],
+  "pet accessory": ["pet", "cat", "dog"],
+};
+
+export function requiredTokensForObject(object: string | null) {
+  if (!object) return [];
+  if (REQUIRED_OBJECT_TOKENS[object]) {
+    return REQUIRED_OBJECT_TOKENS[object];
+  }
+  return object
+    .split(/\s+/)
+    .filter((token) => token.length > 2 && !GENERIC_SCORE_TERMS.has(token));
+}
+
+export function scoreIdeaResult(
+  item: ExternalModelSummary,
+  variants: string[],
+  requiredTokens: string[] = [],
+) {
+  const title = item.title.toLocaleLowerCase("en-US");
+  const haystack = `${title} ${item.description ?? ""}`.toLocaleLowerCase("en-US");
   let value = 0;
   for (const variant of variants) {
-    const terms = variant.split(/\s+/).filter(Boolean);
-    if (haystack.includes(variant)) value += 14;
-    for (const term of terms) {
-      if (haystack.includes(term)) value += 4;
-      if (item.title.toLocaleLowerCase("en-US").includes(term)) value += 3;
+    const phrase = variant.toLocaleLowerCase("en-US");
+    if (title.includes(phrase)) value += 22;
+    else if (haystack.includes(phrase)) value += 14;
+    for (const term of phrase.split(/\s+/).filter(Boolean)) {
+      const generic = GENERIC_SCORE_TERMS.has(term);
+      if (title.includes(term)) value += generic ? 1 : 6;
+      else if (haystack.includes(term)) value += generic ? 1 : 4;
     }
+  }
+  if (requiredTokens.length > 0) {
+    const hit = requiredTokens.some(
+      (token) => title.includes(token) || haystack.includes(token),
+    );
+    value += hit ? 18 : -28;
   }
   if (item.thumbnailUrl) value += 2;
   if (typeof item.likeCount === "number") {
@@ -406,6 +459,7 @@ export function scoreIdeaResult(item: ExternalModelSummary, variants: string[]) 
 export function rankAndDedupeIdeaResults(
   items: ExternalModelSummary[],
   variants: string[],
+  requiredTokens: string[] = [],
 ) {
   const seen = new Set<string>();
   const unique: ExternalModelSummary[] = [];
@@ -416,18 +470,28 @@ export function rankAndDedupeIdeaResults(
     unique.push(item);
   }
   return unique.sort(
-    (a, b) => scoreIdeaResult(b, variants) - scoreIdeaResult(a, variants),
+    (a, b) =>
+      scoreIdeaResult(b, variants, requiredTokens) -
+      scoreIdeaResult(a, variants, requiredTokens),
   );
 }
 
 export function isWeakIdeaMatch(
   items: ExternalModelSummary[],
   variants: string[],
+  requiredTokens: string[] = [],
 ) {
   if (items.length === 0) return false;
   const top = items[0];
   if (!top) return false;
-  return scoreIdeaResult(top, variants) < 8;
+  const title = top.title.toLocaleLowerCase("en-US");
+  if (
+    requiredTokens.length > 0 &&
+    !requiredTokens.some((token) => title.includes(token))
+  ) {
+    return true;
+  }
+  return scoreIdeaResult(top, variants, requiredTokens) < 8;
 }
 
 export interface IdeaSearchCard {
@@ -440,4 +504,5 @@ export interface IdeaSearchCard {
   source: "thingiverse";
   detailPath: string;
   pricingAllowed: boolean;
+  quoteAction?: "quote" | "verify" | "inspect";
 }

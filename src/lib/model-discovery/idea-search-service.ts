@@ -1,3 +1,4 @@
+import { resolveExternalQuoteAction } from "@/domain/external-models/quote-action";
 import { buildThingiverseDetailPath } from "@/domain/external-models/thingiverse-detail-fallback";
 import { hasUsableThingiverseThumbnail } from "@/domain/external-models/thingiverse-images";
 import {
@@ -5,6 +6,7 @@ import {
   ideaSearchCacheKey,
   isWeakIdeaMatch,
   rankAndDedupeIdeaResults,
+  requiredTokensForObject,
   type IdeaSearchCard,
   type IdeaSearchPlan,
 } from "@/lib/model-discovery/idea-search";
@@ -86,6 +88,10 @@ function toCard(item: ExternalModelSummary): IdeaSearchCard | null {
       thumbnailUrl: item.thumbnailUrl,
     }),
     pricingAllowed: Boolean(item.pricingAllowed),
+    quoteAction: resolveExternalQuoteAction({
+      ...item,
+      fileCount: undefined,
+    }),
   };
 }
 
@@ -173,10 +179,12 @@ export async function executeIdeaSearch(input: {
     }
   }
 
-  const ranked = rankAndDedupeIdeaResults(collected, input.plan.variants).slice(
-    0,
-    IDEA_SEARCH_RESULT_CAP,
-  );
+  const requiredTokens = requiredTokensForObject(input.plan.object);
+  const ranked = rankAndDedupeIdeaResults(
+    collected,
+    input.plan.variants,
+    requiredTokens,
+  ).slice(0, IDEA_SEARCH_RESULT_CAP);
   const items = ranked
     .map(toCard)
     .filter((item): item is IdeaSearchCard => Boolean(item));
@@ -195,7 +203,8 @@ export async function executeIdeaSearch(input: {
     variants: input.plan.variants,
     chips: input.plan.chips,
     items,
-    closest: items.length > 0 && isWeakIdeaMatch(ranked, input.plan.variants),
+    closest:
+      items.length > 0 && isWeakIdeaMatch(ranked, input.plan.variants, requiredTokens),
     hasMore: items.length >= IDEA_SEARCH_RESULT_CAP,
   };
 

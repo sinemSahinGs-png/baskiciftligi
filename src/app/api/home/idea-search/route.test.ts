@@ -77,7 +77,7 @@ describe("POST /api/home/idea-search", () => {
     const body = (await response.json()) as {
       status: string;
       variants: string[];
-      items: Array<{ externalId: string }>;
+      items: Array<{ externalId: string; quoteAction?: string }>;
       displayQuery: string;
     };
     expect(body.status).toBe("ok");
@@ -90,6 +90,7 @@ describe("POST /api/home/idea-search", () => {
     const ids = body.items.map((item) => item.externalId);
     expect(new Set(ids).size).toBe(ids.length);
     expect(body.displayQuery).not.toContain("<");
+    expect(body.items.every((item) => item.quoteAction === "verify")).toBe(true);
   });
 
   it("rejects empty and oversized queries", async () => {

@@ -1017,13 +1017,69 @@ html.motion-ready:not([data-reduced-motion="true"]) [data-motion-item="visible"]
   border-top: 1px solid rgb(255 255 255 / 0.06);
 }
 
-.home-studio > .home-section:first-child {
-  border-top: none;
+.home-studio > .home-section:nth-child(n + 3) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 32rem;
 }
 
-@media (min-width: 640px) {
-  .home-section {
-    padding-block: 2.5rem;
+.home-paths-viewport {
+  overflow: hidden;
+}
+
+.home-paths-track {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.home-paths-track::-webkit-scrollbar {
+  display: none;
+}
+
+.home-paths-slide {
+  min-width: 0;
+  flex: 0 0 calc(100% - 1.15rem);
+  scroll-snap-align: start;
+}
+
+@media (min-width: 1024px) {
+  .home-paths-viewport {
+    overflow: visible;
+  }
+
+  .home-paths-track {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .home-paths-slide {
+    flex: unset;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-paths-track {
+    scroll-behavior: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-reveal-card,
+  .home-mask-reveal,
+  .home-media-reveal,
+  .home-result-card,
+  .home-chip-in {
+    animation-duration: 0.28s;
+  }
+
+  .home-pipeline-line,
+  .home-pipeline-node {
+    animation-duration: 0.45s;
   }
 }
 
@@ -1289,7 +1345,7 @@ html.motion-ready:not([data-reduced-motion="true"]) [data-motion-item="visible"]
 
 .home-process-fill {
   transform-origin: top;
-  transition: transform 0.18s linear;
+  transform: scaleY(1);
 }
 
 .home-pipeline-line {

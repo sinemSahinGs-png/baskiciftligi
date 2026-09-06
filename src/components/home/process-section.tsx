@@ -1,8 +1,5 @@
-"use client";
-
 import type { Route } from "next";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
 
 import {
   homepageProcessCopy,
@@ -10,42 +7,9 @@ import {
 } from "@/domain/home/homepage";
 
 export function ProcessSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const node = sectionRef.current;
-    if (!node) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
-
-    let frame = 0;
-    const update = () => {
-      const rect = node.getBoundingClientRect();
-      const view = window.innerHeight;
-      const start = view * 0.72;
-      const span = Math.max(1, rect.height + view * 0.2);
-      setProgress(Math.min(1, Math.max(0, (start - rect.top) / span)));
-    };
-    const onScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(update);
-    };
-    frame = requestAnimationFrame(update);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
-
   return (
     <section
       id="nasil-calisir"
-      ref={sectionRef}
       data-process-section
       data-process-pinned="false"
       className="home-section"
@@ -62,45 +26,42 @@ export function ProcessSection() {
             aria-hidden="true"
             className="pointer-events-none absolute top-3 bottom-3 left-[1.15rem] w-px bg-white/12 sm:hidden"
           >
-            <span
-              className="home-process-fill absolute inset-x-0 top-0 h-full origin-top bg-cyan"
-              style={{ transform: `scaleY(${progress})` }}
-            />
+            <span className="home-process-fill absolute inset-x-0 top-0 h-full origin-top bg-cyan" />
           </span>
           <ol
             className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3"
             data-process-mobile
             data-process-desktop
           >
-          {homepageProcessSteps.map((step) => (
-            <li
-              key={step.number}
-              data-process-step={step.number}
-              data-process-active="true"
-              className="relative pl-10 sm:pl-0"
-            >
-              <p className="font-heading text-4xl leading-none font-bold tracking-[-0.06em] text-cyan">
-                {step.number}
-              </p>
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 72 8"
-                className="mt-3 h-2 w-16 text-orange"
+            {homepageProcessSteps.map((step) => (
+              <li
+                key={step.number}
+                data-process-step={step.number}
+                data-process-active="true"
+                className="relative pl-10 sm:pl-0"
               >
-                <path
-                  d="M1 6 C18 6 18 2 36 2 S54 6 71 2"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  className="home-pipeline-line"
-                />
-              </svg>
-              <h3 className="mt-3 font-heading text-xl font-semibold tracking-[-0.03em]">
-                {step.title}
-              </h3>
-              <p className="mt-1.5 text-base leading-7 text-white/80">{step.description}</p>
-            </li>
-          ))}
+                <p className="font-heading text-4xl leading-none font-bold tracking-[-0.06em] text-cyan">
+                  {step.number}
+                </p>
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 72 8"
+                  className="mt-3 h-2 w-16 text-orange"
+                >
+                  <path
+                    d="M1 6 C18 6 18 2 36 2 S54 6 71 2"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    className="home-pipeline-line"
+                  />
+                </svg>
+                <h3 className="mt-3 font-heading text-xl font-semibold tracking-[-0.03em]">
+                  {step.title}
+                </h3>
+                <p className="mt-1.5 text-base leading-7 text-white/80">{step.description}</p>
+              </li>
+            ))}
           </ol>
         </div>
 

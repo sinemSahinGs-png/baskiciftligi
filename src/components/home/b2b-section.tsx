@@ -1,10 +1,7 @@
-"use client";
-
 import type { Route } from "next";
-import Link from "next/link";
 
+import { HomeTrackLink } from "@/components/home/home-track-link";
 import { homepageCorporateOffers } from "@/domain/home/homepage";
-import { trackHomeEvent } from "@/lib/home/analytics";
 
 export function B2bSection() {
   return (
@@ -22,13 +19,13 @@ export function B2bSection() {
             <li>Numune ve seri üretim aynı süreçte</li>
             <li>Dosya yalnızca üretim değerlendirmesi için işlenir</li>
           </ul>
-          <Link
+          <HomeTrackLink
+            event="corporate_cta_clicked"
             href={"/kurumsal-uretim#brief" as Route}
-            onClick={() => trackHomeEvent({ name: "corporate_cta_clicked" })}
             className="home-cta-press mt-5 inline-flex min-h-12 items-center rounded-xl bg-orange px-5 text-[0.9375rem] font-semibold text-midnight"
           >
             Kurumsal teklif al
-          </Link>
+          </HomeTrackLink>
         </div>
         <ul className="grid gap-px overflow-hidden rounded-[1.25rem] border border-white/10 bg-white/10 sm:grid-cols-2">
           {homepageCorporateOffers.slice(0, 4).map((item) => (

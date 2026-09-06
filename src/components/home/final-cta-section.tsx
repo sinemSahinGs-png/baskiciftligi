@@ -1,9 +1,6 @@
-"use client";
-
 import type { Route } from "next";
-import Link from "next/link";
 
-import { trackHomeEvent } from "@/lib/home/analytics";
+import { HomeTrackLink } from "@/components/home/home-track-link";
 
 export function FinalCtaSection() {
   return (
@@ -20,20 +17,20 @@ export function FinalCtaSection() {
           >
             Fikrini anlat
           </a>
-          <Link
+          <HomeTrackLink
+            event="ready_model_cta_clicked"
             href={"/hazir-modeller" as Route}
-            onClick={() => trackHomeEvent({ name: "ready_model_cta_clicked" })}
             className="home-cta-press inline-flex min-h-12 items-center justify-center rounded-xl border border-white/20 px-5 text-[0.9375rem] font-semibold"
           >
             Hazır model seç
-          </Link>
-          <Link
+          </HomeTrackLink>
+          <HomeTrackLink
+            event="upload_cta_clicked"
             href={"/model-yukle" as Route}
-            onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
             className="home-cta-press inline-flex min-h-12 items-center justify-center rounded-xl border border-white/20 px-5 text-[0.9375rem] font-semibold"
           >
             Dosyanı yükle
-          </Link>
+          </HomeTrackLink>
         </div>
       </div>
     </section>

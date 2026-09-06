@@ -1,13 +1,10 @@
-"use client";
-
 import type { Route } from "next";
 import Link from "next/link";
 
 import { EmptyCatalogState } from "@/components/catalog/empty-catalog-state";
-import { ProductStage } from "@/components/catalog/product-stage";
 import { PriceDisplay } from "@/components/commerce/price-display";
+import { SafeImage } from "@/components/media/safe-image";
 import type { Product } from "@/domain/catalog/types";
-import { stageForCategory } from "@/domain/visual/stages";
 
 export function FeaturedProductsSection({ products }: { products: Product[] }) {
   const featured = products.filter((product) => product.featured);
@@ -44,22 +41,21 @@ export function FeaturedProductsSection({ products }: { products: Product[] }) {
           </Link>
         </div>
 
-        <article className="home-press-card group mt-5 overflow-hidden rounded-[1.25rem] border border-white/10">
-          <ProductStage
-            stage={stageForCategory(hero.categorySlugs[0] ?? "ev-ve-dekorasyon")}
-            src={hero.media[0]?.url}
-            alt={hero.media[0]?.alt ?? hero.name}
-            isolated={hero.media[0]?.isolated ?? false}
-            ratio="featured"
-            sizes="(max-width: 768px) 100vw, 70vw"
-            className="rounded-[1.25rem]"
-          >
+        <article className="home-press-card group relative mt-5 overflow-hidden rounded-[1.25rem] border border-white/10">
+          <div className="relative aspect-[4/3] bg-[#11161c] md:aspect-[5/4]">
+            <SafeImage
+              src={hero.media[0]?.url}
+              alt={hero.media[0]?.alt ?? hero.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 70vw"
+              className="object-cover"
+            />
             <Link
               href={`/urun/${hero.slug}` as Route}
               className="absolute inset-0 z-10"
               aria-label={`${hero.name} ürününü incele`}
             />
-            <div className="absolute inset-x-0 bottom-0 z-20 flex flex-wrap items-end justify-between gap-3 p-4 text-light-text sm:p-6">
+            <div className="absolute inset-x-0 bottom-0 z-20 flex flex-wrap items-end justify-between gap-3 bg-gradient-to-t from-black/70 to-transparent p-4 text-light-text sm:p-6">
               <div>
                 <span className="rounded-full bg-[#f3efe6] px-2.5 py-1 text-[0.75rem] font-semibold text-[#14161c]">
                   Ürün
@@ -82,30 +78,26 @@ export function FeaturedProductsSection({ products }: { products: Product[] }) {
                 Ürünü incele
               </span>
             </div>
-          </ProductStage>
+          </div>
         </article>
 
         {rest.length > 0 ? (
           <div className="mt-3 grid grid-cols-2 gap-3">
-            {rest.slice(0, 2).map((product, index) => (
-              <article
-                key={product.id}
-                className="home-reveal-card min-w-0"
-                style={{ animationDelay: `${index * 60}ms` }}
-              >
+            {rest.slice(0, 2).map((product) => (
+              <article key={product.id} className="home-reveal-card min-w-0">
                 <Link
                   href={`/urun/${product.slug}` as Route}
                   className="home-press-card group flex h-full flex-col overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#f3efe6] text-[#14161c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
                 >
-                  <ProductStage
-                    stage={stageForCategory(product.categorySlugs[0] ?? "ev-ve-dekorasyon")}
-                    src={product.media[0]?.url}
-                    alt={product.media[0]?.alt ?? product.name}
-                    isolated={product.media[0]?.isolated ?? false}
-                    ratio="standard"
-                    sizes="50vw"
-                    className="rounded-none"
-                  />
+                  <span className="relative block aspect-[4/5] bg-[#11161c]">
+                    <SafeImage
+                      src={product.media[0]?.url}
+                      alt={product.media[0]?.alt ?? product.name}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover"
+                    />
+                  </span>
                   <span className="flex min-h-[6.25rem] flex-col p-3">
                     <span className="text-[0.75rem] font-semibold tracking-wide text-[#0f6f6d] uppercase">
                       Ürün

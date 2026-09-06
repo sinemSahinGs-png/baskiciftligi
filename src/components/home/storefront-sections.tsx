@@ -10,3 +10,4 @@ export { SocialProofSection } from "@/components/home/social-proof-section";
 export { FaqSection } from "@/components/home/faq";
 export { IdeaSearchSection } from "@/components/home/idea-search-section";
 export { FinalCtaSection } from "@/components/home/final-cta-section";
+
