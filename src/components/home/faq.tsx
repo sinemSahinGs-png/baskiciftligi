@@ -10,28 +10,26 @@ import {
 
 export function FaqSection() {
   return (
-    <section id="sik-sorulanlar" className="bg-[#f4f1ea] py-12 scroll-mt-24 sm:py-16">
-      <div className="home-shell grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+    <section id="sik-sorulanlar" className="home-section scroll-mt-24">
+      <div className="home-shell grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         <div>
-          <h2 className="font-heading text-[1.65rem] leading-[1.08] font-bold tracking-[-0.04em] sm:text-3xl">
-            Kısa SSS
-          </h2>
-          <p className="mt-3 max-w-md text-sm leading-6 text-ink-secondary">
+          <h2 className="home-title home-mask-reveal">Kısa SSS</h2>
+          <p className="home-lede">
             Dosya, fiyat ve kurumsal üretim. Detay isteyenler ilgili sayfaya geçer.
           </p>
         </div>
-        <Accordion className="border-t border-black/10">
+        <Accordion className="border-t border-white/10">
           {faqItems.map((item, index) => (
-            <AccordionItem key={item.id} value={item.id} className="border-black/10">
-              <AccordionTrigger className="rounded-none py-4 text-left text-base font-medium hover:no-underline">
+            <AccordionItem key={item.id} value={item.id} className="border-white/10">
+              <AccordionTrigger className="rounded-none py-3.5 text-left text-base font-medium text-[#f3efe6] hover:no-underline">
                 <span className="pr-4">
-                  <span className="tabular mr-3 text-sm text-ink-muted">
+                  <span className="tabular mr-3 text-[0.875rem] text-cyan">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   {item.question}
                 </span>
               </AccordionTrigger>
-              <AccordionContent className="pb-4 pl-10 text-sm leading-7 text-ink-secondary">
+              <AccordionContent className="pb-3.5 pl-10 text-base leading-7 text-white/80">
                 <p>{item.answer}</p>
               </AccordionContent>
             </AccordionItem>

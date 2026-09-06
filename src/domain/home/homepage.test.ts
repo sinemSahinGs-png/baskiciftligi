@@ -16,8 +16,9 @@ describe("homepage catalog contract", () => {
     );
     expect(homepageProcessCopy.title).toBe("Nasıl çalışır?");
     expect(homepageProcessSteps).toHaveLength(4);
-    expect(homepageProcessSteps[2]?.title).toContain("Gerçek süre ve gram");
-    expect(homepageProcessSteps[0]?.title).toContain("Modelini seç veya yükle");
+    expect(homepageProcessSteps[0]?.title.split(/\s+/).length).toBeLessThanOrEqual(4);
+    expect(homepageProcessSteps[2]?.title).toContain("Süre ve gram");
+    expect(homepageProcessSteps[0]?.title).toContain("Seç veya yükle");
   });
   it("maps shop categories to existing demo records and local images", async () => {
     const bySlug = new Map(

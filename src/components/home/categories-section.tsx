@@ -30,34 +30,46 @@ export function CategoriesSection({
   }
   const visible = homepageShopCategorySlugs
     .map((slug) => categories.find((category) => category.slug === slug))
-    .filter((category): category is Category => Boolean(category));
+    .filter((category): category is Category => Boolean(category))
+    .slice(0, 6);
   const [first, second, ...rest] = visible;
 
   return (
-    <section id="kategoriler" className="bg-[#111318] py-12 text-light-text sm:py-16">
+    <section id="kategoriler" className="home-section">
       <div className="home-shell">
-        <h2 className="font-heading text-[1.65rem] leading-[1.08] font-bold tracking-[-0.04em] sm:text-3xl">
-          {categoriesIntro?.title ?? "Kategoriler"}
-        </h2>
-        <p className="mt-2 max-w-md text-sm leading-6 text-white/70">
-          {categoriesIntro?.description ?? "Koleksiyonu sahne sahne gez."}
-        </p>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          {first ? <CategoryTile category={first} count={counts.get(first.slug)} large /> : null}
-          {second ? <CategoryTile category={second} count={counts.get(second.slug)} large /> : null}
-        </div>
-        {rest.length > 0 ? (
-          <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3">
-            {rest.map((category) => (
-              <CategoryTile
-                key={category.id}
-                category={category}
-                count={counts.get(category.slug)}
-              />
-            ))}
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="home-title home-mask-reveal">
+              {categoriesIntro?.title ?? "Kategoriler"}
+            </h2>
+            <p className="home-lede">
+              {categoriesIntro?.description ?? "Koleksiyonu sahne sahne gez."}
+            </p>
           </div>
-        ) : null}
+          <Link href={"/magaza" as Route} className="home-see-all hidden sm:inline-flex">
+            Tümünü gör
+          </Link>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          {first ? (
+            <CategoryTile category={first} count={counts.get(first.slug)} large />
+          ) : null}
+          {second ? (
+            <CategoryTile category={second} count={counts.get(second.slug)} large />
+          ) : null}
+          {rest.map((category) => (
+            <CategoryTile
+              key={category.id}
+              category={category}
+              count={counts.get(category.slug)}
+            />
+          ))}
+        </div>
+
+        <Link href={"/magaza" as Route} className="home-see-all mt-4 sm:hidden">
+          Tümünü gör
+        </Link>
       </div>
     </section>
   );
@@ -79,29 +91,31 @@ function CategoryTile({
     <Link
       href={`/magaza/${category.slug}` as Route}
       className={cn(
-        "group relative block overflow-hidden rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan",
-        large ? "min-h-[13.5rem]" : "min-h-[9.5rem]",
+        "home-press-card group relative col-span-1 block overflow-hidden rounded-[1.25rem] border border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan",
+        large ? "min-h-[12.5rem]" : "min-h-[9.5rem]",
       )}
     >
-      <span className={cn("relative block", large ? "aspect-[4/3] sm:aspect-[16/10]" : "aspect-[4/3]")}>
+      <span className={cn("relative block", large ? "aspect-[4/3]" : "aspect-[4/3]")}>
         <SafeImage
           src={cover}
           alt=""
           fill
-          sizes={large ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 50vw, 33vw"}
+          sizes={large ? "(max-width: 768px) 50vw, 50vw" : "(max-width: 768px) 50vw, 33vw"}
           className={cn(
             categoryImageFitClass(presentation.fit),
-            "transition duration-500 group-active:scale-[1.03] group-hover:scale-[1.03]",
+            "home-media-reveal brightness-110 contrast-[1.04] transition duration-200 group-active:scale-[1.04] group-hover:scale-[1.03]",
           )}
           style={categoryImageStyle(presentation)}
         />
-        <span className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/10" />
-        <span className="absolute inset-x-0 bottom-0 p-4">
-          <span className="font-heading text-xl font-bold tracking-[-0.04em] text-white sm:text-2xl">
+        <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <span className="absolute inset-x-0 bottom-0 p-3.5">
+          <span className="font-heading text-[1.2rem] leading-6 font-bold tracking-[-0.04em] text-white sm:text-2xl">
             {category.name}
           </span>
           {typeof count === "number" ? (
-            <span className="mt-1 block text-sm text-white/80">{count} ürün</span>
+            <span className="mt-1 block text-[0.875rem] leading-5 text-white/90">
+              {count} ürün
+            </span>
           ) : null}
         </span>
       </span>

@@ -94,6 +94,27 @@ describe("planIdeaSearch", () => {
     ]);
   });
 
+  it("maps guitar hanger, cat planter, headphone stand and personalized keychain", () => {
+    expect(planIdeaSearch("Duvara asılan gitar aparatı").variants).toEqual([
+      "guitar hanger",
+      "guitar wall mount",
+      "guitar holder",
+    ]);
+    expect(planIdeaSearch("Kedi şeklinde saksı").variants).toEqual([
+      "cat planter",
+      "cat flower pot",
+      "cat plant pot",
+    ]);
+    expect(planIdeaSearch("Masaüstü kulaklık standı").variants.join(" ")).toMatch(
+      /headphone|headset/i,
+    );
+    expect(planIdeaSearch("İsme özel anahtarlık").variants).toEqual([
+      "personalized keychain",
+      "custom keychain",
+      "name keychain",
+    ]);
+  });
+
   it("blocks weapon queries", () => {
     const plan = planIdeaSearch("silah parçası");
     expect(plan.blocked).toBe(true);

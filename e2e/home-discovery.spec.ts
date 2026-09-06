@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import path from "node:path";
 
 async function readyHome(page: Page) {
   await page.goto("/");
@@ -153,6 +154,44 @@ test.describe("homepage discovery redesign", () => {
     });
   }
 
+  test("submits idea search with Enter", async ({ page }) => {
+    await page.route("**/api/home/idea-search", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          status: "ok",
+          category: "masaüstü",
+          variants: ["phone stand"],
+          chips: ["phone stand"],
+          items: [
+            {
+              externalId: "50204",
+              title: "Telefon tutucu",
+              creatorName: "fixture-phone",
+              thumbnailUrl:
+                "https://cdn.thingiverse.com/assets/fixture/ab/cd/model/display_medium.jpg",
+              likeCount: 8,
+              collectCount: null,
+              source: "thingiverse",
+              detailPath: "/hazir-modeller/thingiverse/50204?t=Telefon%20tutucu&c=fixture-phone",
+              pricingAllowed: true,
+            },
+          ],
+          closest: false,
+          hasMore: false,
+        }),
+      });
+    });
+    await readyHome(page);
+    const idea = page.locator("#ne-uretmek-istiyorsun");
+    await idea.locator("textarea").fill("telefon standı");
+    await idea.locator("textarea").press("Enter");
+    await expect(idea.getByRole("link", { name: "Modeli incele" }).first()).toBeVisible({
+      timeout: 20_000,
+    });
+  });
+
   test("keyboard can reach idea search and reduced motion still renders", async ({
     page,
   }) => {
@@ -163,4 +202,20 @@ test.describe("homepage discovery redesign", () => {
     await expect(page.getByRole("heading", { name: "Ne üretmek istiyorsun?" })).toBeVisible();
     await expect(page.locator("#uc-uretim-yolu [data-journey-panel='01']").first()).toBeVisible();
   });
+
+  for (const width of [320, 390, 430, 1440] as const) {
+    test(`captures full-page studio screenshot at ${width}px`, async ({ page }) => {
+      test.setTimeout(60_000);
+      await page.setViewportSize({
+        width,
+        height: width === 1440 ? 900 : 844,
+      });
+      await readyHome(page);
+      await expect.poll(() => overflowX(page)).toBeLessThanOrEqual(1);
+      await page.screenshot({
+        path: path.join("test-results", "home-pass2", `home-${width}.png`),
+        fullPage: true,
+      });
+    });
+  }
 });

@@ -78,26 +78,28 @@ export default async function HomePage() {
   return (
     <main id="ana-icerik">
       <Hero />
-      <IdeaSearchSection />
-      <ThreePathsSection />
-      <ReadyModelsSection fallback={readyFallback} />
-      <FeaturedProductsSection products={products} />
-      <CategoriesSection
-        categories={categories}
-        products={products}
-        categoriesIntro={{
-          title: "Kategoriler",
-          description:
-            content.categoriesIntroDescription ?? "Koleksiyonu sahne sahne gez.",
-        }}
-      />
-      <ProcessSection />
-      <UploadPromoSection />
-      <MaterialsSection materials={materials} />
-      <B2bSection />
-      <SocialProofSection />
-      <FaqSection />
-      <FinalCtaSection />
+      <div className="home-studio">
+        <IdeaSearchSection />
+        <ThreePathsSection />
+        <ReadyModelsSection fallback={readyFallback} />
+        <FeaturedProductsSection products={products} />
+        <CategoriesSection
+          categories={categories}
+          products={products}
+          categoriesIntro={{
+            title: "Kategoriler",
+            description:
+              content.categoriesIntroDescription ?? "Koleksiyonu sahne sahne gez.",
+          }}
+        />
+        <ProcessSection />
+        <UploadPromoSection />
+        <MaterialsSection materials={materials} />
+        <B2bSection />
+        <SocialProofSection />
+        <FaqSection />
+        <FinalCtaSection />
+      </div>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

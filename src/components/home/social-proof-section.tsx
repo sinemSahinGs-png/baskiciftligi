@@ -5,36 +5,31 @@ import { isDevelopmentDemoMode } from "@/lib/env";
 
 export function SocialProofSection() {
   return (
-    <section id="guven" className="bg-[#f4f1ea] py-12 sm:py-16">
+    <section id="guven" className="home-section">
       <div className="home-shell">
-        <h2 className="font-heading text-[1.65rem] leading-[1.08] font-bold tracking-[-0.04em] sm:text-3xl">
-          Güven unsurları
-        </h2>
-        <p className="mt-2 max-w-lg text-sm leading-6 text-ink-secondary">
+        <h2 className="home-title home-mask-reveal">Güven unsurları</h2>
+        <p className="home-lede">
           Müşteri yorumu yalnızca gerçek kayıt varsa gösterilir. Aşağıdakiler stüdyonun
           fiilen sunduğu güvencelerdir.
         </p>
-        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+        <ul className="mt-5 grid gap-3 sm:grid-cols-2">
           {homepageTrustSignals.map((item) => (
-            <li
-              key={item.title}
-              className="rounded-2xl border border-black/8 bg-white p-4"
-            >
+            <li key={item.title} className="home-card-paper p-4">
               <h3 className="font-heading text-lg font-semibold">{item.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-ink-secondary">{item.description}</p>
+              <p className="mt-1.5 text-base leading-7 text-[#3d4148]">{item.description}</p>
             </li>
           ))}
         </ul>
         {isDevelopmentDemoMode ? (
-          <div className="mt-10">
-            <p className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
+          <div className="mt-6">
+            <p className="text-[0.8125rem] font-semibold tracking-wide text-white/70 uppercase">
               Demo yorumlar — yayın kaydı değildir
             </p>
-            <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
               {homepageDemoReviews.map((review) => (
-                <figure key={review.id} className="rounded-2xl bg-white p-4">
-                  <blockquote className="text-sm leading-6">“{review.quote}”</blockquote>
-                  <figcaption className="mt-3 text-xs text-ink-muted">
+                <figure key={review.id} className="home-card-paper p-4">
+                  <blockquote className="text-base leading-7">“{review.quote}”</blockquote>
+                  <figcaption className="mt-2 text-[0.8125rem] text-[#3d4148]">
                     {review.name}, {review.city} · Demo
                   </figcaption>
                 </figure>

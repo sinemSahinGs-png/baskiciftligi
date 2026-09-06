@@ -43,7 +43,7 @@ export function ReadyModelsSection({
         };
         const live = (body.models ?? [])
           .filter((model) => model.id && model.title)
-          .slice(0, 8)
+          .slice(0, 4)
           .map((model) => ({
             id: `tv-${model.id}`,
             name: model.title!,
@@ -59,7 +59,7 @@ export function ReadyModelsSection({
             seen.add(card.id);
             return true;
           });
-          setCards(merged.slice(0, 8));
+          setCards(merged.slice(0, 4));
         }
       })
       .catch(() => {
@@ -76,98 +76,82 @@ export function ReadyModelsSection({
     };
   }, [fallback]);
 
-  const visible = cards.slice(0, 6);
+  const visible = cards.slice(0, 4);
 
   return (
-    <section
-      id="sana-gore-hazir-modeller"
-      className="relative overflow-hidden bg-[#12151c] text-light-text"
-    >
-      <div className="pointer-events-none absolute inset-0 home-tech-grid opacity-30" />
-      <div className="home-shell relative py-12 sm:py-16">
+    <section id="sana-gore-hazir-modeller" className="home-section relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 home-tech-grid opacity-25" />
+      <div className="home-shell relative">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="font-heading text-[1.65rem] leading-[1.08] font-bold tracking-[-0.04em] sm:text-3xl">
-              Sana göre hazır modeller
-            </h2>
-            <p className="mt-2 max-w-md text-sm leading-6 text-white/70">
-              İlk kartlar hemen görünür. Topluluk sonuçları arka planda dolar.
-            </p>
+            <h2 className="home-title home-mask-reveal">Sana göre hazır modeller</h2>
+            <p className="home-lede">İlk dört model hemen görünür. Kütüphane bir dokunuş ötede.</p>
           </div>
           <Link
             href={"/hazir-modeller" as Route}
             onClick={() => trackHomeEvent({ name: "ready_model_cta_clicked" })}
-            className="hidden min-h-11 shrink-0 items-center text-sm font-semibold sm:inline-flex"
+            className="home-see-all hidden sm:inline-flex"
           >
-            Tüm hazır modelleri gör
+            Tümünü gör
           </Link>
         </div>
 
         {visible.length === 0 && loading ? (
-          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
+          <div className="mt-5 grid grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="home-shimmer aspect-[4/5] rounded-2xl bg-white/8" />
+              <div key={index} className="home-shimmer aspect-[4/5] rounded-[1.25rem] bg-white/8" />
             ))}
           </div>
         ) : visible.length === 0 ? (
           <Link
             href={"/hazir-modeller" as Route}
-            className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-orange px-5 text-sm font-semibold text-midnight"
+            className="mt-5 inline-flex min-h-12 items-center rounded-xl bg-orange px-5 text-[0.9375rem] font-semibold text-midnight"
           >
             Tüm hazır modelleri gör
           </Link>
         ) : (
-          <div className="mt-6 grid grid-cols-2 gap-3 md:hidden">
-            {visible.slice(0, 4).map((model) => (
-              <ReadyCard key={model.id} model={model} />
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            {visible.map((model, index) => (
+              <ReadyCard key={model.id} model={model} delay={index * 50} />
             ))}
           </div>
         )}
 
-        {visible.length > 0 ? (
-          <div className="mt-6 hidden gap-3 overflow-x-auto pb-1 md:flex lg:grid lg:grid-cols-4 lg:overflow-visible">
-            {visible.map((model) => (
-              <div key={model.id} className="w-[15.5rem] shrink-0 lg:w-auto">
-                <ReadyCard model={model} />
-              </div>
-            ))}
-          </div>
-        ) : null}
-
         <Link
           href={"/hazir-modeller" as Route}
           onClick={() => trackHomeEvent({ name: "ready_model_cta_clicked" })}
-          className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold sm:hidden"
+          className="home-see-all mt-4 sm:hidden"
         >
-          Tüm hazır modelleri gör
+          Tümünü gör
         </Link>
       </div>
     </section>
   );
 }
 
-function ReadyCard({ model }: { model: ReadyModelCard }) {
+function ReadyCard({ model, delay }: { model: ReadyModelCard; delay: number }) {
   return (
     <Link
       href={model.href as Route}
-      className="group relative block overflow-hidden rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
+      style={{ animationDelay: `${delay}ms` }}
+      className="home-press-card home-reveal-card group flex h-full flex-col overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#f3efe6] text-[#14161c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
     >
-      <span className="relative block aspect-[4/5] bg-white/8">
+      <span className="relative block aspect-[4/5] bg-[#11161c]">
         <SafeImage
           src={model.imageUrl}
           alt={model.name}
           fill
           sizes="(max-width: 768px) 50vw, 25vw"
-          className="object-cover transition duration-500 group-hover:scale-[1.04]"
+          fallbackLabel="Model görseli"
+          className="home-media-reveal object-cover brightness-110"
         />
-        <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-        <span className="absolute inset-x-0 bottom-0 p-3">
-          <span className="text-[0.7rem] font-semibold tracking-wide text-cyan uppercase">
-            {model.category}
-          </span>
-          <span className="mt-1 block font-heading text-base leading-snug font-semibold">
-            {model.name}
-          </span>
+      </span>
+      <span className="flex min-h-[5.5rem] flex-col p-3">
+        <span className="text-[0.75rem] font-semibold tracking-wide text-[#0f6f6d] uppercase">
+          Hazır 3D model
+        </span>
+        <span className="mt-1 line-clamp-2 font-heading text-base leading-6 font-semibold">
+          {model.name}
         </span>
       </span>
     </Link>

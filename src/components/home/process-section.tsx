@@ -1,75 +1,119 @@
+"use client";
+
 import type { Route } from "next";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 import {
   homepageProcessCopy,
   homepageProcessSteps,
 } from "@/domain/home/homepage";
-import { cn } from "@/lib/utils";
-
-const glyphs = ["▣", "◇", "⬡", "▸"] as const;
 
 export function ProcessSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    let frame = 0;
+    const update = () => {
+      const rect = node.getBoundingClientRect();
+      const view = window.innerHeight;
+      const start = view * 0.72;
+      const span = Math.max(1, rect.height + view * 0.2);
+      setProgress(Math.min(1, Math.max(0, (start - rect.top) / span)));
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(update);
+    };
+    frame = requestAnimationFrame(update);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
   return (
     <section
       id="nasil-calisir"
+      ref={sectionRef}
       data-process-section
       data-process-pinned="false"
-      className="bg-[#0e1418] text-light-text"
+      className="home-section"
     >
-      <div className="home-shell py-12 sm:py-16">
-        <p className="text-xs font-semibold tracking-[0.14em] text-cyan uppercase">
+      <div className="home-shell">
+        <p className="text-[0.8125rem] font-semibold tracking-[0.14em] text-cyan uppercase">
           {homepageProcessCopy.eyebrow}
         </p>
-        <h2 className="mt-3 font-heading text-[1.65rem] leading-[1.08] font-bold tracking-[-0.04em] sm:text-3xl">
-          {homepageProcessCopy.title}
-        </h2>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-white/70">
-          {homepageProcessCopy.description}
-        </p>
+        <h2 className="home-title home-mask-reveal mt-2">{homepageProcessCopy.title}</h2>
+        <p className="home-lede">{homepageProcessCopy.description}</p>
 
-        <ol
-          className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
-          data-process-mobile
-          data-process-desktop
-        >
-          {homepageProcessSteps.map((step, index) => (
+        <div className="relative mt-6">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute top-3 bottom-3 left-[1.15rem] w-px bg-white/12 sm:hidden"
+          >
+            <span
+              className="home-process-fill absolute inset-x-0 top-0 h-full origin-top bg-cyan"
+              style={{ transform: `scaleY(${progress})` }}
+            />
+          </span>
+          <ol
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3"
+            data-process-mobile
+            data-process-desktop
+          >
+          {homepageProcessSteps.map((step) => (
             <li
               key={step.number}
               data-process-step={step.number}
               data-process-active="true"
-              className="home-reveal-card rounded-2xl border border-white/10 bg-white/5 p-4"
+              className="relative pl-10 sm:pl-0"
             >
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "inline-flex size-10 items-center justify-center rounded-xl bg-cyan/15 font-heading text-lg text-cyan",
-                  "home-step-glyph",
-                )}
-              >
-                {glyphs[index]}
-              </span>
-              <p className="mt-4 text-xs font-semibold tracking-wide text-cyan">
-                {step.number} · {step.kicker}
+              <p className="font-heading text-4xl leading-none font-bold tracking-[-0.06em] text-cyan">
+                {step.number}
               </p>
-              <h3 className="mt-1.5 font-heading text-lg font-semibold tracking-[-0.03em]">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 72 8"
+                className="mt-3 h-2 w-16 text-orange"
+              >
+                <path
+                  d="M1 6 C18 6 18 2 36 2 S54 6 71 2"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  className="home-pipeline-line"
+                />
+              </svg>
+              <h3 className="mt-3 font-heading text-xl font-semibold tracking-[-0.03em]">
                 {step.title}
               </h3>
-              <p className="mt-2 text-sm leading-6 text-white/70">{step.description}</p>
+              <p className="mt-1.5 text-base leading-7 text-white/80">{step.description}</p>
             </li>
           ))}
-        </ol>
+          </ol>
+        </div>
 
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={"/magaza" as Route}
-            className="inline-flex min-h-11 items-center rounded-xl bg-coral px-5 text-sm font-semibold"
+            className="home-cta-press inline-flex min-h-11 items-center rounded-xl border border-white/18 px-5 text-[0.9375rem] font-semibold"
           >
             {homepageProcessCopy.store}
           </Link>
           <Link
             href={"/model-yukle" as Route}
-            className="inline-flex min-h-11 items-center rounded-xl border border-white/20 px-5 text-sm font-semibold"
+            className="home-cta-press inline-flex min-h-11 items-center rounded-xl bg-orange px-5 text-[0.9375rem] font-semibold text-midnight"
           >
             {homepageProcessCopy.upload}
           </Link>

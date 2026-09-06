@@ -59,7 +59,10 @@ const MODIFIERS: Array<{ pattern: RegExp; en: string[] }> = [
   { pattern: /\baraba\b/i, en: ["car"] },
   { pattern: /\bnoel|yilbasi|yılbaşı\b/i, en: ["christmas"] },
   { pattern: /\bkalp\b/i, en: ["heart"] },
-  { pattern: /\bisimli|kisisellestir|kişiselleştir\b/i, en: ["personalized"] },
+  {
+    pattern: /\b(isimli|kisisellestir|kişiselleştir|isme\s+ozel|isme\s+özel)\b/i,
+    en: ["personalized"],
+  },
   { pattern: /\bduvara\s+asilan|duvara\s+asılan\b/i, en: ["wall"] },
   { pattern: /\bmasaustu|masaüstü\b/i, en: ["desktop"] },
   { pattern: /\bsevgiliye\b/i, en: ["gift"] },
@@ -238,14 +241,24 @@ function composeSpecifiedExamples(modifiers: string[], object: string | null) {
   const hasDragon = modifiers.includes("dragon");
   const hasCat = modifiers.includes("cat") || modifiers.includes("pet");
   const hasPersonalized = modifiers.includes("personalized");
+  const hasGuitar = modifiers.includes("guitar") || Boolean(object?.includes("guitar"));
   if (hasDragon && object?.includes("phone")) {
     return ["dragon phone stand", "dragon smartphone holder", "phone stand dragon"];
   }
   if (hasCat && (object?.includes("bowl") || object?.includes("pet"))) {
     return ["custom cat bowl", "personalized pet bowl", "cat name bowl"];
   }
+  if (hasCat && (object?.includes("planter") || object?.includes("pot"))) {
+    return ["cat planter", "cat flower pot", "cat plant pot"];
+  }
+  if (hasGuitar && (object?.includes("hanger") || object?.includes("guitar"))) {
+    return ["guitar hanger", "guitar wall mount", "guitar holder"];
+  }
   if (hasPersonalized && object?.includes("keychain") && modifiers.includes("heart")) {
     return ["heart keychain", "custom heart keychain", "personalized keychain"];
+  }
+  if (hasPersonalized && object?.includes("keychain")) {
+    return ["personalized keychain", "custom keychain", "name keychain"];
   }
   return null;
 }

@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ArrowRight, Loader2, Search, Upload } from "lucide-react";
 
 import { SafeImage } from "@/components/media/safe-image";
@@ -60,6 +60,16 @@ export function IdeaSearchSection() {
   const cacheRef = useRef<Map<string, { at: number; payload: IdeaSearchResponse }>>(
     new Map(),
   );
+
+  const canSearch = query.trim().length >= 2;
+  const showingPanel =
+    status === "searching" ||
+    status === "ok" ||
+    status === "empty" ||
+    status === "slow" ||
+    status === "rate_limited" ||
+    status === "unavailable" ||
+    status === "blocked";
 
   useEffect(() => {
     if (query.trim() || status === "searching") return;
@@ -174,85 +184,212 @@ export function IdeaSearchSection() {
     void runSearch(query);
   }
 
+  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void runSearch(query);
+    }
+  }
+
   const visibleItems = items.slice(0, visibleCount);
   const canShowMore = items.length > visibleCount;
 
   return (
     <section
       id="ne-uretmek-istiyorsun"
-      className="relative overflow-hidden bg-[#f4f1ea] text-dark-text"
+      className="home-section relative overflow-hidden"
       aria-labelledby="idea-search-heading"
     >
-      <div className="pointer-events-none absolute inset-0 home-tech-grid opacity-40" />
-      <div className="home-shell relative py-10 sm:py-14">
-        <p className="text-xs font-semibold tracking-[0.14em] text-cyan uppercase">
+      <div className="pointer-events-none absolute inset-0 home-tech-grid opacity-50" />
+      <div className="home-shell relative">
+        <p className="text-[0.8125rem] font-semibold tracking-[0.14em] text-cyan uppercase">
           Keşif
         </p>
-        <h2
-          id="idea-search-heading"
-          className="mt-3 max-w-xl font-heading text-[1.85rem] leading-[1.05] font-bold tracking-[-0.045em] sm:text-4xl"
-        >
+        <h2 id="idea-search-heading" className="home-title home-mask-reveal mt-2 max-w-xl">
           Ne üretmek istiyorsun?
         </h2>
-        <p className="mt-3 max-w-lg text-[0.98rem] leading-7 text-ink-secondary">
+        <p className="home-lede">
           Aklındakini birkaç kelimeyle anlat. Sana uygun 3D modelleri bulalım.
         </p>
 
-        <form onSubmit={onSubmit} className="mt-7 max-w-2xl">
+        <form onSubmit={onSubmit} className="mt-6 max-w-2xl">
           <label htmlFor={inputId} className="sr-only">
             Üretmek istediğin nesneyi yaz
           </label>
           <div
             data-idea-search-field={status}
             className={cn(
-              "relative rounded-[1.35rem] border bg-white/80 p-2 shadow-[0_18px_50px_-28px_rgb(23_23_33/0.45)] backdrop-blur-sm",
-              status === "searching"
-                ? "home-search-glow border-cyan/50"
-                : "border-black/8",
+              "home-composer p-2.5 sm:p-3",
+              status === "searching" && "is-searching",
             )}
           >
-            <textarea
-              id={inputId}
-              name="idea"
-              rows={2}
-              maxLength={160}
-              value={query}
-              onChange={(event) => {
-                setQuery(event.target.value.slice(0, 160));
-                setStatus(event.target.value.trim() ? "typing" : "idle");
-              }}
-              placeholder={homepageIdeaPlaceholders[placeholderIndex]}
-              className="min-h-16 w-full resize-none rounded-xl bg-transparent px-3 py-3 text-base leading-6 outline-none placeholder:text-ink-muted/80"
-            />
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex items-end gap-2">
+              <textarea
+                id={inputId}
+                name="idea"
+                rows={showingPanel ? 1 : 2}
+                maxLength={160}
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value.slice(0, 160));
+                  setStatus(event.target.value.trim() ? "typing" : "idle");
+                }}
+                onKeyDown={onKeyDown}
+                placeholder={homepageIdeaPlaceholders[placeholderIndex]}
+                className="min-h-12 w-full resize-none bg-transparent px-3 py-3 text-base leading-7 text-[#f3efe6] outline-none placeholder:text-white/45"
+              />
               <button
                 type="submit"
-                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-orange px-4 text-sm font-semibold text-midnight transition duration-200 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
+                disabled={!canSearch && status !== "searching"}
+                aria-label="Ara — Model önerilerini bul"
+                className={cn(
+                  "home-composer-submit home-cta-press inline-flex shrink-0 items-center justify-center gap-1.5 px-4 text-[0.9375rem] font-semibold",
+                  canSearch && "is-armed",
+                )}
               >
                 {status === "searching" ? (
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                 ) : (
                   <Search className="size-4" aria-hidden="true" />
                 )}
-                Model önerilerini bul
+                Ara
               </button>
+            </div>
+            <div className="mt-1 flex items-center px-3 pb-1">
               <Link
                 href={"/model-yukle" as Route}
                 onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-ink-secondary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
+                className="inline-flex min-h-10 items-center gap-1.5 text-[0.875rem] font-semibold text-white/75 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
               >
                 <Upload className="size-4" aria-hidden="true" />
                 Dosyam hazır, yükle
               </Link>
             </div>
+
+            {status === "searching" ? (
+              <div className="mt-3 border-t border-white/8 px-2 pt-4 pb-2">
+                <p className="text-base font-semibold">{phase}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(chips.length ? chips : ["nesne", "ölçü", "kullanım"]).map((chip) => (
+                    <span
+                      key={chip}
+                      className="home-chip-in rounded-full bg-cyan/15 px-3 py-1 text-[0.8125rem] font-semibold text-cyan"
+                    >
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="home-shimmer overflow-hidden rounded-2xl bg-white/6">
+                      <div className="aspect-[4/5] bg-white/8" />
+                      <div className="space-y-2 p-3">
+                        <div className="h-4 w-2/3 rounded bg-white/10" />
+                        <div className="h-3 w-1/3 rounded bg-white/8" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {status === "ok" && visibleItems.length > 0 ? (
+              <div className="mt-3 border-t border-white/8 px-1 pt-4 pb-2">
+                {closest ? (
+                  <p className="mb-3 px-2 text-base leading-7 text-white/80">
+                    Tam eşleşme bulamadık. Bunlar fikrine yakın modeller.
+                  </p>
+                ) : null}
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {visibleItems.map((item, index) => (
+                    <li
+                      key={item.externalId}
+                      className="home-result-card"
+                      style={{ animationDelay: `${index * 55}ms` }}
+                    >
+                      <IdeaResultCard item={item} />
+                    </li>
+                  ))}
+                </ul>
+                {canShowMore ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setVisibleCount((count) => count + IDEA_SEARCH_MOBILE_PAGE_SIZE)
+                    }
+                    className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl border border-white/15 px-4 text-[0.9375rem] font-semibold"
+                  >
+                    Daha fazla göster
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+
+            {status === "empty" ||
+            status === "slow" ||
+            status === "rate_limited" ||
+            status === "unavailable" ||
+            status === "blocked" ? (
+              <div className="mt-3 border-t border-white/8 px-3 pt-4 pb-3">
+                <h3 className="font-heading text-xl font-semibold tracking-[-0.03em]">
+                  {emptyTitle(status)}
+                </h3>
+                <p className="mt-2 text-base leading-7 text-white/80">
+                  {errorDetail ?? messageForStatus(status)}
+                </p>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  {status === "empty" ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const simplified = query.split(/\s+/).slice(0, 2).join(" ");
+                        setQuery(simplified);
+                        void runSearch(simplified);
+                      }}
+                      className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan px-4 text-[0.9375rem] font-semibold text-midnight"
+                    >
+                      Sorguyu sadeleştir
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void runSearch(query)}
+                      className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan px-4 text-[0.9375rem] font-semibold text-midnight"
+                    >
+                      Yeniden dene
+                    </button>
+                  )}
+                  <Link
+                    href={"/hazir-modeller" as Route}
+                    onClick={() => trackHomeEvent({ name: "ready_model_cta_clicked" })}
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-[0.9375rem] font-semibold underline-offset-4 hover:underline"
+                  >
+                    Hazır modellere git
+                  </Link>
+                  <Link
+                    href={"/model-yukle" as Route}
+                    onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-[0.9375rem] font-semibold underline-offset-4 hover:underline"
+                  >
+                    Dosyanı yükle
+                  </Link>
+                  <Link
+                    href={"/iletisim" as Route}
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-[0.9375rem] font-semibold underline-offset-4 hover:underline"
+                  >
+                    Model danışmanlığı
+                  </Link>
+                </div>
+              </div>
+            ) : null}
           </div>
         </form>
 
         <div className="mt-6">
-          <p className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
-            Örnek fikirler
+          <p className="text-[0.8125rem] font-semibold tracking-wide text-white/70 uppercase">
+            Örnek fikirler · kaydır
           </p>
-          <ul className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ul className="home-chip-rail mt-3">
             {homepageIdeaExamples.map((example) => (
               <li key={example.id} className="snap-start">
                 <button
@@ -262,29 +399,20 @@ export function IdeaSearchSection() {
                     setStatus("typing");
                     document.getElementById(inputId)?.focus();
                   }}
-                  className="group flex min-h-11 w-[9.5rem] flex-col overflow-hidden rounded-2xl border border-black/8 bg-white text-left transition duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
+                  className="home-press-card group flex min-h-11 w-[12.5rem] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#f3efe6] text-left text-[#14161c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
                 >
-                  <span className="relative aspect-[5/3] overflow-hidden">
+                  <span className="relative aspect-[16/10] overflow-hidden bg-[#d9d3c6]">
                     <SafeImage
                       src={example.imageUrl}
                       alt=""
                       fill
-                      sizes="152px"
-                      className="object-cover transition duration-300 group-active:scale-105"
-                    />
-                    <span
-                      className={cn(
-                        "absolute inset-0 opacity-35",
-                        example.tone === "cyan" && "bg-cyan",
-                        example.tone === "lime" && "bg-lime",
-                        example.tone === "coral" && "bg-coral",
-                        example.tone === "violet" && "bg-violet",
-                        example.tone === "cobalt" && "bg-cobalt",
-                        example.tone === "orange" && "bg-orange",
-                      )}
+                      sizes="200px"
+                      className="home-media-reveal object-cover brightness-110"
                     />
                   </span>
-                  <span className="px-3 py-2 text-sm font-semibold">{example.label}</span>
+                  <span className="px-3 py-2.5 text-base leading-6 font-semibold">
+                    {example.label}
+                  </span>
                 </button>
               </li>
             ))}
@@ -294,126 +422,6 @@ export function IdeaSearchSection() {
         <div id={liveId} className="sr-only" aria-live="polite">
           {status === "searching" ? phase : errorDetail ?? ""}
         </div>
-
-        {status === "searching" ? (
-          <div className="mt-8 rounded-3xl border border-cyan/20 bg-white/70 p-4">
-            <p className="text-sm font-semibold text-midnight">{phase}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(chips.length ? chips : ["nesne", "ölçü", "kullanım"]).map((chip) => (
-                <span
-                  key={chip}
-                  className="home-chip-in rounded-full bg-cyan/10 px-3 py-1 text-xs font-semibold text-midnight"
-                >
-                  {chip}
-                </span>
-              ))}
-            </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="home-shimmer overflow-hidden rounded-2xl border border-black/6"
-                >
-                  <div className="aspect-[4/3] bg-neutral/80" />
-                  <div className="space-y-2 p-3">
-                    <div className="h-4 w-2/3 rounded bg-neutral" />
-                    <div className="h-3 w-1/3 rounded bg-neutral" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        {status === "ok" && visibleItems.length > 0 ? (
-          <div className="mt-8">
-            {closest ? (
-              <p className="mb-4 text-sm text-ink-secondary">
-                Tam eşleşme bulamadık. Bunlar fikrine yakın modeller.
-              </p>
-            ) : null}
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleItems.map((item, index) => (
-                <li
-                  key={item.externalId}
-                  className="home-result-card"
-                  style={{ animationDelay: `${index * 60}ms` }}
-                >
-                  <IdeaResultCard item={item} />
-                </li>
-              ))}
-            </ul>
-            {canShowMore ? (
-              <button
-                type="button"
-                onClick={() =>
-                  setVisibleCount((count) => count + IDEA_SEARCH_MOBILE_PAGE_SIZE)
-                }
-                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-black/10 px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
-              >
-                Daha fazla göster
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-
-        {status === "empty" ||
-        status === "slow" ||
-        status === "rate_limited" ||
-        status === "unavailable" ||
-        status === "blocked" ? (
-          <div className="mt-8 rounded-3xl border border-black/8 bg-white/80 p-5">
-            <h3 className="font-heading text-xl font-semibold tracking-[-0.03em]">
-              {emptyTitle(status)}
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-ink-secondary">
-              {errorDetail ?? messageForStatus(status)}
-            </p>
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-              {status === "empty" ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const simplified = query.split(/\s+/).slice(0, 2).join(" ");
-                    setQuery(simplified);
-                    void runSearch(simplified);
-                  }}
-                  className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan px-4 text-sm font-semibold text-midnight"
-                >
-                  Sorguyu sadeleştir
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => void runSearch(query)}
-                  className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan px-4 text-sm font-semibold text-midnight"
-                >
-                  Yeniden dene
-                </button>
-              )}
-              <Link
-                href={"/hazir-modeller" as Route}
-                onClick={() => trackHomeEvent({ name: "ready_model_cta_clicked" })}
-                className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold underline-offset-4 hover:underline"
-              >
-                Hazır modellere git
-              </Link>
-              <Link
-                href={"/model-yukle" as Route}
-                onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
-                className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold underline-offset-4 hover:underline"
-              >
-                Dosyanı yükle
-              </Link>
-              <Link
-                href={"/iletisim" as Route}
-                className="inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold underline-offset-4 hover:underline"
-              >
-                Model danışmanlığı
-              </Link>
-            </div>
-          </div>
-        ) : null}
       </div>
     </section>
   );
@@ -469,32 +477,28 @@ function emptyTitle(status: SearchUiStatus) {
 }
 
 function IdeaResultCard({ item }: { item: IdeaSearchCard }) {
-  const stats = [
-    item.likeCount != null ? `${item.likeCount} beğeni` : null,
-    item.collectCount != null ? `${item.collectCount} koleksiyon` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
   return (
-    <article className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-black/8 bg-white">
+    <article className="home-press-card flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#f3efe6] text-[#14161c]">
       <ModelCardMedia
         src={item.thumbnailUrl}
         alt={item.title}
-        badge="Thingiverse"
-        className="aspect-[4/3] rounded-none sm:rounded-none"
+        badge="Hazır 3D model"
+        className="aspect-[4/5] rounded-none bg-[#11161c] sm:rounded-none"
       />
       <div className="flex min-w-0 flex-1 flex-col p-3.5">
-        <h3 className="line-clamp-2 font-heading text-base font-semibold leading-snug">
+        <h3 className="line-clamp-2 font-heading text-base leading-6 font-semibold">
           {item.title}
         </h3>
-        <p className="mt-1 truncate text-xs text-ink-muted">{item.creatorName}</p>
-        {stats ? <p className="mt-1 text-xs text-ink-secondary">{stats}</p> : null}
+        {item.likeCount != null ? (
+          <p className="mt-1 text-[0.8125rem] leading-5 text-[#3d4148]">
+            <CountUp value={item.likeCount} /> beğeni
+          </p>
+        ) : null}
         <div className="mt-3 flex flex-col gap-2">
           <Link
             href={item.detailPath as Route}
             onClick={() => trackHomeEvent({ name: "idea_result_opened" })}
-            className="inline-flex min-h-11 items-center justify-center gap-1 rounded-xl bg-cyan/15 px-3 text-sm font-semibold text-midnight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
+            className="home-cta-press inline-flex min-h-11 items-center justify-center gap-1 rounded-xl bg-cyan/20 px-3 text-[0.9375rem] font-semibold text-midnight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
           >
             Modeli incele
             <ArrowRight className="size-4" aria-hidden="true" />
@@ -502,17 +506,40 @@ function IdeaResultCard({ item }: { item: IdeaSearchCard }) {
           <Link
             href={item.detailPath as Route}
             onClick={() => trackHomeEvent({ name: "idea_result_quote_started" })}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/10 px-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
+            className="home-cta-press inline-flex min-h-11 items-center justify-center rounded-xl border border-black/12 px-3 text-[0.9375rem] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan"
           >
             Bununla fiyat al
           </Link>
         </div>
         {!item.pricingAllowed ? (
-          <p className="mt-2 text-[0.7rem] leading-4 text-ink-muted">
+          <p className="mt-2 text-[0.8125rem] leading-5 text-[#3d4148]">
             Fiyat, lisans ve indirilebilir üretim dosyası doğrulanınca netleşir.
           </p>
         ) : null}
       </div>
     </article>
   );
+}
+
+function CountUp({ value }: { value: number }) {
+  const [shown, setShown] = useState(0);
+
+  useEffect(() => {
+    let frame = 0;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const start = performance.now();
+    const tick = (now: number) => {
+      if (reduced) {
+        setShown(value);
+        return;
+      }
+      const t = Math.min(1, (now - start) / 420);
+      setShown(Math.round(value * t));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+
+  return <span className="tabular-nums">{shown}</span>;
 }

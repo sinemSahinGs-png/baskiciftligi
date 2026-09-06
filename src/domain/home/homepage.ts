@@ -158,8 +158,7 @@ export const homepageJourneys = [
 export const homepageProcessCopy = {
   eyebrow: "Süreç",
   title: "Nasıl çalışır?",
-  description:
-    "Modelini seç veya yükle. Ölçü ve malzemeyi belirle. Gerçek baskı süresi ve gram üzerinden teklif al; biz üretip gönderelim.",
+  description: "Seç, ayarla, teklif al, üretelim. Dört kısa adım.",
   cta: "Üretim yolunu seç",
   store: "Mağazayı keşfet",
   upload: "Model yükle",
@@ -169,28 +168,26 @@ export const homepageProcessSteps = [
   {
     number: "01",
     kicker: "Seç",
-    title: "Modelini seç veya yükle",
-    description:
-      "Fikrini yaz, hazır model seç veya STL / 3MF dosyanı stüdyoya bırak.",
+    title: "Seç veya yükle",
+    description: "Fikrini yaz, hazır model seç veya dosyanı bırak.",
   },
   {
     number: "02",
     kicker: "Ayarla",
-    title: "Ölçü ve malzemeyi belirle",
-    description: "Boyut, malzeme ve rengi kullanımına göre netleştir.",
+    title: "Ölçü ve malzeme",
+    description: "Boyut, malzeme ve rengi netleştir.",
   },
   {
     number: "03",
     kicker: "Teklif",
-    title: "Gerçek süre ve gram üzerinden teklif al",
-    description:
-      "Fiyat, PrusaSlicer çıktısı ve imzalı formülle gelir. Dosya yoksa fiyat sözü yok.",
+    title: "Süre ve gram",
+    description: "Fiyat, dilimleme çıktısı ve imzalı formülle gelir.",
   },
   {
     number: "04",
     kicker: "Teslim",
     title: "Biz üretip gönderelim",
-    description: "Kontrol, paketleme ve teslimat stüdyoda tamamlanır.",
+    description: "Kontrol, paketleme ve teslimat stüdyoda biter.",
   },
 ] as const;
 
@@ -220,6 +217,8 @@ export const homepageMaterialOrder = [
   "asa",
   "standart-recine",
 ] as const;
+
+export const homepageMaterialCore = ["pla", "petg", "tpu"] as const;
 
 export const homepageMaterialCopy: Record<
   (typeof homepageMaterialOrder)[number],
