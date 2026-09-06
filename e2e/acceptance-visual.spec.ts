@@ -48,7 +48,7 @@ test.describe("acceptance visual inspection", () => {
       page.getByRole("contentinfo").getByText("© 2026 Baskı Çiftliği"),
     ).toBeVisible();
     await page
-      .getByRole("heading", { name: "Kategori dünyaları" })
+      .getByRole("heading", { name: "Kategoriler" })
       .scrollIntoViewIfNeeded();
     await shot(page, "mobile-home-categories");
 
@@ -66,7 +66,7 @@ test.describe("acceptance visual inspection", () => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/", { waitUntil: "networkidle" });
     await page
-      .getByRole("heading", { name: "Kategori dünyaları" })
+      .getByRole("heading", { name: "Kategoriler" })
       .scrollIntoViewIfNeeded();
     await shot(page, "desktop-home-categories");
 

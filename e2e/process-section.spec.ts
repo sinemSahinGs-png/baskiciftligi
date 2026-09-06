@@ -16,7 +16,7 @@ async function waitForMotion(page: Page) {
 test.describe("Nasıl çalışır process section", () => {
   test.describe.configure({ mode: "serial" });
 
-  test("desktop sequence reaches all five steps then the next section", async ({
+  test("desktop sequence reaches all four steps then the next section", async ({
     page,
     isMobile,
   }) => {
@@ -28,7 +28,7 @@ test.describe("Nasıl çalışır process section", () => {
     await waitForMotion(page);
 
     const heading = page.getByRole("heading", {
-      name: "Modelden ürüne, beş adımda.",
+      name: "Nasıl çalışır?",
     });
     await heading.scrollIntoViewIfNeeded();
     await expect(page.locator("[data-process-section]")).toHaveAttribute(
@@ -37,7 +37,7 @@ test.describe("Nasıl çalışır process section", () => {
     );
     await page.screenshot({ path: path.join(shots, "desktop-before.png") });
 
-    for (const step of ["01", "02", "03", "04", "05"] as const) {
+    for (const step of ["01", "02", "03", "04"] as const) {
       const card = page.locator(`[data-process-section] [data-process-step='${step}']`);
       await card.scrollIntoViewIfNeeded();
       await expect(card).toBeVisible();
@@ -65,7 +65,7 @@ test.describe("Nasıl çalışır process section", () => {
     );
     expect(overflowX).toBeLessThanOrEqual(1);
     await expect(
-      page.getByRole("heading", { name: "Malzeme laboratuvarı" }),
+      page.getByRole("heading", { name: "Modelini ürüne dönüştür" }),
     ).toBeVisible();
   });
 
@@ -81,7 +81,7 @@ test.describe("Nasıl çalışır process section", () => {
     await mobile.scrollIntoViewIfNeeded();
     await expect(mobile).toBeVisible();
     expect(await mobile.locator(".sticky").count()).toBe(0);
-    for (const step of ["01", "02", "03", "04", "05"] as const) {
+    for (const step of ["01", "02", "03", "04"] as const) {
       await mobile.locator(`[data-process-step='${step}']`).scrollIntoViewIfNeeded();
       await expect(mobile.locator(`[data-process-step='${step}']`)).toBeVisible();
       await page.screenshot({
@@ -106,7 +106,7 @@ test.describe("Nasıl çalışır process section", () => {
       "data-process-pinned",
       "false",
     );
-    for (const step of ["01", "02", "03", "04", "05"] as const) {
+    for (const step of ["01", "02", "03", "04"] as const) {
       await expect(
         page.locator(`[data-process-section] [data-process-step='${step}']`),
       ).toBeVisible();
@@ -121,13 +121,11 @@ test.describe("Nasıl çalışır process section", () => {
         { file: "desktop-step-02.png", caption: "Desktop — step 02" },
         { file: "desktop-step-03.png", caption: "Desktop — step 03" },
         { file: "desktop-step-04.png", caption: "Desktop — step 04" },
-        { file: "desktop-step-05.png", caption: "Desktop — step 05" },
         { file: "desktop-after.png", caption: "Desktop — next section" },
         { file: "mobile-step-01.png", caption: "Mobile — step 01" },
         { file: "mobile-step-02.png", caption: "Mobile — step 02" },
         { file: "mobile-step-03.png", caption: "Mobile — step 03" },
         { file: "mobile-step-04.png", caption: "Mobile — step 04" },
-        { file: "mobile-step-05.png", caption: "Mobile — step 05" },
         { file: "reduced-process.png", caption: "Reduced motion" },
       ],
     });

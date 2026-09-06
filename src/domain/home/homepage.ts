@@ -62,38 +62,104 @@ export const homepageShopCategorySlugs = [
   "kurumsal-promosyon",
 ] as const;
 
-export const homepageJourneys = [
+export const homepageIdeaPlaceholders = [
+  "Ejderha şeklinde telefon standı",
+  "Kedim için isimli mama kabı",
+  "Duvara asılan gitar aparatı",
+  "Araba için telefon tutucu",
+  "Sevgiliye özel kalp anahtarlık",
+  "Masaüstü kulaklık standı",
+  "Noel temalı mumluk",
+] as const;
+
+export const homepageIdeaExamples = [
   {
-    id: "hazir-urun",
-    title: "Hazır Ürün Satın Al",
-    description:
-      "Koleksiyondan rengi seç, fiyatı gör, sepete ekle. Üretim ve teslimat stüdyoda ilerler.",
-    href: "/magaza" as Route,
-    cta: "Mağazayı aç",
+    id: "telefon-standi",
+    label: "Telefon standı",
+    query: "telefon standı",
+    imageUrl: "/demo/products/arc-stand.svg",
+    tone: "cyan",
   },
   {
-    id: "model-yukle",
-    title: "Modelini Yükle",
-    description:
-      "STL, 3MF veya OBJ dosyanı getir. Seçenekleri belirle; kesin fiyat üretim değerlendirmesinden sonra netleşir.",
-    href: "/model-yukle" as Route,
-    cta: "Dosya ile başla",
+    id: "saksi",
+    label: "Saksı",
+    query: "saksı",
+    imageUrl: "/demo/products/tidal-saksi.svg",
+    tone: "lime",
+  },
+  {
+    id: "anahtarlik",
+    label: "Anahtarlık",
+    query: "anahtarlık",
+    imageUrl: "/demo/categories/anahtarlik.png",
+    tone: "coral",
+  },
+  {
+    id: "duvar-dekoru",
+    label: "Duvar dekoru",
+    query: "duvar dekoru",
+    imageUrl: "/demo/categories/ev-ve-dekorasyon.png",
+    tone: "violet",
+  },
+  {
+    id: "masaustu",
+    label: "Masaüstü düzenleyici",
+    query: "masaüstü düzenleyici",
+    imageUrl: "/demo/products/dock-organizer.svg",
+    tone: "cobalt",
+  },
+  {
+    id: "figur",
+    label: "Figür",
+    query: "figür",
+    imageUrl: "/demo/products/mono-bust.svg",
+    tone: "violet",
+  },
+  {
+    id: "lamba",
+    label: "Lamba",
+    query: "lamba",
+    imageUrl: "/demo/products/orbit-lamba.svg",
+    tone: "cyan",
+  },
+  {
+    id: "evcil",
+    label: "Evcil hayvan ürünü",
+    query: "evcil hayvan ürünü",
+    imageUrl: "/demo/categories/kisiye-ozel-urunler.png",
+    tone: "orange",
+  },
+] as const;
+
+export const homepageJourneys = [
+  {
+    id: "fikrini-anlat",
+    title: "Fikrini anlat",
+    description: "Ne istediğini yaz, uygun modelleri bul.",
+    href: "#ne-uretmek-istiyorsun" as Route,
+    cta: "Fikrini yaz",
   },
   {
     id: "hazir-model",
-    title: "Hazır Model Seç",
-    description:
-      "Doğrulanmış modellerden birini seç, baskı seçeneklerini belirle, üretimi stüdyoya bırak.",
+    title: "Hazır model seç",
+    description: "Thingiverse ve hazır kütüphaneden seçim yap.",
     href: "/hazir-modeller" as Route,
     cta: "Modelleri gör",
+  },
+  {
+    id: "model-yukle",
+    title: "Dosyanı yükle",
+    description: "STL veya 3MF yükle, dilimlet ve fiyat al.",
+    href: "/model-yukle" as Route,
+    cta: "Dosya yükle",
   },
 ] as const;
 
 export const homepageProcessCopy = {
   eyebrow: "Süreç",
-  title: "Modelden ürüne, beş adımda.",
+  title: "Nasıl çalışır?",
   description:
-    "Hazır bir ürün seçebilir, baskıya uygun bir model kullanabilir veya kendi dosyanı yükleyebilirsin. Üretim seçeneklerini belirledikten sonra süreci biz tamamlarız.",
+    "Modelini seç veya yükle. Ölçü ve malzemeyi belirle. Gerçek baskı süresi ve gram üzerinden teklif al; biz üretip gönderelim.",
   cta: "Üretim yolunu seç",
   store: "Mağazayı keşfet",
   upload: "Model yükle",
@@ -102,38 +168,48 @@ export const homepageProcessCopy = {
 export const homepageProcessSteps = [
   {
     number: "01",
-    kicker: "Seç veya yükle",
-    title: "Ürününü seç veya modelini yükle",
+    kicker: "Seç",
+    title: "Modelini seç veya yükle",
     description:
-      "Mağazadaki hazır ürünlerden seçim yap, lisanslı bir model belirle ya da STL, 3MF veya OBJ dosyanı yükle.",
+      "Fikrini yaz, hazır model seç veya STL / 3MF dosyanı stüdyoya bırak.",
   },
   {
     number: "02",
-    kicker: "Yapılandır",
-    title: "Malzeme ve üretim ayarlarını belirle",
-    description:
-      "Renk, malzeme, ölçü, kalite ve adet seçeneklerini ihtiyacına göre belirle.",
+    kicker: "Ayarla",
+    title: "Ölçü ve malzemeyi belirle",
+    description: "Boyut, malzeme ve rengi kullanımına göre netleştir.",
   },
   {
     number: "03",
-    kicker: "Fiyat ve onay",
-    title: "Fiyatı gör veya teklifini onayla",
+    kicker: "Teklif",
+    title: "Gerçek süre ve gram üzerinden teklif al",
     description:
-      "Hazır ürünlerde fiyatı doğrudan gör. Özel baskılarda model teknik kontrolden geçtikten sonra kesin teklifini onayla.",
+      "Fiyat, PrusaSlicer çıktısı ve imzalı formülle gelir. Dosya yoksa fiyat sözü yok.",
   },
   {
     number: "04",
-    kicker: "Üretim",
-    title: "Baskı Çiftliği üretime başlasın",
-    description:
-      "Model uygun yazıcı ve üretim ayarlarıyla katman katman hazırlanır, ardından kalite kontrolü yapılır.",
+    kicker: "Teslim",
+    title: "Biz üretip gönderelim",
+    description: "Kontrol, paketleme ve teslimat stüdyoda tamamlanır.",
+  },
+] as const;
+
+export const homepageTrustSignals = [
+  {
+    title: "Üretim öncesi kontrol",
+    description: "Baskıya gitmeden ölçü ve dosya uygunluğu kontrol edilir.",
   },
   {
-    number: "05",
-    kicker: "Teslimat",
-    title: "Kontrol edilsin ve kapına gelsin",
-    description:
-      "Ürün kalite kontrolünden sonra güvenli şekilde paketlenir ve teslimat sürecine alınır.",
+    title: "Gerçek dilimleme",
+    description: "Süre ve gram, PrusaSlicer 2.8.1 çıktısından okunur.",
+  },
+  {
+    title: "İmzalı teklif",
+    description: "Sepete giren fiyat, sunucuda üretilmiş imzalı kayıttır.",
+  },
+  {
+    title: "Tek kargo",
+    description: "100 TL ve üzeri siparişte kargo bir kez uygulanır.",
   },
 ] as const;
 

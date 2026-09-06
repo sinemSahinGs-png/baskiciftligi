@@ -72,7 +72,7 @@ export default defineConfig({
   webServer: {
     command: "node scripts/playwright-dev.mjs",
     url: baseURL,
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
       ...process.env,

@@ -1,69 +1,83 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, Box, Search, Upload } from "lucide-react";
 
 import { FoundryGrid } from "@/components/brand/foundry-grid";
-import { SectionIntro } from "@/components/home/section-intro";
 import { homepageJourneys } from "@/domain/home/homepage";
+import { trackHomeEvent } from "@/lib/home/analytics";
 import { cn } from "@/lib/utils";
 
-const order = ["/magaza", "/hazir-modeller", "/model-yukle"] as const;
+const icons = [Search, Box, Upload] as const;
 const worlds = [
-  "bg-cobalt text-light-text",
-  "bg-deep-ink text-light-text",
+  "bg-[#102226] text-light-text",
+  "bg-[#171428] text-light-text",
   "bg-carbon text-light-text",
 ] as const;
 
 export function ThreePathsSection() {
-  const paths = order
-    .map((href) => homepageJourneys.find((item) => item.href === href))
-    .filter((item): item is (typeof homepageJourneys)[number] => Boolean(item));
-
   return (
     <section
       id="uc-uretim-yolu"
       data-journey-section
-      className="atmosphere-optical pt-[clamp(2.25rem,4.8vw,4.25rem)] pb-12 sm:pb-16"
+      className="bg-[#f4f1ea] pt-4 pb-10 sm:pt-6 sm:pb-14"
     >
-      <div className="shell">
-        <SectionIntro
-          title="Üç üretim yolu"
-          description="Mağaza, kütüphane veya kendi dosyan."
-        />
-        <div className="grid h-auto min-h-0 gap-3 lg:grid-cols-3 lg:gap-4">
-          {paths.map((path, index) => (
-            <Link
+      <div className="home-shell">
+        <h2 className="font-heading text-[1.65rem] leading-[1.08] font-bold tracking-[-0.04em] sm:text-3xl">
+          Üç üretim yolu
+        </h2>
+        <p className="mt-2 max-w-md text-sm leading-6 text-ink-secondary">
+          Yaz, seç veya yükle. Hepsi aynı stüdyoda üretime bağlanır.
+        </p>
+        <div className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-3 lg:overflow-visible lg:pb-0">
+          {homepageJourneys.map((path, index) => (
+            <div
               key={path.id}
-              href={path.href}
-              data-journey-panel={String(index + 1).padStart(2, "0")}
-              data-motion-item="visible"
-              data-motion-state="visible"
-              className={cn(
-                "group relative min-h-[18rem] overflow-hidden rounded-xl p-6 opacity-100 sm:min-h-[20rem] sm:p-8",
-                worlds[index],
-              )}
+              className="min-w-0 shrink-0 basis-[min(80%,19rem)] snap-start lg:basis-auto"
             >
-              {index === 0 ? <FoundryGrid variant="fade" className="opacity-50" /> : null}
-              {index === 1 ? (
-                <FoundryGrid variant="blueprint" className="opacity-80" />
-              ) : null}
-              {index === 2 ? <FoundryGrid variant="measure" className="opacity-70" /> : null}
-              <p className="relative tabular text-4xl font-bold tracking-[-0.06em] text-cyan">
-                {String(index + 1).padStart(2, "0")}
-              </p>
-              <h3 className="relative mt-6 font-heading text-2xl font-bold tracking-[-0.04em] sm:text-3xl">
-                {path.title}
-              </h3>
-              <p className="relative mt-3 max-w-sm text-sm leading-6 text-white/80">
-                {path.description}
-              </p>
-              <span className="relative mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-semibold">
-                {path.cta}
-                <ArrowUpRight aria-hidden="true" className="size-4" />
-              </span>
-            </Link>
+              <PathCard path={path} index={index} />
+            </div>
           ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function PathCard({
+  path,
+  index,
+}: {
+  path: (typeof homepageJourneys)[number];
+  index: number;
+}) {
+  const Icon = icons[index] ?? Search;
+  return (
+    <Link
+      href={path.href}
+      data-journey-panel={String(index + 1).padStart(2, "0")}
+      data-motion-item="visible"
+      onClick={() => {
+        if (path.id === "model-yukle") trackHomeEvent({ name: "upload_cta_clicked" });
+        if (path.id === "hazir-model") trackHomeEvent({ name: "ready_model_cta_clicked" });
+      }}
+      className={cn(
+        "group relative flex min-h-[13.5rem] flex-col overflow-hidden rounded-2xl p-5 transition duration-200 active:scale-[0.99] sm:min-h-[15rem]",
+        worlds[index],
+      )}
+    >
+      {index === 1 ? <FoundryGrid variant="blueprint" className="opacity-50" /> : null}
+      <Icon className="relative size-5 text-cyan" aria-hidden="true" />
+      <h3 className="relative mt-5 font-heading text-xl font-bold tracking-[-0.04em] sm:text-2xl">
+        {path.title}
+      </h3>
+      <p className="relative mt-2 max-w-xs text-sm leading-6 text-white/75">
+        {path.description}
+      </p>
+      <span className="relative mt-auto inline-flex min-h-11 items-center gap-2 pt-4 text-sm font-semibold">
+        {path.cta}
+        <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+      </span>
+    </Link>
   );
 }

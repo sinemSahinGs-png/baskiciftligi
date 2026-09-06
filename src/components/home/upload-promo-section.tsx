@@ -2,70 +2,80 @@
 
 import type { Route } from "next";
 import Link from "next/link";
+import { useState } from "react";
 
 import { FoundryGrid } from "@/components/brand/foundry-grid";
-import { RevealBlock } from "@/components/motion/reveal-copy";
-import { RevealCopy } from "@/components/motion/reveal-copy";
-import { RevealHeading } from "@/components/motion/reveal-words";
+import { trackHomeEvent } from "@/lib/home/analytics";
 
-const formats = ["STL", "3MF", "OBJ", "100 MB"] as const;
+const advantages = [
+  "STL ve 3MF desteği",
+  "Gerçek PrusaSlicer analizi",
+  "Anlık imzalı teklif",
+] as const;
 
 export function UploadPromoSection() {
+  const [open, setOpen] = useState(false);
+
   return (
     <section
       id="modelin-hazir-mi"
-      className="relative overflow-hidden bg-midnight text-light-text"
+      className="relative overflow-hidden bg-[#10141c] text-light-text"
     >
-      <FoundryGrid variant="fade" />
-      <div className="shell relative grid items-center gap-10 py-16 lg:grid-cols-2 lg:py-24">
+      <FoundryGrid variant="fade" className="opacity-40" />
+      <div className="home-shell relative grid items-center gap-8 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:py-16">
         <div>
-          <p className="eyebrow">Dijital üretim kokpiti</p>
-          <RevealHeading
+          <p className="text-xs font-semibold tracking-[0.14em] text-violet uppercase">
+            Dijital model
+          </p>
+          <h2
             id="modelin-hazir-mi-baslik"
-            text="Modelin hazır mı?"
-            className="section-title stack-title text-light-text"
-          />
-          <RevealCopy
-            text="STL, 3MF veya OBJ bırak. Dilimleme bağlı değil; kesin fiyat değerlendirmeden sonra bildirilir."
-            className="stack-body max-w-xl text-[1.05rem] leading-7 text-muted-light"
-          />
-          <RevealBlock delay={0.12} className="mt-8">
-            <Link
-              href={"/model-yukle" as Route}
-              className="inline-flex min-h-12 items-center rounded-md bg-cobalt px-6 text-sm font-semibold text-light-text"
-            >
-              Model yükle
-            </Link>
-          </RevealBlock>
+            className="mt-3 font-heading text-[1.65rem] leading-[1.08] font-bold tracking-[-0.04em] sm:text-3xl"
+          >
+            Modelini ürüne dönüştür
+          </h2>
+          <p className="mt-3 max-w-md text-sm leading-6 text-white/70">
+            Dosyanı yükle. Üretim öncesi kontrol ve imzalı teklif, gerçek dilimlemeden sonra gelir.
+          </p>
+          <ul className="mt-5 space-y-2 text-sm">
+            {advantages.map((item) => (
+              <li key={item} className="flex min-h-11 items-center gap-2">
+                <span className="size-1.5 rounded-full bg-cyan" aria-hidden="true" />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <Link
+            href={"/model-yukle" as Route}
+            onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
+            className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-orange px-5 text-sm font-semibold text-midnight"
+          >
+            Dosyanı yükle
+          </Link>
+          <button
+            type="button"
+            className="mt-3 block min-h-11 text-left text-sm font-semibold text-white/70 underline-offset-4 hover:underline"
+            aria-expanded={open}
+            onClick={() => setOpen((value) => !value)}
+          >
+            Nasıl hesaplanıyor?
+          </button>
+          {open ? (
+            <p className="mt-2 max-w-md text-sm leading-6 text-white/65">
+              Teklif; katman süresi, malzeme gramı ve `bc-quote-v2` formülünden üretilir.
+              Dosya analiz edilmeden fiyat gösterilmez.
+            </p>
+          ) : null}
         </div>
-        <RevealBlock className="relative min-h-72 overflow-hidden rounded-xl border border-white/10 bg-carbon">
+        <div className="relative min-h-64 overflow-hidden rounded-3xl border border-white/10 bg-[#0b0f16]">
           <FoundryGrid variant="measure" />
           <div
             aria-hidden="true"
-            className="motion-measure-box absolute inset-8 border border-dashed border-cyan/35"
+            className="absolute inset-10 rounded-2xl border border-dashed border-cyan/30"
           />
-          <div
-            aria-hidden="true"
-            className="motion-measure-shape absolute top-1/2 left-1/2 h-36 w-44 -translate-x-1/2 -translate-y-1/2 border border-cyan/80 [clip-path:polygon(50%_0,100%_28%,82%_100%,18%_100%,0_28%)]"
-          />
-          <span className="absolute top-6 left-6 text-xs tracking-[0.18em] text-cyan/80">
-            X
-          </span>
-          <span className="absolute top-6 right-6 text-xs tracking-[0.18em] text-cyan/80">
-            Y
-          </span>
-          <span className="absolute bottom-16 left-6 text-xs tracking-[0.18em] text-cyan/80">
-            Z
-          </span>
-          <p className="absolute bottom-5 left-5 flex flex-wrap gap-2 text-xs text-muted-light">
-            {formats.map((format, index) => (
-              <span key={format}>
-                {format}
-                {index < formats.length - 1 ? " ·" : null}
-              </span>
-            ))}
+          <p className="absolute bottom-5 left-5 text-xs tracking-[0.16em] text-cyan/80">
+            STL · 3MF · Üretim öncesi kontrol
           </p>
-        </RevealBlock>
+        </div>
       </div>
     </section>
   );

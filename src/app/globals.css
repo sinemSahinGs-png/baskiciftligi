@@ -995,3 +995,104 @@ html.motion-ready:not([data-reduced-motion="true"]) [data-motion-item="visible"]
     box-shadow: none;
   }
 }
+
+.home-shell {
+  width: min(100%, 92rem);
+  margin-inline: auto;
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+.home-tech-grid {
+  background-image:
+    linear-gradient(rgb(48 213 210 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(48 213 210 / 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(circle at 20% 0%, #000, transparent 72%);
+}
+
+@keyframes home-search-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(48 213 210 / 0.28),
+      0 12px 40px -18px rgb(48 213 210 / 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgb(48 213 210 / 0.55),
+      0 16px 48px -16px rgb(255 146 56 / 0.28);
+  }
+}
+
+.home-search-glow {
+  animation: home-search-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.home-result-card,
+.home-reveal-card,
+.home-chip-in {
+  animation: home-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes home-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.home-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.35),
+    transparent
+  );
+  animation: home-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes home-step-glyph {
+  from {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.home-step-glyph {
+  animation: home-step-glyph 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-search-glow,
+  .home-result-card,
+  .home-reveal-card,
+  .home-chip-in,
+  .home-shimmer::after,
+  .home-step-glyph {
+    animation: none;
+  }
+}

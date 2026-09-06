@@ -4,13 +4,13 @@ import { Hero } from "@/components/home/hero";
 import {
   B2bSection,
   CategoriesSection,
-  FeaturedCollectionsSection,
   FeaturedProductsSection,
   FaqSection,
-  GallerySection,
+  FinalCtaSection,
+  IdeaSearchSection,
   MaterialsSection,
-  PrintLibrarySection,
   ProcessSection,
+  ReadyModelsSection,
   SocialProofSection,
   ThreePathsSection,
   UploadPromoSection,
@@ -23,6 +23,7 @@ import {
 } from "@/domain/catalog/repository";
 import { listPublishedCuratedModels } from "@/domain/curated-models/repository";
 import { faqItems } from "@/components/home/faq-data";
+import { homepagePrintLibrary } from "@/domain/home/homepage";
 import { getSiteContent } from "@/domain/site/content-repository";
 
 export const metadata: Metadata = {
@@ -45,6 +46,25 @@ export default async function HomePage() {
     listPublishedCuratedModels(4, "curated_external"),
   ]);
 
+  const readyFallback =
+    curatedModels.length > 0
+      ? curatedModels.map((model) => ({
+          id: model.id,
+          name: model.titleTr,
+          category: model.categoryLabel ?? "Küratörlü",
+          imageUrl: model.previewImageUrl,
+          href: `/hazir-modeller/katalog/${model.slug}`,
+          source: "curated" as const,
+        }))
+      : homepagePrintLibrary.map((model) => ({
+          id: model.id,
+          name: model.name,
+          category: model.category,
+          imageUrl: model.imageUrl,
+          href: model.href,
+          source: "fallback" as const,
+        }));
+
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -58,25 +78,26 @@ export default async function HomePage() {
   return (
     <main id="ana-icerik">
       <Hero />
-      <FeaturedCollectionsSection products={products} categories={categories} />
+      <IdeaSearchSection />
+      <ThreePathsSection />
+      <ReadyModelsSection fallback={readyFallback} />
       <FeaturedProductsSection products={products} />
       <CategoriesSection
         categories={categories}
         products={products}
         categoriesIntro={{
-          title: content.categoriesIntroTitle,
-          description: content.categoriesIntroDescription,
+          title: "Kategoriler",
+          description:
+            content.categoriesIntroDescription ?? "Koleksiyonu sahne sahne gez.",
         }}
       />
-      <ThreePathsSection />
-      <UploadPromoSection />
-      <PrintLibrarySection curatedModels={curatedModels} />
       <ProcessSection />
+      <UploadPromoSection />
       <MaterialsSection materials={materials} />
       <B2bSection />
       <SocialProofSection />
-      <GallerySection />
       <FaqSection />
+      <FinalCtaSection />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

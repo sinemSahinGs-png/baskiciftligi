@@ -20,7 +20,7 @@ async function journeyMetrics(page: Page) {
     const panels = [
       ...document.querySelectorAll<HTMLElement>("[data-journey-panel]"),
     ];
-    const next = document.getElementById("modelin-hazir-mi");
+    const next = document.getElementById("sana-gore-hazir-modeller");
     const viewport = window.innerHeight;
     if (!section || !next || panels.length === 0) {
       return null;
@@ -147,7 +147,7 @@ test.describe("homepage journey layout", () => {
       expect(metrics!.gapToNext).toBeGreaterThanOrEqual(0);
       expect(metrics!.gapToNext).toBeLessThanOrEqual(240);
       await page.locator("#modelin-hazir-mi").scrollIntoViewIfNeeded();
-      await expect(page.getByRole("heading", { name: "Modelin hazır mı?" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Modelini ürüne dönüştür" })).toBeVisible();
     });
   });
 });

@@ -250,29 +250,32 @@ test.describe("visual gap and visibility audit", () => {
         .filter(Boolean);
     });
     expect(order[0]).toMatch(/Fikrini yükle/i);
-    expect(order).toContain("Renk sahnesinde koleksiyon");
-    expect(order).toContain("Öne çıkan ürünler");
-    expect(order).toContain("Kategori dünyaları");
+    expect(order).toContain("Ne üretmek istiyorsun?");
     expect(order).toContain("Üç üretim yolu");
-    expect(order).toContain("Modelin hazır mı?");
-    expect(order).toContain("Modelini seç, biz üretelim.");
-    expect(order).toContain("Modelden ürüne, beş adımda.");
-    expect(order).toContain("Malzeme laboratuvarı");
-    expect(order).toContain("Tekrarlı üretim");
-    expect(order).toContain("İşaretli demo yorumlar");
-    expect(order).toContain("Dijitalden fiziksel ürüne");
-    expect(order).toContain("Karar vermeden önce");
-    expect(order.indexOf("Öne çıkan ürünler")).toBeLessThan(
-      order.indexOf("Kategori dünyaları"),
+    expect(order).toContain("Sana göre hazır modeller");
+    expect(order).toContain("Öne çıkan ürünler");
+    expect(order).toContain("Kategoriler");
+    expect(order).toContain("Nasıl çalışır?");
+    expect(order).toContain("Modelini ürüne dönüştür");
+    expect(order).toContain("Malzeme seçenekleri");
+    expect(order).toContain("Tekrarlanabilir üretim, kontrollü kapasite.");
+    expect(order).toContain("Güven unsurları");
+    expect(order).toContain("Kısa SSS");
+    expect(order).toContain("Bugün üretmeye başla.");
+    expect(order.indexOf("Ne üretmek istiyorsun?")).toBeLessThan(
+      order.indexOf("Üç üretim yolu"),
     );
     expect(order.indexOf("Üç üretim yolu")).toBeLessThan(
-      order.indexOf("Modelin hazır mı?"),
+      order.indexOf("Sana göre hazır modeller"),
     );
-    expect(order.indexOf("Modelini seç, biz üretelim.")).toBeLessThan(
-      order.indexOf("Modelden ürüne, beş adımda."),
+    expect(order.indexOf("Öne çıkan ürünler")).toBeLessThan(
+      order.indexOf("Kategoriler"),
     );
-    expect(order.indexOf("Malzeme laboratuvarı")).toBeLessThan(
-      order.indexOf("Tekrarlı üretim"),
+    expect(order.indexOf("Nasıl çalışır?")).toBeLessThan(
+      order.indexOf("Modelini ürüne dönüştür"),
+    );
+    expect(order.indexOf("Malzeme seçenekleri")).toBeLessThan(
+      order.indexOf("Tekrarlanabilir üretim, kontrollü kapasite."),
     );
   });
 
@@ -568,7 +571,7 @@ test.describe("visual gap and visibility audit", () => {
     const process = page.locator("[data-process-section]");
     await process.scrollIntoViewIfNeeded();
     await expect(process).toHaveAttribute("data-process-pinned", "false");
-    await expect(page.locator("[data-process-step]")).toHaveCount(5);
+    await expect(page.locator("[data-process-step]")).toHaveCount(4);
     const sticky = await page.evaluate(() => {
       const section = document.querySelector("[data-process-section]");
       if (!section) {
@@ -577,6 +580,6 @@ test.describe("visual gap and visibility audit", () => {
       return getComputedStyle(section).position;
     });
     expect(sticky).not.toBe("sticky");
-    await expect(page.getByRole("heading", { name: "Malzeme laboratuvarı" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Malzeme seçenekleri" })).toBeVisible();
   });
 });
