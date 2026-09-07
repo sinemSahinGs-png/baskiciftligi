@@ -14,6 +14,30 @@ test.describe("storefront category navigation", () => {
     await expect(menu.getByRole("link", { name: "Kategoriler" })).toHaveCount(0);
     await expect(menu.getByRole("link", { name: "Kurumsal", exact: true })).toHaveCount(0);
   });
+  test("desktop Mağaza mega menu opens on hover, stays open in the panel, and closes outside", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.includes("mobile"), "desktop mega menu");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await page.waitForFunction(
+      () => document.documentElement.classList.contains("motion-ready"),
+      undefined,
+      { timeout: 20_000 },
+    );
+    const trigger = page.getByRole("banner").getByRole("link", { name: "Mağaza" });
+    const menu = page.locator(".store-mega");
+    await trigger.hover({ force: true });
+    await expect(menu).toHaveAttribute("data-open", "true");
+    await expect(menu).toBeVisible();
+    await menu.getByRole("menuitem", { name: /Figür/ }).hover({ force: true });
+    await expect(menu).toHaveAttribute("data-open", "true");
+    await page.evaluate(() => {
+      document.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+    });
+    await expect(menu).toHaveAttribute("data-open", "false");
+  });
+
   test("desktop Mağaza mega menu opens with keyboard and lists seven categories", async ({
     page,
   }, testInfo) => {

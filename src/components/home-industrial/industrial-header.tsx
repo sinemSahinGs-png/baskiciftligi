@@ -11,20 +11,21 @@ export function IndustrialHeaderEffects() {
 
     const update = () => {
       const y = window.scrollY;
-      const goingDown = y > last;
+      const delta = y - last;
       last = y;
       if (y > 12) root.dataset.headerScrolled = "";
       else delete root.dataset.headerScrolled;
-      const next = y > 18 && goingDown;
-      if (next !== compact) {
-        compact = next;
-        if (compact) root.dataset.headerCompact = "";
-        else delete root.dataset.headerCompact;
-      }
+
       if (y < 8) {
         compact = false;
-        delete root.dataset.headerCompact;
+      } else if (delta > 6 && y > 28) {
+        compact = true;
+      } else if (delta < -6) {
+        compact = false;
       }
+
+      if (compact) root.dataset.headerCompact = "";
+      else delete root.dataset.headerCompact;
     };
 
     update();

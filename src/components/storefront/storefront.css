@@ -1175,15 +1175,24 @@
   left: 0;
   z-index: 60;
   width: min(64rem, calc(100vw - 2rem));
-  padding-top: 0.75rem;
+  padding-top: 0.85rem;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(12px);
+  transform: translateY(8px);
   transition:
-    opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 300ms;
+    opacity 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 280ms;
+}
+
+.store-mega::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 0.85rem;
 }
 
 .store-mega[data-open="true"] {
@@ -1312,13 +1321,16 @@
 }
 
 .store-mega-soon {
-  display: inline-block;
+  display: block;
+  width: max-content;
   margin-top: 0.2rem;
+  padding: 0.12rem 0.38rem;
+  border: 1px solid rgb(241 240 235 / 0.55);
   font-family: var(--font-bc-mono, ui-monospace, monospace);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #ff5a0a;
+  color: #f1f0eb;
 }
 
 .store-mega-aside {

@@ -5,6 +5,7 @@ import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
 import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { CategoryArtwork } from "@/components/catalog/category-artwork";
+import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
 import { WordReveal } from "@/components/motion/premium";
 import { siteConfig } from "@/config/site";
 import {
@@ -76,6 +77,7 @@ export default async function StorefrontCategoryPage(
               <CategoryArtwork
                 src={cover}
                 sizes="(max-width: 768px) 92vw, 28vw"
+                objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
               />
             </div>
           ) : (

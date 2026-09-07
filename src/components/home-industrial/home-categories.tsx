@@ -2,22 +2,21 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { CategoryArtwork } from "@/components/catalog/category-artwork";
+import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
 import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
-import {
-  countStorefrontProducts,
-  storefrontCategories,
-} from "@/domain/catalog/storefront-taxonomy";
+import { storefrontCategories } from "@/domain/catalog/storefront-taxonomy";
 import type { Product } from "@/domain/catalog/types";
 import { resolveStorefrontCategoryImage } from "@/lib/catalog/storefront-category-image";
 import { cn } from "@/lib/utils";
 
 export function HomeCategories({ products }: { products: Product[] }) {
-  const [dominant, mediumA, mediumB, ...compact] = storefrontCategories;
+  void products;
+  const [lead, ...supporting] = storefrontCategories;
 
   return (
     <section
       id="kategoriler"
-      data-home-theme="ivory"
+      data-home-theme="mono"
       className="hi-section hi-cats"
       aria-labelledby="home-cats-heading"
     >
@@ -29,17 +28,21 @@ export function HomeCategories({ products }: { products: Product[] }) {
           </Link>
         </div>
         <div className="hi-cats-grid mt-5">
-          {dominant ? <CategoryCard category={dominant} products={products} size="dominant" /> : null}
-          <div className="hi-cats-medium">
-            {mediumA ? <CategoryCard category={mediumA} products={products} size="medium" /> : null}
-            {mediumB ? <CategoryCard category={mediumB} products={products} size="medium" /> : null}
-          </div>
-          <div className="hi-cats-compact">
-            {compact.map((category) => (
-              <CategoryCard key={category.slug} category={category} products={products} size="compact" />
-            ))}
-          </div>
+          {lead ? (
+            <CategoryCard category={lead} index={1} size="lead" />
+          ) : null}
+          {supporting.map((category, offset) => (
+            <CategoryCard
+              key={category.slug}
+              category={category}
+              index={offset + 2}
+              size="support"
+            />
+          ))}
         </div>
+      </div>
+      <div className="hi-cats-handoff" aria-hidden="true">
+        <span className="hi-cats-handoff-rule" />
       </div>
     </section>
   );
@@ -47,45 +50,44 @@ export function HomeCategories({ products }: { products: Product[] }) {
 
 function CategoryCard({
   category,
-  products,
+  index,
   size,
 }: {
   category: (typeof storefrontCategories)[number];
-  products: Product[];
-  size: "dominant" | "medium" | "compact";
+  index: number;
+  size: "lead" | "support";
 }) {
-  const count = countStorefrontProducts(products, category);
   const cover = resolveStorefrontCategoryImage(category.slug);
+  const number = String(index).padStart(2, "0");
   return (
-    <InteractiveMedia className="hi-cat-interactive">
+    <InteractiveMedia className={cn("hi-cat-interactive", size === "lead" && "hi-cat-lead")}>
       <Link
         href={category.href}
         data-category-slug={category.slug}
-        className={cn("hi-cat-card", `hi-cat-card-${size}`)}
+        data-cat-size={size}
+        className={cn("hi-cat-card", size === "lead" ? "hi-cat-card-lead" : "hi-cat-card-support")}
       >
         <span className="hi-cat-media" aria-hidden="true">
           <CategoryArtwork
             src={cover}
+            objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
             sizes={
-              size === "dominant"
-                ? "(max-width: 768px) 100vw, 48vw"
-                : size === "medium"
-                  ? "(max-width: 768px) 50vw, 24vw"
-                  : "(max-width: 768px) 50vw, 18vw"
+              size === "lead"
+                ? "(max-width: 767px) 100vw, 42vw"
+                : "(max-width: 767px) 50vw, 24vw"
             }
           />
         </span>
+        {category.comingSoon ? (
+          <span className="hi-cat-badge">Hazırlanıyor</span>
+        ) : null}
         <span className="hi-cat-copy">
-          <span className="hi-cat-name">
-            {category.name}
-            <span aria-hidden="true"> →</span>
-          </span>
+          <span className="hi-cat-index">{number}</span>
+          <span className="hi-cat-name">{category.name}</span>
           <span className="hi-cat-desc">{category.description}</span>
-          {category.comingSoon ? (
-            <span className="hi-cat-meta">Hazırlanıyor</span>
-          ) : count > 0 ? (
-            <span className="hi-cat-meta">{count} ürün</span>
-          ) : null}
+          <span className="hi-cat-arrow" aria-hidden="true">
+            →
+          </span>
         </span>
       </Link>
     </InteractiveMedia>

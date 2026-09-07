@@ -2,9 +2,10 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 
 import { CategoryArtwork } from "@/components/catalog/category-artwork";
+import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
 import {
   storefrontCategories,
   type StorefrontCategory,
@@ -12,8 +13,8 @@ import {
 } from "@/domain/catalog/storefront-taxonomy";
 import { cn } from "@/lib/utils";
 
-const OPEN_DELAY = 140;
-const CLOSE_DELAY = 220;
+const OPEN_DELAY = 80;
+const CLOSE_DELAY = 280;
 
 export function StoreMegaMenu({
   inverted,
@@ -67,8 +68,15 @@ export function StoreMegaMenu({
         rootRef.current?.querySelector<HTMLElement>("[data-mega-trigger]")?.focus();
       }
     }
+    function onPointerDown(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) closeNow();
+    }
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- closeNow uses refs
   }, [open]);
 
@@ -77,6 +85,30 @@ export function StoreMegaMenu({
       event.preventDefault();
       openNow();
       window.setTimeout(() => itemRefs.current[0]?.focus(), 20);
+    }
+  }
+
+  function onFinePointerEnter() {
+    scheduleOpen();
+  }
+
+  function onFinePointerLeave() {
+    scheduleClose();
+  }
+
+  function onRootPointerEnter(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "touch") return;
+    onFinePointerEnter();
+  }
+
+  function onRootPointerLeave(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "touch") return;
+    onFinePointerLeave();
+  }
+
+  function onRootBlur(event: FocusEvent<HTMLDivElement>) {
+    if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+      scheduleClose();
     }
   }
 
@@ -109,9 +141,12 @@ export function StoreMegaMenu({
   return (
     <div
       ref={rootRef}
-      className="relative"
-      onMouseEnter={scheduleOpen}
-      onMouseLeave={scheduleClose}
+      className="store-mega-root relative"
+      onMouseEnter={onFinePointerEnter}
+      onMouseLeave={onFinePointerLeave}
+      onPointerEnter={onRootPointerEnter}
+      onPointerLeave={onRootPointerLeave}
+      onBlur={onRootBlur}
     >
       <Link
         href={"/magaza" as Route}
@@ -122,6 +157,11 @@ export function StoreMegaMenu({
         aria-haspopup="true"
         className="nav-signal inline-flex min-h-11 items-center px-3 text-sm font-medium"
         onFocus={scheduleOpen}
+        onMouseEnter={onFinePointerEnter}
+        onPointerEnter={(event) => {
+          if (event.pointerType === "touch") return;
+          onFinePointerEnter();
+        }}
         onKeyDown={onTriggerKey}
       >
         Mağaza
@@ -134,6 +174,11 @@ export function StoreMegaMenu({
         aria-hidden={open ? undefined : true}
         inert={open ? undefined : true}
         className={cn("store-mega", inverted && "store-mega-on-hero")}
+        onMouseEnter={openNow}
+        onPointerEnter={(event) => {
+          if (event.pointerType === "touch") return;
+          openNow();
+        }}
       >
         <div className="store-mega-panel">
           <ul className="store-mega-grid">
@@ -205,14 +250,18 @@ function MegaItem({
       data-category-slug={category.slug}
     >
       <span className="store-mega-art" aria-hidden="true">
-        <CategoryArtwork src={artworkSrc} sizes="72px" />
+        <CategoryArtwork
+          src={artworkSrc}
+          sizes="72px"
+          objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+        />
       </span>
       <span className="min-w-0">
         <span className="store-mega-name">{category.name}</span>
-        <span className="store-mega-copy">{category.description}</span>
         {category.comingSoon ? (
           <span className="store-mega-soon">Hazırlanıyor</span>
         ) : null}
+        <span className="store-mega-copy">{category.description}</span>
       </span>
     </Link>
   );
@@ -262,12 +311,13 @@ export function MobileStoreNav({
                     <CategoryArtwork
                       src={categoryArtwork[category.slug]}
                       sizes="40px"
+                      objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
                     />
                   </span>
                   <span className="min-w-0">
                     <span className="block text-sm font-medium">{category.name}</span>
                     {category.comingSoon ? (
-                      <span className="text-xs text-muted-light">Hazırlanıyor</span>
+                      <span className="store-mega-soon">Hazırlanıyor</span>
                     ) : null}
                   </span>
                 </Link>

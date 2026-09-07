@@ -10,10 +10,12 @@ import { cn } from "@/lib/utils";
 export function CategoryArtwork({
   src,
   sizes,
+  objectPosition = "50% 50%",
   className,
 }: {
   src?: string | null;
   sizes: string;
+  objectPosition?: string;
   className?: string;
 }) {
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -56,8 +58,9 @@ export function CategoryArtwork({
           decoding="async"
           data-category-artwork={src as string}
           data-ready={ready ? "true" : "false"}
+          style={{ objectPosition }}
           className={cn(
-            "object-cover object-center",
+            "object-cover",
             ready ? "opacity-100" : "opacity-0",
             className,
           )}

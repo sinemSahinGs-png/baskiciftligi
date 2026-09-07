@@ -107,7 +107,7 @@ export function SiteHeader({
     <>
       <header
         className={cn(
-          "sticky top-0 z-40 border-b transition-[background-color,border-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "sticky top-0 z-40 overflow-visible border-b transition-[background-color,border-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           inverted
             ? "border-transparent bg-transparent text-light-text"
               : darkShell
