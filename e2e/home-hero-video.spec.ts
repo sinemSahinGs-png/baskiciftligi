@@ -5,7 +5,6 @@ import { industrialAssetPaths } from "../src/components/home-industrial/industri
 import { HERO_IDEA_EXAMPLES } from "../src/components/home-industrial/hero-media";
 
 const shots = path.join("test-results", "home-hero-video");
-const demoVideo = path.join("public", "demo", "hero", "placeholder.mp4");
 
 async function readyHome(page: Page) {
   await page.goto("/");
@@ -180,7 +179,7 @@ test.describe("centered video hero", () => {
     await readyHome(page);
     await expect(page.locator("#ne-uretmek-istiyorsun")).toBeVisible();
     await expect(page.locator("#idea-command-input")).toBeVisible();
-    await expect(page.locator("video.hi-hero-video")).toHaveCount(0);
+    await expect.poll(async () => page.locator("video.hi-hero-video").count()).toBe(0);
     const heroImage = page.locator("[data-industrial-asset='hero-wireframe-vase'] img").first();
     await expect(heroImage).toBeVisible();
   });
@@ -189,49 +188,19 @@ test.describe("centered video hero", () => {
     page,
   }) => {
     const requested: string[] = [];
-    await page.route("**/videos/home-industrial/**", async (route) => {
-      requested.push(`${route.request().method()} ${route.request().url()}`);
-      const url = route.request().url();
-      if (url.includes("hero-desktop.mp4") && route.request().method() !== "HEAD") {
-        throw new Error("desktop video downloaded on mobile");
+    page.on("request", (request) => {
+      if (request.url().includes("/videos/home-industrial/")) {
+        requested.push(`${request.method()} ${request.url()}`);
       }
-      if (route.request().method() === "HEAD") {
-        await route.fulfill({
-          status: 200,
-          headers: { "content-type": "video/mp4" },
-        });
-        return;
-      }
-      await route.fulfill({
-        status: 200,
-        contentType: "video/mp4",
-        path: demoVideo,
-      });
     });
     await page.setViewportSize({ width: 390, height: 844 });
     await readyHome(page);
-    await page.waitForTimeout(800);
+    await expect(page.locator("video.hi-hero-video")).toHaveCount(1, { timeout: 8_000 });
     expect(requested.some((item) => item.includes("hero-mobile.mp4"))).toBe(true);
-    expect(requested.some((item) => item.startsWith("GET") && item.includes("hero-desktop.mp4"))).toBe(
-      false,
-    );
+    expect(requested.some((item) => item.includes("hero-desktop.mp4"))).toBe(false);
   });
 
   test("video pauses when the hero leaves the viewport", async ({ page }) => {
-    await page.route("**/videos/home-industrial/**", async (route) => {
-      if (route.request().method() === "HEAD") {
-        await route.fulfill({
-          status: 200,
-          headers: { "content-type": "video/mp4" },
-        });
-        return;
-      }
-      await route.fulfill({
-        status: 200,
-        contentType: "video/mp4",
-        path: demoVideo,
-      });
-    });
     await page.setViewportSize({ width: 390, height: 844 });
     await readyHome(page);
     const video = page.locator("video.hi-hero-video");

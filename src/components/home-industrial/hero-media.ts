@@ -39,7 +39,6 @@ export function pickHeroVideoSrc({
 }) {
   if (isMobile) {
     if (mobileOk) return { src: heroMedia.mobileVideo, kind: "mobile" as const };
-    if (desktopOk) return { src: heroMedia.desktopVideo, kind: "desktop" as const };
     return null;
   }
   if (desktopOk) return { src: heroMedia.desktopVideo, kind: "desktop" as const };

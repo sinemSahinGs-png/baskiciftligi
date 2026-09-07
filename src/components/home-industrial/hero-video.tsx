@@ -3,16 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { SlotImage } from "@/components/home-industrial/slot-image";
-import { heroMedia, pickHeroVideoSrc } from "@/components/home-industrial/hero-media";
-
-async function headOk(path: string) {
-  try {
-    const response = await fetch(path, { method: "HEAD", cache: "no-store" });
-    return response.ok;
-  } catch {
-    return false;
-  }
-}
+import { heroMedia } from "@/components/home-industrial/hero-media";
 
 function saveDataEnabled() {
   const connection = (
@@ -27,16 +18,9 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
   const [src, setSrc] = useState<string | null>(null);
   const [kind, setKind] = useState<"mobile" | "desktop" | null>(null);
   const [failed, setFailed] = useState(false);
-  const [still, setStill] = useState<string>(heroMedia.fallback);
   const [inView, setInView] = useState(true);
   const [hidden, setHidden] = useState(false);
   const showVideo = Boolean(src) && !failed && !reducedMotion && !hidden && inView;
-
-  useEffect(() => {
-    void headOk(heroMedia.poster).then((ok) => {
-      if (ok) setStill(heroMedia.poster);
-    });
-  }, []);
 
   useEffect(() => {
     const node = rootRef.current;
@@ -60,30 +44,15 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
     if (reducedMotion || saveDataEnabled()) {
       return;
     }
-    let cancelled = false;
-    void (async () => {
-      const isMobile = window.matchMedia("(max-width: 767px)").matches;
-      let mobileOk = false;
-      let desktopOk = false;
-      if (isMobile) {
-        mobileOk = await headOk(heroMedia.mobileVideo);
-        if (!mobileOk) desktopOk = await headOk(heroMedia.desktopVideo);
-      } else {
-        desktopOk = await headOk(heroMedia.desktopVideo);
-        if (!desktopOk) mobileOk = await headOk(heroMedia.mobileVideo);
-      }
-      if (cancelled) return;
-      const picked = pickHeroVideoSrc({ isMobile, mobileOk, desktopOk });
-      if (!picked) {
-        setFailed(true);
-        return;
-      }
-      setSrc(picked.src);
-      setKind(picked.kind);
-    })();
-    return () => {
-      cancelled = true;
-    };
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    const next = isMobile
+      ? { src: heroMedia.mobileVideo, kind: "mobile" as const }
+      : { src: heroMedia.desktopVideo, kind: "desktop" as const };
+    const timer = window.setTimeout(() => {
+      setSrc(next.src);
+      setKind(next.kind);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [reducedMotion]);
 
   useEffect(() => {
@@ -98,20 +67,17 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
 
   return (
     <div ref={rootRef} className="hi-hero-media" aria-hidden="true">
-      <div data-industrial-asset="hero-wireframe-vase" className="absolute inset-0">
+      <div data-industrial-asset="hero-wireframe-vase" className="hi-hero-still">
         <SlotImage
-          src={still}
+          src={heroMedia.fallback}
           alt=""
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[50%_62%] md:object-[50%_58%]"
-          onError={() => {
-            if (still !== heroMedia.fallback) setStill(heroMedia.fallback);
-          }}
+          className="object-cover object-[50%_72%] md:object-[50%_58%]"
         />
       </div>
-      {src && !reducedMotion ? (
+      {src && !reducedMotion && !failed ? (
         <video
           ref={videoRef}
           className="hi-hero-video"
@@ -120,7 +86,7 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
           playsInline
           autoPlay
           preload="metadata"
-          poster={still}
+          poster={heroMedia.fallback}
           data-hero-video={kind ?? "pending"}
           controls={false}
           disablePictureInPicture

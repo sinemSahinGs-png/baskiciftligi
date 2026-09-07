@@ -9,10 +9,10 @@ describe("pickHeroVideoSrc", () => {
     ).toEqual({ src: heroMedia.mobileVideo, kind: "mobile" });
   });
 
-  it("falls back to desktop on mobile when only desktop exists", () => {
+  it("does not load the desktop source on mobile even if desktop exists", () => {
     expect(
       pickHeroVideoSrc({ isMobile: true, mobileOk: false, desktopOk: true }),
-    ).toEqual({ src: heroMedia.desktopVideo, kind: "desktop" });
+    ).toBeNull();
   });
 
   it("uses desktop on desktop and does not require the mobile file", () => {

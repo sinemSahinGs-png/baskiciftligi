@@ -286,8 +286,7 @@ export function IdeaCommand() {
           </p>
         </div>
 
-        <div className="hi-hero-spacer" aria-hidden="true" />
-
+        <div className="hi-hero-search">
         <form onSubmit={onSubmit} className="hi-hero-form">
           <label htmlFor={inputId} className="sr-only">
             Ne üretmek istediğinizi açıklayın
@@ -356,6 +355,7 @@ export function IdeaCommand() {
         >
           VEYA STL / 3MF DOSYANI YÜKLE
         </Link>
+        </div>
 
         {status === "searching" ? (
           <p className="hi-hero-results mt-4 text-sm font-medium">{phase}</p>

@@ -135,7 +135,7 @@ html[data-home-industrial] footer {
   z-index: 1;
   isolation: isolate;
   overflow: hidden;
-  min-height: 96svh;
+  min-height: 100svh;
   color: var(--bc-white);
 }
 
@@ -154,13 +154,20 @@ html[data-home-industrial] footer {
   background: var(--bc-black);
 }
 
+.hi-hero-still {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 .hi-hero-video {
   position: absolute;
   inset: 0;
+  z-index: 1;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 62%;
+  object-position: 50% 84%;
 }
 
 .hi-hero-grid {
@@ -174,8 +181,8 @@ html[data-home-industrial] footer {
   inset: 0;
   z-index: 1;
   background:
-    radial-gradient(ellipse at 50% 62%, transparent 28%, rgb(5 7 8 / 0.5) 100%),
-    linear-gradient(180deg, rgb(5 7 8 / 0.38) 0%, rgb(5 7 8 / 0.16) 36%, rgb(5 7 8 / 0.22) 58%, rgb(5 7 8 / 0.92) 100%);
+    radial-gradient(ellipse at 50% 82%, transparent 26%, rgb(5 7 8 / 0.38) 100%),
+    linear-gradient(180deg, rgb(5 7 8 / 0.5) 0%, rgb(5 7 8 / 0.1) 26%, rgb(5 7 8 / 0.04) 52%, rgb(5 7 8 / 0.1) 72%, rgb(5 7 8 / 0.48) 100%);
 }
 
 .hi-hero-fade {
@@ -184,8 +191,8 @@ html[data-home-industrial] footer {
   bottom: 0;
   left: 0;
   z-index: 1;
-  height: 18%;
-  background: linear-gradient(180deg, transparent, var(--bc-black));
+  height: 8%;
+  background: linear-gradient(180deg, transparent, rgb(5 7 8 / 0.55));
 }
 
 .hi-hero-path {
@@ -202,16 +209,33 @@ html[data-home-industrial] footer {
 .hi-hero-inner {
   position: relative;
   z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 96svh;
-  padding: calc(env(safe-area-inset-top, 0px) + 4.5rem) 1rem 2.1rem;
+  display: grid;
+  grid-template-rows: auto 0.65fr auto 1.55fr;
+  align-content: stretch;
+  justify-items: center;
+  height: 100svh;
+  min-height: 100svh;
+  padding: calc(env(safe-area-inset-top, 0px) + 4.25rem) 1rem 1.2rem;
 }
 
 .hi-hero-copy {
   width: min(40rem, 100%);
   text-align: center;
+  grid-row: 1;
+  align-self: start;
+}
+
+.hi-hero-search {
+  grid-row: 3;
+  display: flex;
+  width: min(22.5rem, 100%);
+  flex-direction: column;
+  align-items: stretch;
+  align-self: center;
+}
+
+.hi-hero-spacer {
+  display: none;
 }
 
 .hi-hero-display {
@@ -249,11 +273,17 @@ html[data-home-industrial] footer {
 .hi-hero-form,
 .hi-hero-upload,
 .hi-hero-results {
-  width: min(68rem, 100%);
+  width: 100%;
 }
 
 .hi-hero-form {
-  margin-top: 0.4rem;
+  margin-top: 0;
+}
+
+.hi-hero-results {
+  grid-row: 4;
+  align-self: end;
+  width: min(68rem, 100%);
 }
 
 .hi-hero-field {
@@ -413,12 +443,31 @@ html[data-home-industrial] footer {
   }
 
   .hi-hero-inner {
+    display: flex;
+    flex-direction: column;
+    height: auto;
     min-height: max(760px, calc(100svh - 4rem));
     padding: 5.25rem 1.5rem 2.5rem;
   }
 
+  .hi-hero-copy {
+    width: min(40rem, 100%);
+  }
+
+  .hi-hero-search {
+    width: min(68rem, 100%);
+    margin-top: auto;
+    margin-bottom: 12vh;
+  }
+
   .hi-hero-video {
     object-position: 50% 58%;
+  }
+
+  .hi-hero-vignette {
+    background:
+      radial-gradient(ellipse at 50% 58%, transparent 28%, rgb(5 7 8 / 0.48) 100%),
+      linear-gradient(180deg, rgb(5 7 8 / 0.38) 0%, rgb(5 7 8 / 0.14) 36%, rgb(5 7 8 / 0.18) 58%, rgb(5 7 8 / 0.9) 100%);
   }
 
   .hi-hero-field {
@@ -431,6 +480,10 @@ html[data-home-industrial] footer {
 
   .hi-hero-go {
     min-width: 15.5rem;
+  }
+
+  .hi-hero-results {
+    width: min(68rem, 100%);
   }
 }
 
@@ -881,30 +934,35 @@ html[data-home-industrial] footer {
 .hi-corporate-media {
   position: absolute;
   inset: 0;
+  z-index: 0;
 }
 
 .hi-corporate-media img {
   object-fit: cover;
-  object-position: 55% 40%;
+  object-position: 48% 42%;
+  opacity: 1;
 }
 
 .hi-corporate-copy {
   position: relative;
   z-index: 1;
-  max-width: 18rem;
-  padding-block: 3.25rem;
-  background: linear-gradient(90deg, rgb(5 7 8 / 0.88) 0%, rgb(5 7 8 / 0.35) 70%, transparent);
+  max-width: none;
+  padding-block: 4.75rem 2.4rem;
+  background: linear-gradient(180deg, rgb(5 7 8 / 0.12) 0%, rgb(5 7 8 / 0.55) 48%, rgb(5 7 8 / 0.86) 100%);
 }
 
 .hi-process-scene {
   position: relative;
-  height: 74svh;
-  min-height: 24rem;
+  z-index: 0;
+  height: 70svh;
+  min-height: 22rem;
 }
 
 .hi-process-scene img {
+  z-index: 0;
   object-fit: cover;
-  object-position: center 58%;
+  object-position: 50% 46%;
+  opacity: 1;
 }
 
 .hi-process-overlay {
@@ -923,6 +981,12 @@ html[data-home-industrial] footer {
 @media (min-width: 768px) {
   .hi-corporate {
     min-height: 32rem;
+  }
+
+  .hi-corporate-copy {
+    max-width: 18rem;
+    padding-block: 3.25rem;
+    background: linear-gradient(90deg, rgb(5 7 8 / 0.88) 0%, rgb(5 7 8 / 0.35) 70%, transparent);
   }
 
   .hi-process-scene {
@@ -1108,10 +1172,16 @@ html[data-home-industrial] footer {
 
 .hi-material-hero {
   position: relative;
-  min-height: 16.5rem;
-  aspect-ratio: 16 / 10;
+  z-index: 0;
+  height: clamp(220px, 32svh, 320px);
+  min-height: 220px;
   overflow: hidden;
   border: 1px solid var(--bc-line);
+}
+
+.hi-material-hero img {
+  z-index: 0;
+  opacity: 1;
 }
 
 .hi-material-tabs {
