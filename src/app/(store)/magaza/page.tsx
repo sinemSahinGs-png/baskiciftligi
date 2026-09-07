@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { SafeImage } from "@/components/media/safe-image";
 import { EmptyCatalogState } from "@/components/catalog/empty-catalog-state";
 import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { CatalogSearch } from "@/components/catalog/catalog-search";
@@ -26,7 +25,6 @@ import {
 } from "@/domain/catalog/repository";
 import { storefrontFilterCategories } from "@/domain/catalog/storefront-taxonomy";
 import { parseStoreQuery } from "@/domain/home/homepage";
-import { resolveStorefrontCategoryImage } from "@/lib/catalog/storefront-category-image";
 
 export const dynamic = "force-dynamic";
 
@@ -79,11 +77,10 @@ export default async function StorePage(props: PageProps<"/magaza">) {
     slug: category.slug,
     name: category.name,
   }));
-  const mastheadCover = resolveStorefrontCategoryImage("dekorasyon-yasam");
   const title = activeCollection ? activeCollection.name : "3D BASKI KOLEKSİYONU";
   const lead = activeCollection
     ? activeCollection.description
-    : "Hayal et. Tasarla. Gerçekleştir.";
+    : "Hazır koleksiyon, tek parça üretim.";
   const leadCount = Math.min(8, page.items.length);
   const followCount = Math.min(8, Math.max(0, page.items.length - leadCount));
   const firstGroup = page.items.slice(0, leadCount);
@@ -101,7 +98,7 @@ export default async function StorePage(props: PageProps<"/magaza">) {
             <span aria-hidden="true"> / </span>
             Mağaza
           </p>
-          <div className="store-intro" data-has-art={mastheadCover ? "true" : "false"}>
+          <div className="store-intro" data-has-art="false">
             <div>
               <p className="store-intro-kicker">MAĞAZA</p>
               <StoreHeroTitle title={title} />
@@ -114,23 +111,12 @@ export default async function StorePage(props: PageProps<"/magaza">) {
                     : `${page.total} ürün`}
               </p>
             </div>
-            {mastheadCover ? (
-              <div className="store-masthead-art" aria-hidden="true">
-                <SafeImage
-                  src={mastheadCover}
-                  alt=""
-                  fill
-                  sizes="(max-width: 768px) 28vw, 14rem"
-                  className="object-cover object-center"
-                />
-              </div>
-            ) : null}
           </div>
           <Suspense fallback={null}>
             <CatalogSearch className="max-w-none" tone="store" />
           </Suspense>
           <Suspense fallback={null}>
-            <StoreCategoryBar priorityStrip />
+            <StoreCategoryBar />
           </Suspense>
         </div>
       </header>
@@ -161,7 +147,7 @@ export default async function StorePage(props: PageProps<"/magaza">) {
                         Demo etiketli ürünler vitrin içindir.
                       </p>
                     ) : null}
-                    <CatalogGrid products={firstGroup} priorityCount={2} tone="store" />
+                    <CatalogGrid products={firstGroup} priorityCount={4} tone="store" />
                     {!hasActiveFilters && featuredProduct ? (
                       <StoreEditorial product={featuredProduct} />
                     ) : null}

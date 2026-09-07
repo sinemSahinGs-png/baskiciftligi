@@ -8,6 +8,7 @@ import {
   listProducts,
 } from "@/domain/catalog/repository";
 import { listPublishedCuratedModels } from "@/domain/curated-models/repository";
+import { platformLabel } from "@/domain/curated-models/types";
 import { homepagePrintLibrary } from "@/domain/home/homepage";
 
 export const metadata: Metadata = {
@@ -37,6 +38,11 @@ export default async function HomePage() {
           imageUrl: model.previewImageUrl,
           href: `/hazir-modeller/katalog/${model.slug}`,
           source: "curated" as const,
+          sourceLabel: platformLabel(model.platformType),
+          licenseLabel: model.licenseCode,
+          licenseVerified: model.licenseVerified,
+          fileVerified: Boolean(model.downloadUrl),
+          quoteEligible: model.permissionKind === "owned" && Boolean(model.downloadUrl),
         }))
       : homepagePrintLibrary.map((model) => ({
           id: model.id,
@@ -45,6 +51,11 @@ export default async function HomePage() {
           imageUrl: model.imageUrl,
           href: model.href,
           source: "fallback" as const,
+          sourceLabel: "Stüdyo vitrini",
+          licenseLabel: model.licenseLabel,
+          licenseVerified: model.licenseStatus === "owned",
+          fileVerified: false,
+          quoteEligible: false,
         }));
 
   const faqJsonLd = {

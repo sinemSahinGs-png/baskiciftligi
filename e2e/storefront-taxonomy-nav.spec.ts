@@ -1,6 +1,19 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("storefront category navigation", () => {
+  test("desktop header lists Mağaza, Model Yükle, Hazır Modeller and Toptan without a standalone Kategoriler item", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.includes("mobile"), "desktop header");
+    await page.goto("/");
+    const menu = page.getByRole("navigation", { name: "Ana menü" });
+    await expect(menu.getByRole("link", { name: "Mağaza" })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Model Yükle" })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Hazır Modeller" })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Toptan & Bayiler" })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Kategoriler" })).toHaveCount(0);
+    await expect(menu.getByRole("link", { name: "Kurumsal", exact: true })).toHaveCount(0);
+  });
   test("desktop Mağaza mega menu opens with keyboard and lists seven categories", async ({
     page,
   }, testInfo) => {

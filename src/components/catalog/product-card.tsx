@@ -248,7 +248,7 @@ export function ProductCard({
             mobileSrc={visual.mobile?.url}
             videoSrc={visual.video?.url}
             alt={visual.primary?.alt ?? product.name}
-            isolated
+            isolated={false}
             objectPosition={visual.objectPosition}
             mobileObjectPosition={visual.mobileObjectPosition}
             sizes={

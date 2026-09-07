@@ -6,15 +6,13 @@ import { useEffect, useRef, useState } from "react";
 import { HomeTrackLink } from "@/components/home/home-track-link";
 import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
-import { CadFrame } from "@/components/home-industrial/technical-grid";
 import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
 
 const PATHS = [
   {
     id: "01",
     title: "FİKRİNİ ANLAT",
-    copy: "Aklındaki fikri yaz, birlikte şekillendirelim.",
-    cta: "Fikrini yaz",
+    copy: "Aklındaki nesneyi yaz; uygun modelleri ve üretim yolunu birlikte netleştirelim.",
     image: industrialAssets.pathIdeaDragon,
     asset: "path-idea-dragon",
     action: "focus" as const,
@@ -22,22 +20,22 @@ const PATHS = [
   {
     id: "02",
     title: "HAZIR MODEL SEÇ",
-    copy: "Doğrulanmış hazır modeller arasından seç.",
-    cta: "Hazır modellere git",
+    copy: "Lisansı ve dosyası doğrulanmış modeller arasından seç, fiyatı netleştir.",
     image: industrialAssets.pathReadyModel,
     asset: "path-ready-model",
     href: "/hazir-modeller" as Route,
     action: "link" as const,
+    event: "ready_model_cta_clicked" as const,
   },
   {
     id: "03",
     title: "DOSYANI YÜKLE",
-    copy: "STL veya 3MF dosyanla üretime başla.",
-    cta: "Dosyanı yükle",
+    copy: "STL veya 3MF dosyanla üretime başla; ölçü ve malzeme sonraki adımda.",
     image: industrialAssets.pathUploadObject,
     asset: "path-upload-object",
     href: "/model-yukle" as Route,
     action: "link" as const,
+    event: "upload_cta_clicked" as const,
   },
 ] as const;
 
@@ -54,19 +52,18 @@ export function ProductionPaths() {
     setActive(Math.max(0, Math.min(PATHS.length - 1, index)));
   }
 
-  function commit(index: number) {
-    select(index);
-    const path = PATHS[index];
-    if (path?.action === "focus") {
+  function focusIdea() {
+    document.getElementById("ne-uretmek-istiyorsun")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    window.setTimeout(() => {
       document.getElementById("idea-command-input")?.focus();
-      document.getElementById("ne-uretmek-istiyorsun")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
+    }, 180);
   }
 
   const current = PATHS[active] ?? PATHS[0];
+  const nextPath = PATHS[active + 1] ?? PATHS[0];
 
   return (
     <section
@@ -78,63 +75,60 @@ export function ProductionPaths() {
     >
       <div className="hi-shell hi-paths-layout">
         <div className="hi-paths-rail">
-          <WordReveal as="h2" id="paths-heading" className="sr-only" text="Üç üretim yolu" />
+          <WordReveal as="h2" id="paths-heading" className="hi-paths-title" text="Üç üretim yolu" />
           <p className="hi-paths-count hi-mono" aria-live="polite">
             {current.id} / 03
           </p>
-          {PATHS.map((path, index) => (
-            <button
-              key={path.id}
-              type="button"
-              data-journey-panel={path.id}
-              data-active={index === active ? "true" : "false"}
-              className="hi-path-btn"
-              onMouseEnter={() => {
+          {PATHS.map((path, index) => {
+            const inner = (
+              <>
+                <span className="hi-path-num">{path.id}</span>
+                <span>
+                  <span className="hi-path-name">{path.title}</span>
+                  <span className="hi-path-copy">{path.copy}</span>
+                </span>
+              </>
+            );
+            const shared = {
+              "data-journey-panel": path.id,
+              "data-active": index === active ? "true" : "false",
+              className: "hi-path-btn",
+              onMouseEnter: () => {
                 if (fineRef.current) select(index);
-              }}
-              onFocus={() => select(index)}
-              onClick={() => commit(index)}
-            >
-              <span className="hi-path-num">{path.id}</span>
-              <span>
-                <span className="hi-path-name">{path.title}</span>
-                <span className="hi-path-copy">{path.copy}</span>
-              </span>
-            </button>
-          ))}
-          <div className="hi-path-progress" aria-hidden="true">
-            {PATHS.map((path, index) => (
-              <span key={path.id} data-active={index === active ? "true" : "false"} />
-            ))}
-          </div>
-          <div className="hi-path-cta-slot">
-            {current.action === "link" && current.href === "/hazir-modeller" ? (
-              <HomeTrackLink
-                event="ready_model_cta_clicked"
-                href={current.href}
-                className="hi-link mt-1"
+              },
+              onFocus: () => select(index),
+            };
+
+            if (path.action === "link") {
+              return (
+                <HomeTrackLink
+                  key={path.id}
+                  event={path.event}
+                  href={path.href}
+                  {...shared}
+                >
+                  {inner}
+                </HomeTrackLink>
+              );
+            }
+
+            return (
+              <button
+                key={path.id}
+                type="button"
+                {...shared}
+                onClick={() => {
+                  select(index);
+                  focusIdea();
+                }}
               >
-                {current.cta} →
-              </HomeTrackLink>
-            ) : null}
-            {current.action === "link" && current.href === "/model-yukle" ? (
-              <HomeTrackLink
-                event="upload_cta_clicked"
-                href={current.href}
-                className="hi-link mt-1"
-              >
-                {current.cta} →
-              </HomeTrackLink>
-            ) : null}
-            {current.action === "focus" ? (
-              <button type="button" className="hi-link mt-1" onClick={() => commit(0)}>
-                Fikrini yaz →
+                {inner}
               </button>
-            ) : null}
-          </div>
+            );
+          })}
         </div>
         <InteractiveMedia className="hi-path-media">
-          <CadFrame
+          <div
             className="hi-path-stage"
             onPointerDown={(event) => {
               pointerStart.current = event.clientX;
@@ -161,24 +155,19 @@ export function ProductionPaths() {
                   src={path.image}
                   alt=""
                   fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
+                  sizes="(max-width: 768px) 100vw, 58vw"
                   className="object-cover object-center"
                 />
               </div>
             ))}
+            <span className="hi-path-connector" aria-hidden="true" />
             <p className="hi-mono absolute top-3 right-3 z-10">
               {current.id} / 03
             </p>
-            {PATHS[active + 1] ? (
-              <p className="hi-paths-hint hi-mono" aria-hidden="true">
-                {PATHS[active + 1].title} →
-              </p>
-            ) : (
-              <p className="hi-paths-hint hi-mono" aria-hidden="true">
-                ← {PATHS[active - 1]?.title}
-              </p>
-            )}
-          </CadFrame>
+            <p className="hi-paths-hint hi-mono" aria-hidden="true">
+              {nextPath.title} →
+            </p>
+          </div>
         </InteractiveMedia>
       </div>
     </section>

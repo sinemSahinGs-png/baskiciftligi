@@ -87,10 +87,11 @@ function SafeImageInner({
   }, [failed, markReady, src]);
 
   const showImage = Boolean(src) && !failed;
+  const showPlaceholder = !showImage || failed || (showSkeleton && !loaded);
 
   return (
     <>
-      {showSkeleton || !showImage || !loaded ? (
+      {showPlaceholder ? (
         <ModelImagePlaceholder
           label={!showImage || failed ? fallbackLabel : ""}
         />
@@ -114,14 +115,12 @@ function SafeImageInner({
           onLoad={(event) => {
             const image = event.currentTarget;
             if (!imageIsReady(image)) {
-              setFailed(true);
-              reportFail(src as string);
               return;
             }
             markReady(image);
             onLoad?.(event);
           }}
-          className={cn(className)}
+          className={cn("relative z-[1]", className)}
         />
       ) : null}
     </>

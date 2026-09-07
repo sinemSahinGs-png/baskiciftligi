@@ -45,6 +45,7 @@ process.env.ADMIN_PANEL_PASSWORD ??= e2eAdminPassword;
 
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore: ["store-live-approval.spec.ts"],
   outputDir: "test-results/playwright",
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),

@@ -1,7 +1,6 @@
 export default function ProductLoading() {
   return (
     <main
-      id="ana-icerik"
       aria-busy="true"
       aria-label="Ürün yükleniyor"
       className="shell py-10"

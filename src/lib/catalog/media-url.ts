@@ -17,15 +17,6 @@ export function catalogMediaPublicUrl(storagePath: string): string {
   return `/catalog-media/${normalized}`;
 }
 
-export function catalogCardImageUrl(url: string, width = 640): string {
-  const marker = "/storage/v1/object/public/catalog-media/";
-  const index = url.indexOf(marker);
-  if (index === -1) return url;
-  const origin = url.slice(0, index);
-  const objectPath = url.slice(index + marker.length);
-  return `${origin}/storage/v1/render/image/public/catalog-media/${objectPath}?width=${width}&resize=contain&quality=70`;
-}
-
 export function catalogObjectPath(productId: string, mediaId: string, filename: string): string {
   return `products/${productId}/${mediaId}-${filename}`;
 }

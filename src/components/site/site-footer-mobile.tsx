@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { ChevronDown, Mail, Play, Truck } from "lucide-react";
+import { ChevronDown, Mail, Play } from "lucide-react";
 import { useState } from "react";
 
 import { Logo } from "@/components/site/logo";
@@ -30,24 +30,14 @@ const footerGroups: FooterGroup[] = [
   },
   {
     id: "hizmetler",
-    label: "Hizmetler",
+    label: "Keşif",
     links: [
       { href: "/model-yukle", label: "Model yükle" },
       { href: "/hazir-modeller", label: "Hazır modeller" },
       { href: "/toptan", label: "Toptan & Bayiler" },
       { href: "/kurumsal-uretim", label: "Kurumsal üretim" },
       { href: "/malzemeler", label: "Malzemeler" },
-      { href: "/hizmetler/3d-baski", label: "3D baskı" },
-    ],
-  },
-  {
-    id: "hesap",
-    label: "Hesabım",
-    links: [
       { href: "/hesabim", label: "Hesabım" },
-      { href: "/favoriler", label: "Favoriler" },
-      { href: "/sepet", label: "Sepet" },
-      { href: "/hesabim/siparisler", label: "Siparişlerim" },
       { href: "/siparis-takip", label: "Sipariş takibi" },
     ],
   },
@@ -116,9 +106,9 @@ export function SiteFooterMobile({
 
   return (
     <div className="md:hidden" data-site-footer-mobile="">
-      <div className="max-w-none px-4 py-8">
+      <div className="max-w-none px-4 py-6">
         <Logo inverted />
-        <p className="mt-3 max-w-sm text-sm leading-6 text-muted-light">{description}</p>
+        <p className="mt-2 max-w-sm text-sm leading-6 text-muted-light">{description}</p>
 
         <div className="mt-5">
           {footerGroups.map((group) => (
@@ -133,24 +123,9 @@ export function SiteFooterMobile({
           ))}
         </div>
 
-        <p className="mt-5 flex items-start gap-2 text-sm leading-6 text-muted-light">
-          <Truck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-cyan" />
+        <p className="mt-4 flex items-start gap-2 text-sm leading-6 text-muted-light">
           Türkiye geneli teslimat. Süre, üretim ve kargo olarak ürün sayfasında görünür.
         </p>
-
-        <fieldset disabled className="mt-4 flex flex-col gap-2">
-          <label htmlFor="newsletter-email-mobile" className="sr-only">
-            E-posta
-          </label>
-          <input
-            id="newsletter-email-mobile"
-            type="email"
-            disabled
-            readOnly
-            placeholder="Bülten yakında"
-            className="min-h-11 rounded-lg border border-white/20 bg-white/5 px-3 text-sm disabled:opacity-70"
-          />
-        </fieldset>
 
         {hasContact ? (
           <div className="mt-4 space-y-2 text-sm text-muted-light">

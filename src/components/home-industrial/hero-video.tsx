@@ -22,6 +22,14 @@ function subscribeSaveData(onStoreChange: () => void) {
   return () => connection?.removeEventListener("change", onStoreChange);
 }
 
+function hasPaintedFrame(video: HTMLVideoElement) {
+  return (
+    video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+    video.currentTime > 0.03 &&
+    !video.error
+  );
+}
+
 export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -59,17 +67,26 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
     const video = videoRef.current;
     if (!video) return;
     const fail = () => setFailed(true);
+    const reveal = () => {
+      if (hasPaintedFrame(video)) setReady(true);
+    };
     const sources = [...video.querySelectorAll("source")];
     sources.forEach((source) => source.addEventListener("error", fail));
     video.addEventListener("error", fail);
+    video.addEventListener("playing", reveal);
+    video.addEventListener("timeupdate", reveal);
+    video.addEventListener("loadeddata", reveal);
     if (video.error || video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
       fail();
-    } else if (video.readyState === 0) {
-      video.load();
+    } else {
+      reveal();
     }
     return () => {
       sources.forEach((source) => source.removeEventListener("error", fail));
       video.removeEventListener("error", fail);
+      video.removeEventListener("playing", reveal);
+      video.removeEventListener("timeupdate", reveal);
+      video.removeEventListener("loadeddata", reveal);
     };
   }, [failed]);
 
@@ -94,7 +111,7 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
             alt=""
             fill
             sizes="100vw"
-            className="object-cover object-[46%_88%] sm:object-[50%_82%] md:object-[52%_48%] lg:object-[54%_46%] xl:object-[56%_44%]"
+            className="object-cover object-[46%_88%] sm:object-[50%_82%] md:object-[68%_48%]"
           />
         </div>
       ) : (
@@ -117,13 +134,19 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
             loop
             playsInline
             autoPlay
-            preload="metadata"
+            preload="auto"
             data-hero-video="responsive"
             data-ready={ready ? "true" : "false"}
             controls={false}
             disablePictureInPicture
-            onCanPlay={() => setReady(true)}
-            onPlaying={() => setReady(true)}
+            onPlaying={() => {
+              const video = videoRef.current;
+              if (video && hasPaintedFrame(video)) setReady(true);
+            }}
+            onTimeUpdate={() => {
+              const video = videoRef.current;
+              if (video && hasPaintedFrame(video)) setReady(true);
+            }}
             onError={() => setFailed(true)}
           >
             <source

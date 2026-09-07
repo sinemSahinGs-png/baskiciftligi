@@ -198,13 +198,16 @@ test.describe("home visual approval 390px", () => {
     await page.locator("#malzeme-secenekleri").scrollIntoViewIfNeeded();
     await decodeVisibleImages(page, "#malzeme-secenekleri");
     const materialBox = await material.boundingBox();
-    expect(materialBox?.height ?? 0).toBeGreaterThanOrEqual(240);
-    expect(materialBox?.height ?? 0).toBeLessThanOrEqual(300);
-    await page.getByRole("button", { name: /PETG/i }).click();
+    const materialsSection = await page.locator("#malzeme-secenekleri").boundingBox();
+    expect(materialBox?.height ?? 0).toBeGreaterThanOrEqual(140);
+    expect(materialBox?.height ?? 0).toBeLessThanOrEqual(200);
+    expect(materialsSection?.height ?? 0).toBeGreaterThanOrEqual(300);
+    expect(materialsSection?.height ?? 0).toBeLessThanOrEqual(520);
+    await page.getByRole("tab", { name: /PETG/i }).click();
     await expect
       .poll(async () => material.getAttribute("src"))
       .toMatch(/material-petg/i);
-    await page.getByRole("button", { name: /^PLA/i }).click();
+    await page.getByRole("tab", { name: /^PLA/i }).click();
     await expect
       .poll(async () => material.getAttribute("src"))
       .toMatch(/material-pla/i);

@@ -2,6 +2,7 @@ import { CompactFaq } from "@/components/home-industrial/compact-faq";
 import { CorporateProduction } from "@/components/home-industrial/corporate-production";
 import { FeaturedProduct } from "@/components/home-industrial/featured-product";
 import { FinalCta } from "@/components/home-industrial/final-cta";
+import { heroMedia } from "@/components/home-industrial/hero-media";
 import { HomeCategories } from "@/components/home-industrial/home-categories";
 import { IdeaCommand } from "@/components/home-industrial/idea-command";
 import { IndustrialHeaderEffects } from "@/components/home-industrial/industrial-header";
@@ -34,7 +35,14 @@ export function IndustrialHome({
     products.find((product) => product.featured) ?? products[0] ?? null;
 
   return (
-    <div className="hi-root pb-20 md:pb-0">
+    <div className="hi-root pb-3 md:pb-0">
+      <link
+        rel="preload"
+        as="video"
+        href={heroMedia.desktopVideo}
+        type="video/mp4"
+        media="(min-width: 768px)"
+      />
       <IndustrialHeaderEffects />
       <ScrollThemeProvider />
       <TechnicalGrid />

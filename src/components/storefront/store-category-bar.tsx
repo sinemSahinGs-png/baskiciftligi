@@ -5,18 +5,12 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-import { SafeImage } from "@/components/media/safe-image";
-import { storePremiumAssets } from "@/components/storefront/store-premium-assets";
 import {
   storefrontCategories,
   storefrontSlugFromSource,
 } from "@/domain/catalog/storefront-taxonomy";
 
-export function StoreCategoryBar({
-  priorityStrip = false,
-}: {
-  priorityStrip?: boolean;
-}) {
+export function StoreCategoryBar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const queryCategory = searchParams.get("category") ?? "";
@@ -37,16 +31,6 @@ export function StoreCategoryBar({
 
   return (
     <nav aria-label="Kategoriler" className="store-cats-wrap">
-      <div className="store-cats-strip" aria-hidden="true">
-        <SafeImage
-          src={storePremiumAssets.categoryStrip}
-          alt=""
-          fill
-          sizes="(max-width: 768px) 100vw, 82rem"
-          priority={priorityStrip}
-          className="object-cover object-center"
-        />
-      </div>
       <div ref={wrapRef} className="store-cats">
         <Link
           href={"/magaza" as Route}

@@ -22,8 +22,8 @@ const routes = [
 ] as const;
 
 const viewports = [
-  { name: "375", width: 375, height: 812, maxGap: 180 },
-  { name: "430", width: 430, height: 932, maxGap: 180 },
+  { name: "375", width: 375, height: 812, maxGap: 160 },
+  { name: "430", width: 430, height: 932, maxGap: 160 },
   { name: "768", width: 768, height: 1024, maxGap: 200 },
   { name: "1024", width: 1024, height: 768, maxGap: 240 },
   { name: "1440", width: 1440, height: 1000, maxGap: 240 },

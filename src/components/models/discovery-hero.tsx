@@ -22,7 +22,7 @@ export function DiscoveryHero({
   });
 
   return (
-    <header className="mx-auto w-full max-w-[72rem] px-1 pt-6 text-center sm:pt-8 md:pt-10">
+    <header className="mx-auto w-full max-w-[72rem] px-1 pt-4 text-center sm:pt-5 md:pt-6">
       <p className="eyebrow text-xs sm:text-sm">Hazır modeller</p>
       <h1 className="mt-2 font-heading text-[clamp(1.75rem,7vw,2.125rem)] font-bold leading-[1.15] tracking-[-0.03em] sm:text-4xl lg:text-[2.65rem]">
         Ne üretmek istiyorsun?
@@ -32,7 +32,7 @@ export function DiscoveryHero({
       </p>
 
       <form
-        className="relative mx-auto mt-6 max-h-[320px] max-w-2xl sm:mt-8"
+        className="relative mx-auto mt-4 max-h-[320px] max-w-2xl sm:mt-5"
         role="search"
         onSubmit={(event) => {
           event.preventDefault();

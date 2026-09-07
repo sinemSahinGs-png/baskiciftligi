@@ -11,6 +11,11 @@ export interface ReadyModelCard {
   imageUrl?: string | null;
   href: string;
   source?: "curated" | "thingiverse" | "fallback";
+  sourceLabel?: string;
+  licenseLabel?: string | null;
+  licenseVerified?: boolean;
+  fileVerified?: boolean;
+  quoteEligible?: boolean;
 }
 
 export function ReadyModelsSection({
