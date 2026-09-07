@@ -13,6 +13,7 @@ import {
   listProducts,
 } from "@/domain/catalog/repository";
 import { getSiteContent } from "@/domain/site/content-repository";
+import { resolveAllStorefrontCategoryImages } from "@/lib/catalog/storefront-category-image";
 
 export default async function StoreLayout({
   children,
@@ -29,7 +30,11 @@ export default async function StoreLayout({
   return (
     <ShellAtmosphere>
       <AnnouncementBar announcements={catalog.announcements} />
-      <SiteHeader categories={categories} products={products} />
+      <SiteHeader
+        categories={categories}
+        products={products}
+        categoryArtwork={resolveAllStorefrontCategoryImages()}
+      />
       <ScrollProgress />
       <div className="min-h-0 grow-0">{children}</div>
       <SiteFooter

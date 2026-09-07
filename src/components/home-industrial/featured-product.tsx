@@ -13,6 +13,7 @@ export function FeaturedProduct({ product }: { product: Product | null }) {
     <section
       id="one-cikan-urunler"
       data-home-theme="orange"
+      data-featured-product-slug={product?.slug ?? undefined}
       className="hi-section hi-featured"
       aria-labelledby="featured-heading"
     >

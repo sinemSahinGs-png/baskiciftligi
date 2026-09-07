@@ -19,5 +19,6 @@ export function productionVitrineSnapshot(
     materials: demoMaterials,
     announcements: demoAnnouncements,
     updatedAt,
+    unavailable: false,
   };
 }

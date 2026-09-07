@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { heroMedia } from "@/components/home-industrial/hero-media";
@@ -12,15 +12,29 @@ function saveDataEnabled() {
   return Boolean(connection?.saveData);
 }
 
+function subscribeSaveData(onStoreChange: () => void) {
+  const connection = (
+    navigator as Navigator & {
+      connection?: EventTarget & { saveData?: boolean };
+    }
+  ).connection;
+  connection?.addEventListener("change", onStoreChange);
+  return () => connection?.removeEventListener("change", onStoreChange);
+}
+
 export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  const [src, setSrc] = useState<string | null>(null);
-  const [kind, setKind] = useState<"mobile" | "desktop" | null>(null);
   const [failed, setFailed] = useState(false);
   const [inView, setInView] = useState(true);
   const [hidden, setHidden] = useState(false);
-  const showVideo = Boolean(src) && !failed && !reducedMotion && !hidden && inView;
+  const [ready, setReady] = useState(false);
+  const saveData = useSyncExternalStore(
+    subscribeSaveData,
+    saveDataEnabled,
+    () => false,
+  );
+  const showVideo = !failed && !reducedMotion && !hidden && inView && !saveData;
 
   useEffect(() => {
     const node = rootRef.current;
@@ -41,60 +55,90 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
   }, []);
 
   useEffect(() => {
-    if (reducedMotion || saveDataEnabled()) {
-      return;
-    }
-    const isMobile = window.matchMedia("(max-width: 767px)").matches;
-    const next = isMobile
-      ? { src: heroMedia.mobileVideo, kind: "mobile" as const }
-      : { src: heroMedia.desktopVideo, kind: "desktop" as const };
-    const timer = window.setTimeout(() => {
-      setSrc(next.src);
-      setKind(next.kind);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [reducedMotion]);
-
-  useEffect(() => {
+    if (failed) return;
     const video = videoRef.current;
     if (!video) return;
+    const fail = () => setFailed(true);
+    const sources = [...video.querySelectorAll("source")];
+    sources.forEach((source) => source.addEventListener("error", fail));
+    video.addEventListener("error", fail);
+    if (video.error || video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+      fail();
+    } else if (video.readyState === 0) {
+      video.load();
+    }
+    return () => {
+      sources.forEach((source) => source.removeEventListener("error", fail));
+      video.removeEventListener("error", fail);
+    };
+  }, [failed]);
+
+  useEffect(() => {
+    const active = videoRef.current;
+    if (!active) return;
     if (showVideo) {
-      void video.play().catch(() => setFailed(true));
+      void active.play().catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      });
       return;
     }
-    video.pause();
-  }, [showVideo, src]);
+    active.pause();
+  }, [showVideo]);
 
   return (
     <div ref={rootRef} className="hi-hero-media" aria-hidden="true">
-      <div data-industrial-asset="hero-wireframe-vase" className="hi-hero-still">
-        <SlotImage
-          src={heroMedia.fallback}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[46%_88%] sm:object-[50%_82%] md:object-[52%_48%] lg:object-[54%_46%] xl:object-[56%_44%]"
-        />
-      </div>
-      {src && !reducedMotion && !failed ? (
-        <video
-          ref={videoRef}
-          className="hi-hero-video"
-          muted
-          loop
-          playsInline
-          autoPlay
-          preload="metadata"
-          poster={heroMedia.fallback}
-          data-hero-video={kind ?? "pending"}
-          controls={false}
-          disablePictureInPicture
-          onError={() => setFailed(true)}
-        >
-          <source src={src} type="video/mp4" data-hero-video-source={kind ?? "unknown"} />
-        </video>
-      ) : null}
+      {failed ? (
+        <div data-industrial-asset="hero-wireframe-vase" className="hi-hero-still">
+          <SlotImage
+            src={heroMedia.fallback}
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover object-[46%_88%] sm:object-[50%_82%] md:object-[52%_48%] lg:object-[54%_46%] xl:object-[56%_44%]"
+          />
+        </div>
+      ) : (
+        <>
+          {/* Poster is a small public JPEG; next/image would add a competing optimized request. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={heroMedia.poster}
+            alt=""
+            className="hi-hero-poster"
+            width={960}
+            height={1200}
+            decoding="async"
+            fetchPriority="high"
+          />
+          <video
+            ref={videoRef}
+            className="hi-hero-video"
+            muted
+            loop
+            playsInline
+            autoPlay
+            preload="metadata"
+            data-hero-video="responsive"
+            data-ready={ready ? "true" : "false"}
+            controls={false}
+            disablePictureInPicture
+            onCanPlay={() => setReady(true)}
+            onPlaying={() => setReady(true)}
+            onError={() => setFailed(true)}
+          >
+            <source
+              src={heroMedia.mobileVideo}
+              type="video/mp4"
+              media="(max-width: 767.98px)"
+            />
+            <source
+              src={heroMedia.desktopVideo}
+              type="video/mp4"
+              media="(min-width: 768px)"
+            />
+          </video>
+        </>
+      )}
     </div>
   );
 }

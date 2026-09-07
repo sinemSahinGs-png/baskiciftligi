@@ -24,7 +24,7 @@ export const HERO_TYPEWRITER = {
 export const heroMedia = {
   desktopVideo: "/videos/home-industrial/hero-desktop.mp4",
   mobileVideo: "/videos/home-industrial/hero-mobile.mp4",
-  poster: "/images/home-industrial/hero-video-poster.png",
+  poster: "/images/home-industrial/hero-poster.jpg",
   fallback: industrialAssets.heroWireframeVase,
 } as const;
 

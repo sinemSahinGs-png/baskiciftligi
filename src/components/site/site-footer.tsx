@@ -5,21 +5,7 @@ import { AtSign, Mail, MapPin, Phone, Play, Truck } from "lucide-react";
 import { Logo } from "@/components/site/logo";
 import { SiteFooterMobile } from "@/components/site/site-footer-mobile";
 import { siteConfig } from "@/config/site";
-import { homepageShopCategorySlugs } from "@/domain/home/homepage";
-
-const storeCategoryLinks = [
-  { slug: "ev-ve-dekorasyon", label: "Ev ve Dekorasyon" },
-  { slug: "biblo-ve-heykel", label: "Biblo ve Heykel" },
-  { slug: "anahtarlik", label: "Anahtarlık" },
-  { slug: "magnet", label: "Magnet" },
-  { slug: "masaustu-aksesuarlari", label: "Masaüstü Aksesuarları" },
-  { slug: "kisiye-ozel-urunler", label: "Kişiye Özel Ürünler" },
-  { slug: "fonksiyonel-parcalar", label: "Fonksiyonel Parçalar" },
-  { slug: "kurumsal-promosyon", label: "Kurumsal Promosyon" },
-] as const satisfies ReadonlyArray<{
-  slug: (typeof homepageShopCategorySlugs)[number];
-  label: string;
-}>;
+import { storefrontCategories } from "@/domain/catalog/storefront-taxonomy";
 
 export function SiteFooter({
   heading,
@@ -62,13 +48,13 @@ export function SiteFooter({
                     Tüm ürünler
                   </Link>
                 </li>
-                {storeCategoryLinks.map((category) => (
+                {storefrontCategories.map((category) => (
                   <li key={category.slug}>
                     <Link
-                      href={`/magaza/${category.slug}` as Route}
+                      href={category.href}
                       className="inline-flex min-h-11 items-center hover:text-light-text"
                     >
-                      {category.label}
+                      {category.name}
                     </Link>
                   </li>
                 ))}
@@ -85,6 +71,11 @@ export function SiteFooter({
                 <li>
                   <Link href={"/hazir-modeller" as Route} className="inline-flex min-h-11 items-center hover:text-light-text">
                     Hazır modeller
+                  </Link>
+                </li>
+                <li>
+                  <Link href={"/toptan" as Route} className="inline-flex min-h-11 items-center hover:text-light-text">
+                    Toptan & Bayiler
                   </Link>
                 </li>
                 <li>

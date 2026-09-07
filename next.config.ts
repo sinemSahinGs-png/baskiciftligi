@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { STOREFRONT_CATEGORY_REDIRECTS } from "./src/domain/catalog/storefront-taxonomy";
+
 const isDevelopment = process.env.NODE_ENV === "development";
 
 const contentSecurityPolicy = [
@@ -36,6 +38,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/render/image/public/**",
+      },
+      {
+        protocol: "https",
         hostname: "cdn.thingiverse.com",
       },
       {
@@ -53,6 +60,13 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "12mb",
     },
     proxyClientMaxBodySize: "110mb",
+  },
+  async redirects() {
+    return STOREFRONT_CATEGORY_REDIRECTS.map((item) => ({
+      source: item.source,
+      destination: item.destination,
+      permanent: true,
+    }));
   },
   async headers() {
     return [

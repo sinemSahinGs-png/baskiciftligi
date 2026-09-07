@@ -4,12 +4,14 @@ import path from "node:path";
 const SECTION_IDS = [
   "ne-uretmek-istiyorsun",
   "uc-uretim-yolu",
+  "kategoriler",
   "sana-gore-hazir-modeller",
   "mevcut-urunler",
   "one-cikan-urunler",
   "modelin-hazir-mi",
   "nasil-calisir",
   "malzeme-secenekleri",
+  "toptan-bayiler",
   "kurumsal-uretim",
   "guven",
   "sik-sorulanlar",
@@ -19,12 +21,14 @@ const SECTION_IDS = [
 const HEADINGS = [
   /SEN TARİF ET/,
   "Üç üretim yolu",
-  "MODEL ARŞİVİ",
+  "KATEGORİLER",
+  "MODEL LABORATUVARI",
   "MAĞAZA ÜRÜNLERİ",
   "ÖNE ÇIKAN ÜRÜN",
   /DOSYANI YÜKLE/,
   "ÜRETİM SÜRECİ",
   "MALZEMELER",
+  /RAFINDA HIZLI SATILACAK/,
   /ÖLÇEKLENEBİLİR ÜRETİM/,
   "Güven unsurları",
   "KISA SSS",
@@ -98,7 +102,7 @@ async function scrollHomeToFooter(page: Page) {
     await expect(section).toHaveCount(1);
     await section.scrollIntoViewIfNeeded();
   }
-  await page.locator("footer").scrollIntoViewIfNeeded();
+  await page.locator("[data-site-footer]").first().scrollIntoViewIfNeeded();
 }
 
 async function assertSectionsLaidOut(page: Page) {

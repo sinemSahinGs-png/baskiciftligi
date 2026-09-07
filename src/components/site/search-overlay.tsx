@@ -10,6 +10,7 @@ import { ArrowUpRight, Loader2, Search } from "lucide-react";
 import { FormSignal } from "@/components/brand/form-signal";
 import { siteConfig } from "@/config/site";
 import type { Category, Product } from "@/domain/catalog/types";
+import { publicCategoryHref } from "@/domain/catalog/storefront-taxonomy";
 import { matchesTurkish } from "@/lib/search/turkish-match";
 import { foundryEase } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -187,7 +188,7 @@ export function SearchOverlay({
       group: "Ürünler",
     })),
     ...categoryHits.map((category) => ({
-      href: `/magaza/${category.slug}`,
+      href: publicCategoryHref(category.slug),
       label: category.name,
       meta: "Kategori",
       group: "Kategoriler",

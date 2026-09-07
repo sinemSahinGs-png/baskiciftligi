@@ -1,4 +1,4 @@
-import type { Metadata, Route } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Clock3, PackageCheck, Truck } from "lucide-react";
 
@@ -24,6 +24,7 @@ import {
   getProductBySlug,
   listProducts,
 } from "@/domain/catalog/repository";
+import { publicCategoryHref } from "@/domain/catalog/storefront-taxonomy";
 import { stageClass, stageForProduct } from "@/domain/visual/stages";
 import { cn } from "@/lib/utils";
 
@@ -115,7 +116,7 @@ export default async function ProductPage(props: PageProps<"/urun/[slug]">) {
               "@type": "ListItem",
               position: 3,
               name: category.name,
-              item: absoluteSiteUrl(`/magaza/${category.slug}`),
+                  item: absoluteSiteUrl(publicCategoryHref(category.slug)),
             },
           ]
         : []),
@@ -163,7 +164,7 @@ export default async function ProductPage(props: PageProps<"/urun/[slug]">) {
               ? [
                   {
                     label: category.name,
-                    href: `/magaza/${category.slug}` as Route,
+                    href: publicCategoryHref(category.slug),
                   },
                 ]
               : []),

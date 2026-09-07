@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 
 import { CatalogFilters } from "@/components/catalog/catalog-filters";
-import type { Category, Collection, Material } from "@/domain/catalog/types";
+import type { Collection, Material } from "@/domain/catalog/types";
 
 export function StoreResults({
   categories,
@@ -12,7 +12,7 @@ export function StoreResults({
   productCount,
   children,
 }: {
-  categories: Category[];
+  categories: Array<{ id: string; slug: string; name: string }>;
   collections: Collection[];
   materials: Material[];
   productCount: number;

@@ -232,6 +232,7 @@ export function ProductCard({
 
   return (
     <article
+      data-product-slug={product.slug}
       className={cn(
         isStore
           ? "store-card"
@@ -253,7 +254,7 @@ export function ProductCard({
             sizes={
               featured
                 ? "(max-width: 768px) 100vw, 40vw"
-                : "(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
+                : "(max-width: 640px) 46vw, (max-width: 1280px) 22vw, 18vw"
             }
             preload={priority}
             ratio="square"

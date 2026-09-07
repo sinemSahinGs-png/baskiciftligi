@@ -7,22 +7,8 @@ import { useState } from "react";
 
 import { Logo } from "@/components/site/logo";
 import { siteConfig } from "@/config/site";
-import { homepageShopCategorySlugs } from "@/domain/home/homepage";
+import { storefrontCategories } from "@/domain/catalog/storefront-taxonomy";
 import { cn } from "@/lib/utils";
-
-const storeCategoryLinks = [
-  { slug: "ev-ve-dekorasyon", label: "Ev ve Dekorasyon" },
-  { slug: "biblo-ve-heykel", label: "Biblo ve Heykel" },
-  { slug: "anahtarlik", label: "Anahtarlık" },
-  { slug: "magnet", label: "Magnet" },
-  { slug: "masaustu-aksesuarlari", label: "Masaüstü Aksesuarları" },
-  { slug: "kisiye-ozel-urunler", label: "Kişiye Özel Ürünler" },
-  { slug: "fonksiyonel-parcalar", label: "Fonksiyonel Parçalar" },
-  { slug: "kurumsal-promosyon", label: "Kurumsal Promosyon" },
-] as const satisfies ReadonlyArray<{
-  slug: (typeof homepageShopCategorySlugs)[number];
-  label: string;
-}>;
 
 type FooterGroup = {
   id: string;
@@ -36,9 +22,9 @@ const footerGroups: FooterGroup[] = [
     label: "Mağaza",
     links: [
       { href: "/magaza", label: "Tüm ürünler" },
-      ...storeCategoryLinks.map((c) => ({
-        href: `/magaza/${c.slug}`,
-        label: c.label,
+      ...storefrontCategories.map((category) => ({
+        href: category.href,
+        label: category.name,
       })),
     ],
   },
@@ -48,6 +34,7 @@ const footerGroups: FooterGroup[] = [
     links: [
       { href: "/model-yukle", label: "Model yükle" },
       { href: "/hazir-modeller", label: "Hazır modeller" },
+      { href: "/toptan", label: "Toptan & Bayiler" },
       { href: "/kurumsal-uretim", label: "Kurumsal üretim" },
       { href: "/malzemeler", label: "Malzemeler" },
       { href: "/hizmetler/3d-baski", label: "3D baskı" },

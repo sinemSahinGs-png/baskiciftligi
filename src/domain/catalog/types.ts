@@ -188,6 +188,7 @@ export interface CatalogSnapshot {
   materials: Material[];
   announcements: Announcement[];
   updatedAt: string;
+  unavailable?: boolean;
 }
 
 export interface ProductQuery {

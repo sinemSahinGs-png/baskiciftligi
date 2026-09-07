@@ -7,8 +7,10 @@ import { STORE_EMPTY_COPY } from "@/lib/catalog/empty-store-copy";
 
 export function EmptyCatalogState({
   adminHref = false,
+  failed = false,
 }: {
   adminHref?: boolean;
+  failed?: boolean;
 }) {
   if (adminHref) {
     return (
@@ -18,6 +20,25 @@ export function EmptyCatalogState({
         description="Taslak veya arşiv kayıtları mağazada gösterilmez. İlk gerçek ürün yayınlandığında burada görünür; demo katalog otomatik doldurulmaz."
         action={{ href: "/admin/urunler/yeni", label: "İlk ürünü oluştur" }}
       />
+    );
+  }
+
+  if (failed) {
+    return (
+      <section data-catalog-error="" className="store-empty">
+        <p className="store-intro-kicker">Katalog</p>
+        <h2 className="mt-3 font-heading text-3xl font-bold tracking-[-0.04em]">
+          Ürünler şu anda yüklenemedi.
+        </h2>
+        <p className="mt-4 max-w-xl text-base leading-7 text-[color:var(--store-muted-dark)]">
+          Bu boş bir koleksiyon değil; katalog kaynağına ulaşılamadı. Lütfen biraz sonra tekrar deneyin.
+        </p>
+        <div className="mt-8">
+          <Link href={"/model-yukle" as Route} className="store-btn-primary">
+            MODELİNİ YÜKLE
+          </Link>
+        </div>
+      </section>
     );
   }
 

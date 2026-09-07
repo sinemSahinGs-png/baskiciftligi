@@ -48,7 +48,7 @@ async function decodeVisibleImages(page: Page, rootSelector: string) {
               return false;
             }
             let opacity = 1;
-            let node = image;
+            let node: Element | null = image;
             while (node && opacity > 0.9) {
               opacity *= Number(getComputedStyle(node).opacity || "1");
               if (node === root) break;

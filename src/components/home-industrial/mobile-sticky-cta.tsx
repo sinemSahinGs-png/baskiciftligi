@@ -22,7 +22,7 @@ export function MobileStickyCta() {
       const finalCta = document.getElementById("basla");
       const footer = document.querySelector("footer");
       setHidden(
-        intersecting(hero, 0.28) ||
+      intersecting(hero, 0.08) ||
           intersecting(paths, 0.4) ||
           intersecting(finalCta, 0.12) ||
           intersecting(footer, 0.12),

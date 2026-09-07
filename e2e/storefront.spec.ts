@@ -20,7 +20,8 @@ test.describe("storefront phase 1", () => {
       await desktopShop.click();
     } else {
       await header.getByRole("button", { name: /Menüyü aç/ }).click();
-      await page.getByRole("link", { name: "Mağaza" }).first().click();
+      await page.getByRole("navigation", { name: "Mobil menü" }).getByRole("button", { name: "Mağaza" }).click();
+      await page.getByRole("link", { name: "Tüm ürünleri gör" }).click();
     }
     await expect(page).toHaveURL(/\/magaza/, { timeout: 15_000 });
     await expect(
@@ -66,15 +67,8 @@ test.describe("storefront phase 1", () => {
   }) => {
     await page.goto("/model-yukle");
     await expect(page.locator("input[type='file']")).toHaveCount(1);
-    await page
-      .getByRole("button", { name: "7. Özet" })
-      .locator("visible=true")
-      .last()
-      .click();
-    await expect(
-      page.getByText("Fiyat, PrusaSlicer çıktısı ve sunucu formülü olmadan gösterilmez."),
-    ).toBeVisible();
-    await expect(page.getByText(/PayTR/i)).toHaveCount(1);
+    await expect(page.getByText("Fiyat, dilimleme bitince görünür").first()).toBeVisible();
+    await expect(page.getByText(/₺\d/)).toHaveCount(0);
   });
 
   test("hizmet sayfaları sahte teklif üretmez", async ({ page }) => {

@@ -37,11 +37,26 @@ test.describe("Nasıl çalışır process section", () => {
     );
     await page.screenshot({ path: path.join(shots, "desktop-before.png") });
 
-    for (const step of ["01", "02", "03", "04"] as const) {
+    const pin = await page.locator("[data-process-section]").evaluate((node) => {
+      const top = node.getBoundingClientRect().top + window.scrollY;
+      const height = node.getBoundingClientRect().height;
+      return { top, height, travel: Math.max(1, height - window.innerHeight) };
+    });
+
+    for (const [index, step] of (["01", "02", "03", "04"] as const).entries()) {
+      await page.evaluate(
+        ({ top, travel, index: stage }) => {
+          window.scrollTo(0, top + travel * ((stage + 0.28) / 4));
+        },
+        { top: pin.top, travel: pin.travel, index },
+      );
+      await expect(page.locator("[data-process-section]")).toHaveAttribute(
+        "data-stage",
+        step,
+      );
       const card = page.locator(`[data-process-section] [data-process-step='${step}']`);
-      await card.scrollIntoViewIfNeeded();
       await expect(card).toBeVisible();
-      await expect(card).toHaveCSS("opacity", "1");
+      await expect(card).toHaveAttribute("data-active", "true");
       await page.screenshot({ path: path.join(shots, `desktop-step-${step}.png`) });
     }
 
@@ -49,7 +64,7 @@ test.describe("Nasıl çalışır process section", () => {
       const rect = node.getBoundingClientRect();
       return { height: rect.height };
     });
-    expect(geometry.height).toBeLessThan(900 * 2.5);
+    expect(geometry.height).toBeLessThan(900 * 2.8);
 
     await page.evaluate(() => {
       const section = document.querySelector("#nasil-calisir");

@@ -277,6 +277,7 @@ export function IdeaCommand() {
       <div className="hi-hero-fade" aria-hidden="true" />
       <div className="hi-hero-path" aria-hidden="true" />
       <div className="hi-hero-inner hi-shell">
+        <div className="hi-hero-cluster">
         <div className="hi-hero-copy">
           <p className="hi-kicker">ÖZEL ÜRETİM · TEK PARÇA</p>
           <WordReveal
@@ -362,6 +363,7 @@ export function IdeaCommand() {
         >
           VEYA STL / 3MF DOSYANI YÜKLE
         </Link>
+        </div>
         </div>
 
         {status === "searching" ? (

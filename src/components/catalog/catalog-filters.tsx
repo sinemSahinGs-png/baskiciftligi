@@ -6,10 +6,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { LayoutGrid, List, SlidersHorizontal, X } from "lucide-react";
 
-import type { Category, Collection, Material } from "@/domain/catalog/types";
+import type { Collection, Material } from "@/domain/catalog/types";
 
 interface CatalogFiltersProps {
-  categories: Category[];
+  categories: Array<{ id: string; slug: string; name: string }>;
   collections?: Collection[];
   materials?: Material[];
   productCount: number;

@@ -17,15 +17,10 @@ import {
 
 import { Logo } from "@/components/site/logo";
 import { SearchOverlay } from "@/components/site/search-overlay";
-import { SafeImage } from "@/components/media/safe-image";
+import { StoreMegaMenu, MobileStoreNav } from "@/components/site/store-mega-menu";
 import { siteConfig } from "@/config/site";
 import type { Category, Product } from "@/domain/catalog/types";
-import { homepageShopCategorySlugs } from "@/domain/home/homepage";
-import {
-  categoryImageFitClass,
-  categoryImageStyle,
-  resolveCategoryImagePresentation,
-} from "@/lib/catalog/category-image";
+import type { StorefrontCategorySlug } from "@/domain/catalog/storefront-taxonomy";
 import { announceStatus, foundryEase } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { selectCartCount, useCartStore } from "@/stores/cart-store";
@@ -34,9 +29,14 @@ import { useFavoritesStore } from "@/stores/favorites-store";
 interface SiteHeaderProps {
   categories: Category[];
   products?: Product[];
+  categoryArtwork: Record<StorefrontCategorySlug, string | null>;
 }
 
-export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
+export function SiteHeader({
+  categories,
+  products = [],
+  categoryArtwork,
+}: SiteHeaderProps) {
   const pathname = usePathname();
   const darkShell = true;
   const [scrolled, setScrolled] = useState(false);
@@ -57,9 +57,7 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
   const favoriteCount = useFavoritesStore((state) => state.productIds.length);
   const favoritesHydrated = useFavoritesStore((state) => state.hasHydrated);
   const reduceMotion = useReducedMotion();
-  const [megaOpen, setMegaOpen] = useState(false);
   const [cartPulse, setCartPulse] = useState(false);
-  const megaTimer = useRef<number>(0);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousCartCount = useRef(cartCount);
@@ -103,20 +101,6 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
     };
   }, [mobileOpen]);
 
-  function openMega() {
-    window.clearTimeout(megaTimer.current);
-    setMegaOpen(true);
-  }
-
-  function closeMega() {
-    window.clearTimeout(megaTimer.current);
-    megaTimer.current = window.setTimeout(() => setMegaOpen(false), 120);
-  }
-
-  const shopCategories = homepageShopCategorySlugs
-    .map((slug) => categories.find((category) => category.slug === slug))
-    .filter((category): category is Category => Boolean(category));
-
   const inverted = pathname === "/" && !scrolled && !searchOpen && !mobileOpen;
 
   return (
@@ -135,130 +119,7 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
           <Logo inverted={darkShell} className="mr-auto" />
 
           <nav aria-label="Ana menü" className="hidden items-center gap-1 xl:flex">
-            <Link
-              href={"/magaza" as Route}
-              data-active={pathname.startsWith("/magaza") ? "true" : undefined}
-              className="nav-signal inline-flex min-h-11 items-center px-3 text-sm font-medium"
-            >
-              Mağaza
-            </Link>
-            <div
-              className="relative"
-              onMouseEnter={openMega}
-              onMouseLeave={closeMega}
-              onFocus={openMega}
-              onBlur={(event) => {
-                const next = event.relatedTarget;
-                if (!(next instanceof Node) || !event.currentTarget.contains(next)) {
-                  closeMega();
-                }
-              }}
-            >
-              <button
-                type="button"
-                aria-expanded={megaOpen}
-                aria-controls="category-mega-menu"
-                className="nav-signal inline-flex min-h-11 items-center px-3 text-sm font-medium"
-              >
-                Kategoriler
-              </button>
-              <AnimatePresence>
-                {megaOpen ? (
-                  <m.div
-                    id="category-mega-menu"
-                    initial={
-                      reduceMotion ? false : { opacity: 0.88, y: -10 }
-                    }
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={
-                      reduceMotion
-                        ? { opacity: 0 }
-                        : { opacity: 0, y: -8 }
-                    }
-                    transition={{ duration: 0.28, ease: foundryEase }}
-                    className="absolute top-full left-0 z-50 w-[min(52rem,calc(100vw-3rem))] pt-3"
-                  >
-                <div className="grid grid-cols-[1.4fr_0.8fr] gap-6 rounded-xl border border-white/10 bg-midnight p-5 text-light-text shadow-[0_24px_80px_rgb(7_7_19/0.45)]">
-                  <div className="grid grid-cols-2 gap-3">
-                    {shopCategories.slice(0, 6).map((category) => (
-                      <Link
-                        key={category.id}
-                        href={`/magaza/${category.slug}` as Route}
-                        className="group/item flex min-h-16 gap-3 rounded-lg p-2 hover:bg-white/8"
-                      >
-                        <span className="relative size-14 shrink-0 overflow-hidden rounded-md bg-muted">
-                          <SafeImage
-                            src={category.imageUrl}
-                            alt=""
-                            fill
-                            sizes="56px"
-                            className={categoryImageFitClass(
-                              resolveCategoryImagePresentation(category).fit,
-                            )}
-                            style={categoryImageStyle(
-                              resolveCategoryImagePresentation(category),
-                            )}
-                          />
-                        </span>
-                        <span className="min-w-0 self-center">
-                          <span className="block text-sm font-semibold">
-                            {category.name}
-                          </span>
-                          <span className="mt-0.5 line-clamp-1 block text-xs text-muted-light">
-                            {category.eyebrow}
-                          </span>
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                  <div className="flex flex-col justify-between rounded-lg bg-cobalt p-5 text-light-text">
-                    <div>
-                      <p className="text-sm font-semibold">Koleksiyonlar</p>
-                      <ul className="mt-3 space-y-2 text-sm">
-                        <li>
-                          <Link href={"/magaza" as Route} className="hover:underline">
-                            Tüm ürünler
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href={"/magaza/yeni-gelenler" as Route}
-                            className="hover:underline"
-                          >
-                            Yeni gelenler
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href={"/magaza?koleksiyon=cok-satanlar" as Route}
-                            className="hover:underline"
-                          >
-                            Öne çıkanlar
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href={"/model-yukle" as Route}
-                            className="hover:underline"
-                          >
-                            Özel baskı
-                          </Link>
-                        </li>
-                      </ul>
-                    </div>
-                    <Link
-                      href={"/model-yukle" as Route}
-                      className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-semibold"
-                    >
-                      Model yükle
-                      <ArrowUpRight aria-hidden="true" className="size-4" />
-                    </Link>
-                  </div>
-                </div>
-                  </m.div>
-                ) : null}
-              </AnimatePresence>
-            </div>
+            <StoreMegaMenu inverted={inverted} categoryArtwork={categoryArtwork} />
             {siteConfig.primaryNavigation.slice(1).map((item) => (
               <Link
                 key={item.href}
@@ -357,29 +218,22 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
           </div>
           <nav aria-label="Mobil menü" className="shell overflow-y-auto pb-16">
             <ul>
-              {siteConfig.navigation.map((item) => (
+              <MobileStoreNav onNavigate={() => setMobileOpen(false)} />
+              {siteConfig.navigation
+                .filter(
+                  (item) =>
+                    item.label !== "Mağaza" &&
+                    item.label !== "Toptan & Bayiler",
+                )
+                .map((item) => (
                 <li key={`${item.href}-${item.label}`} className="border-b border-hairline">
                   <Link
                     href={item.href as Route}
                     className="flex min-h-14 items-center justify-between font-heading text-[1.85rem] font-bold tracking-[-0.04em] sm:text-3xl"
+                    onClick={() => setMobileOpen(false)}
                   >
                     {item.label}
                     <ArrowUpRight aria-hidden="true" className="size-5 text-muted-light" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-8 text-sm font-semibold text-muted-light">
-              Kategoriler
-            </p>
-            <ul className="mt-3 grid grid-cols-2 gap-2">
-              {shopCategories.map((category) => (
-                <li key={category.id}>
-                  <Link
-                    href={`/magaza/${category.slug}` as Route}
-                className="flex min-h-12 items-center rounded-md border border-white/15 px-3 text-sm font-medium"
-                  >
-                    {category.name}
                   </Link>
                 </li>
               ))}

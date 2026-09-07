@@ -62,9 +62,9 @@ export const siteConfig = {
   ],
   navigation: [
     { label: "Mağaza", href: "/magaza" },
-    { label: "Kategoriler", href: "/magaza" },
     { label: "Model Yükle", href: "/model-yukle" },
     { label: "Hazır Modeller", href: "/hazir-modeller" },
+    { label: "Toptan & Bayiler", href: "/toptan" },
     { label: "Kurumsal", href: "/kurumsal-uretim" },
     { label: "Hizmetler", href: "/hizmetler" },
     { label: "Hakkımızda", href: "/hakkimizda" },

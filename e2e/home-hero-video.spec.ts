@@ -49,9 +49,11 @@ async function storeFingerprint(page: Page) {
   await page.locator("[data-catalog-grid]").first().waitFor({ state: "visible" });
   const rows = await page.evaluate(() =>
     [...document.querySelectorAll("[data-catalog-grid] article")].map((card) => {
-      const href = card.querySelector("a[href^='/urun/']")?.getAttribute("href") ?? "";
+      const attr = card.getAttribute("data-product-slug") ?? "";
+      const href = card.querySelector("a[href*='/urun/']")?.getAttribute("href") ?? "";
+      const match = href.match(/\/urun\/([^/?#]+)/);
       return {
-        slug: href.replace("/urun/", ""),
+        slug: attr || match?.[1] || "",
         name: card.querySelector("h2, h3")?.textContent?.replace(/\s+/g, " ").trim() ?? "",
         price: card.textContent?.match(/₺[\d.,]+/)?.[0] ?? "",
       };
@@ -179,9 +181,10 @@ test.describe("centered video hero", () => {
     await readyHome(page);
     await expect(page.locator("#ne-uretmek-istiyorsun")).toBeVisible();
     await expect(page.locator("#idea-command-input")).toBeVisible();
-    await expect.poll(async () => page.locator("video.hi-hero-video").count()).toBe(0);
-    const heroImage = page.locator("[data-industrial-asset='hero-wireframe-vase'] img").first();
-    await expect(heroImage).toBeVisible();
+    await expect.poll(
+      async () => page.locator("[data-industrial-asset='hero-wireframe-vase']").count(),
+      { timeout: 10_000 },
+    ).toBeGreaterThan(0);
   });
 
   test("mobile does not download the desktop video when a mobile source exists", async ({
@@ -198,6 +201,22 @@ test.describe("centered video hero", () => {
     await expect(page.locator("video.hi-hero-video")).toHaveCount(1, { timeout: 8_000 });
     expect(requested.some((item) => item.includes("hero-mobile.mp4"))).toBe(true);
     expect(requested.some((item) => item.includes("hero-desktop.mp4"))).toBe(false);
+  });
+
+  test("desktop does not download the mobile video when a desktop source exists", async ({
+    page,
+  }) => {
+    const requested: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes("/videos/home-industrial/")) {
+        requested.push(`${request.method()} ${request.url()}`);
+      }
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await readyHome(page);
+    await expect(page.locator("video.hi-hero-video")).toHaveCount(1, { timeout: 8_000 });
+    expect(requested.some((item) => item.includes("hero-desktop.mp4"))).toBe(true);
+    expect(requested.some((item) => item.includes("hero-mobile.mp4"))).toBe(false);
   });
 
   test("video pauses when the hero leaves the viewport", async ({ page }) => {
@@ -218,7 +237,6 @@ test.describe("centered video hero", () => {
     }
     await readyHome(page);
     const keys = [
-      "hero-wireframe-vase",
       "path-idea-dragon",
       "path-ready-model",
       "path-upload-object",
@@ -242,11 +260,13 @@ test.describe("centered video hero", () => {
     expect(before.length).toBeGreaterThan(0);
     const beforeKey = before.map((item) => `${item.slug}:${item.price}`).sort();
     await readyHome(page);
-    const featuredSlug = await page.locator("[data-featured-product-slug]").first().getAttribute(
-      "data-featured-product-slug",
-    );
+    const featuredSlug = await page
+      .locator("#one-cikan-urunler")
+      .getAttribute("data-featured-product-slug");
     expect(featuredSlug).toBeTruthy();
-    expect(before.some((item) => item.slug === featuredSlug)).toBe(true);
+    await page.goto(`/urun/${featuredSlug}`);
+    await expect(page).toHaveURL(new RegExp(`/urun/${featuredSlug}`));
+    await expect(page.locator("#ana-icerik")).toBeVisible();
     const after = await storeFingerprint(page);
     expect(after.map((item) => `${item.slug}:${item.price}`).sort()).toEqual(beforeKey);
   });

@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 
 import { siteConfig } from "@/config/site";
+import { storefrontCategories } from "@/domain/catalog/storefront-taxonomy";
 import {
-  listCategories,
   listMaterials,
   listProducts,
 } from "@/domain/catalog/repository";
@@ -19,6 +19,7 @@ const staticPaths = [
   "/hizmetler/prototip",
   "/kurumsal-uretim",
   "/kurumsal-teklif",
+  "/toptan",
   "/hakkimizda",
   "/iletisim",
   "/sss",
@@ -30,9 +31,8 @@ const staticPaths = [
 ] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, categories, materials] = await Promise.all([
+  const [products, materials] = await Promise.all([
     listProducts(),
-    listCategories(),
     listMaterials(),
   ]);
   const now = new Date();
@@ -52,8 +52,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
-    ...categories.map((category) => ({
-      url: new URL(`/magaza/${category.slug}`, siteConfig.url).toString(),
+    ...storefrontCategories.map((category) => ({
+      url: new URL(category.href, siteConfig.url).toString(),
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.75,

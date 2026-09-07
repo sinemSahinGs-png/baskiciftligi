@@ -22,7 +22,7 @@ const PATHS = [
   {
     id: "02",
     title: "HAZIR MODEL SEÇ",
-    copy: "Binlerce model seni bekliyor.",
+    copy: "Doğrulanmış hazır modeller arasından seç.",
     cta: "Hazır modellere git",
     image: industrialAssets.pathReadyModel,
     asset: "path-ready-model",
@@ -32,7 +32,7 @@ const PATHS = [
   {
     id: "03",
     title: "DOSYANI YÜKLE",
-    copy: "Kendi dosyanla hemen başla.",
+    copy: "STL veya 3MF dosyanla üretime başla.",
     cta: "Dosyanı yükle",
     image: industrialAssets.pathUploadObject,
     asset: "path-upload-object",
@@ -43,37 +43,21 @@ const PATHS = [
 
 export function ProductionPaths() {
   const [active, setActive] = useState(0);
-  const manualRef = useRef(false);
+  const pointerStart = useRef<number | null>(null);
   const fineRef = useRef(false);
 
   useEffect(() => {
     fineRef.current = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    const section = document.getElementById("uc-uretim-yolu");
-    if (!section) return;
-    let frame = 0;
-    const onScroll = () => {
-      if (manualRef.current) return;
-      window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => {
-        const box = section.getBoundingClientRect();
-        const vh = window.innerHeight;
-        const progress = Math.max(0, Math.min(1, (vh * 0.45 - box.top) / Math.max(box.height, 1)));
-        setActive(Math.min(2, Math.floor(progress * 3)));
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-    };
   }, []);
 
-  function select(index: number, commit = false) {
-    if (commit) manualRef.current = true;
-    setActive(index);
+  function select(index: number) {
+    setActive(Math.max(0, Math.min(PATHS.length - 1, index)));
+  }
+
+  function commit(index: number) {
+    select(index);
     const path = PATHS[index];
-    if (commit && path.action === "focus") {
+    if (path?.action === "focus") {
       document.getElementById("idea-command-input")?.focus();
       document.getElementById("ne-uretmek-istiyorsun")?.scrollIntoView({
         behavior: "smooth",
@@ -95,6 +79,9 @@ export function ProductionPaths() {
       <div className="hi-shell hi-paths-layout">
         <div className="hi-paths-rail">
           <WordReveal as="h2" id="paths-heading" className="sr-only" text="Üç üretim yolu" />
+          <p className="hi-paths-count hi-mono" aria-live="polite">
+            {current.id} / 03
+          </p>
           {PATHS.map((path, index) => (
             <button
               key={path.id}
@@ -106,7 +93,7 @@ export function ProductionPaths() {
                 if (fineRef.current) select(index);
               }}
               onFocus={() => select(index)}
-              onClick={() => select(index, true)}
+              onClick={() => commit(index)}
             >
               <span className="hi-path-num">{path.id}</span>
               <span>
@@ -140,18 +127,35 @@ export function ProductionPaths() {
               </HomeTrackLink>
             ) : null}
             {current.action === "focus" ? (
-              <span className="hi-link mt-1 hi-path-cta-ghost">Fikrini yaz →</span>
+              <button type="button" className="hi-link mt-1" onClick={() => commit(0)}>
+                Fikrini yaz →
+              </button>
             ) : null}
           </div>
         </div>
         <InteractiveMedia className="hi-path-media">
-          <CadFrame className="hi-path-stage">
+          <CadFrame
+            className="hi-path-stage"
+            onPointerDown={(event) => {
+              pointerStart.current = event.clientX;
+            }}
+            onPointerUp={(event) => {
+              if (pointerStart.current == null) return;
+              const delta = event.clientX - pointerStart.current;
+              pointerStart.current = null;
+              if (delta < -40) select(active + 1);
+              if (delta > 40) select(active - 1);
+            }}
+          >
             {PATHS.map((path, index) => (
               <div
                 key={path.image}
                 className="absolute inset-0"
                 data-active={index === active ? "true" : "false"}
                 data-industrial-asset={path.asset}
+                data-neighbor={
+                  index === active - 1 ? "prev" : index === active + 1 ? "next" : undefined
+                }
               >
                 <SlotImage
                   src={path.image}
@@ -165,6 +169,15 @@ export function ProductionPaths() {
             <p className="hi-mono absolute top-3 right-3 z-10">
               {current.id} / 03
             </p>
+            {PATHS[active + 1] ? (
+              <p className="hi-paths-hint hi-mono" aria-hidden="true">
+                {PATHS[active + 1].title} →
+              </p>
+            ) : (
+              <p className="hi-paths-hint hi-mono" aria-hidden="true">
+                ← {PATHS[active - 1]?.title}
+              </p>
+            )}
           </CadFrame>
         </InteractiveMedia>
       </div>

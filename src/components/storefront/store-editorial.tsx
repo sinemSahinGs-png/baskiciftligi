@@ -44,6 +44,18 @@ export function StoreEditorial({ product }: { product: Product }) {
         >
           Şimdi keşfet
         </Link>
+        {product.media[0]?.url ? (
+          <span className="store-editorial-live">
+            <SafeImage
+              src={product.media[0].url}
+              alt={product.media[0].alt || product.name}
+              width={72}
+              height={72}
+              className="object-cover"
+            />
+            <span>Katalog kaydı</span>
+          </span>
+        ) : null}
       </div>
       <InteractiveMedia className="store-editorial-media" aria-hidden="true">
         <StoreEditorialArt />

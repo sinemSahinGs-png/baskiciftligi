@@ -9,10 +9,10 @@ import { CadFrame } from "@/components/home-industrial/technical-grid";
 import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
 
 const STAGES = [
-  { id: "01", title: "DİLİMLEME", copy: "Hazırlık" },
-  { id: "02", title: "ÜRETİM", copy: "Baskı" },
-  { id: "03", title: "KALİTE KONTROL", copy: "Kontrol" },
-  { id: "04", title: "PAKETLEME", copy: "Sevkiyat" },
+  { id: "01", title: "DİLİMLEME", copy: "Katmanlar ve baskı hazırlığı." },
+  { id: "02", title: "ÜRETİM", copy: "Parça yazıcıda üretilir." },
+  { id: "03", title: "KALİTE KONTROL", copy: "Form ve yüzey kontrolü." },
+  { id: "04", title: "PAKETLEME", copy: "Koruyucu paket ve sevkiyat." },
 ] as const;
 
 export function ProductionProcess() {
@@ -47,7 +47,11 @@ export function ProductionProcess() {
         const span = Math.max(1, pinned ? box.height - window.innerHeight : box.height * 0.7);
         const raw = Math.min(1, Math.max(0, -box.top / span));
         node.style.setProperty("--process-progress", String(raw));
-        setProgress(raw);
+        const nextStage = Math.min(3, Math.floor(raw * 4));
+        setProgress((current) => {
+          const currentStage = Math.min(3, Math.floor(current * 4));
+          return currentStage === nextStage ? current : raw;
+        });
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -84,10 +88,9 @@ export function ProductionProcess() {
               className="object-cover"
             />
             <div className="hi-scan-beam pointer-events-none absolute inset-y-0 left-[42%] z-10 w-px" />
-            <div
-              className="hi-vase pointer-events-none absolute bottom-[28%] left-[10%] z-10 h-[10%] w-[20%] border border-[color:var(--bc-cyan)]"
-              aria-hidden="true"
-            />
+            <p className="hi-process-note hi-mono">
+              {STAGES[stageIndex]?.id} · {STAGES[stageIndex]?.copy}
+            </p>
             <ol className="hi-process-overlay">
               {STAGES.map((item, index) => (
                 <li
@@ -97,6 +100,7 @@ export function ProductionProcess() {
                 >
                   <p className="hi-mono">{item.id}</p>
                   <p className="hi-path-name mt-1 text-[1.05rem]">{item.title}</p>
+                  <p className="hi-process-step-copy">{item.copy}</p>
                 </li>
               ))}
             </ol>

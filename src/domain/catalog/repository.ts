@@ -15,6 +15,7 @@ import type {
   ProductQuery,
   ProductVariant,
 } from "@/domain/catalog/types";
+import { productMatchesStorefrontCategory } from "@/domain/catalog/storefront-taxonomy";
 import { productionVitrineSnapshot } from "@/lib/catalog/production-vitrine";
 import { PUBLIC_CATALOG_CACHE_TAGS } from "@/lib/catalog/cache-tags";
 import { resolveCategoryCoverUrl } from "@/lib/catalog/category-cover";
@@ -407,7 +408,11 @@ const getCatalogSnapshotCached = cache(async (): Promise<CatalogSnapshot> => {
   });
 
   if (source === "supabase") {
-    return loadSupabaseCatalogCached();
+    try {
+      return await loadSupabaseCatalogCached();
+    } catch {
+      return { ...productionVitrineSnapshot(), unavailable: true };
+    }
   }
 
   if (source === "development-demo") {
@@ -433,9 +438,8 @@ export async function listProducts(query: ProductQuery = {}): Promise<Product[]>
 
   return snapshot.products
     .filter((product) => query.includeDrafts || isPubliclyVisibleProduct(product))
-    .filter(
-      (product) =>
-        !query.category || product.categorySlugs.includes(query.category),
+    .filter((product) =>
+      productMatchesStorefrontCategory(product.categorySlugs, query.category),
     )
     .filter(
       (product) =>

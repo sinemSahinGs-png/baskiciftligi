@@ -2,6 +2,7 @@ import { CompactFaq } from "@/components/home-industrial/compact-faq";
 import { CorporateProduction } from "@/components/home-industrial/corporate-production";
 import { FeaturedProduct } from "@/components/home-industrial/featured-product";
 import { FinalCta } from "@/components/home-industrial/final-cta";
+import { HomeCategories } from "@/components/home-industrial/home-categories";
 import { IdeaCommand } from "@/components/home-industrial/idea-command";
 import { IndustrialHeaderEffects } from "@/components/home-industrial/industrial-header";
 import { MaterialsStrip } from "@/components/home-industrial/materials-strip";
@@ -14,6 +15,7 @@ import { RealProducts } from "@/components/home-industrial/real-products";
 import { ScrollThemeProvider } from "@/components/home-industrial/scroll-theme-provider";
 import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
 import { TrustStrip } from "@/components/home-industrial/trust-strip";
+import { WholesaleBand } from "@/components/home-industrial/wholesale-band";
 import type { ReadyModelCard } from "@/components/home/ready-models-section";
 import type { Material, Product } from "@/domain/catalog/types";
 
@@ -38,12 +40,14 @@ export function IndustrialHome({
       <TechnicalGrid />
       <IdeaCommand />
       <ProductionPaths />
+      <HomeCategories products={products} />
       <ModelArchive models={readyModels} />
       <RealProducts products={products} />
       <FeaturedProduct product={featured} />
       <QuoteFlow />
       <ProductionProcess />
       <MaterialsStrip materials={materials} />
+      <WholesaleBand />
       <CorporateProduction />
       <TrustStrip />
       <CompactFaq />
