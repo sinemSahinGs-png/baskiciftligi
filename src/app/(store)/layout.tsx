@@ -4,6 +4,8 @@ import { AnnouncementBar } from "@/components/site/announcement-bar";
 import { ShellAtmosphere } from "@/components/site/shell-atmosphere";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { StoreBottomNav } from "@/components/storefront/store-bottom-nav";
+import "@/components/storefront/storefront.css";
 import {
   getCatalogSnapshot,
   listCategories,
@@ -32,6 +34,7 @@ export default async function StoreLayout({
         heading={content.footerHeading}
         description={content.footerDescription}
       />
+      <StoreBottomNav />
     </ShellAtmosphere>
   );
 }

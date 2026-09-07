@@ -38,11 +38,7 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
   const pathname = usePathname();
-  const darkShell =
-    pathname === "/" ||
-    pathname.startsWith("/hazir-modeller") ||
-    pathname.startsWith("/model-yukle") ||
-    pathname.startsWith("/kurumsal");
+  const darkShell = true;
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenu, setMobileMenu] = useState({ path: pathname, open: false });
@@ -121,7 +117,7 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
     .map((slug) => categories.find((category) => category.slug === slug))
     .filter((category): category is Category => Boolean(category));
 
-  const inverted = darkShell && !scrolled && !searchOpen && !mobileOpen;
+  const inverted = pathname === "/" && !scrolled && !searchOpen && !mobileOpen;
 
   return (
     <>
@@ -131,7 +127,7 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
           inverted
             ? "border-transparent bg-transparent text-light-text"
               : darkShell
-                ? "border-white/10 bg-midnight/82 text-light-text backdrop-blur-sm md:backdrop-blur-md"
+                ? "border-white/10 bg-[#050708] text-light-text backdrop-blur-sm md:backdrop-blur-md"
                 : "border-hairline bg-porcelain/92 text-ink backdrop-blur-sm md:backdrop-blur-md",
         )}
       >
@@ -287,7 +283,7 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
             <Link
               href={"/hesabim" as Route}
               aria-label="Hesabım"
-              className="hidden size-11 items-center justify-center lg:inline-flex"
+              className="inline-flex size-11 items-center justify-center"
             >
               <UserRound aria-hidden="true" className="size-5" />
             </Link>
@@ -296,14 +292,14 @@ export function SiteHeader({ categories, products = [] }: SiteHeaderProps) {
               aria-label={
                 favoritesHydrated ? `Favoriler, ${favoriteCount}` : "Favoriler"
               }
-              className="relative hidden size-11 items-center justify-center lg:inline-flex"
+              className="relative inline-flex size-11 items-center justify-center"
             >
               <Heart aria-hidden="true" className="size-5" />
             </Link>
             <Link
               href={"/sepet" as Route}
               aria-label={cartHydrated ? `Sepet, ${cartCount}` : "Sepet"}
-              className="relative hidden size-11 items-center justify-center md:inline-flex"
+              className="relative inline-flex size-11 items-center justify-center"
             >
               <ShoppingBag aria-hidden="true" className="size-5" />
               {cartHydrated && cartCount > 0 ? (

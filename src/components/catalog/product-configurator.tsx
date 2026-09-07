@@ -238,7 +238,7 @@ export function ProductConfigurator({ product }: { product: Product }) {
           disabled={!canPurchase}
           aria-describedby="stock-note"
           onClick={addToCart}
-          className={`inline-flex h-13 flex-1 items-center justify-center gap-2 rounded-md bg-coral px-6 text-sm font-semibold text-light-text transition-transform duration-200 hover:bg-brand-hover active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45 ${layerComplete ? "layer-complete-in bg-lime text-midnight hover:bg-lime" : ""}`}
+          className={`inline-flex h-13 flex-1 items-center justify-center gap-2 bg-[color:var(--store-orange,#ff5a0a)] px-6 text-sm font-semibold text-[color:var(--store-black,#080a0b)] transition-transform duration-200 hover:opacity-90 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45 ${layerComplete ? "layer-complete-in bg-lime text-midnight hover:bg-lime" : ""}`}
         >
           {layerComplete ? (
             <FormSignal tone="dark" className="size-4" />
@@ -288,7 +288,7 @@ export function ProductConfigurator({ product }: { product: Product }) {
         hesaplanır.
       </p>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-porcelain/95 p-3 backdrop-blur-sm lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[color:var(--store-line-dark)] bg-[color:var(--store-paper)]/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm lg:hidden">
         <div className="flex items-center gap-3">
           <p className="type-price min-w-0 flex-1 truncate text-base">
             {formatMoney(unitPriceMinor, product.currency)}
@@ -297,7 +297,7 @@ export function ProductConfigurator({ product }: { product: Product }) {
             type="button"
             disabled={!canPurchase}
             onClick={addToCart}
-            className="inline-flex min-h-12 flex-1 items-center justify-center rounded-md bg-coral px-4 text-sm font-semibold text-light-text disabled:opacity-45"
+            className="inline-flex min-h-12 flex-1 items-center justify-center bg-[color:var(--store-orange,#ff5a0a)] px-4 text-sm font-semibold text-[color:var(--store-black,#080a0b)] disabled:opacity-45"
           >
             {canPurchase ? "Sepete ekle" : "Stokta yok"}
           </button>

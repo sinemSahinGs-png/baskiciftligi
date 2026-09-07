@@ -129,7 +129,7 @@ export default async function ProductPage(props: PageProps<"/urun/[slug]">) {
   };
 
   return (
-    <main id="ana-icerik" className="relative pb-32 lg:pb-24">
+    <main id="ana-icerik" className="relative store-page pb-32 lg:pb-24">
       <div
         aria-hidden="true"
         className={cn(
@@ -293,7 +293,7 @@ export default async function ProductPage(props: PageProps<"/urun/[slug]">) {
             text="Benzer tasarımlar"
             className="mt-2 mb-7 font-heading text-3xl font-bold"
           />
-          <CatalogGrid products={relatedProducts} />
+          <CatalogGrid products={relatedProducts} tone="store" />
         </section>
       ) : null}
 

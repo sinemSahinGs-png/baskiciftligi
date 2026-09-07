@@ -3,13 +3,14 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Heart, Plus } from "lucide-react";
+import { Heart, Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import { FormSignal } from "@/components/brand/form-signal";
 import { ProductStage } from "@/components/catalog/product-stage";
 import { PriceDisplay } from "@/components/commerce/price-display";
 import { resolveProductVisual } from "@/domain/catalog/media";
+import { storeProductAction } from "@/domain/catalog/presentation";
 import type { Product } from "@/domain/catalog/types";
 import { announceStatus } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ interface ProductCardProps {
   product: Product;
   priority?: boolean;
   featured?: boolean;
+  tone?: "default" | "store";
 }
 
 const badgeLabels: Record<Product["badges"][number], string> = {
@@ -32,6 +34,7 @@ export function ProductCard({
   product,
   priority = false,
   featured = false,
+  tone = "default",
 }: ProductCardProps) {
   const availableVariants = useMemo(
     () => product.variants.filter((variant) => variant.isActive),
@@ -66,9 +69,20 @@ export function ProductCard({
     product.priceMinor + (selectedVariant?.priceAdjustmentMinor ?? 0);
   const productHref = `/urun/${product.slug}` as Route;
   const badge = product.badges[0];
+  const action = storeProductAction(product);
+  const isStore = tone === "store";
+  const stockLabel =
+    inventoryQuantity > 0
+      ? product.kind === "made_to_order"
+        ? "Siparişe göre"
+        : "Stokta"
+      : "Tükendi";
+  const summary = [product.materialSummary || product.materialCode, stockLabel]
+    .filter(Boolean)
+    .join(" · ");
 
   function handleQuickAdd() {
-    if (!canAdd) {
+    if (!canAdd || action.kind !== "add") {
       return;
     }
     addLine({
@@ -89,8 +103,110 @@ export function ProductCard({
     window.setTimeout(() => setLayerComplete(false), 700);
   }
 
+  const favoriteButton = (
+    <button
+      type="button"
+      aria-label={
+        isFavorite
+          ? `${product.name} ürününü favorilerden çıkar`
+          : `${product.name} ürününü favorilere ekle`
+      }
+      aria-pressed={isFavorite}
+      disabled={!favoritesHydrated}
+      onClick={() => {
+        const next = !isFavorite;
+        toggleFavorite(product.id);
+        setFavoritePulse(true);
+        window.setTimeout(() => setFavoritePulse(false), 320);
+        announceStatus(
+          next
+            ? `${product.name} favorilere eklendi.`
+            : `${product.name} favorilerden çıkarıldı.`,
+        );
+      }}
+      className={cn(
+        isStore
+          ? "store-card-fav"
+          : "absolute top-3 right-3 z-20 inline-flex size-11 items-center justify-center rounded-full bg-midnight/55 text-light-text transition-transform duration-200",
+        isFavorite && (isStore ? "text-[color:var(--shop-orange)]" : "text-coral"),
+        favoritePulse && "scale-110",
+      )}
+    >
+      <Heart
+        aria-hidden="true"
+        className={cn("size-4", isFavorite && "fill-current")}
+      />
+    </button>
+  );
+
+  const purchaseControl = isStore
+    ? action.kind === "add"
+      ? (
+          <button
+            type="button"
+            disabled={!canAdd}
+            onClick={handleQuickAdd}
+            data-complete={layerComplete ? "true" : undefined}
+            aria-label={
+              canAdd
+                ? `${product.name} ürününü sepete ekle`
+                : `${product.name} şu anda sepete eklenemiyor`
+            }
+            className="store-card-cart"
+          >
+            {layerComplete ? (
+              <FormSignal tone="dark" className="size-4" />
+            ) : (
+              <ShoppingBag aria-hidden="true" className="size-4" />
+            )}
+          </button>
+        )
+      : (
+          <Link href={productHref} className="store-card-text-action">
+            {action.label}
+          </Link>
+        )
+    : action.kind === "add"
+      ? (
+          <button
+            type="button"
+            disabled={!canAdd}
+            onClick={handleQuickAdd}
+            aria-label={
+              canAdd
+                ? `${product.name} ürününü sepete ekle`
+                : `${product.name} şu anda sepete eklenemiyor`
+            }
+            className={cn(
+              "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-midnight text-sm font-semibold text-light-text",
+              layerComplete && "layer-complete-in bg-lime text-midnight",
+            )}
+          >
+            {layerComplete ? (
+              <FormSignal tone="dark" className="size-4" />
+            ) : (
+              <Plus aria-hidden="true" className="size-4" />
+            )}
+            {layerComplete ? "Katman tamam" : "Sepete ekle"}
+          </button>
+        )
+      : (
+          <Link
+            href={productHref}
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-midnight text-sm font-semibold text-light-text"
+          >
+            {action.label}
+          </Link>
+        );
+
   return (
-    <article className="group/card flex h-full min-w-0 flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none max-md:transform-none md:hover:-translate-y-1.5">
+    <article
+      className={cn(
+        isStore
+          ? "store-card"
+          : "group/card flex h-full min-w-0 flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none max-md:transform-none md:hover:-translate-y-1.5",
+      )}
+    >
       <ProductStage
         stage={visual.stage}
         src={visual.primary?.url}
@@ -98,7 +214,7 @@ export function ProductCard({
         mobileSrc={visual.mobile?.url}
         videoSrc={visual.video?.url}
         alt={visual.primary?.alt ?? product.name}
-        isolated={visual.isolated}
+        isolated={isStore ? true : visual.isolated}
         objectPosition={visual.objectPosition}
         mobileObjectPosition={visual.mobileObjectPosition}
         sizes={
@@ -107,8 +223,10 @@ export function ProductCard({
             : "(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
         }
         preload={priority}
-        ratio="standard"
-        className="rounded-lg"
+        ratio={isStore ? "square" : "standard"}
+        grid={isStore ? false : undefined}
+        className={isStore ? "store-card-media" : "rounded-lg"}
+        imageClassName={isStore ? "store-card-image" : undefined}
       >
         <Link
           href={productHref}
@@ -118,66 +236,15 @@ export function ProductCard({
           <span className="sr-only">{product.name}</span>
         </Link>
         {badge || product.isDemo ? (
-          <span className="absolute top-3 left-3 z-20 rounded-md bg-midnight/70 px-2.5 py-1 text-[0.75rem] font-semibold text-light-text">
+          <span className="absolute top-3 left-3 z-20 bg-midnight/70 px-2.5 py-1 text-[0.75rem] font-semibold text-light-text">
             {product.isDemo ? "Demo" : badgeLabels[badge]}
           </span>
         ) : null}
-        <button
-          type="button"
-          aria-label={
-            isFavorite
-              ? `${product.name} ürününü favorilerden çıkar`
-              : `${product.name} ürününü favorilere ekle`
-          }
-          aria-pressed={isFavorite}
-          disabled={!favoritesHydrated}
-          onClick={() => {
-            const next = !isFavorite;
-            toggleFavorite(product.id);
-            setFavoritePulse(true);
-            window.setTimeout(() => setFavoritePulse(false), 320);
-            announceStatus(
-              next
-                ? `${product.name} favorilere eklendi.`
-                : `${product.name} favorilerden çıkarıldı.`,
-            );
-          }}
-          className={cn(
-            "absolute top-3 right-3 z-20 inline-flex size-11 items-center justify-center rounded-full bg-midnight/55 text-light-text transition-transform duration-200",
-            isFavorite && "text-coral",
-            favoritePulse && "scale-110",
-          )}
-        >
-          <Heart
-            aria-hidden="true"
-            className={cn("size-4", isFavorite && "fill-current")}
-          />
-        </button>
-        <button
-          type="button"
-          disabled={!canAdd}
-          onClick={handleQuickAdd}
-          aria-label={
-            canAdd
-              ? `${product.name} ürününü sepete ekle`
-              : `${product.name} şu anda sepete eklenemiyor`
-          }
-          className={cn(
-            "absolute inset-x-3 bottom-3 z-20 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-midnight text-sm font-semibold text-light-text opacity-100 transition-opacity duration-200 md:opacity-0 md:group-hover/card:opacity-100 md:group-focus-within/card:opacity-100",
-            layerComplete && "layer-complete-in bg-lime text-midnight",
-          )}
-        >
-          {layerComplete ? (
-            <FormSignal tone="dark" className="size-4" />
-          ) : (
-            <Plus aria-hidden="true" className="size-4" />
-          )}
-          {layerComplete ? "Katman tamam" : "Sepete ekle"}
-        </button>
+        {favoriteButton}
       </ProductStage>
 
-      <div className="flex flex-1 flex-col pt-3">
-        {availableVariants.length > 1 ? (
+      <div className={isStore ? "store-card-body" : "flex flex-1 flex-col pt-3"}>
+        {!isStore && availableVariants.length > 1 ? (
           <div
             role="group"
             aria-label={`${product.name} renkleri`}
@@ -204,20 +271,41 @@ export function ProductCard({
         <Link
           href={productHref}
           className={cn(
-            "line-clamp-2 leading-snug font-medium hover:underline",
-            featured
+            isStore ? "store-card-name" : "line-clamp-2 leading-snug font-medium hover:underline",
+            !isStore && featured
               ? "text-[1.15rem] sm:text-[1.25rem]"
-              : "text-[1.02rem] sm:text-[1.08rem]",
+              : !isStore
+                ? "text-[1.02rem] sm:text-[1.08rem]"
+                : undefined,
           )}
         >
           {product.name}
         </Link>
-        <PriceDisplay
-          priceMinor={priceMinor}
-          compareAtPriceMinor={product.compareAtPriceMinor}
-          currency={product.currency}
-          className="mt-1.5"
-        />
+        {isStore && summary ? <p className="store-card-meta">{summary}</p> : null}
+        {isStore ? (
+          <>
+            <div className="store-card-buy">
+              <PriceDisplay
+                priceMinor={priceMinor}
+                compareAtPriceMinor={product.compareAtPriceMinor}
+                currency={product.currency}
+                className="store-card-price mt-0"
+              />
+              {action.kind === "add" ? purchaseControl : null}
+            </div>
+            {action.kind !== "add" ? purchaseControl : null}
+          </>
+        ) : (
+          <>
+            <PriceDisplay
+              priceMinor={priceMinor}
+              compareAtPriceMinor={product.compareAtPriceMinor}
+              currency={product.currency}
+              className="mt-1.5"
+            />
+            <div className="mt-auto pt-3">{purchaseControl}</div>
+          </>
+        )}
       </div>
     </article>
   );

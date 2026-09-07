@@ -123,6 +123,7 @@ export function ProductStage({
       ) : null}
 
       <div
+        data-stage-frame=""
         className={cn(
           "absolute inset-0",
           isolated ? "inset-[8%] sm:inset-[11%]" : honestFrame && "inset-4 sm:inset-6",
@@ -134,7 +135,7 @@ export function ProductStage({
             alt={alt}
             fill
             sizes={sizes}
-            preload={preload}
+            priority={preload}
             className={cn(
               "product-stage-media md:hidden",
               fitClass,
@@ -148,7 +149,7 @@ export function ProductStage({
           alt={alt}
           fill
           sizes={sizes}
-          preload={preload}
+          priority={preload}
           className={cn(
             "product-stage-media",
             mobileSrc && "max-md:hidden",

@@ -6,6 +6,7 @@ import {
   displayKindForProduct,
   isPersonalizableProduct,
   relatedCategorySlugs,
+  storeProductAction,
 } from "@/domain/catalog/presentation";
 
 describe("catalog presentation helpers", () => {
@@ -21,6 +22,8 @@ describe("catalog presentation helpers", () => {
     expect(vase).toBeDefined();
     expect(isPersonalizableProduct(vase!)).toBe(false);
     expect(displayKindForProduct(vase!)).toBe("store");
+    expect(storeProductAction(nameplate!).kind).toBe("personalize");
+    expect(storeProductAction(vase!).kind).toBe("options");
   });
 
   it("keeps category afterword after the catalog and uses real copy", () => {

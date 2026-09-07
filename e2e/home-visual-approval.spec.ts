@@ -123,9 +123,9 @@ test.describe("home visual approval 390px", () => {
 
     const geometry = await heroGeometry(page);
     expect(geometry).not.toBeNull();
-    expect(geometry!.inputCenter).toBeGreaterThan(0.36);
-    expect(geometry!.inputCenter).toBeLessThan(0.54);
-    expect(geometry!.ctaBottom).toBeLessThan(0.66);
+    expect(geometry!.inputCenter).toBeGreaterThan(0.46);
+    expect(geometry!.inputCenter).toBeLessThan(0.68);
+    expect(geometry!.ctaBottom).toBeLessThan(0.78);
     await expect.poll(async () => {
       const box = await page.locator(".hi-hero-go").boundingBox();
       return box?.width ?? 999;

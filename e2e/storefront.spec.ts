@@ -24,10 +24,17 @@ test.describe("storefront phase 1", () => {
     }
     await expect(page).toHaveURL(/\/magaza/, { timeout: 15_000 });
     await expect(
-      page.getByRole("heading", { name: "Tüm ürünler" }),
+      page.getByRole("heading", { name: "3D BASKI KOLEKSİYONU" }),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: /ürününü sepete ekle/ }).first().click();
+    const addButton = page.getByRole("button", { name: /ürününü sepete ekle/ });
+    if ((await addButton.count()) > 0) {
+      await addButton.first().click();
+    } else {
+      await page.getByRole("link", { name: "SEÇENEKLERİ GÖR" }).first().click();
+      await expect(page).toHaveURL(/\/urun\//);
+      await page.getByRole("button", { name: /Sepete ekle/ }).first().click();
+    }
     await expect(page.getByRole("banner").getByRole("link", { name: /Sepet, / })).toBeVisible();
     await page.getByRole("banner").getByRole("link", { name: /Sepet, / }).click();
     await expect(page).toHaveURL(/\/sepet/);
@@ -84,10 +91,13 @@ test.describe("storefront phase 1", () => {
 
   test("geliştirme mağazası boş üretim durumunu göstermez", async ({ page }) => {
     await page.goto("/magaza");
-    await expect(page.getByRole("heading", { name: "Tüm ürünler" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "3D BASKI KOLEKSİYONU" })).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Yeni ürünler hazırlanıyor." }),
+      page.getByRole("heading", { name: "Şu anda yayınlanan ürün bulunamadı." }),
     ).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /ürününü sepete ekle/ }).first()).toBeVisible();
+    await expect(page.locator("[data-catalog-results]")).toBeVisible();
+    const addButtons = page.getByRole("button", { name: /ürününü sepete ekle/ });
+    const optionLinks = page.getByRole("link", { name: "SEÇENEKLERİ GÖR" });
+    expect((await addButtons.count()) + (await optionLinks.count())).toBeGreaterThan(0);
   });
 });

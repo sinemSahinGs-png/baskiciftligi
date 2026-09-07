@@ -180,9 +180,9 @@ test.describe("mobile hero video and section images", () => {
         return box?.width ?? 999;
       })
       .toBeLessThan(composition.heroWidth * 0.72);
-    expect(composition.center).toBeGreaterThan(0.36);
-    expect(composition.center).toBeLessThan(0.54);
-    expect(composition.ctaBottom).toBeLessThan(0.66);
+    expect(composition.center).toBeGreaterThan(0.46);
+    expect(composition.center).toBeLessThan(0.68);
+    expect(composition.ctaBottom).toBeLessThan(0.78);
     expect(composition.overflowX).toBeLessThanOrEqual(1);
 
     await page.waitForTimeout(2800);

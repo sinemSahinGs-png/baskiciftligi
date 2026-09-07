@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function ModelUploadPage() {
   return (
-    <main id="ana-icerik">
+    <main id="ana-icerik" data-store-studio="">
       <Suspense fallback={<p className="p-8 text-sm">Yapılandırıcı yükleniyor.</p>}>
         <ModelConfigurator />
       </Suspense>

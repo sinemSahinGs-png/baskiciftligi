@@ -133,36 +133,25 @@ export default async function CategoryPage(
   };
 
   return (
-    <main id="ana-icerik" className="pb-24">
+    <main id="ana-icerik" className="store-page">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
       />
 
-      <header
-        className={cn(
-          "relative overflow-hidden text-light-text",
-          stageClass[stage],
-        )}
-        style={{
-          background:
-            "linear-gradient(160deg, color-mix(in srgb, var(--stage) 88%, black), var(--stage-2))",
-        }}
-      >
-        <div aria-hidden="true" className="grid-fade absolute inset-0 opacity-80" />
-        <div className="shell relative grid items-end gap-8 py-12 lg:grid-cols-[1.2fr_0.8fr] sm:py-16">
+      <header className="store-masthead">
+        <div className="shell relative grid items-end gap-8 py-8 lg:grid-cols-[1.2fr_0.8fr] sm:py-12">
           <div>
             <Breadcrumbs
-              className="text-white/75 [&_svg]:text-white/40"
               items={[
                 { label: "Mağaza", href: "/magaza" },
                 { label: category.name },
               ]}
             />
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <p className="text-sm text-white/75">{category.eyebrow}</p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <p className="store-intro-kicker">{category.eyebrow}</p>
               {category.isDemo ? (
-                <span className="rounded-md bg-midnight/50 px-2.5 py-1 text-xs font-semibold">
+                <span className="bg-[color:var(--store-paper-2)] px-2.5 py-1 text-xs font-semibold">
                   Demo kategori
                 </span>
               ) : null}
@@ -170,17 +159,14 @@ export default async function CategoryPage(
             <PageMasthead
               title={category.name}
               description={category.description}
-              titleClassName="display-title mt-4"
-              descriptionClassName="mt-5 max-w-2xl text-base leading-7 text-white/80"
+              titleClassName="store-intro-title mt-4"
+              descriptionClassName="store-intro-lede mt-5"
             />
             {subcategories.length > 0 ? (
-              <ul className="mt-6 flex flex-wrap gap-2">
+              <ul className="store-cats mt-6">
                 {subcategories.map((item) => (
                   <li key={item.id}>
-                    <Link
-                      href={`/magaza/${item.slug}`}
-                      className="inline-flex min-h-11 items-center rounded-md border border-white/25 px-4 text-sm font-semibold"
-                    >
+                    <Link href={`/magaza/${item.slug}`} className="store-cat">
                       {item.name}
                     </Link>
                   </li>
@@ -218,7 +204,7 @@ export default async function CategoryPage(
         </div>
 
         {products.length > 0 ? (
-          <CatalogGrid products={products} priorityCount={3} />
+          <CatalogGrid products={products} priorityCount={3} tone="store" />
         ) : (
           <EmptyState
             icon={<PackageOpen aria-hidden="true" className="size-5" />}

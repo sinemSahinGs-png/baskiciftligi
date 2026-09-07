@@ -53,7 +53,7 @@ test.describe("acceptance visual inspection", () => {
     await shot(page, "mobile-home-categories");
 
     await page.goto("/magaza", { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { name: "Tüm ürünler" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "3D BASKI KOLEKSİYONU" })).toBeVisible();
     await shot(page, "mobile-store-products");
 
     await page.goto("/hazir-modeller", { waitUntil: "networkidle" });

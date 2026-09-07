@@ -33,7 +33,7 @@ export function SlotImage({
           src={src as string}
           alt={alt}
           priority={priority}
-          loading={priority ? "eager" : "lazy"}
+          loading={priority ? undefined : "lazy"}
           fetchPriority={priority ? "high" : "low"}
           className={cn("object-cover", className)}
           onError={(event) => {

@@ -516,11 +516,12 @@ export function ModelLibrary({
 
   return (
     <div
-      className="relative overflow-x-hidden text-light-text"
+      className="store-page relative overflow-x-hidden"
       data-model-library-root
+      data-store-library=""
       data-community-enabled={communityEnabled ? "true" : "false"}
     >
-      <FoundryGrid variant="blueprint" className="pointer-events-none opacity-30" />
+      <FoundryGrid variant="blueprint" className="pointer-events-none opacity-10" />
       <div className="shell relative py-5 sm:py-10" data-model-library>
         <DiscoveryHero
           query={query}

@@ -33,6 +33,7 @@ function SafeImageInner({
   onPermanentFail,
   showSkeleton = true,
   priority,
+  preload,
   onLoad,
   onError,
   ...props
@@ -102,9 +103,9 @@ function SafeImageInner({
           alt={alt}
           unoptimized={shouldUnoptimize(src as string)}
           quality={quality}
-          priority={priority}
-          loading={priority ? "eager" : "lazy"}
-          fetchPriority={priority ? "high" : "low"}
+          priority={Boolean(priority || preload)}
+          loading={priority || preload ? "eager" : "lazy"}
+          fetchPriority={priority || preload ? "high" : "low"}
           onError={(event) => {
             setFailed(true);
             reportFail(src as string);

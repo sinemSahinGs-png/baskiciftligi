@@ -60,15 +60,15 @@ export function RecentlyViewed({ products }: { products: Product[] }) {
   }
 
   return (
-    <section className="shell overflow-hidden py-10" aria-labelledby="son-gorulenler">
+    <section className="overflow-hidden py-10" aria-labelledby="son-gorulenler">
       <RevealHeading
         as="h2"
         id="son-gorulenler"
         text="Son baktıkların"
-        className="section-title"
+        className="font-heading text-2xl font-bold"
       />
       <div className="motion-mask-x mt-8">
-        <CatalogGrid products={items.slice(0, 4)} />
+        <CatalogGrid products={items.slice(0, 4)} tone="store" />
       </div>
     </section>
   );

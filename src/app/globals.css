@@ -88,6 +88,26 @@
 }
 
 :root {
+  --shop-paper: #f2f0ea;
+  --shop-paper-soft: #e9e6df;
+  --shop-card: #f8f7f3;
+  --shop-black: #070909;
+  --shop-ink: #101111;
+  --shop-muted: #6b6b66;
+  --shop-line: rgba(16, 17, 17, 0.14);
+  --shop-orange: #ff5a0a;
+  --shop-white: #f5f4ef;
+  --store-black: var(--shop-black);
+  --store-panel: #0a0d0e;
+  --store-paper: var(--shop-paper);
+  --store-paper-2: var(--shop-paper-soft);
+  --store-text-dark: var(--shop-ink);
+  --store-text-light: var(--shop-white);
+  --store-muted-dark: var(--shop-muted);
+  --store-muted-light: #a4a7a5;
+  --store-orange: var(--shop-orange);
+  --store-line-dark: var(--shop-line);
+  --store-line-light: rgba(242, 241, 236, 0.18);
   --midnight: #070713;
   --deep-ink: #10101a;
   --carbon: #171721;
