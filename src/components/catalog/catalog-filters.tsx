@@ -18,7 +18,7 @@ interface CatalogFiltersProps {
 }
 
 const sortOptions = [
-  { value: "", label: "Öne çıkan" },
+  { value: "", label: "Önerilen sıralama" },
   { value: "newest", label: "Yeni" },
   { value: "price_asc", label: "Fiyat: artan" },
   { value: "price_desc", label: "Fiyat: azalan" },
@@ -114,79 +114,110 @@ export function CatalogFilters({
   ].filter((chip): chip is { key: string; label: string } => Boolean(chip));
 
   const filters = (namePrefix: string) => (
-    <div className="space-y-6 text-sm">
-      <fieldset>
-        <legend className="mb-2 font-semibold">Kategori</legend>
-        <select
-          value={current("category")}
-          onChange={(event) => setParam("category", event.target.value)}
-          className="h-11 w-full border border-[color:var(--shop-line)] bg-[color:var(--shop-white)] px-3"
-        >
-          <option value="">Tümü</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.slug}>
-              {category.name}
-            </option>
-          ))}
-        </select>
+    <div className="store-filter-groups">
+      <fieldset className="store-filter-set">
+        <legend className="store-filter-legend">Kategori</legend>
+        <label className="store-filter-option">
+          <input
+            type="checkbox"
+            checked={!current("category")}
+            onChange={() => setParam("category", "")}
+          />
+          Tümü
+        </label>
+        {categories.map((category) => (
+          <label key={category.id} className="store-filter-option">
+            <input
+              type="checkbox"
+              checked={current("category") === category.slug}
+              onChange={() =>
+                setParam(
+                  "category",
+                  current("category") === category.slug ? "" : category.slug,
+                )
+              }
+            />
+            {category.name}
+          </label>
+        ))}
       </fieldset>
       {collections.length > 0 ? (
-        <fieldset>
-          <legend className="mb-2 font-semibold">Koleksiyon</legend>
-          <select
-            value={current("koleksiyon")}
-            onChange={(event) => setParam("koleksiyon", event.target.value)}
-            className="h-11 w-full border border-[color:var(--shop-line)] bg-[color:var(--shop-white)] px-3"
-          >
-            <option value="">Tümü</option>
-            {collections.map((collection) => (
-              <option key={collection.id} value={collection.slug}>
-                {collection.name}
-              </option>
-            ))}
-          </select>
+        <fieldset className="store-filter-set">
+          <legend className="store-filter-legend">Koleksiyon</legend>
+          <label className="store-filter-option">
+            <input
+              type="checkbox"
+              checked={!current("koleksiyon")}
+              onChange={() => setParam("koleksiyon", "")}
+            />
+            Tümü
+          </label>
+          {collections.map((collection) => (
+            <label key={collection.id} className="store-filter-option">
+              <input
+                type="checkbox"
+                checked={current("koleksiyon") === collection.slug}
+                onChange={() =>
+                  setParam(
+                    "koleksiyon",
+                    current("koleksiyon") === collection.slug ? "" : collection.slug,
+                  )
+                }
+              />
+              {collection.name}
+            </label>
+          ))}
         </fieldset>
       ) : null}
       {materials.length > 0 ? (
-        <fieldset>
-          <legend className="mb-2 font-semibold">Malzeme</legend>
-          <select
-            value={current("malzeme")}
-            onChange={(event) => setParam("malzeme", event.target.value)}
-            className="h-11 w-full border border-[color:var(--shop-line)] bg-[color:var(--shop-white)] px-3"
-          >
-            <option value="">Tümü</option>
-            {materials.map((material) => (
-              <option key={material.id} value={material.name}>
-                {material.name}
-              </option>
-            ))}
-          </select>
-        </fieldset>
-      ) : null}
-      <fieldset>
-        <legend className="mb-2 font-semibold">Ürün tipi</legend>
-        <div className="space-y-2">
-          {[
-            ["", "Hepsi"],
-            ["hazir", "Hazır stok"],
-            ["siparis", "Siparişe göre"],
-          ].map(([value, label]) => (
-            <label key={value} className="flex min-h-11 items-center gap-2">
+        <fieldset className="store-filter-set">
+          <legend className="store-filter-legend">Malzeme</legend>
+          <label className="store-filter-option">
+            <input
+              type="checkbox"
+              checked={!current("malzeme")}
+              onChange={() => setParam("malzeme", "")}
+            />
+            Tümü
+          </label>
+          {materials.map((material) => (
+            <label key={material.id} className="store-filter-option">
               <input
-                type="radio"
-                name={`${namePrefix}-stok`}
-                checked={current("stok") === value}
-                onChange={() => setParam("stok", value)}
+                type="checkbox"
+                checked={current("malzeme") === material.name}
+                onChange={() =>
+                  setParam(
+                    "malzeme",
+                    current("malzeme") === material.name ? "" : material.name,
+                  )
+                }
               />
-              {label}
+              {material.name}
             </label>
           ))}
-        </div>
+        </fieldset>
+      ) : null}
+      <fieldset className="store-filter-set">
+        <legend className="store-filter-legend">Stok durumu</legend>
+        {[
+          ["", "Tümü"],
+          ["hazir", "Hazır stok"],
+          ["siparis", "Siparişe göre"],
+        ].map(([value, label]) => (
+          <label key={`${namePrefix}-${value || "all"}`} className="store-filter-option">
+            <input
+              type="radio"
+              name={`${namePrefix}-stok`}
+              checked={current("stok") === value}
+              onChange={() => setParam("stok", value)}
+            />
+            {label}
+          </label>
+        ))}
       </fieldset>
-      <fieldset>
-        <legend className="mb-2 font-semibold">Uygunluk</legend>
-        <label className="flex min-h-11 items-center gap-2">
+      <fieldset className="store-filter-set">
+        <legend className="store-filter-legend">Uygunluk</legend>
+        <label className="store-filter-option">
           <input
             type="checkbox"
             checked={current("uygunluk") === "stokta"}
@@ -196,7 +227,7 @@ export function CatalogFilters({
           />
           Üretilebilir / stokta
         </label>
-        <label className="flex min-h-11 items-center gap-2">
+        <label className="store-filter-option">
           <input
             type="checkbox"
             checked={current("kisisel") === "1"}
@@ -207,12 +238,12 @@ export function CatalogFilters({
           Kişiselleştirilebilir
         </label>
       </fieldset>
-      <fieldset>
-        <legend className="mb-2 font-semibold">Üretim süresi</legend>
+      <fieldset className="store-filter-set">
+        <legend className="store-filter-legend">Üretim süresi</legend>
         <select
           value={current("sure")}
           onChange={(event) => setParam("sure", event.target.value)}
-          className="h-11 w-full border border-[color:var(--shop-line)] bg-[color:var(--shop-white)] px-3"
+          className="store-filter-select"
         >
           <option value="">Fark etmez</option>
           <option value="3">En fazla 3 gün</option>
@@ -220,16 +251,16 @@ export function CatalogFilters({
           <option value="10">En fazla 10 gün</option>
         </select>
       </fieldset>
-      <fieldset>
-        <legend className="mb-2 font-semibold">Fiyat (₺)</legend>
-        <div className="grid grid-cols-2 gap-2">
+      <fieldset className="store-filter-set">
+        <legend className="store-filter-legend">Fiyat aralığı (₺)</legend>
+        <div className="store-filter-price">
           <input
             type="number"
             min={0}
             placeholder="Min"
             defaultValue={current("min")}
             onBlur={(event) => setParam("min", event.target.value)}
-            className="h-11 border border-[color:var(--shop-line)] bg-[color:var(--shop-white)] px-3"
+            className="store-filter-select"
           />
           <input
             type="number"
@@ -237,7 +268,7 @@ export function CatalogFilters({
             placeholder="Maks"
             defaultValue={current("max")}
             onBlur={(event) => setParam("max", event.target.value)}
-            className="h-11 border border-[color:var(--shop-line)] bg-[color:var(--shop-white)] px-3"
+            className="store-filter-select"
           />
         </div>
       </fieldset>
@@ -279,7 +310,7 @@ export function CatalogFilters({
           >
             {sortOptions.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.value ? option.label : "SIRALA"}
+                {option.label}
               </option>
             ))}
           </select>
@@ -338,10 +369,12 @@ export function CatalogFilters({
       </div>
 
       <aside className="store-filter-desktop" aria-label="Filtreler">
-        <h2 className="mb-4 font-heading text-xl font-bold tracking-[-0.03em]">
-          Filtrele
-        </h2>
+        <p className="store-filter-count">{productCount} ürün</p>
+        <h2 className="store-filter-title">Filtrele</h2>
         {filters("desktop")}
+        <Link href={pathname as Route} className="store-filter-clear">
+          Filtreleri temizle
+        </Link>
       </aside>
 
       {open ? (
@@ -374,6 +407,9 @@ export function CatalogFilters({
               </button>
             </div>
             {filters("sheet")}
+            <Link href={pathname as Route} className="store-filter-clear mt-4">
+              Filtreleri temizle
+            </Link>
             <button
               type="button"
               onClick={() => setOpen(false)}

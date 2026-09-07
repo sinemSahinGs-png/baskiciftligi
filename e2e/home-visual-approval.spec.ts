@@ -39,7 +39,22 @@ async function decodeVisibleImages(page: Page, rootSelector: string) {
           const images = [...root.querySelectorAll("img")].filter((image) => {
             const item = image.closest("li");
             if (item && getComputedStyle(item).display === "none") return false;
-            return image.getBoundingClientRect().height > 8;
+            if (image.getBoundingClientRect().height <= 8) return false;
+            if (
+              image.closest(
+                ".hi-archive-slide[data-active='false'], .hi-path-stage > div[data-active='false']",
+              )
+            ) {
+              return false;
+            }
+            let opacity = 1;
+            let node = image;
+            while (node && opacity > 0.9) {
+              opacity *= Number(getComputedStyle(node).opacity || "1");
+              if (node === root) break;
+              node = node.parentElement;
+            }
+            return opacity > 0.9;
           });
           if (images.length === 0) return { ok: true, ready: 0, total: 0 };
           const ready = images.filter(

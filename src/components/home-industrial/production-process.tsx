@@ -6,6 +6,7 @@ import { useReducedMotion } from "motion/react";
 import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { CadFrame } from "@/components/home-industrial/technical-grid";
+import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
 
 const STAGES = [
   { id: "01", title: "DİLİMLEME", copy: "Hazırlık" },
@@ -36,19 +37,25 @@ export function ProductionProcess() {
   }, []);
 
   useEffect(() => {
-    if (!pinned) return;
     const node = ref.current;
     if (!node) return;
+    let frame = 0;
     const onScroll = () => {
-      const box = node.getBoundingClientRect();
-      const span = Math.max(1, box.height - window.innerHeight);
-      const raw = Math.min(1, Math.max(0, -box.top / span));
-      node.style.setProperty("--process-progress", String(raw));
-      setProgress(raw);
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        const box = node.getBoundingClientRect();
+        const span = Math.max(1, pinned ? box.height - window.innerHeight : box.height * 0.7);
+        const raw = Math.min(1, Math.max(0, -box.top / span));
+        node.style.setProperty("--process-progress", String(raw));
+        setProgress(raw);
+      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [pinned]);
 
   return (
@@ -63,39 +70,38 @@ export function ProductionProcess() {
       aria-labelledby="process-heading"
     >
       <div className="hi-process-pin hi-shell">
-        <h2 id="process-heading" className="hi-title">
-          ÜRETİM SÜRECİ
-        </h2>
-        <CadFrame
-          className="hi-process-scene mt-4 overflow-hidden bg-[color:var(--bc-panel)]"
-          data-industrial-asset="production-tunnel"
-        >
-          <SlotImage
-            src={industrialAssets.productionTunnel}
-            alt=""
-            fill
-            sizes="100vw"
-            className="object-cover"
-          />
-          <div className="hi-scan-beam pointer-events-none absolute inset-y-0 left-[42%] z-10 w-px" />
-          <div
-            className="hi-vase pointer-events-none absolute bottom-[28%] left-[10%] z-10 h-[10%] w-[20%] border border-[color:var(--bc-cyan)]"
-            aria-hidden="true"
-          />
-          <ol className="hi-process-overlay">
-            {STAGES.map((item, index) => (
-              <li
-                key={item.id}
-                data-process-step={item.id}
-                data-active={index === stageIndex ? "true" : "false"}
-                className={index === stageIndex ? "text-[color:var(--bc-orange)]" : ""}
-              >
-                <p className="hi-mono">{item.id}</p>
-                <p className="hi-path-name mt-1 text-[1.05rem]">{item.title}</p>
-              </li>
-            ))}
-          </ol>
-        </CadFrame>
+        <WordReveal as="h2" id="process-heading" className="hi-title" text="ÜRETİM SÜRECİ" />
+        <InteractiveMedia>
+          <CadFrame
+            className="hi-process-scene mt-4 overflow-hidden bg-[color:var(--bc-panel)]"
+            data-industrial-asset="production-tunnel"
+          >
+            <SlotImage
+              src={industrialAssets.productionTunnel}
+              alt="Üretim tüneli: yazıcı sırası ve baskı nesnesi"
+              fill
+              sizes="100vw"
+              className="object-cover"
+            />
+            <div className="hi-scan-beam pointer-events-none absolute inset-y-0 left-[42%] z-10 w-px" />
+            <div
+              className="hi-vase pointer-events-none absolute bottom-[28%] left-[10%] z-10 h-[10%] w-[20%] border border-[color:var(--bc-cyan)]"
+              aria-hidden="true"
+            />
+            <ol className="hi-process-overlay">
+              {STAGES.map((item, index) => (
+                <li
+                  key={item.id}
+                  data-process-step={item.id}
+                  data-active={index === stageIndex ? "true" : "false"}
+                >
+                  <p className="hi-mono">{item.id}</p>
+                  <p className="hi-path-name mt-1 text-[1.05rem]">{item.title}</p>
+                </li>
+              ))}
+            </ol>
+          </CadFrame>
+        </InteractiveMedia>
         <div className="hi-rail mt-3" aria-hidden="true">
           <span />
         </div>

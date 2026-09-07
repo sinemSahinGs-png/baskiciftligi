@@ -11,6 +11,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { siteConfig } from "@/config/site";
 
 import "./globals.css";
+import "@/components/motion/premium-motion.css";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -76,9 +77,9 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
 };
 
@@ -112,6 +113,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               "@type": "Organization",
               name: siteConfig.name,
               url: siteConfig.url,
+              logo: `${siteConfig.url}${siteConfig.logo.src}`,
               ...(siteConfig.contact.email
                 ? { email: siteConfig.contact.email }
                 : {}),

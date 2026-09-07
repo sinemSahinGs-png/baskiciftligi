@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 const ITEMS = [
   { title: "Güvenli ödeme", copy: "Ödeme altyapısı ve sipariş kaydı ayrı tutulur." },
   { title: "Gerçek üretim verisi", copy: "Fiyat, dilimleme çıktısı olmadan vaat edilmez." },
@@ -13,8 +15,12 @@ export function TrustStrip() {
           Güven unsurları
         </h2>
         <ul className="grid grid-cols-2 gap-px border border-[color:var(--bc-line)] md:grid-cols-4">
-          {ITEMS.map((item) => (
-            <li key={item.title} className="bg-[color:var(--bc-panel)] p-4">
+          {ITEMS.map((item, index) => (
+            <li
+              key={item.title}
+              className="hi-trust-cell bg-[color:var(--bc-panel)] p-4"
+              style={{ "--cell-i": index } as CSSProperties}
+            >
               <p className="hi-path-name text-[1rem]">{item.title}</p>
               <p className="mt-2 text-sm leading-5 text-[color:var(--bc-muted)]">{item.copy}</p>
             </li>

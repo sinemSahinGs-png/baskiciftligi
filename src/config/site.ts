@@ -30,7 +30,7 @@ export const siteConfig = {
   currency: "TRY" as const,
   city: "Ankara",
   logo: {
-    src: "/icon.svg",
+    src: "/icon.png",
     markLabel: "Marka işareti",
   },
   hero: {

@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { industrialMaterialSrc } from "@/components/home-industrial/industrial-slots";
+import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
 import { homepageMaterialCopy, homepageMaterialCore } from "@/domain/home/homepage";
 import type { Material } from "@/domain/catalog/types";
 
@@ -34,30 +35,36 @@ export function MaterialsStrip({ materials }: { materials: Material[] }) {
   return (
     <section
       id="malzeme-secenekleri"
-      data-home-theme="mono"
-      className="hi-section"
+      data-home-theme="ivory"
+      className="hi-section hi-materials"
       aria-labelledby="materials-heading"
     >
       <div className="hi-shell">
         <div className="flex items-end justify-between gap-3">
-          <h2 id="materials-heading" className="hi-title">
-            MALZEMELER
-          </h2>
+          <WordReveal as="h2" id="materials-heading" className="hi-title" text="MALZEMELER" />
           <Link href={"/malzemeler" as Route} className="hi-link">
             Tümünü gör →
           </Link>
         </div>
         {activeCell ? (
-          <div className="hi-material-hero mt-5 hi-frame">
+          <InteractiveMedia
+            className="hi-material-hero mt-5 hi-frame"
+            data-material={activeCell.slug}
+          >
             <SlotImage
               key={activeCell.slug}
               src={industrialMaterialSrc[activeCell.slug as keyof typeof industrialMaterialSrc]}
-              alt=""
+              alt={`${activeCell.name} katman dokusu`}
               fill
               sizes="100vw"
               className="object-cover"
             />
-          </div>
+            <span className="hi-material-light" aria-hidden="true" />
+            <p className="hi-material-caption">
+              {activeCell.name}
+              <span> · {activeCell.trait}</span>
+            </p>
+          </InteractiveMedia>
         ) : null}
         <div className="hi-material-tabs">
           {cells.map((material) => (

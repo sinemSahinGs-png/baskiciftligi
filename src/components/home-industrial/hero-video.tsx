@@ -74,7 +74,7 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[50%_72%] md:object-[50%_58%]"
+          className="object-cover object-[46%_88%] sm:object-[50%_82%] md:object-[52%_48%] lg:object-[54%_46%] xl:object-[56%_44%]"
         />
       </div>
       {src && !reducedMotion && !failed ? (

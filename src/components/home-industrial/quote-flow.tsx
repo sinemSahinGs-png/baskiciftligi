@@ -1,6 +1,10 @@
 import type { Route } from "next";
+import type { CSSProperties } from "react";
 
 import { HomeTrackLink } from "@/components/home/home-track-link";
+import { industrialAssets } from "@/components/home-industrial/industrial-slots";
+import { SlotImage } from "@/components/home-industrial/slot-image";
+import { InteractiveMedia, MagneticAction, TechnicalDivider, WordReveal } from "@/components/motion/premium";
 
 const STEPS = [
   {
@@ -25,29 +29,46 @@ export function QuoteFlow() {
     <section
       id="modelin-hazir-mi"
       data-home-theme="inverse"
-      className="hi-section hi-inverse"
+      className="hi-section hi-inverse hi-quote"
       aria-labelledby="quote-heading"
     >
-      <div className="hi-shell">
-        <h2 id="quote-heading" className="hi-title max-w-[12ch]">
-          DOSYANI YÜKLE, FİYATINI ÖĞREN
-        </h2>
-        <div className="mt-6 grid gap-5 md:grid-cols-3">
-          {STEPS.map((step) => (
-            <article key={step.id}>
-              <p className="hi-quote-num">{step.id}</p>
-              <h3 className="hi-path-name mt-2">{step.title}</h3>
-              <p className="mt-1 text-sm leading-5 text-[color:var(--bc-muted)]">{step.copy}</p>
-            </article>
-          ))}
+      <div className="hi-shell hi-quote-layout">
+        <div>
+          <WordReveal
+            as="h2"
+            id="quote-heading"
+            className="hi-title max-w-[14ch]"
+            text="DOSYANI YÜKLE, FİYATINI ÖĞREN"
+          />
+          <TechnicalDivider className="mt-5" />
+          <ol className="hi-quote-steps">
+            {STEPS.map((step, index) => (
+              <li key={step.id} data-quote-step={step.id} style={{ "--step-i": index } as CSSProperties}>
+                <p className="hi-quote-num">{step.id}</p>
+                <h3 className="hi-path-name mt-2">{step.title}</h3>
+                <p className="mt-1 text-sm leading-5 text-[color:var(--bc-muted)]">{step.copy}</p>
+              </li>
+            ))}
+          </ol>
+          <MagneticAction className="mt-6 w-fit">
+            <HomeTrackLink
+              event="upload_cta_clicked"
+              href={"/model-yukle" as Route}
+              className="hi-btn"
+            >
+              Modelini yükle →
+            </HomeTrackLink>
+          </MagneticAction>
         </div>
-        <HomeTrackLink
-          event="upload_cta_clicked"
-          href={"/model-yukle" as Route}
-          className="hi-btn mt-6"
-        >
-          Modelini yükle →
-        </HomeTrackLink>
+        <InteractiveMedia className="hi-quote-media" data-industrial-asset="path-upload-object">
+          <SlotImage
+            src={industrialAssets.pathUploadObject}
+            alt=""
+            fill
+            sizes="(max-width: 768px) 100vw, 42vw"
+            className="object-contain object-center p-6"
+          />
+        </InteractiveMedia>
       </div>
     </section>
   );

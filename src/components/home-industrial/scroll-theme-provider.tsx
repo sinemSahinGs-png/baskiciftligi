@@ -9,6 +9,7 @@ export function ScrollThemeProvider() {
     const nodes = [...document.querySelectorAll<HTMLElement>("[data-home-theme]")];
     if (nodes.length === 0) return;
 
+    let frame = 0;
     const update = () => {
       const vh = window.innerHeight;
       for (const node of nodes) {
@@ -20,7 +21,9 @@ export function ScrollThemeProvider() {
         );
         const theme = node.dataset.homeTheme;
         const fill =
-          theme === "orange" || theme === "inverse" ? Math.round(ratio * 100) : 0;
+          theme === "orange" || theme === "inverse"
+            ? Math.max(18, Math.round(ratio * 100))
+            : 0;
         node.style.setProperty("--hi-fill", `${fill}%`);
         if (theme === "orange" || theme === "inverse") {
           node.dataset.hiContrast = fill >= 42 ? "dark" : "light";
@@ -28,12 +31,18 @@ export function ScrollThemeProvider() {
       }
     };
 
+    const onScroll = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(update);
+    };
+
     update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
     };
   }, []);
 

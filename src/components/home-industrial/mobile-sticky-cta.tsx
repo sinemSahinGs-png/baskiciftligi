@@ -17,11 +17,13 @@ export function MobileStickyCta() {
 
   useEffect(() => {
     const update = () => {
+      const hero = document.getElementById("ne-uretmek-istiyorsun");
       const paths = document.getElementById("uc-uretim-yolu");
       const finalCta = document.getElementById("basla");
       const footer = document.querySelector("footer");
       setHidden(
-        intersecting(paths, 0.4) ||
+        intersecting(hero, 0.28) ||
+          intersecting(paths, 0.4) ||
           intersecting(finalCta, 0.12) ||
           intersecting(footer, 0.12),
       );

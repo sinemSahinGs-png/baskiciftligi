@@ -11,7 +11,7 @@ export function StoreTrustFaq() {
   const items = faqItems.slice(0, 4);
 
   return (
-    <section className="mt-10 pb-4" aria-labelledby="store-trust-heading">
+    <section className="store-trust-faq" aria-labelledby="store-trust-heading">
       <h2 id="store-trust-heading" className="sr-only">
         Güven ve sorular
       </h2>
@@ -22,7 +22,7 @@ export function StoreTrustFaq() {
           </li>
         ))}
       </ul>
-      <div className="store-faq mt-8">
+      <div className="shell store-faq">
         {items.map((item) => (
           <details key={item.id}>
             <summary>

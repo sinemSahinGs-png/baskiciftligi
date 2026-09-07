@@ -20,6 +20,7 @@ import { HeroTypewriter } from "@/components/home-industrial/hero-typewriter";
 import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { HERO_IDEA_EXAMPLES } from "@/components/home-industrial/hero-media";
+import { MagneticAction, WordReveal, useHeroPointer } from "@/components/motion/premium";
 import { externalQuoteCtaLabel } from "@/domain/external-models/quote-action";
 import { trackHomeEvent } from "@/lib/home/analytics";
 import { announceStatus } from "@/lib/motion";
@@ -99,6 +100,7 @@ export function IdeaCommand() {
   const liveId = useId();
   const sectionRef = useRef<HTMLElement>(null);
   const pauseRef = useRef(false);
+  useHeroPointer(sectionRef);
   const reduceMotion = useReducedMotion() === true;
   const isClient = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [query, setQuery] = useState("");
@@ -270,16 +272,19 @@ export function IdeaCommand() {
       <HeroVideo reducedMotion={reduceMotion} />
       <TechnicalGrid className="hi-hero-grid" />
       <div className="hi-hero-vignette" aria-hidden="true" />
+      <div className="hi-hero-copy-scrim" aria-hidden="true" />
+      <div className="hi-hero-search-scrim" aria-hidden="true" />
       <div className="hi-hero-fade" aria-hidden="true" />
       <div className="hi-hero-path" aria-hidden="true" />
       <div className="hi-hero-inner hi-shell">
         <div className="hi-hero-copy">
           <p className="hi-kicker">ÖZEL ÜRETİM · TEK PARÇA</p>
-          <h1 id="idea-command-heading" className="hi-hero-display">
-            SEN TARİF ET.
-            <br />
-            BİZ ÜRETELİM.
-          </h1>
+          <WordReveal
+            as="h1"
+            id="idea-command-heading"
+            className="hi-hero-display"
+            text="SEN TARİF ET. BİZ ÜRETELİM."
+          />
           <span className="hi-hero-rule" aria-hidden="true" />
           <p className="hi-hero-lede">
             Fikrini yaz, sana uygun modelleri bulalım ve gerçek üretim maliyetini hesaplayalım.
@@ -338,14 +343,16 @@ export function IdeaCommand() {
               placeholder="Örneğin: Beyaz Yatak Odası Lambası"
             />
           </div>
-          <button
-            type="submit"
-            disabled={!canSearch || status === "searching"}
-            className="hi-hero-go"
-          >
-            MODEL ÖNERİLERİNİ BUL
-            <span aria-hidden="true"> →</span>
-          </button>
+          <MagneticAction className="hi-hero-go-magnet">
+            <button
+              type="submit"
+              disabled={!canSearch || status === "searching"}
+              className="hi-hero-go"
+            >
+              MODEL ÖNERİLERİNİ BUL
+              <span aria-hidden="true"> →</span>
+            </button>
+          </MagneticAction>
         </form>
 
         <Link

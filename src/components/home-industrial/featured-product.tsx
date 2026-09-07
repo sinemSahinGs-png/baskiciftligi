@@ -5,6 +5,7 @@ import { PriceDisplay } from "@/components/commerce/price-display";
 import { SafeImage } from "@/components/media/safe-image";
 import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
+import { InteractiveMedia, MagneticAction, WordReveal } from "@/components/motion/premium";
 import type { Product } from "@/domain/catalog/types";
 
 export function FeaturedProduct({ product }: { product: Product | null }) {
@@ -17,12 +18,10 @@ export function FeaturedProduct({ product }: { product: Product | null }) {
     >
       <div className="hi-shell hi-featured-layout">
         <article className="hi-featured-copy">
-          <h2 className="hi-kicker" id="featured-heading">
-            ÖNE ÇIKAN ÜRÜN
-          </h2>
+          <WordReveal as="h2" id="featured-heading" className="hi-kicker" text="ÖNE ÇIKAN ÜRÜN" />
           {product ? (
             <>
-              <p className="hi-title mt-3 max-w-[12ch]">{product.name}</p>
+              <p className="hi-title mt-3 max-w-[14ch]">{product.name}</p>
               <PriceDisplay
                 priceMinor={product.priceMinor}
                 compareAtPriceMinor={product.compareAtPriceMinor}
@@ -30,28 +29,30 @@ export function FeaturedProduct({ product }: { product: Product | null }) {
               />
               <div className="hi-featured-cluster">
                 {product.media[0]?.url ? (
-                  <span className="relative size-16 shrink-0 overflow-hidden border border-[color:rgb(8_10_11_/_0.35)] bg-[#eceae4]">
+                  <span className="hi-featured-thumb">
                     <SafeImage
                       src={product.media[0].url}
                       alt={product.media[0].alt ?? product.name}
                       fill
-                      sizes="64px"
+                      sizes="96px"
                       className="object-cover"
                     />
                   </span>
                 ) : null}
-                <Link
-                  href={`/urun/${product.slug}` as Route}
-                  data-featured-product-slug={product.slug}
-                  className="hi-btn whitespace-nowrap"
-                >
-                  Ürünü incele →
-                </Link>
+                <MagneticAction>
+                  <Link
+                    href={`/urun/${product.slug}` as Route}
+                    data-featured-product-slug={product.slug}
+                    className="hi-btn whitespace-nowrap"
+                  >
+                    Ürünü incele →
+                  </Link>
+                </MagneticAction>
               </div>
             </>
           ) : (
             <>
-              <p className="hi-title mt-3 max-w-[14ch]">MAĞAZAYI KEŞFET</p>
+              <WordReveal as="p" className="hi-title mt-3 max-w-[14ch]" text="MAĞAZAYI KEŞFET" />
               <div className="mt-5">
                 <Link href={"/magaza" as Route} className="hi-btn">
                   Tüm ürünleri gör →
@@ -60,7 +61,7 @@ export function FeaturedProduct({ product }: { product: Product | null }) {
             </>
           )}
         </article>
-        <div
+        <InteractiveMedia
           className="hi-featured-art"
           data-industrial-asset="featured-product"
           aria-hidden="true"
@@ -69,10 +70,11 @@ export function FeaturedProduct({ product }: { product: Product | null }) {
             src={industrialAssets.featuredProduct}
             alt=""
             fill
-            sizes="(max-width: 768px) 60vw, 50vw"
-            className="object-cover object-[62%_40%]"
+            sizes="(max-width: 768px) 70vw, 50vw"
+            className="object-cover object-[58%_42%]"
           />
-        </div>
+          <span className="hi-featured-edge" />
+        </InteractiveMedia>
       </div>
     </section>
   );

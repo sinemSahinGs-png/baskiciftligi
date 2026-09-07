@@ -7,6 +7,7 @@ import { HomeTrackLink } from "@/components/home/home-track-link";
 import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { CadFrame } from "@/components/home-industrial/technical-grid";
+import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
 import type { ReadyModelCard } from "@/components/home/ready-models-section";
 
 const EDITORIAL = [
@@ -35,15 +36,13 @@ export function ModelArchive({ models }: { models: ReadyModelCard[] }) {
   return (
     <section
       id="sana-gore-hazir-modeller"
-      data-home-theme="mono"
-      className="hi-section"
+      data-home-theme="ivory"
+      className="hi-section hi-archive"
       aria-labelledby="archive-heading"
     >
       <div className="hi-shell">
         <div className="flex items-end justify-between gap-3">
-          <h2 id="archive-heading" className="hi-title">
-            MODEL ARŞİVİ
-          </h2>
+          <WordReveal as="h2" id="archive-heading" className="hi-title" text="MODEL ARŞİVİ" />
           <HomeTrackLink
             event="ready_model_cta_clicked"
             href={"/hazir-modeller" as Route}
@@ -52,18 +51,32 @@ export function ModelArchive({ models }: { models: ReadyModelCard[] }) {
             Tüm modelleri gör →
           </HomeTrackLink>
         </div>
+        <p className="hi-lede">
+          Görsel arşiv vitrindir. Satın alınabilir modeller aşağıda ayrıca listelenir.
+        </p>
 
         <div className="hi-archive-layout mt-5">
-          <CadFrame className="hi-archive-main" data-industrial-asset={current.asset}>
-            <SlotImage
-              src={current.src}
-              alt=""
-              fill
-              sizes="(max-width: 768px) 88vw, 70vw"
-              className="object-cover object-center"
-            />
-            <p className="hi-mono absolute bottom-3 left-3 z-10">Görsel arşiv</p>
-          </CadFrame>
+          <InteractiveMedia>
+            <CadFrame className="hi-archive-main" data-industrial-asset={current.asset}>
+              {EDITORIAL.map((item, index) => (
+                <div
+                  key={item.asset}
+                  className="hi-archive-slide absolute inset-0"
+                  data-active={index === active ? "true" : "false"}
+                >
+                  <SlotImage
+                    src={item.src}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 88vw, 70vw"
+                    className="object-cover object-center"
+                  />
+                </div>
+              ))}
+              <span className="hi-crop-marker" aria-hidden="true" />
+              <p className="hi-mono absolute bottom-3 left-3 z-10">Görsel arşiv · lisanslı değil</p>
+            </CadFrame>
+          </InteractiveMedia>
           <div className="hi-archive-thumbs">
             {EDITORIAL.map((item, index) => (
               <button
@@ -74,9 +87,6 @@ export function ModelArchive({ models }: { models: ReadyModelCard[] }) {
                 data-active={index === active ? "true" : "false"}
                 data-industrial-asset={item.asset}
               >
-                {index === active ? (
-                  <span className="hi-frame absolute inset-0" aria-hidden="true" />
-                ) : null}
                 <SlotImage
                   src={item.src}
                   alt=""
@@ -91,7 +101,7 @@ export function ModelArchive({ models }: { models: ReadyModelCard[] }) {
 
         {liveModels.length > 0 ? (
           <div className="mt-4">
-            <p className="hi-kicker">Canlı hazır modeller</p>
+            <p className="hi-kicker">Doğrulanmış hazır modeller</p>
             <ul className="mt-2 grid gap-px border border-[color:var(--bc-line)]">
               {liveModels.map((model) => (
                 <li

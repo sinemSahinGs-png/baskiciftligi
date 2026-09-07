@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { FormSignal } from "@/components/brand/form-signal";
 import { ProductStage } from "@/components/catalog/product-stage";
 import { PriceDisplay } from "@/components/commerce/price-display";
+import { InteractiveMedia } from "@/components/motion/premium";
 import { resolveProductVisual } from "@/domain/catalog/media";
 import { storeProductAction } from "@/domain/catalog/presentation";
 import type { Product } from "@/domain/catalog/types";
@@ -113,7 +114,12 @@ export function ProductCard({
       }
       aria-pressed={isFavorite}
       disabled={!favoritesHydrated}
-      onClick={() => {
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!favoritesHydrated) {
+          return;
+        }
         const next = !isFavorite;
         toggleFavorite(product.id);
         setFavoritePulse(true);
@@ -159,6 +165,7 @@ export function ProductCard({
             ) : (
               <ShoppingBag aria-hidden="true" className="size-4" />
             )}
+            <span>{layerComplete ? "Eklendi" : action.label}</span>
           </button>
         )
       : (
@@ -199,6 +206,30 @@ export function ProductCard({
           </Link>
         );
 
+  const stageChildren = (
+    <>
+      <Link
+        href={productHref}
+        aria-label={`${product.name} ürününü görüntüle`}
+        className="absolute inset-0 z-[1]"
+      >
+        <span className="sr-only">{product.name}</span>
+      </Link>
+      {badge || product.isDemo ? (
+        <span
+          className={
+            isStore
+              ? "store-card-badge"
+              : "absolute top-3 left-3 z-20 bg-midnight/70 px-2.5 py-1 text-[0.75rem] font-semibold text-light-text"
+          }
+        >
+          {product.isDemo ? "Demo" : badgeLabels[badge]}
+        </span>
+      ) : null}
+      {favoriteButton}
+    </>
+  );
+
   return (
     <article
       className={cn(
@@ -207,41 +238,55 @@ export function ProductCard({
           : "group/card flex h-full min-w-0 flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none max-md:transform-none md:hover:-translate-y-1.5",
       )}
     >
-      <ProductStage
-        stage={visual.stage}
-        src={visual.primary?.url}
-        hoverSrc={visual.hover?.url}
-        mobileSrc={visual.mobile?.url}
-        videoSrc={visual.video?.url}
-        alt={visual.primary?.alt ?? product.name}
-        isolated={isStore ? true : visual.isolated}
-        objectPosition={visual.objectPosition}
-        mobileObjectPosition={visual.mobileObjectPosition}
-        sizes={
-          featured
-            ? "(max-width: 768px) 100vw, 40vw"
-            : "(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
-        }
-        preload={priority}
-        ratio={isStore ? "square" : "standard"}
-        grid={isStore ? false : undefined}
-        className={isStore ? "store-card-media" : "rounded-lg"}
-        imageClassName={isStore ? "store-card-image" : undefined}
-      >
-        <Link
-          href={productHref}
-          aria-label={`${product.name} ürününü görüntüle`}
-          className="absolute inset-0 z-10"
+      {isStore ? (
+        <InteractiveMedia>
+          <ProductStage
+            stage={visual.stage}
+            src={visual.primary?.url}
+            hoverSrc={visual.hover?.url}
+            mobileSrc={visual.mobile?.url}
+            videoSrc={visual.video?.url}
+            alt={visual.primary?.alt ?? product.name}
+            isolated
+            objectPosition={visual.objectPosition}
+            mobileObjectPosition={visual.mobileObjectPosition}
+            sizes={
+              featured
+                ? "(max-width: 768px) 100vw, 40vw"
+                : "(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
+            }
+            preload={priority}
+            ratio="square"
+            grid={false}
+            className="store-card-media"
+            imageClassName="store-card-image"
+          >
+            {stageChildren}
+          </ProductStage>
+        </InteractiveMedia>
+      ) : (
+        <ProductStage
+          stage={visual.stage}
+          src={visual.primary?.url}
+          hoverSrc={visual.hover?.url}
+          mobileSrc={visual.mobile?.url}
+          videoSrc={visual.video?.url}
+          alt={visual.primary?.alt ?? product.name}
+          isolated={visual.isolated}
+          objectPosition={visual.objectPosition}
+          mobileObjectPosition={visual.mobileObjectPosition}
+          sizes={
+            featured
+              ? "(max-width: 768px) 100vw, 40vw"
+              : "(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
+          }
+          preload={priority}
+          ratio="standard"
+          className="rounded-lg"
         >
-          <span className="sr-only">{product.name}</span>
-        </Link>
-        {badge || product.isDemo ? (
-          <span className="absolute top-3 left-3 z-20 bg-midnight/70 px-2.5 py-1 text-[0.75rem] font-semibold text-light-text">
-            {product.isDemo ? "Demo" : badgeLabels[badge]}
-          </span>
-        ) : null}
-        {favoriteButton}
-      </ProductStage>
+          {stageChildren}
+        </ProductStage>
+      )}
 
       <div className={isStore ? "store-card-body" : "flex flex-1 flex-col pt-3"}>
         {!isStore && availableVariants.length > 1 ? (
@@ -284,16 +329,13 @@ export function ProductCard({
         {isStore && summary ? <p className="store-card-meta">{summary}</p> : null}
         {isStore ? (
           <>
-            <div className="store-card-buy">
-              <PriceDisplay
-                priceMinor={priceMinor}
-                compareAtPriceMinor={product.compareAtPriceMinor}
-                currency={product.currency}
-                className="store-card-price mt-0"
-              />
-              {action.kind === "add" ? purchaseControl : null}
-            </div>
-            {action.kind !== "add" ? purchaseControl : null}
+            <PriceDisplay
+              priceMinor={priceMinor}
+              compareAtPriceMinor={product.compareAtPriceMinor}
+              currency={product.currency}
+              className="store-card-price"
+            />
+            <div className="store-card-buy">{purchaseControl}</div>
           </>
         ) : (
           <>

@@ -5,6 +5,7 @@ import { ShellAtmosphere } from "@/components/site/shell-atmosphere";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { StoreBottomNav } from "@/components/storefront/store-bottom-nav";
+import { ScrollProgress } from "@/components/motion/premium";
 import "@/components/storefront/storefront.css";
 import {
   getCatalogSnapshot,
@@ -29,6 +30,7 @@ export default async function StoreLayout({
     <ShellAtmosphere>
       <AnnouncementBar announcements={catalog.announcements} />
       <SiteHeader categories={categories} products={products} />
+      <ScrollProgress />
       <div className="min-h-0 grow-0">{children}</div>
       <SiteFooter
         heading={content.footerHeading}

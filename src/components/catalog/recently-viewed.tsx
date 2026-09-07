@@ -3,7 +3,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 
 import { CatalogGrid } from "@/components/catalog/catalog-grid";
-import { RevealHeading } from "@/components/motion/reveal-words";
 import type { Product } from "@/domain/catalog/types";
 
 const storageKey = "somut-recently-viewed";
@@ -61,12 +60,12 @@ export function RecentlyViewed({ products }: { products: Product[] }) {
 
   return (
     <section className="overflow-hidden py-10" aria-labelledby="son-gorulenler">
-      <RevealHeading
-        as="h2"
-        id="son-gorulenler"
-        text="Son baktıkların"
-        className="font-heading text-2xl font-bold"
-      />
+        <h2
+          id="son-gorulenler"
+          className="font-heading text-2xl font-bold tracking-[-0.03em] uppercase"
+        >
+          Son baktıkların
+        </h2>
       <div className="motion-mask-x mt-8">
         <CatalogGrid products={items.slice(0, 4)} tone="store" />
       </div>

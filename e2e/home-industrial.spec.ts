@@ -82,6 +82,8 @@ test.describe("industrial homepage", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await readyHome(page);
     const sticky = page.locator(".hi-sticky-cta");
+    await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
+    await expect(sticky).toHaveAttribute("data-hidden", "false");
     await expect(sticky).toBeVisible();
     await page.locator("footer").scrollIntoViewIfNeeded();
     await expect(sticky).toHaveAttribute("data-hidden", "true");
