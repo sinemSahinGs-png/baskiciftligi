@@ -118,7 +118,7 @@ export function SiteHeader({
         <div className="shell flex h-14 items-center gap-2 sm:h-16 md:gap-3">
           <Logo inverted={darkShell} className="mr-auto" />
 
-          <nav aria-label="Ana menü" className="hidden items-center gap-1 xl:flex">
+          <nav aria-label="Ana menü" className="hidden h-full items-center gap-1 self-stretch xl:flex">
             <StoreMegaMenu inverted={inverted} categoryArtwork={categoryArtwork} />
             {siteConfig.primaryNavigation.slice(1).map((item) => (
               <Link

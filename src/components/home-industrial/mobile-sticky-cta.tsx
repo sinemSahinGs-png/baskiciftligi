@@ -21,11 +21,27 @@ export function MobileStickyCta() {
       const paths = document.getElementById("uc-uretim-yolu");
       const finalCta = document.getElementById("basla");
       const footer = document.querySelector("footer");
+      const catsHeading = document.getElementById("home-cats-heading");
+      const archiveHeading = document.getElementById("archive-heading");
+      const archiveLede = document.querySelector("#sana-gore-hazir-modeller .hi-lede");
+      const stickyTop = window.innerHeight - 104;
+      const overlapsSticky = (node: Element | null) => {
+        if (!node) return false;
+        const box = node.getBoundingClientRect();
+        return box.bottom > stickyTop && box.top < window.innerHeight;
+      };
+      const categoryCopyOverlaps = [...document.querySelectorAll(".hi-cat-copy")].some((node) =>
+        overlapsSticky(node),
+      );
       setHidden(
-      intersecting(hero, 0.08) ||
+        intersecting(hero, 0.08) ||
           intersecting(paths, 0.4) ||
           intersecting(finalCta, 0.12) ||
-          intersecting(footer, 0.12),
+          intersecting(footer, 0.12) ||
+          overlapsSticky(catsHeading) ||
+          overlapsSticky(archiveHeading) ||
+          overlapsSticky(archiveLede) ||
+          categoryCopyOverlaps,
       );
     };
     update();

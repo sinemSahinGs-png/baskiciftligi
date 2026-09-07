@@ -42,7 +42,9 @@ export function HomeCategories({ products }: { products: Product[] }) {
         </div>
       </div>
       <div className="hi-cats-handoff" aria-hidden="true">
-        <span className="hi-cats-handoff-rule" />
+        <span className="hi-cats-handoff-grid" />
+        <span className="hi-cats-handoff-cyan" />
+        <span className="hi-cats-handoff-orange" />
       </div>
     </section>
   );
@@ -82,9 +84,11 @@ function CategoryCard({
           <span className="hi-cat-badge">Hazırlanıyor</span>
         ) : null}
         <span className="hi-cat-copy">
-          <span className="hi-cat-index">{number}</span>
-          <span className="hi-cat-name">{category.name}</span>
-          <span className="hi-cat-desc">{category.description}</span>
+          <span className="hi-cat-copy-main">
+            <span className="hi-cat-index">{number}</span>
+            <span className="hi-cat-name">{category.name}</span>
+            <span className="hi-cat-desc">{category.description}</span>
+          </span>
           <span className="hi-cat-arrow" aria-hidden="true">
             →
           </span>

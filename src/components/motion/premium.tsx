@@ -92,8 +92,7 @@ export function WordReveal({
       className={className}
       data-word-reveal=""
     >
-      <span className="sr-only">{text}</span>
-      <span aria-hidden="true" className="word-reveal">
+      <span className="word-reveal">
         {tokens.map((token) =>
           token.wordI === null ? (
             <span key={token.key}>{token.part}</span>

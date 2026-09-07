@@ -26,10 +26,12 @@ export function StoreMegaMenu({
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+  const wholesaleRef = useRef<HTMLAnchorElement | null>(null);
   const openTimer = useRef(0);
   const closeTimer = useRef(0);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
+  const ignoreTriggerFocus = useRef(false);
 
   function clearTimers() {
     window.clearTimeout(openTimer.current);
@@ -37,6 +39,7 @@ export function StoreMegaMenu({
   }
 
   function scheduleOpen() {
+    if (ignoreTriggerFocus.current) return;
     window.clearTimeout(closeTimer.current);
     window.clearTimeout(openTimer.current);
     openTimer.current = window.setTimeout(() => setOpen(true), OPEN_DELAY);
@@ -64,8 +67,12 @@ export function StoreMegaMenu({
     if (!open) return;
     function onKey(event: globalThis.KeyboardEvent) {
       if (event.key === "Escape") {
+        ignoreTriggerFocus.current = true;
         closeNow();
         rootRef.current?.querySelector<HTMLElement>("[data-mega-trigger]")?.focus();
+        window.setTimeout(() => {
+          ignoreTriggerFocus.current = false;
+        }, OPEN_DELAY + 40);
       }
     }
     function onPointerDown(event: PointerEvent) {
@@ -115,6 +122,10 @@ export function StoreMegaMenu({
   function onItemKey(event: KeyboardEvent<HTMLAnchorElement>, index: number) {
     if (event.key === "ArrowDown") {
       event.preventDefault();
+      if (index === storefrontCategories.length - 1) {
+        focusWholesale();
+        return;
+      }
       const next = (index + 1) % storefrontCategories.length;
       setActive(next);
       itemRefs.current[next]?.focus();
@@ -132,16 +143,33 @@ export function StoreMegaMenu({
     }
     if (event.key === "End") {
       event.preventDefault();
+      focusWholesale();
+    }
+  }
+
+  function focusWholesale() {
+    wholesaleRef.current?.focus();
+    rootRef.current?.querySelector<HTMLAnchorElement>(".store-mega-wholesale")?.focus();
+  }
+
+  function onWholesaleKey(event: KeyboardEvent<HTMLAnchorElement>) {
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
       const last = storefrontCategories.length - 1;
       setActive(last);
       itemRefs.current[last]?.focus();
+    }
+    if (event.key === "ArrowDown" || event.key === "Home") {
+      event.preventDefault();
+      setActive(0);
+      itemRefs.current[0]?.focus();
     }
   }
 
   return (
     <div
       ref={rootRef}
-      className="store-mega-root relative"
+      className="store-mega-root relative flex h-full items-center"
       onMouseEnter={onFinePointerEnter}
       onMouseLeave={onFinePointerLeave}
       onPointerEnter={onRootPointerEnter}
@@ -179,6 +207,12 @@ export function StoreMegaMenu({
           if (event.pointerType === "touch") return;
           openNow();
         }}
+        onKeyDown={(event) => {
+          if (event.key === "End") {
+            event.preventDefault();
+            focusWholesale();
+          }
+        }}
       >
         <div className="store-mega-panel">
           <ul className="store-mega-grid">
@@ -199,18 +233,19 @@ export function StoreMegaMenu({
             ))}
           </ul>
           <aside className="store-mega-aside">
-            <Link href={"/magaza" as Route} className="store-mega-aside-link" role="menuitem">
-              Tüm ürünleri gör
-            </Link>
+            <p className="store-mega-wholesale-kicker">Ticari hat</p>
+            <p className="store-mega-wholesale-lede">
+              Tekrarlanabilir seri üretim ve bayi tedariki.
+            </p>
             <Link
-              href={"/magaza?siralama=newest" as Route}
-              className="store-mega-aside-link"
+              ref={(node) => {
+                wholesaleRef.current = node;
+              }}
+              href={"/toptan" as Route}
+              className="store-mega-wholesale"
               role="menuitem"
+              onKeyDown={onWholesaleKey}
             >
-              Yeni ürünler
-            </Link>
-            <Link href={"/toptan" as Route} className="store-mega-wholesale" role="menuitem">
-              <span className="store-mega-wholesale-kicker">Ticari</span>
               Toptan & Bayiler
             </Link>
           </aside>
@@ -252,7 +287,7 @@ function MegaItem({
       <span className="store-mega-art" aria-hidden="true">
         <CategoryArtwork
           src={artworkSrc}
-          sizes="72px"
+          sizes="80px"
           objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
         />
       </span>
@@ -298,7 +333,7 @@ export function MobileStoreNav({
           >
             Tüm ürünleri gör
           </Link>
-          <ul className="mt-2 grid gap-1">
+          <ul className="store-mobile-cat-grid">
             {storefrontCategories.map((category) => (
               <li key={category.slug}>
                 <Link
@@ -310,15 +345,18 @@ export function MobileStoreNav({
                   <span className="store-mobile-cat-art" aria-hidden="true">
                     <CategoryArtwork
                       src={categoryArtwork[category.slug]}
-                      sizes="40px"
+                      sizes="72px"
                       objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
                     />
                   </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium">{category.name}</span>
+                  <span className="store-mobile-cat-copy">
+                    <span className="store-mobile-cat-name">{category.name}</span>
                     {category.comingSoon ? (
                       <span className="store-mega-soon">Hazırlanıyor</span>
                     ) : null}
+                  </span>
+                  <span className="store-mobile-cat-arrow" aria-hidden="true">
+                    →
                   </span>
                 </Link>
               </li>
@@ -326,7 +364,7 @@ export function MobileStoreNav({
           </ul>
           <Link
             href={"/toptan" as Route}
-            className="mt-3 flex min-h-11 items-center border-t border-white/10 pt-3 text-sm font-semibold text-[color:var(--shop-orange,#ff5a0a)]"
+            className="store-mobile-wholesale"
             onClick={onNavigate}
           >
             Toptan & Bayiler

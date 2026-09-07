@@ -19,18 +19,20 @@ export function CategoryArtwork({
   className?: string;
 }) {
   const imageRef = useRef<HTMLImageElement | null>(null);
+  const [srcKey, setSrcKey] = useState(src);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(!src);
+
+  if (src !== srcKey) {
+    setSrcKey(src);
+    setReady(false);
+    setFailed(!src);
+  }
 
   const markReady = useCallback((image: HTMLImageElement) => {
     if (!imageIsReady(image)) return;
     setReady(true);
   }, []);
-
-  useEffect(() => {
-    setReady(false);
-    setFailed(!src);
-  }, [src]);
 
   useEffect(() => {
     const image = imageRef.current;

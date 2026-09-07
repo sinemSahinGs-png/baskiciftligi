@@ -51,6 +51,9 @@ test.describe("storefront category navigation", () => {
     await expect(menu.getByRole("menuitem", { name: /Dekorasyon/ })).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: /Taraftara Özel/ })).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: "Toptan & Bayiler" })).toBeVisible();
+    await menu.getByRole("menuitem", { name: /Kişiye Özel/ }).focus();
+    await page.keyboard.press("ArrowDown");
+    await expect(menu.getByRole("menuitem", { name: "Toptan & Bayiler" })).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(menu).toBeHidden();
     await expect(trigger).toBeFocused();

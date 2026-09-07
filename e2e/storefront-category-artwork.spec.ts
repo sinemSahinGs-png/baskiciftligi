@@ -110,6 +110,23 @@ test.describe("storefront category artwork", () => {
     expect(geometry.cards).toBe(7);
     expect(geometry.minWidth).toBeGreaterThan(80);
     expect(geometry.minHeight).toBeGreaterThan(80);
+    if (mobile) {
+      const leadHeight = await section.locator(".hi-cat-card-lead").evaluate(
+        (node) => node.getBoundingClientRect().height,
+      );
+      expect(leadHeight).toBeGreaterThanOrEqual(320);
+      expect(leadHeight).toBeLessThanOrEqual(390);
+      const supportHeights = await section.locator(".hi-cat-card-support").evaluateAll((nodes) =>
+        nodes.map((node) => node.getBoundingClientRect().height),
+      );
+      expect(Math.min(...supportHeights)).toBeGreaterThanOrEqual(205);
+      const titleClip = await section.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>("#kategoriler .hi-cat-name")].some(
+          (node) => node.scrollHeight > node.clientHeight + 3,
+        ),
+      );
+      expect(titleClip, "category titles clipped").toBe(false);
+    }
     expect(geometry.emptyRatio).toBeLessThanOrEqual(0.15);
     expect(geometry.overflow).toBeLessThanOrEqual(1);
 
@@ -117,10 +134,55 @@ test.describe("storefront category artwork", () => {
       path: path.join(shots, mobile ? "home-categories-390.png" : "home-categories-1440.png"),
       animations: "disabled",
     });
+    if (mobile) {
+      const cardsShot = page.locator("#kategoriler .hi-cats-grid");
+      await cardsShot.screenshot({
+        path: path.join(shots, "home-categories-cards-390.png"),
+        animations: "disabled",
+      });
+    }
     await captureTransition(page, mobile ? "cats-to-lab-390.png" : "cats-to-lab-1440.png");
+
+    const handoffHeight = await page.locator(".hi-cats-handoff").evaluate(
+      (node) => node.getBoundingClientRect().height,
+    );
+    expect(handoffHeight).toBeGreaterThanOrEqual(80);
+    expect(handoffHeight).toBeLessThanOrEqual(140);
+
+    const sticky = page.locator(".hi-sticky-cta");
+    if (mobile) {
+      const collision = await page.evaluate(() => {
+        const stickyEl = document.querySelector(".hi-sticky-cta");
+        const heading = document.getElementById("archive-heading");
+        const lede = document.querySelector("#sana-gore-hazir-modeller .hi-lede");
+        if (!stickyEl || !heading || !lede) return true;
+        const stickyBox = stickyEl.getBoundingClientRect();
+        const hidden = stickyEl.getAttribute("data-hidden") === "true";
+        const style = getComputedStyle(stickyEl);
+        if (hidden || style.opacity === "0" || style.display === "none") return false;
+        const overlaps = (node: Element) => {
+          const box = node.getBoundingClientRect();
+          return !(
+            box.bottom < stickyBox.top ||
+            box.top > stickyBox.bottom ||
+            box.right < stickyBox.left ||
+            box.left > stickyBox.right
+          );
+        };
+        return overlaps(heading) || overlaps(lede);
+      });
+      expect(collision, "sticky CTA overlapping Model Laboratory copy").toBe(false);
+    } else {
+      await expect(sticky).toBeHidden();
+    }
 
     if (mobile) {
       await page.evaluate(() => window.scrollTo(0, 0));
+      await page.screenshot({
+        path: path.join(shots, "home-complete-390.png"),
+        fullPage: true,
+        animations: "disabled",
+      });
       await page.getByRole("banner").getByRole("button", { name: /Menüyü aç/ }).click({
         force: true,
       });
@@ -128,6 +190,7 @@ test.describe("storefront category artwork", () => {
       await drawer.getByRole("button", { name: "Mağaza" }).click();
       await decodeCategoryImages(page, "[aria-label='Mobil menü']");
       await expect(drawer.locator(".store-mega-soon")).toHaveCount(2);
+      await expect(drawer.locator(".store-mobile-cat-grid")).toBeVisible();
       await drawer.screenshot({
         path: path.join(shots, "store-mega-390.png"),
         animations: "disabled",
@@ -154,12 +217,23 @@ test.describe("storefront category artwork", () => {
       () => document.documentElement.scrollWidth - window.innerWidth,
     );
     expect(openOverflow).toBeLessThanOrEqual(1);
+    const megaWidth = await page.locator(".store-mega-panel").evaluate(
+      (node) => node.getBoundingClientRect().width,
+    );
+    expect(megaWidth).toBeGreaterThanOrEqual(760);
+    expect(megaWidth).toBeLessThanOrEqual(920);
     await page.screenshot({
       path: path.join(shots, "store-mega-1440.png"),
       animations: "disabled",
     });
     await page.keyboard.press("Escape");
     await expect(menu).toHaveAttribute("data-open", "false");
+
+    await page.screenshot({
+      path: path.join(shots, "home-complete-1440.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
   });
 
   test("keyboard reaches all seven homepage category cards", async ({ page }, testInfo) => {
@@ -175,9 +249,29 @@ test.describe("storefront category artwork", () => {
     }
   });
 
-  test("no horizontal overflow at 320/360/390/430/1440", async ({ page }, testInfo) => {
+  test("sticky header does not cover the KATEGORİLER heading", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await readyHome(page);
+    await page.goto("/#kategoriler");
+    await page.waitForFunction(
+      () => document.documentElement.classList.contains("motion-ready"),
+      undefined,
+      { timeout: 20_000 },
+    );
+    const covered = await page.evaluate(() => {
+      const heading = document.getElementById("home-cats-heading");
+      const header = document.querySelector("header");
+      if (!heading || !header) return true;
+      const headingBox = heading.getBoundingClientRect();
+      const headerBox = header.getBoundingClientRect();
+      return headingBox.top < headerBox.bottom - 1;
+    });
+    expect(covered, "KATEGORİLER covered by sticky header").toBe(false);
+  });
+
+  test("no horizontal overflow at 320/360/390/430/768/1024/1440", async ({ page }, testInfo) => {
     const mobile = testInfo.project.name.includes("mobile");
-    const widths = mobile ? [320, 360, 390, 430] : [320, 360, 390, 430, 1440];
+    const widths = mobile ? [320, 360, 390, 430, 768] : [320, 360, 390, 430, 768, 1024, 1440];
     await readyHome(page);
     for (const width of widths) {
       await page.setViewportSize({ width, height: 844 });
