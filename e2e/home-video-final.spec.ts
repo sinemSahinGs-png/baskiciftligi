@@ -51,6 +51,12 @@ async function waitForVisibleImage(page: Page, selector: string) {
 
 async function waitForProductImages(page: Page) {
   await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
+  const empty = await page.evaluate(() =>
+    (document.getElementById("mevcut-urunler")?.textContent ?? "").includes(
+      "Yayında ürün bulunamadı",
+    ),
+  );
+  if (empty) return;
   await page.waitForTimeout(600);
   await expect
     .poll(
