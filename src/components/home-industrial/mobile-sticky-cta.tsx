@@ -5,22 +5,34 @@ import { useEffect, useState } from "react";
 
 import { HomeTrackLink } from "@/components/home/home-track-link";
 
+function intersecting(node: Element | null, threshold: number) {
+  if (!node) return false;
+  const box = node.getBoundingClientRect();
+  const visible = Math.min(box.bottom, window.innerHeight) - Math.max(box.top, 0);
+  return visible / Math.max(box.height, 1) >= threshold;
+}
+
 export function MobileStickyCta() {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    const finalCta = document.getElementById("basla");
-    const footer = document.querySelector("footer");
-    if (!finalCta) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        setHidden(entries.some((entry) => entry.isIntersecting));
-      },
-      { threshold: 0.12 },
-    );
-    observer.observe(finalCta);
-    if (footer) observer.observe(footer);
-    return () => observer.disconnect();
+    const update = () => {
+      const paths = document.getElementById("uc-uretim-yolu");
+      const finalCta = document.getElementById("basla");
+      const footer = document.querySelector("footer");
+      setHidden(
+        intersecting(paths, 0.4) ||
+          intersecting(finalCta, 0.12) ||
+          intersecting(footer, 0.12),
+      );
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
   }, []);
 
   return (

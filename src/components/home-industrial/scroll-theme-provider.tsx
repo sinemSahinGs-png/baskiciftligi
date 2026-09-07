@@ -14,12 +14,17 @@ export function ScrollThemeProvider() {
       for (const node of nodes) {
         const box = node.getBoundingClientRect();
         const visible = Math.min(box.bottom, vh) - Math.max(box.top, 0);
-        const ratio = Math.max(0, Math.min(1, visible / Math.max(1, Math.min(box.height, vh * 0.92))));
+        const ratio = Math.max(
+          0,
+          Math.min(1, visible / Math.max(1, Math.min(box.height, vh * 0.92))),
+        );
+        const theme = node.dataset.homeTheme;
         const fill =
-          node.dataset.homeTheme === "orange"
-            ? Math.max(85, Math.round(ratio * 100))
-            : 0;
+          theme === "orange" || theme === "inverse" ? Math.round(ratio * 100) : 0;
         node.style.setProperty("--hi-fill", `${fill}%`);
+        if (theme === "orange" || theme === "inverse") {
+          node.dataset.hiContrast = fill >= 42 ? "dark" : "light";
+        }
       }
     };
 

@@ -148,4 +148,44 @@ test.describe("industrial PNG assets and catalogue preservation", () => {
       await page.locator(`#${id}`).screenshot({ path: path.join(shots, file) });
     }
   });
+
+  test("captures final visual QA shots", async ({ page }) => {
+    test.setTimeout(120_000);
+    const finalShots = path.join("test-results", "home-industrial-final");
+    const sections = [
+      ["ne-uretmek-istiyorsun", "hero-390.png"],
+      ["uc-uretim-yolu", "paths-390.png"],
+      ["sana-gore-hazir-modeller", "archive-390.png"],
+      ["mevcut-urunler", "products-390.png"],
+      ["one-cikan-urunler", "featured-390.png"],
+      ["nasil-calisir", "process-390.png"],
+      ["malzeme-secenekleri", "materials-390.png"],
+      ["kurumsal-uretim", "corporate-390.png"],
+    ] as const;
+
+    for (const width of [320, 390, 430, 1440] as const) {
+      await page.setViewportSize({
+        width,
+        height: width >= 768 ? 900 : 844,
+      });
+      await readyHome(page);
+      await page.locator("footer").scrollIntoViewIfNeeded();
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.screenshot({
+        path: path.join(finalShots, `full-${width}.png`),
+        fullPage: true,
+      });
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(1);
+    }
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await readyHome(page);
+    for (const [id, file] of sections) {
+      await page.locator(`#${id}`).scrollIntoViewIfNeeded();
+      await page.locator(`#${id}`).screenshot({ path: path.join(finalShots, file) });
+    }
+  });
 });

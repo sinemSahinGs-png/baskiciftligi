@@ -4,8 +4,8 @@ import { HomeTrackLink } from "@/components/home/home-track-link";
 
 export function FinalCta() {
   return (
-    <section id="basla" data-home-theme="mono" className="hi-section" aria-labelledby="final-heading">
-      <div className="hi-shell py-6">
+    <section id="basla" data-home-theme="mono" className="hi-section hi-final" aria-labelledby="final-heading">
+      <div className="hi-shell">
         <h2 id="final-heading" className="hi-title">
           FİKRİN HAZIR MI<span className="hi-dot">?</span>
         </h2>

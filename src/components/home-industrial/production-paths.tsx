@@ -15,7 +15,6 @@ const PATHS = [
     copy: "Aklındaki fikri yaz, birlikte şekillendirelim.",
     image: industrialAssets.pathIdeaDragon,
     asset: "path-idea-dragon",
-    meta: "FİKİR > MODEL > GERÇEK",
     action: "focus" as const,
   },
   {
@@ -24,7 +23,6 @@ const PATHS = [
     copy: "Binlerce model seni bekliyor.",
     image: industrialAssets.pathReadyModel,
     asset: "path-ready-model",
-    meta: "ARŞİV / HAZIR MODEL",
     href: "/hazir-modeller" as Route,
     action: "link" as const,
   },
@@ -34,7 +32,6 @@ const PATHS = [
     copy: "Kendi dosyanla hemen başla.",
     image: industrialAssets.pathUploadObject,
     asset: "path-upload-object",
-    meta: "STL / 3MF",
     href: "/model-yukle" as Route,
     action: "link" as const,
   },
@@ -79,8 +76,8 @@ export function ProductionPaths() {
       className="hi-section"
       aria-labelledby="paths-heading"
     >
-      <div className="hi-shell grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] md:items-center">
-        <div>
+      <div className="hi-shell hi-paths-layout">
+        <div className="hi-paths-rail">
           <h2 id="paths-heading" className="sr-only">
             Üç üretim yolu
           </h2>
@@ -96,9 +93,7 @@ export function ProductionPaths() {
               <span className="hi-path-num">{path.id}</span>
               <span>
                 <span className="hi-path-name">{path.title}</span>
-                <span className="mt-1 block text-sm leading-5 text-[color:var(--bc-muted)]">
-                  {path.copy}
-                </span>
+                <span className="hi-path-copy">{path.copy}</span>
               </span>
             </button>
           ))}
@@ -106,7 +101,7 @@ export function ProductionPaths() {
             <HomeTrackLink
               event="ready_model_cta_clicked"
               href={current.href}
-              className="hi-link mt-2"
+              className="hi-link mt-1"
             >
               Hazır modellere git →
             </HomeTrackLink>
@@ -115,7 +110,7 @@ export function ProductionPaths() {
             <HomeTrackLink
               event="upload_cta_clicked"
               href={current.href}
-              className="hi-link mt-2"
+              className="hi-link mt-1"
             >
               Dosyanı yükle →
             </HomeTrackLink>
@@ -138,7 +133,6 @@ export function ProductionPaths() {
               />
             </div>
           ))}
-          <p className="hi-mono absolute right-3 bottom-3 z-10">{current.meta}</p>
           <p className="hi-mono absolute top-3 right-3 z-10">
             {current.id} / 03
           </p>

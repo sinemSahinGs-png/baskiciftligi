@@ -6,17 +6,17 @@ const STEPS = [
   {
     id: "01",
     title: "STL / 3MF YÜKLE",
-    copy: "Dosya güvenle yüklenir. STL ve 3MF kabul edilir; 3MF içindeki yazdırılabilir geometri ayrılır.",
+    copy: "STL ve 3MF kabul edilir.",
   },
   {
     id: "02",
     title: "PRUSASLICER ANALİZİ",
-    copy: "Gerçek geometri PrusaSlicer 2.8.1 ile dilimlenir. Gram ve baskı süresi tahmini üretilmez, ölçülür.",
+    copy: "Gerçek geometri dilimlenir.",
   },
   {
     id: "03",
     title: "GERÇEK FİYATINI GÖR",
-    copy: "Aktif tarife ve imzalı formül uygulanır. KDV ayrıdır. 100 TL kargo sipariş başına bir kez eklenir.",
+    copy: "İmzalı tarife. Sahte fiyat yok.",
   },
 ] as const;
 
@@ -24,29 +24,27 @@ export function QuoteFlow() {
   return (
     <section
       id="modelin-hazir-mi"
-      data-home-theme="mono"
-      className="hi-section"
+      data-home-theme="inverse"
+      className="hi-section hi-inverse"
       aria-labelledby="quote-heading"
     >
       <div className="hi-shell">
-        <h2 id="quote-heading" className="hi-title max-w-[14ch]">
+        <h2 id="quote-heading" className="hi-title max-w-[12ch]">
           DOSYANI YÜKLE, FİYATINI ÖĞREN
         </h2>
-        <div className="mt-6 grid gap-px border border-[color:var(--bc-line)] md:grid-cols-3">
+        <div className="mt-6 grid gap-5 md:grid-cols-3">
           {STEPS.map((step) => (
-            <article key={step.id} className="bg-[color:var(--bc-panel)] p-4">
-              <p className="hi-mono">
-                {step.id}
-              </p>
-              <h3 className="hi-path-name mt-3">{step.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[color:var(--bc-muted)]">{step.copy}</p>
+            <article key={step.id}>
+              <p className="hi-quote-num">{step.id}</p>
+              <h3 className="hi-path-name mt-2">{step.title}</h3>
+              <p className="mt-1 text-sm leading-5 text-[color:var(--bc-muted)]">{step.copy}</p>
             </article>
           ))}
         </div>
         <HomeTrackLink
           event="upload_cta_clicked"
           href={"/model-yukle" as Route}
-          className="hi-btn mt-5"
+          className="hi-btn mt-6"
         >
           Modelini yükle →
         </HomeTrackLink>

@@ -29,6 +29,7 @@ export function MaterialsStrip({ materials }: { materials: Material[] }) {
     };
   });
   const [active, setActive] = useState(cells[0]?.slug ?? "pla");
+  const activeCell = cells.find((item) => item.slug === active) ?? cells[0];
 
   return (
     <section
@@ -39,27 +40,35 @@ export function MaterialsStrip({ materials }: { materials: Material[] }) {
     >
       <div className="hi-shell">
         <div className="flex items-end justify-between gap-3">
-          <div>
-            <h2 id="materials-heading" className="hi-title">
-              MALZEMELER
-            </h2>
-            <p className="hi-lede">Doğru malzeme, daha iyi sonuçlar.</p>
-          </div>
+          <h2 id="materials-heading" className="hi-title">
+            MALZEMELER
+          </h2>
           <Link href={"/malzemeler" as Route} className="hi-link">
             Tümünü gör →
           </Link>
         </div>
-        <div className="mt-5 grid grid-cols-3 gap-px border border-[color:var(--bc-line)]">
+        {activeCell ? (
+          <div className="hi-material-hero mt-5 hi-frame">
+            <SlotImage
+              src={industrialMaterialSrc[activeCell.slug as keyof typeof industrialMaterialSrc]}
+              alt=""
+              fill
+              sizes="100vw"
+              className="object-cover"
+            />
+          </div>
+        ) : null}
+        <div className="hi-material-tabs">
           {cells.map((material) => (
             <button
               key={material.id}
               type="button"
               data-active={material.slug === active ? "true" : "false"}
               data-industrial-asset={`material-${material.slug}`}
-              className="hi-material bg-[color:var(--bc-panel)] text-left"
+              className="hi-material p-3"
               onClick={() => setActive(material.slug)}
             >
-              <span className="relative block aspect-square overflow-hidden">
+              <span className="hi-material-thumb">
                 <SlotImage
                   src={industrialMaterialSrc[material.slug as keyof typeof industrialMaterialSrc]}
                   alt=""
@@ -68,8 +77,8 @@ export function MaterialsStrip({ materials }: { materials: Material[] }) {
                   className="object-cover"
                 />
               </span>
-              <span className="block p-3">
-                <span className="hi-path-name text-[1.05rem]">{material.name}</span>
+              <span className="mt-0 block md:mt-3">
+                <span className="hi-path-name text-[1.15rem]">{material.name}</span>
                 <span className="mt-1 block text-sm text-[color:var(--bc-muted)]">
                   {material.trait}
                 </span>

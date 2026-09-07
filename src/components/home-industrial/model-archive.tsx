@@ -40,7 +40,7 @@ export function ModelArchive({ models }: { models: ReadyModelCard[] }) {
       aria-labelledby="archive-heading"
     >
       <div className="hi-shell">
-        <div className="flex items-end justify-between gap-3 border-b border-[color:var(--bc-line)] pb-3">
+        <div className="flex items-end justify-between gap-3">
           <h2 id="archive-heading" className="hi-title">
             MODEL ARŞİVİ
           </h2>
@@ -53,26 +53,18 @@ export function ModelArchive({ models }: { models: ReadyModelCard[] }) {
           </HomeTrackLink>
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1.4fr)_5.5rem]">
-          <div>
-            <CadFrame
-              className="relative aspect-[1513/1040] overflow-hidden bg-[color:var(--bc-panel)]"
-              data-industrial-asset={current.asset}
-            >
-              <SlotImage
-                src={current.src}
-                alt=""
-                fill
-                sizes="(max-width: 768px) 100vw, 70vw"
-                className="object-cover object-center"
-              />
-            </CadFrame>
-            <p className="hi-mono mt-3">Görsel arşiv · tanıtım karesi</p>
-            <p className="mt-1 text-sm text-[color:var(--bc-muted)]">
-              {current.label}. Bu kare satılık ürün kaydı değildir.
-            </p>
-          </div>
-          <div className="flex gap-2 md:flex-col">
+        <div className="hi-archive-layout mt-5">
+          <CadFrame className="hi-archive-main" data-industrial-asset={current.asset}>
+            <SlotImage
+              src={current.src}
+              alt=""
+              fill
+              sizes="(max-width: 768px) 88vw, 70vw"
+              className="object-cover object-center"
+            />
+            <p className="hi-mono absolute bottom-3 left-3 z-10">Görsel arşiv</p>
+          </CadFrame>
+          <div className="hi-archive-thumbs">
             {EDITORIAL.map((item, index) => (
               <button
                 key={item.asset}
@@ -81,7 +73,6 @@ export function ModelArchive({ models }: { models: ReadyModelCard[] }) {
                 aria-label={item.label}
                 data-active={index === active ? "true" : "false"}
                 data-industrial-asset={item.asset}
-                className="relative aspect-square min-h-11 min-w-11 flex-1 overflow-hidden border border-[color:var(--bc-line)] md:flex-none"
               >
                 {index === active ? (
                   <span className="hi-frame absolute inset-0" aria-hidden="true" />
@@ -90,7 +81,7 @@ export function ModelArchive({ models }: { models: ReadyModelCard[] }) {
                   src={item.src}
                   alt=""
                   fill
-                  sizes="96px"
+                  sizes="88px"
                   className="object-cover"
                 />
               </button>
@@ -99,26 +90,21 @@ export function ModelArchive({ models }: { models: ReadyModelCard[] }) {
         </div>
 
         {liveModels.length > 0 ? (
-          <div className="mt-5 border-t border-[color:var(--bc-line)] pt-4">
+          <div className="mt-4">
             <p className="hi-kicker">Canlı hazır modeller</p>
-            <ul className="mt-3 grid gap-px border border-[color:var(--bc-line)]">
+            <ul className="mt-2 grid gap-px border border-[color:var(--bc-line)]">
               {liveModels.map((model) => (
                 <li
                   key={model.id}
                   className="flex min-h-11 items-center justify-between gap-3 bg-[color:var(--bc-panel)] px-3 py-2"
                 >
-                  <span>
-                    <span className="block text-sm font-semibold">{model.name}</span>
-                    <span className="text-[0.75rem] text-[color:var(--bc-muted)]">
-                      {model.category}
-                    </span>
-                  </span>
+                  <span className="block text-sm font-semibold">{model.name}</span>
                   <HomeTrackLink
                     event="ready_model_cta_clicked"
                     href={model.href as Route}
                     className="hi-link shrink-0 text-[0.8rem]"
                   >
-                    Modeli incele →
+                    İncele →
                   </HomeTrackLink>
                 </li>
               ))}

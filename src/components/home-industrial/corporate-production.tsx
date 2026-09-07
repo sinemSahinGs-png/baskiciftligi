@@ -18,19 +18,15 @@ export function CorporateProduction() {
           alt=""
           fill
           sizes="100vw"
-          className="object-cover object-center opacity-55"
+          className="object-cover object-[55%_40%]"
         />
       </div>
       <div className="hi-shell hi-corporate-copy">
-        <h2 id="corporate-heading" className="hi-title max-w-[12ch]">
+        <h2 id="corporate-heading" className="hi-title max-w-[11ch]">
           ÖLÇEKLENEBİLİR ÜRETİM<span className="hi-dot">.</span>
           <br />
           TEK ÜRETİM STANDARDI<span className="hi-dot">.</span>
         </h2>
-        <p className="hi-lede">
-          Tekrarlanabilir parti işleri, kontrollü kalite ve kurumsal teklif aynı üretim
-          standardında yürür.
-        </p>
         <HomeTrackLink
           event="corporate_cta_clicked"
           href={"/kurumsal-teklif" as Route}

@@ -8,26 +8,26 @@ import { SlotImage } from "@/components/home-industrial/slot-image";
 import { CadFrame } from "@/components/home-industrial/technical-grid";
 
 const STAGES = [
-  { id: "01", title: "DİLİMLEME", copy: "Model hazırlanır." },
-  { id: "02", title: "ÜRETİM", copy: "Fikrin üretilir." },
-  { id: "03", title: "KALİTE KONTROL", copy: "Tüm detaylar kontrol edilir." },
-  { id: "04", title: "PAKETLEME", copy: "Güvenle size ulaşır." },
+  { id: "01", title: "DİLİMLEME", copy: "Hazırlık" },
+  { id: "02", title: "ÜRETİM", copy: "Baskı" },
+  { id: "03", title: "KALİTE KONTROL", copy: "Kontrol" },
+  { id: "04", title: "PAKETLEME", copy: "Sevkiyat" },
 ] as const;
 
 export function ProductionProcess() {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
-  const [wide, setWide] = useState(false);
+  const [allowPin, setAllowPin] = useState(false);
   const stageIndex = Math.min(3, Math.floor(progress * 4));
-  const pinned = reduce === false && wide;
+  const pinned = allowPin && reduce !== true;
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 768px)");
-    const update = () => setWide(media.matches);
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setAllowPin(!motion.matches);
     update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    motion.addEventListener("change", update);
+    return () => motion.removeEventListener("change", update);
   }, []);
 
   useEffect(() => {
@@ -58,12 +58,11 @@ export function ProductionProcess() {
       aria-labelledby="process-heading"
     >
       <div className="hi-process-pin hi-shell">
-        <p className="hi-kicker">FİKRİNİN YOLCULUĞU</p>
-        <h2 id="process-heading" className="hi-title mt-2">
+        <h2 id="process-heading" className="hi-title">
           ÜRETİM SÜRECİ
         </h2>
         <CadFrame
-          className="hi-process-scene mt-5 overflow-hidden bg-[color:var(--bc-panel)]"
+          className="hi-process-scene mt-4 overflow-hidden bg-[color:var(--bc-panel)]"
           data-industrial-asset="production-tunnel"
         >
           <SlotImage
@@ -71,31 +70,30 @@ export function ProductionProcess() {
             alt=""
             fill
             sizes="100vw"
-            className="object-cover object-[center_70%]"
+            className="object-cover object-[center_58%]"
           />
           <div className="hi-scan-beam pointer-events-none absolute inset-y-0 left-[42%] z-10 w-px" />
           <div
-            className="hi-vase pointer-events-none absolute bottom-[16%] left-[8%] z-10 h-[8%] w-[18%] border border-[color:var(--bc-cyan)]"
+            className="hi-vase pointer-events-none absolute bottom-[28%] left-[10%] z-10 h-[10%] w-[20%] border border-[color:var(--bc-cyan)]"
             aria-hidden="true"
           />
+          <ol className="hi-process-overlay">
+            {STAGES.map((item, index) => (
+              <li
+                key={item.id}
+                data-process-step={item.id}
+                data-active={index === stageIndex ? "true" : "false"}
+                className={index === stageIndex ? "text-[color:var(--bc-orange)]" : ""}
+              >
+                <p className="hi-mono">{item.id}</p>
+                <p className="hi-path-name mt-1 text-[1.05rem]">{item.title}</p>
+              </li>
+            ))}
+          </ol>
         </CadFrame>
-        <div className="hi-rail mt-4" aria-hidden="true">
+        <div className="hi-rail mt-3" aria-hidden="true">
           <span />
         </div>
-        <ol className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-          {STAGES.map((item, index) => (
-            <li
-              key={item.id}
-              data-process-step={item.id}
-              data-active={index === stageIndex ? "true" : "false"}
-              className={index === stageIndex ? "text-[color:var(--bc-orange)]" : ""}
-            >
-              <p className="hi-mono">{item.id}</p>
-              <p className="hi-path-name mt-1 text-[1.05rem]">{item.title}</p>
-              <p className="mt-1 text-sm text-[color:var(--bc-muted)]">{item.copy}</p>
-            </li>
-          ))}
-        </ol>
       </div>
     </section>
   );

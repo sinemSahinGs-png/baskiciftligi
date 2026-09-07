@@ -243,15 +243,14 @@ export function IdeaCommand() {
             <span className="hi-frame pointer-events-none absolute inset-0" />
           </div>
           <div className="hi-hero-copy">
-            <p className="hi-mono mb-4">+ TASARLA ÜRET YAŞAT</p>
-            <h1 id="idea-command-heading" className="hi-display relative max-w-[11ch]">
+            <h1 id="idea-command-heading" className="hi-display relative max-w-[9ch]">
               FİKRİNİ YAZ<span className="hi-dot">.</span>
               <br />
               BİZ ÜRETELİM<span className="hi-dot">.</span>
             </h1>
             <p className="hi-lede">Hayalinden gerçeğe, 3D üretim burada başlar.</p>
 
-        <form onSubmit={onSubmit} className="relative mt-6 max-w-2xl">
+        <form onSubmit={onSubmit} className="relative mt-5 max-w-2xl">
           <label htmlFor={inputId} className="sr-only">
             Üretmek istediğin nesneyi yaz
           </label>
@@ -274,18 +273,12 @@ export function IdeaCommand() {
               aria-label="Fikrine uygun modelleri bul"
               className="hi-command-go"
             >
-              <ArrowRight className="size-5" aria-hidden="true" />
+              <ArrowRight className="size-6" aria-hidden="true" />
             </button>
           </div>
-          <p className="hi-link mt-3 text-[0.8rem]">
-            FİKRİME UYGUN MODELLERİ BUL
-          </p>
-          <p className="mt-1 text-[0.75rem] text-[color:var(--bc-muted)]">
-            Ücretsiz model keşfi · Gerçek dilimleme · Anlık fiyat
-          </p>
         </form>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           {CHIPS.map((chip) => (
             <button
               key={chip.label}
