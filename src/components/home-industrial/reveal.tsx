@@ -5,5 +5,9 @@ export function Reveal({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={["hi-reveal", className].filter(Boolean).join(" ")}>{children}</div>;
+  return (
+    <div className={["hi-reveal", className].filter(Boolean).join(" ")} data-hi-reveal="">
+      {children}
+    </div>
+  );
 }

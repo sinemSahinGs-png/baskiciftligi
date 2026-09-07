@@ -1,8 +1,9 @@
 "use client";
 
 import Image, { type ImageProps } from "next/image";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { imageIsReady } from "@/components/media/image-ready";
 import { ModelImagePlaceholder } from "@/components/media/model-image-placeholder";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ function SafeImageInner({
 }: SafeImageProps) {
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const imageRef = useRef<HTMLImageElement | null>(null);
   const reportedRef = useRef<{ load?: string; fail?: string }>({});
 
   const reportLoad = useCallback(
@@ -58,6 +60,31 @@ function SafeImageInner({
     [onPermanentFail],
   );
 
+  const markReady = useCallback(
+    (image: HTMLImageElement) => {
+      if (!src || failed) return;
+      if (!imageIsReady(image)) return;
+      setLoaded(true);
+      reportLoad(src);
+    },
+    [failed, reportLoad, src],
+  );
+
+  useEffect(() => {
+    const image = imageRef.current;
+    if (!image || !src || failed) return;
+
+    const sync = () => markReady(image);
+    sync();
+    image.addEventListener("load", sync);
+    const observer = new IntersectionObserver(() => sync(), { threshold: 0.01 });
+    observer.observe(image);
+    return () => {
+      image.removeEventListener("load", sync);
+      observer.disconnect();
+    };
+  }, [failed, markReady, src]);
+
   const showImage = Boolean(src) && !failed;
 
   return (
@@ -70,6 +97,7 @@ function SafeImageInner({
       {showImage ? (
         <Image
           {...props}
+          ref={imageRef}
           src={src as string}
           alt={alt}
           unoptimized={shouldUnoptimize(src as string)}
@@ -84,20 +112,15 @@ function SafeImageInner({
           }}
           onLoad={(event) => {
             const image = event.currentTarget;
-            if (image.naturalWidth < 8 || image.naturalHeight < 8) {
+            if (!imageIsReady(image)) {
               setFailed(true);
               reportFail(src as string);
               return;
             }
-            setLoaded(true);
-            reportLoad(src as string);
+            markReady(image);
             onLoad?.(event);
           }}
-          className={cn(
-            "transition-opacity duration-300 motion-reduce:transition-none",
-            loaded ? "opacity-100" : "opacity-0",
-            className,
-          )}
+          className={cn(className)}
         />
       ) : null}
     </>

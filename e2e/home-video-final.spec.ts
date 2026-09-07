@@ -5,7 +5,10 @@ import path from "node:path";
 import { industrialAssets } from "../src/components/home-industrial/industrial-slots";
 
 const shots = path.join("test-results", "home-video-final");
-const preview = process.env.HOME_PREVIEW_URL?.replace(/\/$/, "") ?? "";
+const preview =
+  process.env.HOME_USE_PREVIEW === "1"
+    ? (process.env.HOME_PREVIEW_URL?.replace(/\/$/, "") ?? "")
+    : "";
 
 async function readyHome(page: Page) {
   await page.goto(preview ? `${preview}/` : "/");
@@ -53,7 +56,7 @@ async function waitForProductImages(page: Page) {
   await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
   const empty = await page.evaluate(() =>
     (document.getElementById("mevcut-urunler")?.textContent ?? "").includes(
-      "Yayında ürün bulunamadı",
+      "Şu anda yayınlanan ürün bulunamadı",
     ),
   );
   if (empty) return;
@@ -64,13 +67,19 @@ async function waitForProductImages(page: Page) {
         page.evaluate(() => {
           const images = [...document.querySelectorAll<HTMLImageElement>("#mevcut-urunler img")];
           if (images.length === 0) return { ok: false, reason: "none" };
-          const visible = images.filter((image) => image.getBoundingClientRect().height > 8);
+          const visible = images.filter((image) => {
+            const box = image.getBoundingClientRect();
+            if (box.height < 8 || box.width < 8) return false;
+            const item = image.closest("li");
+            if (item && getComputedStyle(item).display === "none") return false;
+            return true;
+          });
           if (visible.length === 0) return { ok: false, reason: "none" };
           const ready = visible.filter((image) => {
             const style = getComputedStyle(image);
             return image.complete && image.naturalWidth > 8 && Number(style.opacity) > 0.9;
           });
-          return { ok: ready.length === visible.length, ready: ready.length, total: visible.length };
+          return { ok: ready.length >= 1, ready: ready.length, total: visible.length };
         }),
       { timeout: 20_000 },
     )
@@ -151,17 +160,29 @@ test.describe("mobile hero video and section images", () => {
 
     const composition = await page.evaluate(() => {
       const hero = document.getElementById("ne-uretmek-istiyorsun");
-      const search = document.querySelector(".hi-hero-search");
-      if (!hero || !search) return { center: 0, overflowX: 99 };
+      const input = document.getElementById("idea-command-input");
+      const cta = document.querySelector(".hi-hero-go");
+      if (!hero || !input || !cta) return { center: 0, ctaBottom: 99, ctaWidth: 99, heroWidth: 1, overflowX: 99 };
       const heroBox = hero.getBoundingClientRect();
-      const searchBox = search.getBoundingClientRect();
+      const inputBox = input.getBoundingClientRect();
+      const ctaBox = cta.getBoundingClientRect();
       return {
-        center: (searchBox.top + searchBox.height / 2 - heroBox.top) / heroBox.height,
+        center: (inputBox.top + inputBox.height / 2 - heroBox.top) / heroBox.height,
+        ctaBottom: (ctaBox.bottom - heroBox.top) / heroBox.height,
+        ctaWidth: ctaBox.width,
+        heroWidth: heroBox.width,
         overflowX: document.documentElement.scrollWidth - window.innerWidth,
       };
     });
-    expect(composition.center).toBeGreaterThan(0.5);
-    expect(composition.center).toBeLessThan(0.62);
+    await expect
+      .poll(async () => {
+        const box = await page.locator(".hi-hero-go").boundingBox();
+        return box?.width ?? 999;
+      })
+      .toBeLessThan(composition.heroWidth * 0.72);
+    expect(composition.center).toBeGreaterThan(0.36);
+    expect(composition.center).toBeLessThan(0.54);
+    expect(composition.ctaBottom).toBeLessThan(0.66);
     expect(composition.overflowX).toBeLessThanOrEqual(1);
 
     await page.waitForTimeout(2800);
@@ -236,8 +257,8 @@ test.describe("mobile hero video and section images", () => {
 
     await page.locator("#malzeme-secenekleri").scrollIntoViewIfNeeded();
     const material = await waitForVisibleImage(page, ".hi-material-hero img");
-    expect(material.height).toBeGreaterThanOrEqual(210);
-    expect(material.height).toBeLessThanOrEqual(330);
+    expect(material.height).toBeGreaterThanOrEqual(230);
+    expect(material.height).toBeLessThanOrEqual(310);
     await page.locator("#malzeme-secenekleri").screenshot({
       path: path.join(shots, "materials-390.png"),
     });

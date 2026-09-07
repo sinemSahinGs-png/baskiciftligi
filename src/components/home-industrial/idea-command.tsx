@@ -337,15 +337,15 @@ export function IdeaCommand() {
               onKeyDown={onKeyDown}
               placeholder="Örneğin: Beyaz Yatak Odası Lambası"
             />
-            <button
-              type="submit"
-              disabled={!canSearch || status === "searching"}
-              className="hi-hero-go"
-            >
-              MODEL ÖNERİLERİNİ BUL
-              <span aria-hidden="true"> →</span>
-            </button>
           </div>
+          <button
+            type="submit"
+            disabled={!canSearch || status === "searching"}
+            className="hi-hero-go"
+          >
+            MODEL ÖNERİLERİNİ BUL
+            <span aria-hidden="true"> →</span>
+          </button>
         </form>
 
         <Link

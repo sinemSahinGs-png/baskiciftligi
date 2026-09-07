@@ -50,6 +50,7 @@ export function MaterialsStrip({ materials }: { materials: Material[] }) {
         {activeCell ? (
           <div className="hi-material-hero mt-5 hi-frame">
             <SlotImage
+              key={activeCell.slug}
               src={industrialMaterialSrc[activeCell.slug as keyof typeof industrialMaterialSrc]}
               alt=""
               fill

@@ -75,7 +75,7 @@ export function ProductionProcess() {
             alt=""
             fill
             sizes="100vw"
-            className="object-cover object-[50%_46%]"
+            className="object-cover"
           />
           <div className="hi-scan-beam pointer-events-none absolute inset-y-0 left-[42%] z-10 w-px" />
           <div

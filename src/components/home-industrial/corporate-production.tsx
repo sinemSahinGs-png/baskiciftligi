@@ -18,7 +18,7 @@ export function CorporateProduction() {
           alt=""
           fill
           sizes="100vw"
-          className="object-cover object-[48%_42%]"
+          className="object-cover"
         />
       </div>
       <div className="hi-shell hi-corporate-copy">
