@@ -17,7 +17,7 @@ const SECTION_IDS = [
 ] as const;
 
 const HEADINGS = [
-  /FİKRİNİ YAZ/,
+  /SEN TARİF ET/,
   "Üç üretim yolu",
   "MODEL ARŞİVİ",
   "MAĞAZA ÜRÜNLERİ",
@@ -114,6 +114,10 @@ async function assertSectionsLaidOut(page: Page) {
       "auto",
     );
   }
+  const processToMaterials = metrics.gaps.find(
+    (gap) => gap.from === "nasil-calisir" && gap.to === "malzeme-secenekleri",
+  );
+  expect(processToMaterials?.gap, "process → materials section gap").toBeLessThanOrEqual(8);
   for (const gap of metrics.gaps) {
     expect(gap.gap, `gap ${gap.from} → ${gap.to}`).toBeGreaterThanOrEqual(0);
     expect(gap.gap, `unexplained gap ${gap.from} → ${gap.to}`).toBeLessThan(500);

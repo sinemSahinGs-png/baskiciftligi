@@ -24,10 +24,15 @@ export function ProductionProcess() {
 
   useEffect(() => {
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setAllowPin(!motion.matches);
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const update = () => setAllowPin(!motion.matches && desktop.matches);
     update();
     motion.addEventListener("change", update);
-    return () => motion.removeEventListener("change", update);
+    desktop.addEventListener("change", update);
+    return () => {
+      motion.removeEventListener("change", update);
+      desktop.removeEventListener("change", update);
+    };
   }, []);
 
   useEffect(() => {

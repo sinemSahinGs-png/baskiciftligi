@@ -25,14 +25,14 @@ async function readyHome(page: Page) {
 }
 
 test.describe("industrial homepage", () => {
-  test("chips fill the idea field without calling the API", async ({ page }) => {
+  test("typing an idea does not call the API until submit", async ({ page }) => {
     let called = false;
     await page.route("**/api/home/idea-search", async (route) => {
       called = true;
       await route.fulfill({ status: 500, body: "{}" });
     });
     await readyHome(page);
-    await page.getByRole("button", { name: "Telefon standı" }).click();
+    await page.locator("#idea-command-input").fill("telefon standı");
     await expect(page.locator("#idea-command-input")).toHaveValue("telefon standı");
     expect(called).toBe(false);
   });
@@ -66,7 +66,7 @@ test.describe("industrial homepage", () => {
     });
     await readyHome(page);
     await page.locator("#idea-command-input").fill("telefon standı");
-    await page.getByRole("button", { name: "Fikrine uygun modelleri bul" }).click();
+    await page.getByRole("button", { name: /MODEL ÖNERİLERİNİ BUL/i }).click();
     await expect(page.getByRole("link", { name: "Uygunluğu kontrol et" })).toBeVisible();
     expect(used).toBe(true);
   });

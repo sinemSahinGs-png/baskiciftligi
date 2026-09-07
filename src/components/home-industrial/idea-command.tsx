@@ -2,12 +2,24 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useCallback, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
+import { ArrowUpRight } from "lucide-react";
+import { useReducedMotion } from "motion/react";
 
+import { HeroVideo } from "@/components/home-industrial/hero-video";
+import { HeroTypewriter } from "@/components/home-industrial/hero-typewriter";
 import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
 import { SlotImage } from "@/components/home-industrial/slot-image";
-import { industrialAssets } from "@/components/home-industrial/industrial-slots";
+import { HERO_IDEA_EXAMPLES } from "@/components/home-industrial/hero-media";
 import { externalQuoteCtaLabel } from "@/domain/external-models/quote-action";
 import { trackHomeEvent } from "@/lib/home/analytics";
 import { announceStatus } from "@/lib/motion";
@@ -35,13 +47,6 @@ interface IdeaSearchResponse {
   closest?: boolean;
   retryAfterSeconds?: number;
 }
-
-const CHIPS = [
-  { label: "Telefon standı", query: "telefon standı" },
-  { label: "Dekor", query: "dekor" },
-  { label: "Yedek parça", query: "yedek parça" },
-  { label: "İsme özel anahtarlık", query: "isme özel anahtarlık" },
-] as const;
 
 const PHASES = [
   { at: 0, label: "Fikrin modele dönüştürülüyor" },
@@ -85,10 +90,22 @@ function ideaQuoteAction(item: IdeaSearchCard) {
   return item.pricingAllowed ? "verify" : "inspect";
 }
 
+function emptySubscribe() {
+  return () => undefined;
+}
+
 export function IdeaCommand() {
   const inputId = "idea-command-input";
   const liveId = useId();
+  const sectionRef = useRef<HTMLElement>(null);
+  const pauseRef = useRef(false);
+  const reduceMotion = useReducedMotion() === true;
+  const isClient = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [query, setQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [halted, setHalted] = useState(false);
+  const [hadControl, setHadControl] = useState(false);
+  const [inView, setInView] = useState(true);
   const [status, setStatus] = useState<SearchUiStatus>("idle");
   const [phase, setPhase] = useState<(typeof PHASES)[number]["label"]>(PHASES[0].label);
   const [items, setItems] = useState<IdeaSearchCard[]>([]);
@@ -100,6 +117,25 @@ export function IdeaCommand() {
   const phaseTimer = useRef<number>(0);
 
   const canSearch = query.trim().length >= 2;
+  const typewriterEnabled =
+    isClient && !query && !focused && !halted && inView && status !== "searching";
+
+  useEffect(() => {
+    pauseRef.current = !inView;
+  }, [inView]);
+
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setInView(entries.some((entry) => entry.isIntersecting && entry.intersectionRatio > 0.2));
+      },
+      { threshold: [0, 0.2, 0.5] },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   const applyPayload = useCallback(
     (payload: IdeaSearchResponse, httpStatus?: number) => {
@@ -209,6 +245,10 @@ export function IdeaCommand() {
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Escape") {
+      setHalted(true);
+      return;
+    }
     if (event.key === "Enter") {
       event.preventDefault();
       void runSearch(query);
@@ -216,93 +256,113 @@ export function IdeaCommand() {
   }
 
   const visibleItems = items.slice(0, visibleCount);
+  const suggesting = typewriterEnabled && !query;
 
   return (
     <section
+      ref={sectionRef}
       id="ne-uretmek-istiyorsun"
       data-home-theme="mono"
-      className="hi-section relative pt-6"
+      data-hero-first-example={HERO_IDEA_EXAMPLES[0]}
+      className="hi-hero"
       aria-labelledby="idea-command-heading"
     >
-      <TechnicalGrid />
-      <div className="hi-shell relative">
-        <div className="hi-hero-layout">
-          <div
-            className="hi-hero-visual"
-            data-industrial-asset="hero-wireframe-vase"
-            aria-hidden="true"
-          >
-            <SlotImage
-              src={industrialAssets.heroWireframeVase}
-              alt=""
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 52vw"
-              className="object-cover object-[100%_18%]"
-            />
-            <span className="hi-frame pointer-events-none absolute inset-0" />
-          </div>
-          <div className="hi-hero-copy">
-            <h1 id="idea-command-heading" className="hi-display relative max-w-[9ch]">
-              FİKRİNİ YAZ<span className="hi-dot">.</span>
-              <br />
-              BİZ ÜRETELİM<span className="hi-dot">.</span>
-            </h1>
-            <p className="hi-lede">Hayalinden gerçeğe, 3D üretim burada başlar.</p>
+      <HeroVideo reducedMotion={reduceMotion} />
+      <TechnicalGrid className="hi-hero-grid" />
+      <div className="hi-hero-vignette" aria-hidden="true" />
+      <div className="hi-hero-fade" aria-hidden="true" />
+      <div className="hi-hero-path" aria-hidden="true" />
+      <div className="hi-hero-inner hi-shell">
+        <div className="hi-hero-copy">
+          <p className="hi-kicker">ÖZEL ÜRETİM · TEK PARÇA</p>
+          <h1 id="idea-command-heading" className="hi-hero-display">
+            SEN TARİF ET.
+            <br />
+            BİZ ÜRETELİM.
+          </h1>
+          <span className="hi-hero-rule" aria-hidden="true" />
+          <p className="hi-hero-lede">
+            Fikrini yaz, sana uygun modelleri bulalım ve gerçek üretim maliyetini hesaplayalım.
+          </p>
+        </div>
 
-        <form onSubmit={onSubmit} className="relative mt-5 max-w-2xl">
+        <div className="hi-hero-spacer" aria-hidden="true" />
+
+        <form onSubmit={onSubmit} className="hi-hero-form">
           <label htmlFor={inputId} className="sr-only">
-            Üretmek istediğin nesneyi yaz
+            Ne üretmek istediğinizi açıklayın
           </label>
-          <div className={cn("hi-command-field", status === "searching" && "hi-scan")}>
+          <div
+            className={cn("hi-hero-field", status === "searching" && "hi-hero-scan")}
+            data-suggesting={suggesting ? "true" : "false"}
+            data-status={status}
+          >
+            {suggesting ? (
+              <HeroTypewriter
+                reducedMotion={reduceMotion}
+                restart={hadControl}
+                pauseRef={pauseRef}
+              />
+            ) : null}
             <input
               id={inputId}
               name="idea"
               maxLength={160}
               value={query}
+              autoComplete="off"
+              spellCheck={false}
               onChange={(event) => {
+                setHadControl(true);
+                setHalted(true);
                 setQuery(event.target.value.slice(0, 160));
                 setStatus(event.target.value.trim() ? "typing" : "idle");
               }}
+              onFocus={() => {
+                setHadControl(true);
+                setFocused(true);
+                setHalted(true);
+              }}
+              onClick={() => {
+                setHadControl(true);
+                setFocused(true);
+                setHalted(true);
+              }}
+              onPaste={() => {
+                setHadControl(true);
+                setHalted(true);
+              }}
+              onBlur={() => {
+                setFocused(false);
+                if (!query) setHalted(false);
+              }}
               onKeyDown={onKeyDown}
-              placeholder="Ne üretmek istiyorsun?"
+              placeholder="Örneğin: Beyaz Yatak Odası Lambası"
             />
             <button
               type="submit"
-              disabled={!canSearch && status !== "searching"}
-              aria-label="Fikrine uygun modelleri bul"
-              className="hi-command-go"
+              disabled={!canSearch || status === "searching"}
+              className="hi-hero-go"
             >
-              <ArrowRight className="size-6" aria-hidden="true" />
+              MODEL ÖNERİLERİNİ BUL
+              <span aria-hidden="true"> →</span>
             </button>
           </div>
         </form>
 
-        <div className="mt-3 flex flex-wrap gap-2">
-          {CHIPS.map((chip) => (
-            <button
-              key={chip.label}
-              type="button"
-              className="hi-chip"
-              onClick={() => {
-                setQuery(chip.query);
-                setStatus("typing");
-                document.getElementById(inputId)?.focus();
-              }}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
-          </div>
-        </div>
+        <Link
+          href={"/model-yukle" as Route}
+          onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
+          className="hi-hero-upload"
+        >
+          VEYA STL / 3MF DOSYANI YÜKLE
+        </Link>
 
         {status === "searching" ? (
-          <p className="mt-4 text-sm font-medium">{phase}</p>
+          <p className="hi-hero-results mt-4 text-sm font-medium">{phase}</p>
         ) : null}
 
         {status === "ok" && visibleItems.length > 0 ? (
-          <div className="mt-5">
+          <div className="hi-hero-results mt-5">
             {closest ? (
               <p className="mb-3 text-sm text-[color:var(--bc-muted)]">
                 Tam eşleşme yok. Bunlar fikrine en yakın modeller.
@@ -332,7 +392,7 @@ export function IdeaCommand() {
         status === "rate_limited" ||
         status === "unavailable" ||
         status === "blocked" ? (
-          <div className="mt-5 border border-[color:var(--bc-line)] p-4">
+          <div className="hi-hero-results mt-5 border border-[color:var(--bc-line)] p-4">
             <h3 className="font-medium">
               {status === "unavailable"
                 ? "Bağlantı hatası"

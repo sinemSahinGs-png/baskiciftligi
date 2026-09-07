@@ -87,6 +87,19 @@ test.describe("Nasıl çalışır process section", () => {
         path: path.join(shots, `mobile-step-${step}.png`),
       });
     }
+    await expect(mobile).toHaveAttribute("data-process-pinned", "false");
+    const processHeight = await mobile.evaluate((node) => node.getBoundingClientRect().height);
+    expect(processHeight).toBeLessThan(915 * 1.35);
+    const contentGap = await page.evaluate(() => {
+      const scene = document.querySelector("#nasil-calisir .hi-process-scene");
+      const heading = document.querySelector("#materials-heading");
+      if (!scene || !heading) return 9999;
+      const sceneBox = scene.getBoundingClientRect();
+      const headingBox = heading.getBoundingClientRect();
+      return headingBox.top + window.scrollY - (sceneBox.bottom + window.scrollY);
+    });
+    expect(contentGap).toBeGreaterThanOrEqual(0);
+    expect(contentGap).toBeLessThanOrEqual(96);
     await expect(
       page.getByRole("heading", { name: "MALZEMELER" }),
     ).toBeVisible();

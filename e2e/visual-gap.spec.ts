@@ -249,7 +249,7 @@ test.describe("visual gap and visibility audit", () => {
         .map((node) => node.textContent?.replace(/\s+/g, " ").trim() ?? "")
         .filter(Boolean);
     });
-    expect(order[0]).toMatch(/FİKRİNİ YAZ/i);
+    expect(order[0]).toMatch(/SEN TARİF ET/i);
     expect(order).toContain("Üç üretim yolu");
     expect(order).toContain("MODEL ARŞİVİ");
     expect(order).toContain("MAĞAZA ÜRÜNLERİ");

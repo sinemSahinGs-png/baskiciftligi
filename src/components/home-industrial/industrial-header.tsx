@@ -13,6 +13,8 @@ export function IndustrialHeaderEffects() {
       const y = window.scrollY;
       const goingDown = y > last;
       last = y;
+      if (y > 12) root.dataset.headerScrolled = "";
+      else delete root.dataset.headerScrolled;
       const next = y > 18 && goingDown;
       if (next !== compact) {
         compact = next;
@@ -31,6 +33,7 @@ export function IndustrialHeaderEffects() {
       window.removeEventListener("scroll", update);
       delete root.dataset.homeIndustrial;
       delete root.dataset.headerCompact;
+      delete root.dataset.headerScrolled;
     };
   }, []);
 

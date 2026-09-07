@@ -19,13 +19,13 @@ async function overflowX(page: Page) {
 const heroSection = (page: Page) => page.locator("#ne-uretmek-istiyorsun");
 const ideaInput = (page: Page) => page.locator("#ne-uretmek-istiyorsun input[name='idea']");
 const searchButton = (page: Page) =>
-  page.getByRole("button", { name: "Fikrine uygun modelleri bul" });
+  page.getByRole("button", { name: /MODEL ÖNERİLERİNİ BUL/i });
 
 test.describe("homepage discovery redesign", () => {
   test("keeps the idea command and production CTAs", async ({ page }) => {
     await readyHome(page);
     const hero = heroSection(page);
-    await expect(hero.getByRole("heading", { name: /FİKRİNİ YAZ/i })).toBeVisible();
+    await expect(hero.getByRole("heading", { name: /SEN TARİF ET/i })).toBeVisible();
     await expect(ideaInput(page)).toBeVisible();
     await expect(page.getByRole("link", { name: /Modelini yükle/i }).first()).toBeVisible();
   });
@@ -34,7 +34,7 @@ test.describe("homepage discovery redesign", () => {
     await readyHome(page);
     const idea = page.locator("#ne-uretmek-istiyorsun");
     await idea.scrollIntoViewIfNeeded();
-    await idea.getByRole("button", { name: "Telefon standı" }).click();
+    await idea.locator("input[name='idea']").fill("telefon standı");
     await expect(idea.locator("input[name='idea']")).toHaveValue("telefon standı");
     await expect(idea.getByRole("button", { name: "Daha fazla göster" })).toHaveCount(0);
     await expect(idea.getByRole("link", { name: "Modeli incele" })).toHaveCount(0);
@@ -170,7 +170,7 @@ test.describe("homepage discovery redesign", () => {
     await searchButton(page).click();
     await expect(idea.getByRole("heading", { name: "Tam eşleşme bulamadık" })).toBeVisible();
     await expect(idea.getByRole("link", { name: "Hazır modellere git" })).toBeVisible();
-    await expect(idea.getByRole("link", { name: "Dosyanı yükle" })).toBeVisible();
+    await expect(idea.getByRole("link", { name: "Dosyanı yükle", exact: true })).toBeVisible();
     await expect(idea.getByRole("link", { name: "Model danışmanlığı" })).toBeVisible();
   });
 
@@ -255,7 +255,7 @@ test.describe("homepage discovery redesign", () => {
     await readyHome(page);
     await page.locator("#ne-uretmek-istiyorsun input[name='idea']").focus();
     await expect(page.locator("#ne-uretmek-istiyorsun input[name='idea']")).toBeFocused();
-    await expect(page.getByRole("heading", { name: /FİKRİNİ YAZ/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /SEN TARİF ET/i })).toBeVisible();
     await expect(page.locator("#uc-uretim-yolu [data-journey-panel='01']").first()).toBeVisible();
   });
 
