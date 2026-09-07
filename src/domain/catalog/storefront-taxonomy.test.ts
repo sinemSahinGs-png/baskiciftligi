@@ -65,4 +65,18 @@ describe("storefront taxonomy overlay", () => {
     expect(publicCategoryHref("kisiye-ozel")).toBe("/kategori/kisiye-ozel");
     expect(publicCategoryHref("kurumsal-promosyon")).toBe("/toptan");
   });
+
+  it("keeps presentation artwork filenames on the taxonomy overlay", () => {
+    expect(
+      storefrontCategories.map((item) => [item.slug, item.assetFile]),
+    ).toEqual([
+      ["dekorasyon-yasam", "dekorasyon-yasam.png"],
+      ["figur-heykel", "figur-heykel.png"],
+      ["oyuncak-hareketli-modeller", "oyuncak-hareketli.png"],
+      ["taraftara-ozel", "taraftara-ozel.png"],
+      ["anahtarlik-magnet", "anahtarlik-magnet.png"],
+      ["masaustu-fonksiyonel", "masaustu-fonksiyonel.png"],
+      ["kisiye-ozel", "kisiye-ozel.png"],
+    ]);
+  });
 });

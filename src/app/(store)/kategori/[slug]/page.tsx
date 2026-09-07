@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
 import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { EmptyState } from "@/components/feedback/empty-state";
-import { SafeImage } from "@/components/media/safe-image";
+import { CategoryArtwork } from "@/components/catalog/category-artwork";
 import { WordReveal } from "@/components/motion/premium";
 import { siteConfig } from "@/config/site";
 import {
@@ -73,12 +73,9 @@ export default async function StorefrontCategoryPage(
           )}
           {cover ? (
             <div className="store-category-cover" aria-hidden="true">
-              <SafeImage
+              <CategoryArtwork
                 src={cover}
-                alt=""
-                fill
-                sizes="(max-width: 768px) 100vw, 42vw"
-                className="object-cover object-center"
+                sizes="(max-width: 768px) 92vw, 28vw"
               />
             </div>
           ) : (

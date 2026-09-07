@@ -4,7 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 
-import { SlotImage } from "@/components/home-industrial/slot-image";
+import { CategoryArtwork } from "@/components/catalog/category-artwork";
 import {
   storefrontCategories,
   type StorefrontCategory,
@@ -202,15 +202,10 @@ function MegaItem({
       onFocus={onFocus}
       onMouseEnter={onMouseEnter}
       onKeyDown={onKeyDown}
+      data-category-slug={category.slug}
     >
       <span className="store-mega-art" aria-hidden="true">
-        <SlotImage
-          src={artworkSrc}
-          alt=""
-          fill
-          sizes="120px"
-          className="object-cover object-center"
-        />
+        <CategoryArtwork src={artworkSrc} sizes="72px" />
       </span>
       <span className="min-w-0">
         <span className="store-mega-name">{category.name}</span>
@@ -225,8 +220,10 @@ function MegaItem({
 
 export function MobileStoreNav({
   onNavigate,
+  categoryArtwork,
 }: {
   onNavigate: () => void;
+  categoryArtwork: Record<StorefrontCategorySlug, string | null>;
 }) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
@@ -257,13 +254,22 @@ export function MobileStoreNav({
               <li key={category.slug}>
                 <Link
                   href={category.href}
-                  className="flex min-h-11 items-center justify-between text-sm"
+                  data-category-slug={category.slug}
+                  className="store-mobile-cat"
                   onClick={onNavigate}
                 >
-                  <span>{category.name}</span>
-                  {category.comingSoon ? (
-                    <span className="text-xs text-muted-light">Hazırlanıyor</span>
-                  ) : null}
+                  <span className="store-mobile-cat-art" aria-hidden="true">
+                    <CategoryArtwork
+                      src={categoryArtwork[category.slug]}
+                      sizes="40px"
+                    />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium">{category.name}</span>
+                    {category.comingSoon ? (
+                      <span className="text-xs text-muted-light">Hazırlanıyor</span>
+                    ) : null}
+                  </span>
                 </Link>
               </li>
             ))}

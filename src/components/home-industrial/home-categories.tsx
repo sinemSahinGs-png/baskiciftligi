@@ -1,7 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 
-import { SlotImage } from "@/components/home-industrial/slot-image";
+import { CategoryArtwork } from "@/components/catalog/category-artwork";
 import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
 import {
   countStorefrontProducts,
@@ -57,16 +57,15 @@ function CategoryCard({
   const count = countStorefrontProducts(products, category);
   const cover = resolveStorefrontCategoryImage(category.slug);
   return (
-    <InteractiveMedia>
+    <InteractiveMedia className="hi-cat-interactive">
       <Link
         href={category.href}
+        data-category-slug={category.slug}
         className={cn("hi-cat-card", `hi-cat-card-${size}`)}
       >
         <span className="hi-cat-media" aria-hidden="true">
-          <SlotImage
+          <CategoryArtwork
             src={cover}
-            alt=""
-            fill
             sizes={
               size === "dominant"
                 ? "(max-width: 768px) 100vw, 48vw"
@@ -74,7 +73,6 @@ function CategoryCard({
                   ? "(max-width: 768px) 50vw, 24vw"
                   : "(max-width: 768px) 50vw, 18vw"
             }
-            className="object-cover object-center"
           />
         </span>
         <span className="hi-cat-copy">

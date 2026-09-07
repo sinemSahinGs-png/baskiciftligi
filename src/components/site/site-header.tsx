@@ -218,7 +218,10 @@ export function SiteHeader({
           </div>
           <nav aria-label="Mobil menü" className="shell overflow-y-auto pb-16">
             <ul>
-              <MobileStoreNav onNavigate={() => setMobileOpen(false)} />
+              <MobileStoreNav
+                categoryArtwork={categoryArtwork}
+                onNavigate={() => setMobileOpen(false)}
+              />
               {siteConfig.navigation
                 .filter(
                   (item) =>
