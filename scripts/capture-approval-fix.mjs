@@ -212,6 +212,7 @@ async function editorialProof(page) {
 }
 
 async function shotFromTo(page, startSelector, endSelector, file, viewportWidth) {
+  await setFullpageCapture(page, true);
   const box = await page.evaluate(
     ({ startSelector, endSelector }) => {
       const start = document.querySelector(startSelector);
@@ -225,7 +226,10 @@ async function shotFromTo(page, startSelector, endSelector, file, viewportWidth)
     },
     { startSelector, endSelector },
   );
-  if (!box) return;
+  if (!box) {
+    await setFullpageCapture(page, false);
+    return;
+  }
   await page.evaluate((y) => window.scrollTo(0, y), box.top);
   await page.waitForTimeout(120);
   const clipY = await page.evaluate((docTop) => docTop - window.scrollY, box.top);
@@ -238,6 +242,7 @@ async function shotFromTo(page, startSelector, endSelector, file, viewportWidth)
       height: Math.min(box.height, 1600),
     },
   });
+  await setFullpageCapture(page, false);
 }
 
 async function proveStoreImages(page) {

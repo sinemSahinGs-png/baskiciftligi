@@ -24,8 +24,8 @@ export function MobileStickyCta() {
       const finalCta = document.getElementById("basla");
       const footer = document.querySelector("footer");
       const catsHeading = document.getElementById("home-cats-heading");
-      const archiveHeading = document.getElementById("archive-heading");
-      const archiveLede = document.querySelector("#sana-gore-hazir-modeller .hi-lede");
+      const quoteSection = document.getElementById("sana-gore-hazir-modeller");
+      const quoteCta = document.querySelector("[data-quote-cta]");
       const processOverlay = document.querySelector("#nasil-calisir .hi-process-overlay");
       const stickyTop = window.innerHeight - 104;
       const overlapsSticky = (node: Element | null) => {
@@ -44,8 +44,8 @@ export function MobileStickyCta() {
           intersecting(finalCta, 0.12) ||
           intersecting(footer, 0.12) ||
           overlapsSticky(catsHeading) ||
-          overlapsSticky(archiveHeading) ||
-          overlapsSticky(archiveLede) ||
+          intersecting(quoteSection, 0.16) ||
+          overlapsSticky(quoteCta) ||
           overlapsSticky(processOverlay) ||
           categoryCopyOverlaps,
       );
