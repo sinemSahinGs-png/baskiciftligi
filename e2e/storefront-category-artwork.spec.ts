@@ -2,6 +2,11 @@ import { expect, test, type Page } from "@playwright/test";
 import path from "node:path";
 
 import { storefrontCategories } from "../src/domain/catalog/storefront-taxonomy";
+import {
+  assertMegaPaintedInViewport,
+  openMegaByHover,
+  openMegaByKeyboard,
+} from "./mega-menu-geometry";
 
 const shots = path.join("test-results", "category-artwork");
 
@@ -206,17 +211,9 @@ test.describe("storefront category artwork", () => {
     });
 
     await page.evaluate(() => window.scrollTo(0, 0));
-    const trigger = page.getByRole("banner").getByRole("link", { name: "Mağaza" });
-    await trigger.hover({ force: true });
-    const menu = page.locator(".store-mega");
-    await expect(menu).toHaveAttribute("data-open", "true");
-    await menu.hover({ force: true });
-    await expect(menu).toHaveAttribute("data-open", "true");
+    const menu = await openMegaByHover(page);
     await decodeCategoryImages(page, ".store-mega");
-    const openOverflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - window.innerWidth,
-    );
-    expect(openOverflow).toBeLessThanOrEqual(1);
+    await assertMegaPaintedInViewport(page, menu);
     const megaWidth = await page.locator(".store-mega-panel").evaluate(
       (node) => node.getBoundingClientRect().width,
     );
@@ -228,6 +225,35 @@ test.describe("storefront category artwork", () => {
     });
     await page.keyboard.press("Escape");
     await expect(menu).toHaveAttribute("data-open", "false");
+
+    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
+    await openMegaByHover(page);
+    await assertMegaPaintedInViewport(page);
+    await page.screenshot({
+      path: path.join(shots, "store-mega-cats-1440.png"),
+      animations: "disabled",
+    });
+    await page.keyboard.press("Escape");
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await openMegaByKeyboard(page);
+    await assertMegaPaintedInViewport(page);
+    await page.screenshot({
+      path: path.join(shots, "store-mega-keyboard-1440.png"),
+      animations: "disabled",
+    });
+    await page.keyboard.press("Escape");
+
+    await page.setViewportSize({ width: 1024, height: 900 });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await openMegaByHover(page);
+    await assertMegaPaintedInViewport(page);
+    await page.screenshot({
+      path: path.join(shots, "store-mega-1024.png"),
+      animations: "disabled",
+    });
+    await page.keyboard.press("Escape");
+    await page.setViewportSize({ width: 1440, height: 900 });
 
     await page.screenshot({
       path: path.join(shots, "home-complete-1440.png"),

@@ -107,7 +107,7 @@ export function SiteHeader({
     <>
       <header
         className={cn(
-          "sticky top-0 z-40 overflow-visible border-b transition-[background-color,border-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "sticky top-0 z-40 isolate overflow-visible border-b transition-[background-color,border-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           inverted
             ? "border-transparent bg-transparent text-light-text"
               : darkShell
@@ -118,7 +118,7 @@ export function SiteHeader({
         <div className="shell flex h-14 items-center gap-2 sm:h-16 md:gap-3">
           <Logo inverted={darkShell} className="mr-auto" />
 
-          <nav aria-label="Ana menü" className="hidden h-full items-center gap-1 self-stretch xl:flex">
+          <nav aria-label="Ana menü" className="hidden h-full items-center gap-1 self-stretch lg:flex">
             <StoreMegaMenu inverted={inverted} categoryArtwork={categoryArtwork} />
             {siteConfig.primaryNavigation.slice(1).map((item) => (
               <Link
@@ -180,7 +180,7 @@ export function SiteHeader({
               aria-label={mobileOpen ? "Menüyü kapat" : "Menüyü aç"}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((open) => !open)}
-              className="inline-flex size-11 items-center justify-center xl:hidden"
+              className="inline-flex size-11 items-center justify-center lg:hidden"
             >
               {mobileOpen ? (
                 <X aria-hidden="true" className="size-5" />
@@ -199,7 +199,7 @@ export function SiteHeader({
           animate={{ opacity: 1, y: 0 }}
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
           transition={{ duration: 0.32, ease: foundryEase }}
-          className="fixed inset-0 z-50 bg-midnight text-light-text xl:hidden"
+          className="fixed inset-0 z-50 bg-midnight text-light-text lg:hidden"
         >
           <div className="shell flex h-16 items-center justify-between">
             <Logo inverted />

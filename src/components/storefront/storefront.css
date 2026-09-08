@@ -1169,12 +1169,21 @@
   color: inherit;
 }
 
+/*
+  Desktop mega is portaled to document.body (not the Mağaza trigger).
+  Stacking: header 40, mega 45, search overlay 50, scroll-progress 80, skip-link 100.
+  Homepage sections use z-index 1 plus isolation/transforms; a trigger-local
+  absolute panel cannot paint above them once the sticky header is left behind.
+*/
 .store-mega {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 60;
-  width: min(55rem, calc(100vw - 2.5rem));
+  position: fixed;
+  top: 3.5rem;
+  right: max(16px, calc((100vw - min(100vw - 1.5rem, 92rem)) / 2));
+  left: auto;
+  z-index: 45;
+  isolation: isolate;
+  width: min(880px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
   padding-top: 0;
   opacity: 0;
   visibility: hidden;
@@ -1189,10 +1198,10 @@
 .store-mega::before {
   content: "";
   position: absolute;
-  top: -0.85rem;
+  top: -12px;
   right: 0;
   left: 0;
-  height: 0.85rem;
+  height: 12px;
 }
 
 .store-mega[data-open="true"] {

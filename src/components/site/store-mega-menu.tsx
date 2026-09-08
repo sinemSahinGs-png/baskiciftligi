@@ -2,7 +2,18 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type FocusEvent,
+  type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { createPortal } from "react-dom";
 
 import { CategoryArtwork } from "@/components/catalog/category-artwork";
 import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
@@ -15,6 +26,20 @@ import { cn } from "@/lib/utils";
 
 const OPEN_DELAY = 80;
 const CLOSE_DELAY = 280;
+const VIEWPORT_GUTTER = 16;
+const MEGA_MAX_WIDTH = 880;
+
+function subscribeNever() {
+  return () => {};
+}
+
+function clientSnapshot() {
+  return true;
+}
+
+function serverSnapshot() {
+  return false;
+}
 
 export function StoreMegaMenu({
   inverted,
@@ -25,13 +50,41 @@ export function StoreMegaMenu({
 }) {
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const wholesaleRef = useRef<HTMLAnchorElement | null>(null);
   const openTimer = useRef(0);
   const closeTimer = useRef(0);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
+  const isClient = useSyncExternalStore(subscribeNever, clientSnapshot, serverSnapshot);
   const ignoreTriggerFocus = useRef(false);
+
+  function isMegaNode(node: EventTarget | null) {
+    if (!node || !(node instanceof Node)) return false;
+    return Boolean(rootRef.current?.contains(node) || panelRef.current?.contains(node));
+  }
+
+  function updatePlacement() {
+    const node = panelRef.current;
+    const header = rootRef.current?.closest("header") ?? document.querySelector("header");
+    if (!node || !header) return;
+    const viewportWidth = window.innerWidth;
+    const headerBox = header.getBoundingClientRect();
+    const shell = header.querySelector(".shell");
+    const shellBox = shell?.getBoundingClientRect();
+    const width = Math.min(MEGA_MAX_WIDTH, viewportWidth - VIEWPORT_GUTTER * 2);
+    let right = VIEWPORT_GUTTER;
+    if (shellBox) {
+      right = Math.max(VIEWPORT_GUTTER, viewportWidth - shellBox.right);
+    }
+    const left = viewportWidth - right - width;
+    if (left < VIEWPORT_GUTTER) {
+      right = Math.max(VIEWPORT_GUTTER, viewportWidth - VIEWPORT_GUTTER - width);
+    }
+    node.style.top = `${Math.round(headerBox.bottom)}px`;
+    node.style.right = `${Math.round(right)}px`;
+  }
 
   function clearTimers() {
     window.clearTimeout(openTimer.current);
@@ -63,6 +116,21 @@ export function StoreMegaMenu({
 
   useEffect(() => () => clearTimers(), []);
 
+  useLayoutEffect(() => {
+    if (!isClient) return;
+    updatePlacement();
+    const header = rootRef.current?.closest("header") ?? document.querySelector("header");
+    window.addEventListener("resize", updatePlacement);
+    window.addEventListener("scroll", updatePlacement, { passive: true });
+    const observer = header ? new ResizeObserver(updatePlacement) : null;
+    if (header && observer) observer.observe(header);
+    return () => {
+      window.removeEventListener("resize", updatePlacement);
+      window.removeEventListener("scroll", updatePlacement);
+      observer?.disconnect();
+    };
+  }, [isClient, open]);
+
   useEffect(() => {
     if (!open) return;
     function onKey(event: globalThis.KeyboardEvent) {
@@ -76,7 +144,7 @@ export function StoreMegaMenu({
       }
     }
     function onPointerDown(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) closeNow();
+      if (!isMegaNode(event.target)) closeNow();
     }
     window.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointerDown);
@@ -110,13 +178,19 @@ export function StoreMegaMenu({
 
   function onRootPointerLeave(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.pointerType === "touch") return;
+    if (isMegaNode(event.relatedTarget)) return;
     onFinePointerLeave();
   }
 
-  function onRootBlur(event: FocusEvent<HTMLDivElement>) {
-    if (!event.currentTarget.contains(event.relatedTarget as Node)) {
-      scheduleClose();
-    }
+  function onPanelPointerLeave(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "touch") return;
+    if (isMegaNode(event.relatedTarget)) return;
+    onFinePointerLeave();
+  }
+
+  function onMegaBlur(event: FocusEvent<HTMLDivElement>) {
+    if (isMegaNode(event.relatedTarget)) return;
+    scheduleClose();
   }
 
   function onItemKey(event: KeyboardEvent<HTMLAnchorElement>, index: number) {
@@ -149,7 +223,6 @@ export function StoreMegaMenu({
 
   function focusWholesale() {
     wholesaleRef.current?.focus();
-    rootRef.current?.querySelector<HTMLAnchorElement>(".store-mega-wholesale")?.focus();
   }
 
   function onWholesaleKey(event: KeyboardEvent<HTMLAnchorElement>) {
@@ -166,15 +239,85 @@ export function StoreMegaMenu({
     }
   }
 
+  const panel = (
+    <div
+      ref={panelRef}
+      id={menuId}
+      role="menu"
+      data-open={open ? "true" : "false"}
+      data-mega-anchor="header-shell"
+      aria-hidden={open ? undefined : true}
+      inert={open ? undefined : true}
+      className={cn("store-mega", inverted && "store-mega-on-hero")}
+      onMouseEnter={openNow}
+      onMouseLeave={(event) => {
+        if (isMegaNode(event.relatedTarget)) return;
+        onFinePointerLeave();
+      }}
+      onPointerEnter={(event) => {
+        if (event.pointerType === "touch") return;
+        openNow();
+      }}
+      onPointerLeave={onPanelPointerLeave}
+      onBlur={onMegaBlur}
+      onKeyDown={(event) => {
+        if (event.key === "End") {
+          event.preventDefault();
+          focusWholesale();
+        }
+      }}
+    >
+      <div className="store-mega-panel">
+        <ul className="store-mega-grid">
+          {storefrontCategories.map((category, index) => (
+            <li key={category.slug}>
+              <MegaItem
+                category={category}
+                artworkSrc={categoryArtwork[category.slug]}
+                active={active === index}
+                refFn={(node) => {
+                  itemRefs.current[index] = node;
+                }}
+                onFocus={() => setActive(index)}
+                onMouseEnter={() => setActive(index)}
+                onKeyDown={(event) => onItemKey(event, index)}
+              />
+            </li>
+          ))}
+        </ul>
+        <aside className="store-mega-aside">
+          <p className="store-mega-wholesale-kicker">Ticari hat</p>
+          <p className="store-mega-wholesale-lede">
+            Tekrarlanabilir seri üretim ve bayi tedariki.
+          </p>
+          <Link
+            ref={(node) => {
+              wholesaleRef.current = node;
+            }}
+            href={"/toptan" as Route}
+            className="store-mega-wholesale"
+            role="menuitem"
+            onKeyDown={onWholesaleKey}
+          >
+            Toptan & Bayiler
+          </Link>
+        </aside>
+      </div>
+    </div>
+  );
+
   return (
     <div
       ref={rootRef}
       className="store-mega-root relative flex h-full items-center"
       onMouseEnter={onFinePointerEnter}
-      onMouseLeave={onFinePointerLeave}
+      onMouseLeave={(event) => {
+        if (isMegaNode(event.relatedTarget)) return;
+        onFinePointerLeave();
+      }}
       onPointerEnter={onRootPointerEnter}
       onPointerLeave={onRootPointerLeave}
-      onBlur={onRootBlur}
+      onBlur={onMegaBlur}
     >
       <Link
         href={"/magaza" as Route}
@@ -195,62 +338,7 @@ export function StoreMegaMenu({
         Mağaza
         <span className="store-mega-underline" aria-hidden="true" />
       </Link>
-      <div
-        id={menuId}
-        role="menu"
-        data-open={open ? "true" : "false"}
-        aria-hidden={open ? undefined : true}
-        inert={open ? undefined : true}
-        className={cn("store-mega", inverted && "store-mega-on-hero")}
-        onMouseEnter={openNow}
-        onPointerEnter={(event) => {
-          if (event.pointerType === "touch") return;
-          openNow();
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "End") {
-            event.preventDefault();
-            focusWholesale();
-          }
-        }}
-      >
-        <div className="store-mega-panel">
-          <ul className="store-mega-grid">
-            {storefrontCategories.map((category, index) => (
-              <li key={category.slug}>
-                <MegaItem
-                  category={category}
-                  artworkSrc={categoryArtwork[category.slug]}
-                  active={active === index}
-                  refFn={(node) => {
-                    itemRefs.current[index] = node;
-                  }}
-                  onFocus={() => setActive(index)}
-                  onMouseEnter={() => setActive(index)}
-                  onKeyDown={(event) => onItemKey(event, index)}
-                />
-              </li>
-            ))}
-          </ul>
-          <aside className="store-mega-aside">
-            <p className="store-mega-wholesale-kicker">Ticari hat</p>
-            <p className="store-mega-wholesale-lede">
-              Tekrarlanabilir seri üretim ve bayi tedariki.
-            </p>
-            <Link
-              ref={(node) => {
-                wholesaleRef.current = node;
-              }}
-              href={"/toptan" as Route}
-              className="store-mega-wholesale"
-              role="menuitem"
-              onKeyDown={onWholesaleKey}
-            >
-              Toptan & Bayiler
-            </Link>
-          </aside>
-        </div>
-      </div>
+      {isClient ? createPortal(panel, document.body) : null}
     </div>
   );
 }
