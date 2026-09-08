@@ -219,6 +219,44 @@ test.describe("centered video hero", () => {
     expect(requested.some((item) => item.includes("hero-mobile.mp4"))).toBe(false);
   });
 
+  test("desktop hero video plays and is painted above the poster", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.includes("mobile"), "desktop hero video");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await readyHome(page);
+    const video = page.locator("video.hi-hero-video");
+    await expect(video).toHaveCount(1, { timeout: 8_000 });
+    await expect
+      .poll(
+        async () =>
+          video.evaluate((node) => {
+            const el = node as HTMLVideoElement;
+            const style = getComputedStyle(el);
+            return {
+              paused: el.paused,
+              ready: el.getAttribute("data-ready"),
+              opacity: style.opacity,
+              currentSrc: el.currentSrc,
+              currentTime: el.currentTime,
+            };
+          }),
+        { timeout: 10_000 },
+      )
+      .toMatchObject({ paused: false, ready: "true", opacity: "1" });
+    const state = await video.evaluate((node) => {
+      const el = node as HTMLVideoElement;
+      return { currentSrc: el.currentSrc, currentTime: el.currentTime };
+    });
+    expect(state.currentSrc).toContain("hero-desktop.mp4");
+    expect(state.currentTime).toBeGreaterThan(0);
+    await page.screenshot({
+      path: path.join(shots, "hero-playing-1440.png"),
+      animations: "allow",
+    });
+  });
+
   test("video pauses when the hero leaves the viewport", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await readyHome(page);

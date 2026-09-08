@@ -22,12 +22,25 @@ function subscribeSaveData(onStoreChange: () => void) {
   return () => connection?.removeEventListener("change", onStoreChange);
 }
 
-function hasPaintedFrame(video: HTMLVideoElement) {
-  return (
-    video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
-    video.currentTime > 0.03 &&
-    !video.error
-  );
+function revealIfPlaying(video: HTMLVideoElement, onReady: () => void) {
+  if (video.error) return;
+  if (!video.paused && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+    onReady();
+  }
+}
+
+async function startPlayback(video: HTMLVideoElement) {
+  video.defaultMuted = true;
+  video.muted = true;
+  video.playsInline = true;
+  if (video.readyState === HTMLMediaElement.HAVE_NOTHING) {
+    video.load();
+  }
+  try {
+    await video.play();
+  } catch (error: unknown) {
+    if (error instanceof DOMException && error.name === "AbortError") return;
+  }
 }
 
 export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
@@ -49,9 +62,9 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
     if (!node) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        setInView(entries.some((entry) => entry.isIntersecting && entry.intersectionRatio > 0.12));
+        setInView(entries.some((entry) => entry.isIntersecting));
       },
-      { threshold: [0, 0.12, 0.4] },
+      { threshold: [0, 0.01, 0.12] },
     );
     observer.observe(node);
     const onVisibility = () => setHidden(document.visibilityState === "hidden");
@@ -67,17 +80,18 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
     const video = videoRef.current;
     if (!video) return;
     const fail = () => setFailed(true);
-    const reveal = () => {
-      if (hasPaintedFrame(video)) setReady(true);
-    };
+    const reveal = () => revealIfPlaying(video, () => setReady(true));
     const sources = [...video.querySelectorAll("source")];
     sources.forEach((source) => source.addEventListener("error", fail));
     video.addEventListener("error", fail);
     video.addEventListener("playing", reveal);
+    video.addEventListener("canplay", reveal);
     video.addEventListener("timeupdate", reveal);
     video.addEventListener("loadeddata", reveal);
-    if (video.error || video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
-      fail();
+    if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+      video.load();
+    } else if (video.readyState === HTMLMediaElement.HAVE_NOTHING) {
+      video.load();
     } else {
       reveal();
     }
@@ -85,6 +99,7 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
       sources.forEach((source) => source.removeEventListener("error", fail));
       video.removeEventListener("error", fail);
       video.removeEventListener("playing", reveal);
+      video.removeEventListener("canplay", reveal);
       video.removeEventListener("timeupdate", reveal);
       video.removeEventListener("loadeddata", reveal);
     };
@@ -94,9 +109,7 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
     const active = videoRef.current;
     if (!active) return;
     if (showVideo) {
-      void active.play().catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-      });
+      void startPlayback(active);
       return;
     }
     active.pause();
@@ -141,11 +154,11 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
             disablePictureInPicture
             onPlaying={() => {
               const video = videoRef.current;
-              if (video && hasPaintedFrame(video)) setReady(true);
+              if (video) revealIfPlaying(video, () => setReady(true));
             }}
-            onTimeUpdate={() => {
+            onCanPlay={() => {
               const video = videoRef.current;
-              if (video && hasPaintedFrame(video)) setReady(true);
+              if (video) revealIfPlaying(video, () => setReady(true));
             }}
             onError={() => setFailed(true)}
           >
