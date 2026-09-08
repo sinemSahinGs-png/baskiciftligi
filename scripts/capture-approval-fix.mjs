@@ -90,6 +90,154 @@ async function setFullpageCapture(page, on) {
     if (enabled) document.documentElement.dataset.bcCapture = "fullpage";
     else delete document.documentElement.dataset.bcCapture;
   }, on);
+  await page.waitForTimeout(80);
+}
+
+async function proveHeader(page) {
+  const atTop = await page.evaluate(() => {
+    const headers = [...document.querySelectorAll("header.sticky")];
+    const box = headers[0]?.getBoundingClientRect();
+    return {
+      count: headers.length,
+      top: box ? Math.round(box.top) : null,
+    };
+  });
+  await page.evaluate(() => {
+    const y = Math.min(
+      Math.round(document.documentElement.scrollHeight * 0.42),
+      Math.max(0, document.documentElement.scrollHeight - window.innerHeight),
+    );
+    window.scrollTo(0, y);
+  });
+  await page.waitForTimeout(220);
+  const mid = await page.evaluate(() => {
+    const headers = [...document.querySelectorAll("header.sticky")];
+    const box = headers[0]?.getBoundingClientRect();
+    const top = box ? Math.round(box.top) : null;
+    return {
+      count: headers.length,
+      top,
+      paintedMidpage: Boolean(box && box.top > 72 && box.top < window.innerHeight * 0.55),
+    };
+  });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  return {
+    atTop,
+    mid,
+    secondHeaderOnScroll: Boolean(mid.paintedMidpage) || mid.count > 1,
+  };
+}
+
+async function lastCardToTrustGap(page) {
+  return page.evaluate(() => {
+    const cards = [...document.querySelectorAll("[data-catalog-results] .store-card")];
+    const last = cards.at(-1);
+    const trust = document.querySelector(".store-trust-faq");
+    if (!last || !trust) return { gap: null, cardCount: cards.length };
+    const lastBox = last.getBoundingClientRect();
+    const trustBox = trust.getBoundingClientRect();
+    return {
+      gap: Math.round(trustBox.top - lastBox.bottom),
+      cardCount: cards.length,
+    };
+  });
+}
+
+async function quoteNavOverlap(page) {
+  return page.evaluate(() => {
+    const cta = document.querySelector("[data-quote-cta]");
+    const nav = document.querySelector(".store-bottom-nav");
+    if (!cta || !nav || getComputedStyle(nav).display === "none") {
+      return { overlap: 0 };
+    }
+    const a = cta.getBoundingClientRect();
+    const b = nav.getBoundingClientRect();
+    const y = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    const x = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+    return {
+      overlap: y > 0 && x > 0 ? Math.round(y) : 0,
+      ctaBottom: Math.round(a.bottom),
+      navTop: Math.round(b.top),
+      gap: Math.round(b.top - a.bottom),
+    };
+  });
+}
+
+async function featuredProof(page) {
+  return page.evaluate(() => {
+    const section = document.querySelector("#one-cikan-urunler");
+    const name = section?.querySelector(".hi-title")?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+    const price = section?.textContent?.match(/₺[\d.,]+/)?.[0] ?? "";
+    const slug = section?.getAttribute("data-featured-product-slug") ?? "";
+    const href = section?.querySelector("a[href^='/urun/']")?.getAttribute("href") ?? "";
+    const img = section?.querySelector(".hi-featured-art img");
+    const src = img?.currentSrc || img?.getAttribute("src") || "";
+    const art = section?.getAttribute("data-featured-art") ?? "";
+    const usesCampaignPng = /featured-product\.png/i.test(src);
+    return {
+      name,
+      price,
+      slug,
+      href,
+      src,
+      art,
+      usesCampaignPng,
+      match: Boolean(
+        slug &&
+          href === `/urun/${slug}` &&
+          src &&
+          !usesCampaignPng &&
+          art === "live",
+      ),
+    };
+  });
+}
+
+async function editorialProof(page) {
+  return page.evaluate(() => {
+    const editorial = document.querySelector(".store-editorial");
+    if (!editorial) return { present: false };
+    const name = editorial.querySelector(".store-editorial-title")?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+    const href = editorial.querySelector("a[href^='/urun/']")?.getAttribute("href") ?? "";
+    const img = editorial.querySelector("img");
+    const src = img?.currentSrc || img?.getAttribute("src") || "";
+    return {
+      present: true,
+      name,
+      href,
+      src,
+      usesCampaignPng: /featured-product\.png/i.test(src),
+    };
+  });
+}
+
+async function shotFromTo(page, startSelector, endSelector, file, viewportWidth) {
+  const box = await page.evaluate(
+    ({ startSelector, endSelector }) => {
+      const start = document.querySelector(startSelector);
+      const end = document.querySelector(endSelector);
+      if (!start || !end) return null;
+      const a = start.getBoundingClientRect();
+      const b = end.getBoundingClientRect();
+      const top = window.scrollY + Math.min(a.top, b.top) - 16;
+      const bottom = window.scrollY + Math.max(a.bottom, b.bottom) + 16;
+      return { top: Math.max(0, top), height: Math.max(80, bottom - top) };
+    },
+    { startSelector, endSelector },
+  );
+  if (!box) return;
+  await page.evaluate((y) => window.scrollTo(0, y), box.top);
+  await page.waitForTimeout(120);
+  const clipY = await page.evaluate((docTop) => docTop - window.scrollY, box.top);
+  await page.screenshot({
+    path: file,
+    clip: {
+      x: 0,
+      y: Math.max(0, clipY),
+      width: viewportWidth,
+      height: Math.min(box.height, 1600),
+    },
+  });
 }
 
 async function proveStoreImages(page) {
@@ -260,11 +408,21 @@ await withPage({ width: 390, height: 844 }, async (page) => {
 
   await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
   await page.waitForTimeout(200);
+  await page.locator("[data-quote-cta]").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(80);
+  proof.quoteNavOverlap390 = await quoteNavOverlap(page);
   await page.locator("#sana-gore-hazir-modeller").screenshot({
     path: path.join(outDir, "home-instant-pricing-390.png"),
   });
   await page.screenshot({
     path: path.join(outDir, "instant-pricing-with-bottom-nav-390.png"),
+  });
+
+  await page.locator("#one-cikan-urunler").scrollIntoViewIfNeeded();
+  await waitDecode(page, "#one-cikan-urunler");
+  proof.featured390 = await featuredProof(page);
+  await page.locator("#one-cikan-urunler").screenshot({
+    path: path.join(outDir, "home-featured-product-390.png"),
   });
 
   await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
@@ -280,6 +438,7 @@ await withPage({ width: 390, height: 844 }, async (page) => {
     fullPage: true,
   });
   await setFullpageCapture(page, false);
+  proof.header390 = await proveHeader(page);
 
   proof.homeMetrics390 = await page.evaluate(() => ({
     comingSoonAnchors: document.querySelectorAll('[data-coming-soon="true"] a, a[data-coming-soon="true"]').length,
@@ -316,6 +475,15 @@ await withPage({ width: 390, height: 844 }, async (page) => {
     await waitDecode(page, "[data-catalog-grid]");
     await page.screenshot({ path: path.join(outDir, "store-middle-products-390.png") });
   }
+
+  proof.lastCardToTrust390 = await lastCardToTrustGap(page);
+  await shotFromTo(
+    page,
+    "[data-catalog-results] [data-catalog-grid]:last-of-type",
+    ".store-trust",
+    path.join(outDir, "store-last-products-to-trust-strip-390.png"),
+    390,
+  );
 
   await page.locator("[data-site-footer-mobile]").scrollIntoViewIfNeeded();
   await page.screenshot({ path: path.join(outDir, "store-bottom-390.png") });
@@ -385,17 +553,26 @@ await withPage({ width: 1440, height: 900 }, async (page) => {
   );
 
   await page.keyboard.press("Escape");
+  await page.locator("#one-cikan-urunler").scrollIntoViewIfNeeded();
+  await waitDecode(page, "#one-cikan-urunler");
+  proof.featured1440 = await featuredProof(page);
+  await page.locator("#one-cikan-urunler").screenshot({
+    path: path.join(outDir, "home-featured-product-1440.png"),
+  });
+
   await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
   await page.screenshot({ path: path.join(outDir, "home-instant-pricing-1440.png") });
   await page.screenshot({
     path: path.join(outDir, "instant-pricing-1440.png"),
   });
   await setFullpageCapture(page, true);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: path.join(outDir, "home-full-1440.png"),
     fullPage: true,
   });
   await setFullpageCapture(page, false);
+  proof.header1440 = await proveHeader(page);
 });
 
 await withPage({ width: 1440, height: 900 }, async (page) => {
@@ -410,15 +587,26 @@ await withPage({ width: 1440, height: 900 }, async (page) => {
   await page.evaluate(() => window.scrollTo(0, 0));
   await waitDecode(page, "[data-catalog-results]");
   await page.screenshot({ path: path.join(outDir, "store-first-screen-1440.png") });
+  await page.screenshot({ path: path.join(outDir, "store-masthead-first-row-1440.png") });
   const defaultCard = page.locator(".store-card").first();
   await defaultCard.screenshot({ path: path.join(outDir, "store-card-default-1440.png") });
   await defaultCard.hover();
   await page.waitForTimeout(350);
   await defaultCard.screenshot({ path: path.join(outDir, "store-card-hover-1440.png") });
   await page.locator(".store-editorial").scrollIntoViewIfNeeded();
+  await waitDecode(page, ".store-editorial");
+  proof.editorial1440 = await editorialProof(page);
   await page.locator(".store-editorial").screenshot({
     path: path.join(outDir, "store-editorial-1440.png"),
   });
+  proof.lastCardToTrust1440 = await lastCardToTrustGap(page);
+  await shotFromTo(
+    page,
+    "[data-catalog-results] [data-catalog-grid]:last-of-type",
+    ".store-trust",
+    path.join(outDir, "store-last-row-to-trust-strip-1440.png"),
+    1440,
+  );
   await setFullpageCapture(page, true);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
@@ -451,6 +639,21 @@ for (const width of [320, 360, 390, 430, 1024, 1363, 1440]) {
 }
 proof.overflow = overflow;
 proof.navOverlap = navOverlap;
+proof.acceptance = {
+  featuredMatch:
+    Boolean(proof.featured390?.match) && Boolean(proof.featured1440?.match),
+  editorialUsesCampaignPng: Boolean(proof.editorial1440?.usesCampaignPng),
+  liveProductPlaceholders:
+    (proof.storeImages390?.placeholders ?? 0) +
+    (proof.storeImages1440?.placeholders ?? 0),
+  headerCount: proof.header1440?.atTop?.count ?? null,
+  secondHeaderOnScroll: Boolean(
+    proof.header390?.secondHeaderOnScroll || proof.header1440?.secondHeaderOnScroll,
+  ),
+  lastCardToTrustGap: proof.lastCardToTrust1440?.gap ?? proof.lastCardToTrust390?.gap,
+  quoteNavOverlap: proof.quoteNavOverlap390?.overlap ?? null,
+  overflowMax: Math.max(...overflow.map((row) => row.overflowX), 0),
+};
 await probe.close();
 
 writeFileSync(path.join(outDir, "proof.json"), JSON.stringify(proof, null, 2));

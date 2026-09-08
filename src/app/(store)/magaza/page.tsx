@@ -138,7 +138,7 @@ export default async function StorePage(props: PageProps<"/magaza">) {
               materials={materials}
               productCount={page.total}
             >
-              <section className="min-w-0 pt-5" data-visual-landmark data-catalog-results>
+              <section className="min-h-0 min-w-0 pt-4" data-visual-landmark data-catalog-results>
                 <h2 className="sr-only">Ürünler</h2>
                 {page.items.length > 0 ? (
                   <>

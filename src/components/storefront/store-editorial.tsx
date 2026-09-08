@@ -5,10 +5,11 @@ import { PriceDisplay } from "@/components/commerce/price-display";
 import { SafeImage } from "@/components/media/safe-image";
 import { InteractiveMedia, MagneticAction, WordReveal } from "@/components/motion/premium";
 import { storePremiumAssets } from "@/components/storefront/store-premium-assets";
+import { resolveProductVisual } from "@/domain/catalog/media";
 import type { Product } from "@/domain/catalog/types";
 
 export function StoreEditorial({ product }: { product: Product }) {
-  const image = product.media[0];
+  const image = resolveProductVisual(product).primary ?? product.media[0];
 
   return (
     <aside className="store-editorial" aria-labelledby="store-editorial-heading">

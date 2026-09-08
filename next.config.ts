@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   images: {
-    qualities: [70, 75],
+    qualities: [70, 75, 80],
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {

@@ -6,14 +6,20 @@ import { SafeImage } from "@/components/media/safe-image";
 import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { InteractiveMedia, MagneticAction, WordReveal } from "@/components/motion/premium";
+import { resolveProductVisual } from "@/domain/catalog/media";
 import type { Product } from "@/domain/catalog/types";
 
 export function FeaturedProduct({ product }: { product: Product | null }) {
+  const visual = product ? resolveProductVisual(product) : null;
+  const liveSrc = visual?.primary?.url ?? null;
+  const liveAlt = visual?.primary?.alt ?? product?.name ?? "";
+
   return (
     <section
       id="one-cikan-urunler"
       data-home-theme="orange"
       data-featured-product-slug={product?.slug ?? undefined}
+      data-featured-art={liveSrc ? "live" : product ? "empty" : "campaign"}
       className="hi-section hi-featured"
       aria-labelledby="featured-heading"
     >
@@ -29,17 +35,6 @@ export function FeaturedProduct({ product }: { product: Product | null }) {
                 className="mt-3 text-[1.85rem]"
               />
               <div className="hi-featured-cluster">
-                {product.media[0]?.url ? (
-                  <span className="hi-featured-thumb">
-                    <SafeImage
-                      src={product.media[0].url}
-                      alt={product.media[0].alt ?? product.name}
-                      fill
-                      sizes="96px"
-                      className="object-cover"
-                    />
-                  </span>
-                ) : null}
                 <MagneticAction>
                   <Link
                     href={`/urun/${product.slug}` as Route}
@@ -65,15 +60,32 @@ export function FeaturedProduct({ product }: { product: Product | null }) {
         <InteractiveMedia
           className="hi-featured-art"
           data-industrial-asset="featured-product"
+          data-featured-live-src={liveSrc ?? undefined}
           aria-hidden="true"
         >
-          <SlotImage
-            src={industrialAssets.featuredProduct}
-            alt=""
-            fill
-            sizes="(max-width: 768px) 70vw, 50vw"
-            className="object-cover object-[58%_42%]"
-          />
+          {liveSrc ? (
+            <SafeImage
+              src={liveSrc}
+              alt={liveAlt}
+              fill
+              sizes="(max-width: 768px) 88vw, 540px"
+              quality={80}
+              priority
+              eager
+              showSkeleton={false}
+              className="object-contain object-center"
+            />
+          ) : product ? (
+            <span className="hi-featured-art-fallback" />
+          ) : (
+            <SlotImage
+              src={industrialAssets.featuredProduct}
+              alt=""
+              fill
+              sizes="(max-width: 768px) 70vw, 50vw"
+              className="object-cover object-[58%_42%]"
+            />
+          )}
           <span className="hi-featured-edge" />
         </InteractiveMedia>
       </div>
