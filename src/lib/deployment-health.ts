@@ -27,7 +27,7 @@ export interface DeploymentHealth {
   ok: true;
   service: "baski-ciftligi";
   version: string;
-  deploymentId: string | null;
+  gitCommit: string | null;
   environment: string;
   catalog: CatalogSourceState;
   supabase: IntegrationState;
@@ -116,8 +116,13 @@ export async function getDeploymentHealth(): Promise<DeploymentHealth> {
     service: "baski-ciftligi",
     version:
       process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ??
+      process.env.BC_GIT_COMMIT?.slice(0, 7) ??
       process.env.npm_package_version ??
       "0.1.0",
+    gitCommit:
+      process.env.VERCEL_GIT_COMMIT_SHA ??
+      process.env.BC_GIT_COMMIT ??
+      null,
     deploymentId: process.env.VERCEL_DEPLOYMENT_ID ?? null,
     environment:
       process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "development",

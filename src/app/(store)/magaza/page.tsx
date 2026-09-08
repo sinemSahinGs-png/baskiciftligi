@@ -147,7 +147,7 @@ export default async function StorePage(props: PageProps<"/magaza">) {
                         Demo etiketli ürünler vitrin içindir.
                       </p>
                     ) : null}
-                    <CatalogGrid products={firstGroup} priorityCount={4} tone="store" />
+                    <CatalogGrid products={firstGroup} priorityCount={1} tone="store" />
                     {!hasActiveFilters && featuredProduct ? (
                       <StoreEditorial product={featuredProduct} />
                     ) : null}

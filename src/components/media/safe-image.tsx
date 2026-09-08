@@ -34,6 +34,7 @@ function SafeImageInner({
   showSkeleton = true,
   priority,
   preload,
+  fill,
   onLoad,
   onError,
   ...props
@@ -102,6 +103,7 @@ function SafeImageInner({
           ref={imageRef}
           src={src as string}
           alt={alt}
+          fill={fill}
           unoptimized={shouldUnoptimize(src as string)}
           quality={quality}
           priority={Boolean(priority || preload)}
@@ -120,7 +122,10 @@ function SafeImageInner({
             markReady(image);
             onLoad?.(event);
           }}
-          className={cn("relative z-[1]", className)}
+          className={cn(
+            fill ? "absolute inset-0 z-[1]" : "relative z-[1]",
+            className,
+          )}
         />
       ) : null}
     </>

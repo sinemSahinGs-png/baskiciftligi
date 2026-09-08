@@ -30,7 +30,7 @@ export function StoreCategoryBar() {
   }, [active]);
 
   return (
-    <nav aria-label="Kategoriler" className="store-cats-wrap">
+    <nav aria-label="Mağaza kategorileri" className="store-cats-wrap">
       <div ref={wrapRef} className="store-cats">
         <Link
           href={"/magaza" as Route}

@@ -11,32 +11,44 @@ import {
 import { splitMotionWords } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-function useInView<T extends HTMLElement>(amount = 0.24) {
+function useInView<T extends HTMLElement>() {
   const ref = useRef<T | null>(null);
-  const visible = useRef(true);
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
+    const show = () => {
+      node.dataset.inview = "true";
+    };
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
-      node.dataset.inview = "true";
+      show();
+      return;
+    }
+    const box = node.getBoundingClientRect();
+    const alreadyVisible =
+      box.bottom > 0 && box.top < window.innerHeight && box.height > 0;
+    if (alreadyVisible) {
+      show();
       return;
     }
     node.dataset.inview = "false";
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          node.dataset.inview = "true";
-          visible.current = true;
+          show();
           observer.disconnect();
         }
       },
-      { threshold: amount, rootMargin: "0px 0px -8% 0px" },
+      { threshold: 0, rootMargin: "80px 0px 80px 0px" },
     );
     observer.observe(node);
-    return () => observer.disconnect();
-  }, [amount]);
+    const fallback = window.setTimeout(show, 900);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(fallback);
+    };
+  }, []);
 
   return ref;
 }

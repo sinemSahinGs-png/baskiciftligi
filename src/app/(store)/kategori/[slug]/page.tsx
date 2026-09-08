@@ -1,20 +1,18 @@
+import { Suspense } from "react";
 import type { Route } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PackageOpen } from "lucide-react";
 
-import { Breadcrumbs } from "@/components/catalog/breadcrumbs";
 import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { EmptyState } from "@/components/feedback/empty-state";
-import { CategoryArtwork } from "@/components/catalog/category-artwork";
-import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
-import { WordReveal } from "@/components/motion/premium";
+import { StoreCategoryBar } from "@/components/storefront/store-category-bar";
 import { siteConfig } from "@/config/site";
 import {
   getStorefrontCategory,
   storefrontCategories,
 } from "@/domain/catalog/storefront-taxonomy";
 import { listProducts } from "@/domain/catalog/repository";
-import { resolveStorefrontCategoryImage } from "@/lib/catalog/storefront-category-image";
-import { PackageOpen } from "lucide-react";
 
 export function generateStaticParams() {
   return storefrontCategories.map((category) => ({ slug: category.slug }));
@@ -48,45 +46,43 @@ export default async function StorefrontCategoryPage(
   const products = category.comingSoon
     ? []
     : await listProducts({ category: category.slug });
-  const cover = resolveStorefrontCategoryImage(category.slug);
 
   return (
     <main id="ana-icerik" className="store-page">
       <header className="store-masthead">
-        <div className="shell store-category-masthead">
-          <Breadcrumbs
-            items={[
-              { label: "Mağaza", href: "/magaza" },
-              { label: category.name },
-            ]}
-          />
-          <p className="store-intro-kicker mt-5">{category.eyebrow}</p>
-          <WordReveal
-            as="h1"
-            className="store-intro-title mt-3"
-            text={category.name.toLocaleUpperCase("tr-TR")}
-          />
-          <p className="store-intro-lede mt-4">{category.description}</p>
-          {category.comingSoon ? (
-            <p className="store-intro-count mt-3">Seçki hazırlanıyor</p>
-          ) : (
-            <p className="store-intro-count mt-3">{products.length} ürün</p>
-          )}
-          {cover ? (
-            <div className="store-category-cover" aria-hidden="true">
-              <CategoryArtwork
-                src={cover}
-                sizes="(max-width: 768px) 92vw, 28vw"
-                objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
-              />
+        <div className="shell">
+          <p className="store-crumb">
+            <Link href="/" className="hover:underline">
+              Ana sayfa
+            </Link>
+            <span aria-hidden="true"> / </span>
+            <Link href={"/magaza" as Route} className="hover:underline">
+              Mağaza
+            </Link>
+            <span aria-hidden="true"> / </span>
+            {category.name}
+          </p>
+          <div className="store-intro" data-has-art="false">
+            <div>
+              <p className="store-intro-kicker">{category.eyebrow}</p>
+              <h1 className="store-intro-title">
+                {category.name.toLocaleUpperCase("tr-TR")}
+              </h1>
+              <p className="store-intro-lede">{category.description}</p>
+              {category.comingSoon ? (
+                <p className="store-intro-count">Seçki hazırlanıyor</p>
+              ) : (
+                <p className="store-intro-count">{products.length} ürün</p>
+              )}
             </div>
-          ) : (
-            <div className="store-category-fallback" aria-hidden="true" />
-          )}
+          </div>
+          <Suspense fallback={null}>
+            <StoreCategoryBar />
+          </Suspense>
         </div>
       </header>
 
-      <section className="shell pt-8 pb-16" aria-labelledby="kategori-urunler">
+      <section className="shell pt-6 pb-16" aria-labelledby="kategori-urunler">
         <h2 id="kategori-urunler" className="sr-only">
           {category.name} ürünleri
         </h2>
@@ -98,7 +94,7 @@ export default async function StorefrontCategoryPage(
             action={{ href: "/magaza" as Route, label: "Tüm ürünleri gör" }}
           />
         ) : products.length > 0 ? (
-          <CatalogGrid products={products} priorityCount={2} tone="store" />
+          <CatalogGrid products={products} priorityCount={1} tone="store" />
         ) : (
           <EmptyState
             icon={<PackageOpen aria-hidden="true" className="size-5" />}

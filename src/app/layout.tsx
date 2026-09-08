@@ -98,6 +98,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="tr"
+      data-bc-commit={
+        process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.BC_GIT_COMMIT ?? "local"
+      }
       className={`${jakarta.variable} ${bricolage.variable} ${industrialDisplay.variable} ${industrialMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >

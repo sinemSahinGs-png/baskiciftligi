@@ -189,6 +189,18 @@ export function publicCategoryHref(slug: string): Route {
   return `/magaza/${slug}` as Route;
 }
 
+export function publicCategoryName(slug: string, fallbackName?: string): string {
+  const direct = getStorefrontCategory(slug);
+  if (direct) return direct.name;
+  const mapped = storefrontSlugFromSource(slug);
+  if (mapped) {
+    const category = getStorefrontCategory(mapped);
+    if (category) return category.name;
+  }
+  if (slug === "kurumsal-promosyon") return "Toptan & Bayiler";
+  return fallbackName ?? slug;
+}
+
 export function storefrontFilterCategories(): StorefrontCategory[] {
   return storefrontCategories.filter((item) => !item.comingSoon);
 }

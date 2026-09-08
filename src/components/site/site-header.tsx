@@ -222,7 +222,7 @@ export function SiteHeader({
                 categoryArtwork={categoryArtwork}
                 onNavigate={() => setMobileOpen(false)}
               />
-              {siteConfig.navigation
+              {siteConfig.primaryNavigation
                 .filter(
                   (item) =>
                     item.label !== "Mağaza" &&

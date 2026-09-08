@@ -8,6 +8,7 @@ import {
   storefrontCategories,
   storefrontSlugFromSource,
   publicCategoryHref,
+  publicCategoryName,
 } from "@/domain/catalog/storefront-taxonomy";
 
 describe("storefront taxonomy overlay", () => {
@@ -64,6 +65,9 @@ describe("storefront taxonomy overlay", () => {
     expect(publicCategoryHref("magnet")).toBe("/kategori/anahtarlik-magnet");
     expect(publicCategoryHref("kisiye-ozel")).toBe("/kategori/kisiye-ozel");
     expect(publicCategoryHref("kurumsal-promosyon")).toBe("/toptan");
+    expect(publicCategoryName("magnet")).toBe("Anahtarlık & Magnet");
+    expect(publicCategoryName("ev-ve-dekorasyon")).toBe("Dekorasyon & Yaşam");
+    expect(publicCategoryName("kurumsal-promosyon")).toBe("Toptan & Bayiler");
   });
 
   it("keeps presentation artwork filenames on the taxonomy overlay", () => {

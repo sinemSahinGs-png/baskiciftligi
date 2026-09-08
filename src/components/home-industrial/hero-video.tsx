@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { heroMedia } from "@/components/home-industrial/hero-media";
+
+const MOBILE_QUERY = "(max-width: 767.98px)";
 
 function saveDataEnabled() {
   const connection = (
@@ -22,24 +24,48 @@ function subscribeSaveData(onStoreChange: () => void) {
   return () => connection?.removeEventListener("change", onStoreChange);
 }
 
+function subscribeMobile(onStoreChange: () => void) {
+  const media = window.matchMedia(MOBILE_QUERY);
+  media.addEventListener("change", onStoreChange);
+  return () => media.removeEventListener("change", onStoreChange);
+}
+
 function revealIfPlaying(video: HTMLVideoElement, onReady: () => void) {
-  if (video.error) return;
-  if (!video.paused && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-    onReady();
+  if (video.error || video.paused) return;
+  if (video.currentTime > 0) onReady();
+}
+
+function pruneUnusedSources(video: HTMLVideoElement, isMobile: boolean) {
+  const keep = isMobile ? heroMedia.mobileVideo : heroMedia.desktopVideo;
+  for (const source of [...video.querySelectorAll("source")]) {
+    const src = source.getAttribute("src");
+    if (src && src !== keep) {
+      source.remove();
+    }
   }
+  video.dataset.heroSlot = isMobile ? "mobile" : "desktop";
 }
 
 async function startPlayback(video: HTMLVideoElement) {
   video.defaultMuted = true;
   video.muted = true;
+  video.setAttribute("muted", "");
   video.playsInline = true;
-  if (video.readyState === HTMLMediaElement.HAVE_NOTHING) {
+  if (!video.currentSrc && video.dataset.loadStarted !== "true") {
+    video.dataset.loadStarted = "true";
     video.load();
   }
   try {
     await video.play();
+    video.dataset.playRejection = "";
+    return null;
   } catch (error: unknown) {
-    if (error instanceof DOMException && error.name === "AbortError") return;
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return null;
+    }
+    const message = error instanceof Error ? error.message : "play() rejected";
+    video.dataset.playRejection = message;
+    return message;
   }
 }
 
@@ -55,7 +81,18 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
     saveDataEnabled,
     () => false,
   );
-  const showVideo = !failed && !reducedMotion && !hidden && inView && !saveData;
+  const isMobile = useSyncExternalStore(
+    subscribeMobile,
+    () => window.matchMedia(MOBILE_QUERY).matches,
+    () => false,
+  );
+  const eligible = !failed && !reducedMotion && !hidden && inView && !saveData;
+
+  useLayoutEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    pruneUnusedSources(video, isMobile);
+  }, [isMobile]);
 
   useEffect(() => {
     const node = rootRef.current;
@@ -85,35 +122,26 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
     sources.forEach((source) => source.addEventListener("error", fail));
     video.addEventListener("error", fail);
     video.addEventListener("playing", reveal);
-    video.addEventListener("canplay", reveal);
     video.addEventListener("timeupdate", reveal);
-    video.addEventListener("loadeddata", reveal);
-    if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
-      video.load();
-    } else if (video.readyState === HTMLMediaElement.HAVE_NOTHING) {
-      video.load();
-    } else {
-      reveal();
-    }
+    if (video.error) fail();
     return () => {
       sources.forEach((source) => source.removeEventListener("error", fail));
       video.removeEventListener("error", fail);
       video.removeEventListener("playing", reveal);
-      video.removeEventListener("canplay", reveal);
       video.removeEventListener("timeupdate", reveal);
-      video.removeEventListener("loadeddata", reveal);
     };
   }, [failed]);
 
   useEffect(() => {
-    const active = videoRef.current;
-    if (!active) return;
-    if (showVideo) {
-      void startPlayback(active);
+    const video = videoRef.current;
+    if (!video) return;
+    if (!eligible) {
+      video.pause();
       return;
     }
-    active.pause();
-  }, [showVideo]);
+    pruneUnusedSources(video, isMobile);
+    void startPlayback(video);
+  }, [eligible, isMobile]);
 
   return (
     <div ref={rootRef} className="hi-hero-media" aria-hidden="true">
@@ -146,8 +174,7 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
             muted
             loop
             playsInline
-            autoPlay
-            preload="auto"
+            preload="none"
             data-hero-video="responsive"
             data-ready={ready ? "true" : "false"}
             controls={false}
@@ -156,7 +183,7 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
               const video = videoRef.current;
               if (video) revealIfPlaying(video, () => setReady(true));
             }}
-            onCanPlay={() => {
+            onTimeUpdate={() => {
               const video = videoRef.current;
               if (video) revealIfPlaying(video, () => setReady(true));
             }}
@@ -165,12 +192,14 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
             <source
               src={heroMedia.mobileVideo}
               type="video/mp4"
-              media="(max-width: 767.98px)"
+              media={MOBILE_QUERY}
+              data-hero-src="mobile"
             />
             <source
               src={heroMedia.desktopVideo}
               type="video/mp4"
               media="(min-width: 768px)"
+              data-hero-src="desktop"
             />
           </video>
         </>
