@@ -40,6 +40,8 @@ export function StoreEditorial({ product }: { product: Product }) {
             alt={image.alt || product.name}
             fill
             sizes="(max-width: 768px) 100vw, 52vw"
+            priority
+            eager
             className="object-cover"
           />
         ) : (
@@ -66,7 +68,7 @@ export function StoreUploadBanner() {
           alt=""
           fill
           sizes="(max-width: 768px) 90vw, 280px"
-          fetchPriority="low"
+          eager
           className="object-contain object-center p-4"
         />
         <span className="store-upload-line" />

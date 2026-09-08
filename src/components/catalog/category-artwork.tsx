@@ -55,8 +55,8 @@ export function CategoryArtwork({
           fill
           sizes={sizes}
           quality={70}
-          loading="lazy"
-          fetchPriority="low"
+          loading="eager"
+          fetchPriority="auto"
           decoding="async"
           data-category-artwork={src as string}
           data-ready={ready ? "true" : "false"}

@@ -17,26 +17,15 @@ const STEPS = [
   {
     id: "01",
     title: "Dosyanı yükle",
-    copy: "STL veya 3MF dosyanı güvenle yükle.",
   },
   {
     id: "02",
     title: "Üretim seçeneklerini belirle",
-    copy: "Malzeme, renk, kalite ve adet seçeneklerini seç.",
   },
   {
     id: "03",
     title: "Anlık fiyatını gör",
-    copy: "Model ölçüleri ve üretim seçeneklerine göre fiyatını görüntüle.",
   },
-] as const;
-
-const RESULT_ROWS = [
-  { key: "boyut", label: "Boyut" },
-  { key: "malzeme", label: "Malzeme" },
-  { key: "sure", label: "Tahmini süre" },
-  { key: "agirlik", label: "Tahmini ağırlık" },
-  { key: "fiyat", label: "KDV dahil üretim fiyatı" },
 ] as const;
 
 const ALLOWED = [".stl", ".3mf"];
@@ -99,7 +88,7 @@ export function AutoQuote() {
     <section
       ref={sectionRef}
       id="sana-gore-hazir-modeller"
-      data-home-theme="ivory"
+      data-home-theme="mono"
       data-quote-live={fileName ? "true" : "false"}
       className="hi-section hi-quote-lab"
       aria-labelledby="archive-heading"
@@ -108,21 +97,18 @@ export function AutoQuote() {
         Model yükle
       </span>
       <div className="hi-shell">
+        <p className="hi-kicker">ÜRETİM ANALİZ KONSOLU</p>
         <h2 id="archive-heading" className="hi-title">
           <WordReveal as="span" className="hi-quote-title-line" text="MODELİNİ YÜKLE." />
           <WordReveal as="span" className="hi-quote-title-line" text="FİYATINI ANINDA GÖR." />
         </h2>
-        <p className="hi-lede">
-          STL veya 3MF dosyanı yükle; üretim seçeneklerini seç, anlık fiyatını gör.
-        </p>
         <ol className="hi-quote-stages">
           {STEPS.map((step) => (
             <li key={step.id}>
               <div className="hi-quote-stage-head">
-                <p className="hi-quote-num">{step.id} —</p>
+                <p className="hi-quote-num">{step.id}</p>
                 <h3 className="hi-quote-stage-title">{step.title}</h3>
               </div>
-              <p className="mt-1 text-sm text-[color:var(--bc-muted)]">{step.copy}</p>
             </li>
           ))}
         </ol>
@@ -155,8 +141,8 @@ export function AutoQuote() {
             <span className="hi-quote-drop-kicker">STL · 3MF</span>
             <span className="hi-quote-drop-title">MODELİNİ YÜKLE</span>
             <span className="hi-quote-drop-note">
-              Dosyayı tıklayarak seç veya bu alana sürükle. Dosya yalnızca üretim teklifi için
-              kullanılır. Lisans ve üretim hakkı sende kalır.
+              Dosyayı seç veya bu alana sürükle. Malzeme, kalite ve teslimat seçenekleri yükleme
+              sayfasında açılır.
             </span>
             {error ? (
               <span role="alert" className="hi-quote-drop-error">
@@ -169,6 +155,7 @@ export function AutoQuote() {
             className={cn("hi-quote-preview", inView && !reduce && "hi-quote-preview-live")}
             data-industrial-asset="archive-main"
           >
+            <span className="hi-quote-sample">Örnek görünüm</span>
             <SlotImage
               src={industrialAssets.archiveMain}
               alt=""
@@ -187,37 +174,21 @@ export function AutoQuote() {
             <span className="sr-only" data-industrial-asset="archive-thumb-01" />
             <span className="sr-only" data-industrial-asset="archive-thumb-02" />
           </div>
-
-          <aside className="hi-quote-card" aria-label="Teklif kartı demo düzeni">
-            <p className="hi-mono">Teklif kartı</p>
-            <p className="hi-quote-demo-note">
-              Demo kart düzeni — dosya yüklenmeden ölçü, süre veya fiyat gösterilmez.
-            </p>
-            <ul>
-              {RESULT_ROWS.map((row, index) => (
-                <li
-                  key={row.key}
-                  className="hi-quote-row"
-                  style={{ animationDelay: `${index * 90}ms` }}
-                  data-quote-row={row.key}
-                >
-                  <span>{row.label}</span>
-                  <strong data-sample="true">—</strong>
-                </li>
-              ))}
-            </ul>
-            <MagneticAction className="mt-3 w-full">
-              <HomeTrackLink
-                event="upload_cta_clicked"
-                href={"/model-yukle" as Route}
-                data-quote-cta=""
-                className="hi-btn w-full justify-center"
-              >
-                Modelini yükle →
-              </HomeTrackLink>
-            </MagneticAction>
-          </aside>
         </div>
+
+        <p className="hi-lede hi-quote-console-note">
+          Ana sayfa yalnızca süreci gösterir. Gerçek fiyat, dosya yüklendikten sonra hesaplanır.
+        </p>
+        <MagneticAction className="hi-quote-console-cta">
+          <HomeTrackLink
+            event="upload_cta_clicked"
+            href={"/model-yukle" as Route}
+            data-quote-cta=""
+            className="hi-btn"
+          >
+            Modelini yükle →
+          </HomeTrackLink>
+        </MagneticAction>
       </div>
     </section>
   );

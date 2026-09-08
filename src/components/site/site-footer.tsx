@@ -20,7 +20,7 @@ export function SiteFooter({
   const footerDescription = description ?? siteConfig.footerDescription;
 
   return (
-    <footer data-site-footer className="relative bg-deep-ink text-light-text">
+    <footer data-site-footer className="site-footer-brand relative bg-deep-ink text-light-text">
       <SiteFooterMobile description={footerDescription} />
 
       <div className="shell relative hidden py-6 md:block">

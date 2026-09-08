@@ -78,9 +78,6 @@ export function ProductCard({
         ? "Siparişe göre"
         : "Stokta"
       : "Tükendi";
-  const summary = [product.materialSummary || product.materialCode, stockLabel]
-    .filter(Boolean)
-    .join(" · ");
 
   function handleQuickAdd() {
     if (!canAdd || action.kind !== "add") {
@@ -257,6 +254,7 @@ export function ProductCard({
                 : "(max-width: 640px) 46vw, (max-width: 1280px) 22vw, 18vw"
             }
             preload={priority}
+            eager
             ratio="square"
             grid={false}
             className="store-card-media"
@@ -327,7 +325,7 @@ export function ProductCard({
         >
           {product.name}
         </Link>
-        {isStore && summary ? <p className="store-card-meta">{summary}</p> : null}
+        {isStore ? <p className="store-card-stock">{stockLabel}</p> : null}
         {isStore ? (
           <>
             <PriceDisplay

@@ -34,7 +34,7 @@ export function IndustrialHome({
   void readyModels;
 
   return (
-    <div className="hi-root pb-3 md:pb-0">
+    <div className="hi-root">
       <IndustrialHeaderEffects />
       <ScrollThemeProvider />
       <TechnicalGrid />

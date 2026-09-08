@@ -85,6 +85,88 @@ async function videoPixels(page) {
   return sharp(buf).raw().ensureAlpha().toBuffer();
 }
 
+async function setFullpageCapture(page, on) {
+  await page.evaluate((enabled) => {
+    if (enabled) document.documentElement.dataset.bcCapture = "fullpage";
+    else delete document.documentElement.dataset.bcCapture;
+  }, on);
+}
+
+async function proveStoreImages(page) {
+  const cards = page.locator("[data-catalog-results] .store-card");
+  await cards.first().waitFor({ state: "visible" });
+  const count = await cards.count();
+  const rows = [];
+  for (let index = 0; index < count; index += 1) {
+    const card = cards.nth(index);
+    await card.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(40);
+    const info = await card.evaluate(async (node) => {
+      const image = node.querySelector("img");
+      const placeholder = node.querySelector("[data-model-image-placeholder]");
+      if (image && !image.complete) {
+        try {
+          await image.decode();
+        } catch {
+          /* ignore */
+        }
+      }
+      const phBox = placeholder?.getBoundingClientRect();
+      const imgBox = image?.getBoundingClientRect();
+      const placeholderVisible = Boolean(
+        placeholder &&
+          phBox &&
+          phBox.width > 8 &&
+          phBox.height > 8 &&
+          getComputedStyle(placeholder).display !== "none" &&
+          getComputedStyle(placeholder).visibility !== "hidden",
+      );
+      let http = null;
+      try {
+        if (image?.currentSrc) {
+          const response = await fetch(image.currentSrc, { method: "HEAD" });
+          http = response.status;
+        }
+      } catch {
+        http = "fetch-failed";
+      }
+      return {
+        slug: node.getAttribute("data-product-slug"),
+        complete: Boolean(image?.complete),
+        naturalWidth: image?.naturalWidth ?? 0,
+        currentSrc: image?.currentSrc ?? "",
+        http,
+        placeholderVisible,
+        imgVisible: Boolean(imgBox && imgBox.width > 8 && imgBox.height > 8),
+      };
+    });
+    rows.push(info);
+  }
+  return rows;
+}
+
+async function navCardOverlap(page) {
+  return page.evaluate(() => {
+    const nav = document.querySelector(".store-bottom-nav");
+    if (!nav || getComputedStyle(nav).display === "none") {
+      return { overlap: 0, navTop: null };
+    }
+    const navBox = nav.getBoundingClientRect();
+    let overlap = 0;
+    for (const card of document.querySelectorAll(".store-card")) {
+      const box = card.getBoundingClientRect();
+      const y = Math.max(0, Math.min(box.bottom, navBox.bottom) - Math.max(box.top, navBox.top));
+      const x = Math.max(0, Math.min(box.right, navBox.right) - Math.max(box.left, navBox.left));
+      if (y > 0 && x > 0) overlap = Math.max(overlap, y);
+    }
+    return {
+      overlap: Math.round(overlap),
+      navTop: Math.round(navBox.top),
+      viewportHeight: window.innerHeight,
+    };
+  });
+}
+
 async function overflowAt(page, width, height, route) {
   await page.setViewportSize({ width, height });
   await page.goto(`${origin}${route}`, { waitUntil: "networkidle" });
@@ -141,6 +223,10 @@ await withPage({ width: 390, height: 844 }, async (page) => {
   await seekHero(page, 1);
   const video1 = await videoPixels(page);
   await page.screenshot({
+    path: path.join(outDir, "home-hero-390.png"),
+    animations: "disabled",
+  });
+  await page.screenshot({
     path: path.join(outDir, "hero-frame-1s-390.png"),
     animations: "disabled",
   });
@@ -163,102 +249,97 @@ await withPage({ width: 390, height: 844 }, async (page) => {
   };
 
   await page.locator("#kategoriler").scrollIntoViewIfNeeded();
-  const comingSoonControl = page.locator("#kategoriler [data-coming-soon='true']:visible").first();
-  if (await comingSoonControl.count()) {
-    await comingSoonControl.click();
-  } else {
-    await page.locator(".hi-cats-rail-item").nth(2).click();
-  }
-  await page.waitForTimeout(300);
+  await waitDecode(page, "#kategoriler");
+  proof.categories390 = await page.locator("#kategoriler").evaluate((node) => ({
+    height: Math.round(node.getBoundingClientRect().height),
+    comingSoonHrefs: node.querySelectorAll('[data-coming-soon="true"] a, a[data-coming-soon="true"]').length,
+  }));
   await page.locator("#kategoriler").screenshot({
-    path: path.join(outDir, "categories-coming-soon-390.png"),
+    path: path.join(outDir, "home-categories-390.png"),
   });
 
   await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
-  await page.evaluate(() => {
-    const section = document.getElementById("sana-gore-hazir-modeller");
-    const cta = document.querySelector("[data-quote-cta]");
-    const nav = document.querySelector(".store-bottom-nav");
-    if (!section || !cta || !nav) return;
-    const ctaBox = cta.getBoundingClientRect();
-    const navBox = nav.getBoundingClientRect();
-    const overlap = Math.max(0, ctaBox.bottom - navBox.top);
-    if (overlap > 0) {
-      window.scrollBy(0, overlap + 12);
-    }
-  });
   await page.waitForTimeout(200);
-  proof.quoteNav390 = await page.evaluate(() => {
-    const cta = document.querySelector("[data-quote-cta]");
-    const nav = document.querySelector(".store-bottom-nav");
-    const drop = document.querySelector(".hi-quote-drop");
-    const heading = document.getElementById("archive-heading");
-    if (!cta || !nav) return { intersection: 999 };
-    const ctaBox = cta.getBoundingClientRect();
-    const navBox = nav.getBoundingClientRect();
-    const dropBox = drop?.getBoundingClientRect();
-    const headingBox = heading?.getBoundingClientRect();
-    const overlap = (a, b) =>
-      Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
-    return {
-      intersection: Math.round(overlap(ctaBox, navBox)),
-      dropIntersection: dropBox ? Math.round(overlap(dropBox, navBox)) : null,
-      headingIntersection: headingBox ? Math.round(overlap(headingBox, navBox)) : null,
-      navTop: Math.round(navBox.top),
-      ctaBottom: Math.round(ctaBox.bottom),
-    };
+  await page.locator("#sana-gore-hazir-modeller").screenshot({
+    path: path.join(outDir, "home-instant-pricing-390.png"),
   });
   await page.screenshot({
     path: path.join(outDir, "instant-pricing-with-bottom-nav-390.png"),
   });
 
-  await page.locator("[data-site-footer-mobile]").scrollIntoViewIfNeeded();
-  await page.locator("[data-site-footer-mobile]").screenshot({
-    path: path.join(outDir, "footer-390.png"),
+  await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
+  await waitDecode(page, "#mevcut-urunler");
+  await page.locator("#mevcut-urunler").screenshot({
+    path: path.join(outDir, "home-products-390.png"),
   });
+
+  await setFullpageCapture(page, true);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: path.join(outDir, "home-full-390.png"),
     fullPage: true,
   });
+  await setFullpageCapture(page, false);
 
   proof.homeMetrics390 = await page.evaluate(() => ({
     comingSoonAnchors: document.querySelectorAll('[data-coming-soon="true"] a, a[data-coming-soon="true"]').length,
-    footerYakinda: (document.querySelector("[data-site-footer]")?.textContent.match(/yakında/gi) ?? []).length,
     quoteHeading: document.getElementById("archive-heading")?.innerText ?? "",
     quoteSteps: [...document.querySelectorAll(".hi-quote-stages li")].map((node) =>
       node.innerText.replace(/\s+/g, " ").trim(),
     ),
+    quoteTheme: document.getElementById("sana-gore-hazir-modeller")?.getAttribute("data-home-theme"),
   }));
 });
 
 await withPage({ width: 390, height: 844 }, async (page) => {
   await page.goto(`${origin}/magaza`, { waitUntil: "networkidle" });
   await page.locator("[data-catalog-grid]").first().waitFor({ state: "visible" });
-  await waitDecode(page, "[data-catalog-grid]");
+  const images = await proveStoreImages(page);
+  proof.storeImages390 = {
+    count: images.length,
+    realPhotos: images.filter((row) => row.complete && row.naturalWidth > 8 && !row.placeholderVisible).length,
+    placeholders: images.filter((row) => row.placeholderVisible).length,
+    rows: images,
+  };
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await waitDecode(page, "[data-catalog-results]");
+  proof.navOverlap390 = await navCardOverlap(page);
+  await page.screenshot({
+    path: path.join(outDir, "store-first-screen-390.png"),
+  });
+  const firstGrid = page.locator("[data-catalog-grid]").first();
+  await firstGrid.screenshot({ path: path.join(outDir, "store-first-8-390.png") });
+
+  const middle = page.locator("[data-catalog-grid]").nth(1);
+  if (await middle.count()) {
+    await middle.scrollIntoViewIfNeeded();
+    await waitDecode(page, "[data-catalog-grid]");
+    await page.screenshot({ path: path.join(outDir, "store-middle-products-390.png") });
+  }
+
+  await page.locator("[data-site-footer-mobile]").scrollIntoViewIfNeeded();
+  await page.screenshot({ path: path.join(outDir, "store-bottom-390.png") });
+
+  await setFullpageCapture(page, true);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: path.join(outDir, "store-full-390.png"),
     fullPage: true,
   });
+  await page.screenshot({
+    path: path.join(outDir, "store-products-21-proof-390.png"),
+    fullPage: true,
+  });
+  await setFullpageCapture(page, false);
+
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.getByRole("button", { name: "Menüyü aç" }).click();
   await page.getByRole("navigation", { name: "Mobil menü" }).waitFor({ state: "visible" });
   await page.waitForTimeout(200);
   proof.mobileMenu = await page.evaluate(() => {
     const nav = document.querySelector('nav[aria-label="Mobil menü"]');
-    const topLinks = [...nav.querySelectorAll(":scope > ul > li > a, :scope > ul > li > button")].map(
-      (node) => node.textContent.replace(/\s+/g, " ").trim(),
-    );
-    const toptan = [...nav.querySelectorAll("a")].filter((node) =>
-      /toptan & bayiler/i.test(node.textContent ?? ""),
-    );
     const comingSoonHrefs = [...nav.querySelectorAll('[data-coming-soon="true"] a, a[data-coming-soon="true"]')].length;
-    return {
-      topLinks,
-      independentToptan: toptan.length,
-      comingSoonHrefs,
-      toptanParent: toptan[0]?.closest("li")?.querySelector("button")?.textContent?.trim() ?? null,
-    };
+    return { comingSoonHrefs };
   });
   await page.screenshot({ path: path.join(outDir, "mobile-menu-open-390.png") });
 });
@@ -268,6 +349,10 @@ await withPage({ width: 1440, height: 900 }, async (page) => {
   await waitHeroReady(page);
   await seekHero(page, 1);
   const video1 = await videoPixels(page);
+  await page.screenshot({
+    path: path.join(outDir, "home-hero-1440.png"),
+    animations: "disabled",
+  });
   await page.screenshot({
     path: path.join(outDir, "hero-frame-1s-1440.png"),
     animations: "disabled",
@@ -284,11 +369,11 @@ await withPage({ width: 1440, height: 900 }, async (page) => {
   };
 
   await page.locator("#kategoriler").scrollIntoViewIfNeeded();
-  await page.screenshot({ path: path.join(outDir, "categories-default-1440.png") });
+  await page.screenshot({ path: path.join(outDir, "home-categories-default-1440.png") });
   await page.locator(".hi-cats-index-item").nth(1).hover();
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(420);
   await page.locator("#kategoriler").screenshot({
-    path: path.join(outDir, "categories-hover-1440.png"),
+    path: path.join(outDir, "home-categories-hover-1440.png"),
     animations: "allow",
   });
 
@@ -301,43 +386,71 @@ await withPage({ width: 1440, height: 900 }, async (page) => {
 
   await page.keyboard.press("Escape");
   await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
-  await page.screenshot({ path: path.join(outDir, "instant-pricing-1440.png") });
-  await page.locator("[data-site-footer] .shell").first().scrollIntoViewIfNeeded();
-  await page.locator("[data-site-footer] .shell").first().screenshot({
-    path: path.join(outDir, "footer-1440.png"),
+  await page.screenshot({ path: path.join(outDir, "home-instant-pricing-1440.png") });
+  await page.screenshot({
+    path: path.join(outDir, "instant-pricing-1440.png"),
   });
+  await setFullpageCapture(page, true);
   await page.screenshot({
     path: path.join(outDir, "home-full-1440.png"),
     fullPage: true,
   });
+  await setFullpageCapture(page, false);
 });
 
 await withPage({ width: 1440, height: 900 }, async (page) => {
   await page.goto(`${origin}/magaza`, { waitUntil: "networkidle" });
   await page.locator("[data-catalog-grid]").first().waitFor({ state: "visible" });
-  await waitDecode(page, "[data-catalog-grid]");
+  const images = await proveStoreImages(page);
+  proof.storeImages1440 = {
+    count: images.length,
+    realPhotos: images.filter((row) => row.complete && row.naturalWidth > 8 && !row.placeholderVisible).length,
+    placeholders: images.filter((row) => row.placeholderVisible).length,
+  };
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await waitDecode(page, "[data-catalog-results]");
+  await page.screenshot({ path: path.join(outDir, "store-first-screen-1440.png") });
+  const defaultCard = page.locator(".store-card").first();
+  await defaultCard.screenshot({ path: path.join(outDir, "store-card-default-1440.png") });
+  await defaultCard.hover();
+  await page.waitForTimeout(350);
+  await defaultCard.screenshot({ path: path.join(outDir, "store-card-hover-1440.png") });
+  await page.locator(".store-editorial").scrollIntoViewIfNeeded();
+  await page.locator(".store-editorial").screenshot({
+    path: path.join(outDir, "store-editorial-1440.png"),
+  });
+  await setFullpageCapture(page, true);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: path.join(outDir, "store-full-1440.png"),
     fullPage: true,
   });
+  await setFullpageCapture(page, false);
   proof.storePills = await page.evaluate(() => ({
     comingSoonHrefs: document.querySelectorAll('.store-cats [data-coming-soon="true"] a, .store-cats a[data-coming-soon="true"]').length,
-    comingSoonBadges: [...document.querySelectorAll(".store-cat-soon")].map((node) =>
-      node.textContent.trim(),
-    ),
     productCount: document.querySelectorAll("[data-catalog-grid] article").length,
+    columns: getComputedStyle(document.querySelector(".store-grid")).gridTemplateColumns.split(" ").length,
   }));
 });
 
 const probe = await browser.newContext({ locale: "tr-TR", reducedMotion: "no-preference" });
 const probePage = await probe.newPage();
 const overflow = [];
+const navOverlap = [];
 for (const width of [320, 360, 390, 430, 1024, 1363, 1440]) {
   const height = width >= 768 ? 900 : 844;
   overflow.push({ width, route: "/", ...(await overflowAt(probePage, width, height, "/")) });
   overflow.push({ width, route: "/magaza", ...(await overflowAt(probePage, width, height, "/magaza")) });
+  if (width <= 430) {
+    await probePage.setViewportSize({ width, height });
+    await probePage.goto(`${origin}/magaza`, { waitUntil: "networkidle" });
+    await proveStoreImages(probePage);
+    await probePage.evaluate(() => window.scrollTo(0, 0));
+    navOverlap.push({ width, firstScreen: await navCardOverlap(probePage) });
+  }
 }
 proof.overflow = overflow;
+proof.navOverlap = navOverlap;
 await probe.close();
 
 writeFileSync(path.join(outDir, "proof.json"), JSON.stringify(proof, null, 2));

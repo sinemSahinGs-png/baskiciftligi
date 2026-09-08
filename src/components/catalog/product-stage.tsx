@@ -20,6 +20,7 @@ interface ProductStageProps {
   alt: string;
   sizes?: string;
   preload?: boolean;
+  eager?: boolean;
   framed?: boolean;
   isolated?: boolean;
   objectPosition?: string;
@@ -40,6 +41,7 @@ export function ProductStage({
   alt,
   sizes = "(max-width: 640px) 50vw, 25vw",
   preload,
+  eager = false,
   framed,
   isolated = false,
   objectPosition = "50% 50%",
@@ -136,6 +138,7 @@ export function ProductStage({
             fill
             sizes={sizes}
             priority={preload}
+            eager={eager}
             className={cn(
               "product-stage-media md:hidden",
               fitClass,
@@ -150,6 +153,7 @@ export function ProductStage({
           fill
           sizes={sizes}
           priority={preload}
+          eager={eager}
           className={cn(
             "product-stage-media",
             mobileSrc && "max-md:hidden",

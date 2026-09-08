@@ -13,6 +13,7 @@ interface SafeImageProps extends Omit<ImageProps, "src" | "alt"> {
   fallbackLabel?: string;
   imageKey?: string;
   quality?: number;
+  eager?: boolean;
   onVerifiedLoad?: (src: string) => void;
   onPermanentFail?: (src: string) => void;
   showSkeleton?: boolean;
@@ -34,7 +35,10 @@ function SafeImageInner({
   showSkeleton = true,
   priority,
   preload,
+  eager = false,
   fill,
+  loading,
+  fetchPriority,
   onLoad,
   onError,
   ...props
@@ -89,6 +93,7 @@ function SafeImageInner({
   }, [failed, markReady, src]);
 
   const showImage = Boolean(src) && !failed;
+  const forceEager = Boolean(priority || preload || eager);
   const showPlaceholder = !showImage || (showSkeleton && !loaded && !failed);
 
   return (
@@ -108,8 +113,10 @@ function SafeImageInner({
           unoptimized={shouldUnoptimize(src as string)}
           quality={quality}
           priority={Boolean(priority || preload)}
-          loading={priority || preload ? "eager" : "lazy"}
-          fetchPriority={priority || preload ? "high" : "low"}
+          loading={priority || preload ? undefined : forceEager ? "eager" : loading ?? "lazy"}
+          fetchPriority={
+            priority || preload ? "high" : fetchPriority ?? (forceEager ? "auto" : "low")
+          }
           onError={(event) => {
             setFailed(true);
             reportFail(src as string);
