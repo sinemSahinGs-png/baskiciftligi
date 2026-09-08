@@ -15,13 +15,15 @@ import {
 import { listProducts } from "@/domain/catalog/repository";
 
 export function generateStaticParams() {
-  return storefrontCategories.map((category) => ({ slug: category.slug }));
+  return storefrontCategories
+    .filter((category) => !category.comingSoon)
+    .map((category) => ({ slug: category.slug }));
 }
 
 export async function generateMetadata(props: PageProps<"/kategori/[slug]">) {
   const { slug } = await props.params;
   const category = getStorefrontCategory(slug);
-  if (!category) {
+  if (!category || category.comingSoon) {
     return { title: "Kategori bulunamadı", robots: { index: false, follow: false } };
   }
   return {
@@ -41,11 +43,9 @@ export default async function StorefrontCategoryPage(
 ) {
   const { slug } = await props.params;
   const category = getStorefrontCategory(slug);
-  if (!category) notFound();
+  if (!category || category.comingSoon) notFound();
 
-  const products = category.comingSoon
-    ? []
-    : await listProducts({ category: category.slug });
+  const products = await listProducts({ category: category.slug });
 
   return (
     <main id="ana-icerik" className="store-page">
@@ -69,11 +69,7 @@ export default async function StorefrontCategoryPage(
                 {category.name.toLocaleUpperCase("tr-TR")}
               </h1>
               <p className="store-intro-lede">{category.description}</p>
-              {category.comingSoon ? (
-                <p className="store-intro-count">Seçki hazırlanıyor</p>
-              ) : (
-                <p className="store-intro-count">{products.length} ürün</p>
-              )}
+              <p className="store-intro-count">{products.length} ürün</p>
             </div>
           </div>
           <Suspense fallback={null}>
@@ -86,14 +82,7 @@ export default async function StorefrontCategoryPage(
         <h2 id="kategori-urunler" className="sr-only">
           {category.name} ürünleri
         </h2>
-        {category.comingSoon ? (
-          <EmptyState
-            icon={<PackageOpen aria-hidden="true" className="size-5" />}
-            title="Bu seçki hazırlanıyor"
-            description="Kategori vitrinde yerini aldı. Ürünler eklendikçe burada listelenir; sahte ürün gösterilmez."
-            action={{ href: "/magaza" as Route, label: "Tüm ürünleri gör" }}
-          />
-        ) : products.length > 0 ? (
+        {products.length > 0 ? (
           <CatalogGrid products={products} priorityCount={1} tone="store" />
         ) : (
           <EmptyState

@@ -112,7 +112,10 @@ test.describe("storefront category navigation", () => {
     const menu = page.getByRole("menu");
     await expect(menu).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: /Dekorasyon/ })).toBeVisible();
-    await expect(menu.getByRole("menuitem", { name: /Taraftara Özel/ })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: /Taraftara Özel/ })).toHaveCount(0);
+    await expect(menu.locator('[data-coming-soon="true"]')).toHaveCount(2);
+    await expect(menu.locator('[data-coming-soon="true"] a')).toHaveCount(0);
+    await expect(menu.getByText("Taraftara Özel")).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: "Toptan & Bayiler" })).toBeVisible();
     await menu.getByRole("menuitem", { name: /Kişiye Özel/ }).focus();
     await page.keyboard.press("ArrowDown");
@@ -148,10 +151,13 @@ test.describe("storefront category navigation", () => {
     await page.getByRole("banner").getByRole("button", { name: /Menüyü aç/ }).click();
     const drawer = page.getByRole("navigation", { name: "Mobil menü" });
     await expect(drawer).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Toptan & Bayiler" })).toBeVisible();
     await drawer.getByRole("button", { name: "Mağaza" }).click();
     await expect(drawer.getByRole("link", { name: "Tüm ürünleri gör", exact: true })).toBeVisible();
     await expect(drawer.getByRole("link", { name: "Figür & Heykel" })).toBeVisible();
-    await expect(drawer.getByRole("link", { name: "Toptan & Bayiler" })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Toptan & Bayiler" })).toHaveCount(1);
+    await expect(drawer.locator('[data-coming-soon="true"] a')).toHaveCount(0);
+    await expect(drawer.getByRole("link", { name: /Taraftara Özel/ })).toHaveCount(0);
     await drawer.getByRole("link", { name: "Tüm ürünleri gör", exact: true }).click();
     await expect(page).toHaveURL(/\/magaza/);
   });

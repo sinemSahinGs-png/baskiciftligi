@@ -137,8 +137,8 @@ test.describe("home visual approval 390px", () => {
 
     const geometry = await heroGeometry(page);
     expect(geometry).not.toBeNull();
-    expect(geometry!.inputCenter).toBeGreaterThan(0.46);
-    expect(geometry!.inputCenter).toBeLessThan(0.68);
+    expect(geometry!.inputCenter).toBeGreaterThan(0.38);
+    expect(geometry!.inputCenter).toBeLessThan(0.45);
     expect(geometry!.ctaBottom).toBeLessThan(0.78);
     await expect.poll(async () => {
       const box = await page.locator(".hi-hero-go").boundingBox();
@@ -198,17 +198,21 @@ test.describe("home visual approval 390px", () => {
     await decodeVisibleImages(page, "#malzeme-secenekleri");
     const materialBox = await material.boundingBox();
     const materialsSection = await page.locator("#malzeme-secenekleri").boundingBox();
-    expect(materialBox?.height ?? 0).toBeGreaterThanOrEqual(140);
-    expect(materialBox?.height ?? 0).toBeLessThanOrEqual(200);
+    expect(materialBox?.height ?? 0).toBeGreaterThanOrEqual(230);
+    expect(materialBox?.height ?? 0).toBeLessThanOrEqual(310);
     expect(materialsSection?.height ?? 0).toBeGreaterThanOrEqual(300);
     expect(materialsSection?.height ?? 0).toBeLessThanOrEqual(520);
     await page.getByRole("tab", { name: /PETG/i }).click();
     await expect
-      .poll(async () => material.getAttribute("src"))
+      .poll(async () =>
+        page.locator('.hi-material-layer[data-active="true"] img').getAttribute("src"),
+      )
       .toMatch(/material-petg/i);
     await page.getByRole("tab", { name: /^PLA/i }).click();
     await expect
-      .poll(async () => material.getAttribute("src"))
+      .poll(async () =>
+        page.locator('.hi-material-layer[data-active="true"] img').getAttribute("src"),
+      )
       .toMatch(/material-pla/i);
     await page.locator("#malzeme-secenekleri").screenshot({
       path: path.join(shots, "materials-visible-390.png"),

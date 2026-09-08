@@ -32,7 +32,9 @@ function subscribeMobile(onStoreChange: () => void) {
 
 function revealIfPlaying(video: HTMLVideoElement, onReady: () => void) {
   if (video.error || video.paused) return;
-  if (video.currentTime > 0) onReady();
+  if (video.currentTime > 0.04 && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+    onReady();
+  }
 }
 
 function pruneUnusedSources(video: HTMLVideoElement, isMobile: boolean) {
@@ -190,7 +192,7 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
             muted
             loop
             playsInline
-            preload="none"
+            preload="metadata"
             data-hero-video="responsive"
             data-ready={ready ? "true" : "false"}
             controls={false}

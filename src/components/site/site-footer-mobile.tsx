@@ -133,10 +133,13 @@ export function SiteFooterMobile({
                 {siteConfig.contact.email}
               </p>
             ) : null}
+            {siteConfig.contact.phone ? (
+              <p className="flex items-center gap-2">
+                {siteConfig.contact.phone}
+              </p>
+            ) : null}
           </div>
-        ) : (
-          <p className="mt-3 text-sm text-muted-light">İletişim bilgileri yakında</p>
-        )}
+        ) : null}
 
         <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-xs text-muted-light">
           <p>

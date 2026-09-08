@@ -11,8 +11,10 @@ import { FormSignal } from "@/components/brand/form-signal";
 import { siteConfig } from "@/config/site";
 import type { Category, Product } from "@/domain/catalog/types";
 import {
+  getStorefrontCategory,
   publicCategoryHref,
   publicCategoryName,
+  storefrontSlugFromSource,
 } from "@/domain/catalog/storefront-taxonomy";
 import { matchesTurkish } from "@/lib/search/turkish-match";
 import { foundryEase } from "@/lib/motion";
@@ -132,6 +134,10 @@ export function SearchOverlay({
     for (const category of categories) {
       const name = publicCategoryName(category.slug, category.name);
       const href = publicCategoryHref(category.slug);
+      const storefront =
+        getStorefrontCategory(category.slug) ??
+        getStorefrontCategory(storefrontSlugFromSource(category.slug) ?? "");
+      if (storefront?.comingSoon) continue;
       if (seen.has(href)) continue;
       if (!matchesTurkish(`${name} ${category.name}`, trimmed)) continue;
       seen.add(href);

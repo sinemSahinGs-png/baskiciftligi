@@ -1,6 +1,6 @@
 import type { Route } from "next";
 import Link from "next/link";
-import { AtSign, Mail, MapPin, Phone, Play } from "lucide-react";
+import { AtSign, Mail, Phone, Play } from "lucide-react";
 
 import { Logo } from "@/components/site/logo";
 import { SiteFooterMobile } from "@/components/site/site-footer-mobile";
@@ -31,6 +31,7 @@ export function SiteFooter({
         <div className="mt-5 grid gap-6 lg:grid-cols-4">
           <div className="max-w-xs">
             <p className="max-w-xs text-sm leading-6 text-muted-light">{footerDescription}</p>
+            {siteConfig.contact.email || siteConfig.contact.phone ? (
             <div className="mt-3 space-y-1.5 text-sm text-muted-light">
               {siteConfig.contact.email ? (
                 <p className="flex items-center gap-2">
@@ -46,11 +47,8 @@ export function SiteFooter({
                   </a>
                 </p>
               ) : null}
-              <p className="flex items-center gap-2">
-                <MapPin aria-hidden="true" className="size-3.5 text-orange" />
-                {siteConfig.city}, Türkiye
-              </p>
             </div>
+            ) : null}
           </div>
           <nav aria-label="Mağaza">
             <p className="text-sm font-semibold">Mağaza</p>

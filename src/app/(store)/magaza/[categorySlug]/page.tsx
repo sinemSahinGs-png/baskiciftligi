@@ -22,6 +22,7 @@ export default async function LegacyStoreCategoryPage(
     redirect("/toptan" as Route);
   }
   const storefront = getStorefrontCategory(categorySlug);
+  if (storefront?.comingSoon) notFound();
   if (storefront) {
     redirect(storefront.href);
   }

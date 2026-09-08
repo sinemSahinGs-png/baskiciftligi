@@ -14,17 +14,29 @@ import { trackHomeEvent } from "@/lib/home/analytics";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
-  { id: "01", title: "Dosyanı yükle", copy: "STL veya 3MF." },
-  { id: "02", title: "Üretim analizi", copy: "Ölçü, süre, malzeme." },
-  { id: "03", title: "Gerçek fiyatını gör", copy: "KDV dahil üretim." },
+  {
+    id: "01",
+    title: "Dosyanı yükle",
+    copy: "STL veya 3MF dosyanı güvenle yükle.",
+  },
+  {
+    id: "02",
+    title: "Üretim seçeneklerini belirle",
+    copy: "Malzeme, renk, kalite ve adet seçeneklerini seç.",
+  },
+  {
+    id: "03",
+    title: "Anlık fiyatını gör",
+    copy: "Model ölçüleri ve üretim seçeneklerine göre fiyatını görüntüle.",
+  },
 ] as const;
 
 const RESULT_ROWS = [
-  { key: "boyut", label: "Boyut", sample: "Örnek görünüm" },
-  { key: "malzeme", label: "Malzeme", sample: "Örnek görünüm" },
-  { key: "sure", label: "Tahmini süre", sample: "Örnek görünüm" },
-  { key: "agirlik", label: "Tahmini ağırlık", sample: "Örnek görünüm" },
-  { key: "fiyat", label: "KDV dahil üretim fiyatı", sample: "Örnek görünüm" },
+  { key: "boyut", label: "Boyut" },
+  { key: "malzeme", label: "Malzeme" },
+  { key: "sure", label: "Tahmini süre" },
+  { key: "agirlik", label: "Tahmini ağırlık" },
+  { key: "fiyat", label: "KDV dahil üretim fiyatı" },
 ] as const;
 
 const ALLOWED = [".stl", ".3mf"];
@@ -96,21 +108,20 @@ export function AutoQuote() {
         Model yükle
       </span>
       <div className="hi-shell">
-        <WordReveal
-          as="h2"
-          id="archive-heading"
-          className="hi-title"
-          text="MODELİNİ YÜKLE. FİYATINI ANINDA GÖR."
-        />
+        <h2 id="archive-heading" className="hi-title">
+          <WordReveal as="span" className="hi-quote-title-line" text="MODELİNİ YÜKLE." />
+          <WordReveal as="span" className="hi-quote-title-line" text="FİYATINI ANINDA GÖR." />
+        </h2>
         <p className="hi-lede">
-          STL veya 3MF dosyanı yükle; ölçü, malzeme, baskı süresi ve üretim maliyeti otomatik
-          hesaplansın.
+          STL veya 3MF dosyanı yükle; üretim seçeneklerini seç, anlık fiyatını gör.
         </p>
         <ol className="hi-quote-stages">
           {STEPS.map((step) => (
             <li key={step.id}>
-              <p className="hi-quote-num">{step.id}</p>
-              <h3 className="hi-path-name mt-1">{step.title}</h3>
+              <div className="hi-quote-stage-head">
+                <p className="hi-quote-num">{step.id} —</p>
+                <h3 className="hi-quote-stage-title">{step.title}</h3>
+              </div>
               <p className="mt-1 text-sm text-[color:var(--bc-muted)]">{step.copy}</p>
             </li>
           ))}
@@ -144,7 +155,8 @@ export function AutoQuote() {
             <span className="hi-quote-drop-kicker">STL · 3MF</span>
             <span className="hi-quote-drop-title">MODELİNİ YÜKLE</span>
             <span className="hi-quote-drop-note">
-              Dosya yalnızca üretim teklifi için kullanılır. Lisans ve üretim hakkı sende kalır.
+              Dosyayı tıklayarak seç veya bu alana sürükle. Dosya yalnızca üretim teklifi için
+              kullanılır. Lisans ve üretim hakkı sende kalır.
             </span>
             {error ? (
               <span role="alert" className="hi-quote-drop-error">
@@ -176,8 +188,11 @@ export function AutoQuote() {
             <span className="sr-only" data-industrial-asset="archive-thumb-02" />
           </div>
 
-          <aside className="hi-quote-card" aria-label="Teklif önizlemesi">
+          <aside className="hi-quote-card" aria-label="Teklif kartı demo düzeni">
             <p className="hi-mono">Teklif kartı</p>
+            <p className="hi-quote-demo-note">
+              Demo kart düzeni — dosya yüklenmeden ölçü, süre veya fiyat gösterilmez.
+            </p>
             <ul>
               {RESULT_ROWS.map((row, index) => (
                 <li
@@ -187,7 +202,7 @@ export function AutoQuote() {
                   data-quote-row={row.key}
                 >
                   <span>{row.label}</span>
-                  <strong data-sample="true">{fileName && row.key === "malzeme" ? fileName : row.sample}</strong>
+                  <strong data-sample="true">—</strong>
                 </li>
               ))}
             </ul>
@@ -195,6 +210,7 @@ export function AutoQuote() {
               <HomeTrackLink
                 event="upload_cta_clicked"
                 href={"/model-yukle" as Route}
+                data-quote-cta=""
                 className="hi-btn w-full justify-center"
               >
                 Modelini yükle →

@@ -39,19 +39,31 @@ export function StoreCategoryBar() {
         >
           Tümü
         </Link>
-        {storefrontCategories.map((category) => (
-          <Link
-            key={category.slug}
-            href={category.href}
-            className="store-cat"
-            data-active={active === category.slug ? "true" : undefined}
-          >
-            {category.name}
-            {category.comingSoon ? (
-              <span className="store-cat-soon"> Yakında</span>
-            ) : null}
-          </Link>
-        ))}
+        {storefrontCategories.map((category) =>
+          category.comingSoon ? (
+            <span
+              key={category.slug}
+              className="store-cat store-cat-soon-item"
+              aria-disabled="true"
+              aria-label={`${category.name}, yakında`}
+              data-category-slug={category.slug}
+              data-coming-soon="true"
+            >
+              <span>{category.name}</span>
+              <span className="store-cat-soon">Yakında</span>
+            </span>
+          ) : (
+            <Link
+              key={category.slug}
+              href={category.href}
+              className="store-cat"
+              data-active={active === category.slug ? "true" : undefined}
+              data-category-slug={category.slug}
+            >
+              {category.name}
+            </Link>
+          ),
+        )}
       </div>
     </nav>
   );

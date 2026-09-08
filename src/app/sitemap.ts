@@ -52,7 +52,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
-    ...storefrontCategories.map((category) => ({
+    ...storefrontCategories
+      .filter((category) => !category.comingSoon)
+      .map((category) => ({
       url: new URL(category.href, siteConfig.url).toString(),
       lastModified: now,
       changeFrequency: "weekly" as const,

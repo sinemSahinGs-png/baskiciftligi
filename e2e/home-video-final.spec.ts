@@ -180,12 +180,13 @@ test.describe("mobile hero video and section images", () => {
         return box?.width ?? 999;
       })
       .toBeLessThan(composition.heroWidth * 0.72);
-    expect(composition.center).toBeGreaterThan(0.4);
-    expect(composition.center).toBeLessThan(0.58);
+    expect(composition.center).toBeGreaterThan(0.38);
+    expect(composition.center).toBeLessThan(0.45);
     expect(composition.ctaBottom).toBeLessThan(0.78);
     expect(composition.overflowX).toBeLessThanOrEqual(1);
 
-    await page.waitForTimeout(2800);
+    const timeBefore = await video.evaluate((node) => (node as HTMLVideoElement).currentTime);
+    await page.waitForTimeout(700);
     const playing = await video.evaluate((node) => {
       const media = node as HTMLVideoElement;
       const box = media.getBoundingClientRect();
@@ -200,7 +201,7 @@ test.describe("mobile hero video and section images", () => {
       };
     });
     expect(playing.paused).toBe(false);
-    expect(playing.currentTime).toBeGreaterThan(0.4);
+    expect(playing.currentTime).not.toBe(timeBefore);
     console.log(JSON.stringify({ video: playing, searchCenter: composition.center }, null, 2));
     await page.screenshot({ path: path.join(shots, "hero-playing-390.png") });
   });

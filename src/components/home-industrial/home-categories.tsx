@@ -121,8 +121,14 @@ export function HomeCategories({ products }: { products: Product[] }) {
                   role="tab"
                   aria-selected={selected}
                   tabIndex={selected ? 0 : -1}
+                  aria-label={
+                    category.comingSoon
+                      ? `${category.name}, yakında`
+                      : category.name
+                  }
                   data-category-slug={category.slug}
                   data-active={selected ? "true" : "false"}
+                  data-coming-soon={category.comingSoon ? "true" : undefined}
                   className="hi-cats-index-item"
                   onMouseEnter={() => {
                     pointerLock.current = true;
@@ -175,7 +181,9 @@ export function HomeCategories({ products }: { products: Product[] }) {
                 <p className="hi-cats-meta-title">{current.name}</p>
                 <p className="hi-cats-meta-desc">{current.description}</p>
                 {current.comingSoon ? (
-                  <span className="hi-cats-soon">Hazırlanıyor</span>
+                  <span className="hi-cats-soon" aria-label={`${current.name}, yakında`}>
+                    Hazırlanıyor
+                  </span>
                 ) : (
                   <Link href={current.href} className="hi-cats-cta">
                     Koleksiyona git

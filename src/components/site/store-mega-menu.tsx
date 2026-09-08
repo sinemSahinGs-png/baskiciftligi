@@ -51,6 +51,7 @@ export function StoreMegaMenu({
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const liveCategories = storefrontCategories.filter((item) => !item.comingSoon);
   const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const wholesaleRef = useRef<HTMLAnchorElement | null>(null);
   const openTimer = useRef(0);
@@ -193,20 +194,20 @@ export function StoreMegaMenu({
     scheduleClose();
   }
 
-  function onItemKey(event: KeyboardEvent<HTMLAnchorElement>, index: number) {
+  function onItemKey(event: KeyboardEvent<HTMLAnchorElement>, liveIndex: number) {
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      if (index === storefrontCategories.length - 1) {
+      if (liveIndex === liveCategories.length - 1) {
         focusWholesale();
         return;
       }
-      const next = (index + 1) % storefrontCategories.length;
+      const next = liveIndex + 1;
       setActive(next);
       itemRefs.current[next]?.focus();
     }
     if (event.key === "ArrowUp") {
       event.preventDefault();
-      const next = (index - 1 + storefrontCategories.length) % storefrontCategories.length;
+      const next = (liveIndex - 1 + liveCategories.length) % liveCategories.length;
       setActive(next);
       itemRefs.current[next]?.focus();
     }
@@ -228,7 +229,7 @@ export function StoreMegaMenu({
   function onWholesaleKey(event: KeyboardEvent<HTMLAnchorElement>) {
     if (event.key === "ArrowUp") {
       event.preventDefault();
-      const last = storefrontCategories.length - 1;
+      const last = liveCategories.length - 1;
       setActive(last);
       itemRefs.current[last]?.focus();
     }
@@ -269,21 +270,31 @@ export function StoreMegaMenu({
     >
       <div className="store-mega-panel">
         <ul className="store-mega-grid">
-          {storefrontCategories.map((category, index) => (
-            <li key={category.slug}>
-              <MegaItem
-                category={category}
-                artworkSrc={categoryArtwork[category.slug]}
-                active={active === index}
-                refFn={(node) => {
-                  itemRefs.current[index] = node;
-                }}
-                onFocus={() => setActive(index)}
-                onMouseEnter={() => setActive(index)}
-                onKeyDown={(event) => onItemKey(event, index)}
-              />
-            </li>
-          ))}
+          {storefrontCategories.map((category) => {
+            const liveIndex = liveCategories.findIndex((item) => item.slug === category.slug);
+            return (
+              <li key={category.slug}>
+                {category.comingSoon || liveIndex < 0 ? (
+                  <MegaSoonItem
+                    category={category}
+                    artworkSrc={categoryArtwork[category.slug]}
+                  />
+                ) : (
+                  <MegaItem
+                    category={category}
+                    artworkSrc={categoryArtwork[category.slug]}
+                    active={active === liveIndex}
+                    refFn={(node) => {
+                      itemRefs.current[liveIndex] = node;
+                    }}
+                    onFocus={() => setActive(liveIndex)}
+                    onMouseEnter={() => setActive(liveIndex)}
+                    onKeyDown={(event) => onItemKey(event, liveIndex)}
+                  />
+                )}
+              </li>
+            );
+          })}
         </ul>
         <aside className="store-mega-aside">
           <p className="store-mega-wholesale-kicker">Ticari hat</p>
@@ -381,12 +392,40 @@ function MegaItem({
       </span>
       <span className="min-w-0">
         <span className="store-mega-name">{category.name}</span>
-        {category.comingSoon ? (
-          <span className="store-mega-soon">Hazırlanıyor</span>
-        ) : null}
         <span className="store-mega-copy">{category.description}</span>
       </span>
     </Link>
+  );
+}
+
+function MegaSoonItem({
+  category,
+  artworkSrc,
+}: {
+  category: StorefrontCategory;
+  artworkSrc: string | null;
+}) {
+  return (
+    <div
+      className="store-mega-item store-mega-item-soon"
+      aria-disabled="true"
+      aria-label={`${category.name}, yakında`}
+      data-category-slug={category.slug}
+      data-coming-soon="true"
+    >
+      <span className="store-mega-art" aria-hidden="true">
+        <CategoryArtwork
+          src={artworkSrc}
+          sizes="80px"
+          objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+        />
+      </span>
+      <span className="min-w-0">
+        <span className="store-mega-name">{category.name}</span>
+        <span className="store-mega-soon">Yakında</span>
+        <span className="store-mega-copy">{category.description}</span>
+      </span>
+    </div>
   );
 }
 
@@ -424,39 +463,51 @@ export function MobileStoreNav({
           <ul className="store-mobile-cat-grid">
             {storefrontCategories.map((category) => (
               <li key={category.slug}>
-                <Link
-                  href={category.href}
-                  data-category-slug={category.slug}
-                  className="store-mobile-cat"
-                  onClick={onNavigate}
-                >
-                  <span className="store-mobile-cat-art" aria-hidden="true">
-                    <CategoryArtwork
-                      src={categoryArtwork[category.slug]}
-                      sizes="72px"
-                      objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
-                    />
-                  </span>
-                  <span className="store-mobile-cat-copy">
-                    <span className="store-mobile-cat-name">{category.name}</span>
-                    {category.comingSoon ? (
-                      <span className="store-mega-soon">Hazırlanıyor</span>
-                    ) : null}
-                  </span>
-                  <span className="store-mobile-cat-arrow" aria-hidden="true">
-                    →
-                  </span>
-                </Link>
+                {category.comingSoon ? (
+                  <div
+                    className="store-mobile-cat store-mobile-cat-soon"
+                    aria-disabled="true"
+                    aria-label={`${category.name}, yakında`}
+                    data-category-slug={category.slug}
+                    data-coming-soon="true"
+                  >
+                    <span className="store-mobile-cat-art" aria-hidden="true">
+                      <CategoryArtwork
+                        src={categoryArtwork[category.slug]}
+                        sizes="72px"
+                        objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+                      />
+                    </span>
+                    <span className="store-mobile-cat-copy">
+                      <span className="store-mobile-cat-name">{category.name}</span>
+                      <span className="store-mega-soon">Yakında</span>
+                    </span>
+                  </div>
+                ) : (
+                  <Link
+                    href={category.href}
+                    data-category-slug={category.slug}
+                    className="store-mobile-cat"
+                    onClick={onNavigate}
+                  >
+                    <span className="store-mobile-cat-art" aria-hidden="true">
+                      <CategoryArtwork
+                        src={categoryArtwork[category.slug]}
+                        sizes="72px"
+                        objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+                      />
+                    </span>
+                    <span className="store-mobile-cat-copy">
+                      <span className="store-mobile-cat-name">{category.name}</span>
+                    </span>
+                    <span className="store-mobile-cat-arrow" aria-hidden="true">
+                      →
+                    </span>
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
-          <Link
-            href={"/toptan" as Route}
-            className="store-mobile-wholesale"
-            onClick={onNavigate}
-          >
-            Toptan & Bayiler
-          </Link>
         </div>
       ) : null}
     </li>

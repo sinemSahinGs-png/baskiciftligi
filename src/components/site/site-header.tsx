@@ -223,11 +223,7 @@ export function SiteHeader({
                 onNavigate={() => setMobileOpen(false)}
               />
               {siteConfig.primaryNavigation
-                .filter(
-                  (item) =>
-                    item.label !== "Mağaza" &&
-                    item.label !== "Toptan & Bayiler",
-                )
+                .filter((item) => item.label !== "Mağaza")
                 .map((item) => (
                 <li key={`${item.href}-${item.label}`} className="border-b border-hairline">
                   <Link
