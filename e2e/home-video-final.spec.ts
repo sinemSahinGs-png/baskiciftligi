@@ -180,8 +180,8 @@ test.describe("mobile hero video and section images", () => {
         return box?.width ?? 999;
       })
       .toBeLessThan(composition.heroWidth * 0.72);
-    expect(composition.center).toBeGreaterThan(0.46);
-    expect(composition.center).toBeLessThan(0.68);
+    expect(composition.center).toBeGreaterThan(0.4);
+    expect(composition.center).toBeLessThan(0.58);
     expect(composition.ctaBottom).toBeLessThan(0.78);
     expect(composition.overflowX).toBeLessThanOrEqual(1);
 
@@ -248,11 +248,10 @@ test.describe("mobile hero video and section images", () => {
       };
     });
     const sceneHeight = processMetrics.height;
-    const viewportHeight = processMetrics.vh;
-    expect(sceneHeight).toBeGreaterThan(viewportHeight * 0.62);
-    expect(sceneHeight).toBeLessThan(viewportHeight * 0.82);
+    expect(sceneHeight).toBeGreaterThan(180);
+    expect(sceneHeight).toBeLessThan(360);
     expect(processMetrics.gap).toBeGreaterThanOrEqual(0);
-    expect(processMetrics.gap).toBeLessThanOrEqual(96);
+    expect(processMetrics.gap).toBeLessThanOrEqual(64);
     await page.locator("#nasil-calisir").screenshot({ path: path.join(shots, "process-390.png") });
 
     await page.locator("#malzeme-secenekleri").scrollIntoViewIfNeeded();

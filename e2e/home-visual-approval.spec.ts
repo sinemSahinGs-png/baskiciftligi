@@ -15,7 +15,6 @@ const SECTION_IDS = [
   "sana-gore-hazir-modeller",
   "mevcut-urunler",
   "one-cikan-urunler",
-  "modelin-hazir-mi",
   "nasil-calisir",
   "malzeme-secenekleri",
   "kurumsal-uretim",

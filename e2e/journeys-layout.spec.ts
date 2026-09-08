@@ -20,11 +20,14 @@ async function journeyMetrics(page: Page) {
     const panels = [
       ...document.querySelectorAll<HTMLElement>("[data-journey-panel]"),
     ];
-    const next = section.nextElementSibling as HTMLElement | null;
-    const viewport = window.innerHeight;
-    if (!section || !next || panels.length === 0) {
+    if (!section || panels.length === 0) {
       return null;
     }
+    const next = section.nextElementSibling as HTMLElement | null;
+    if (!next) {
+      return null;
+    }
+    const viewport = window.innerHeight;
     const sectionBox = section.getBoundingClientRect();
     const nextBox = next.getBoundingClientRect();
     const panelBoxes = panels.map((panel) => {
@@ -145,8 +148,8 @@ test.describe("homepage journey layout", () => {
       expect(metrics!.sectionHeight).toBeLessThan(metrics!.viewport * 1.8);
       expect(metrics!.gapToNext).toBeGreaterThanOrEqual(0);
       expect(metrics!.gapToNext).toBeLessThanOrEqual(360);
-      await page.locator("#modelin-hazir-mi").scrollIntoViewIfNeeded();
-      await expect(page.getByRole("heading", { name: /DOSYANI YÜKLE/ })).toBeVisible();
+      await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
+      await expect(page.getByRole("heading", { name: /MODELİNİ YÜKLE/ })).toBeVisible();
     });
   });
 });
@@ -188,7 +191,7 @@ test.describe("homepage layout contact sheets", () => {
       await page.waitForTimeout(280);
       await page.screenshot({ path: path.join(shots, `journey-${id}.png`) });
     }
-    await page.locator("#modelin-hazir-mi").scrollIntoViewIfNeeded();
+    await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "journey-after.png") });
     expect(frames.length).toBe(5);
   });

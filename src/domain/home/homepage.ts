@@ -198,7 +198,7 @@ export const homepageTrustSignals = [
   },
   {
     title: "Gerçek dilimleme",
-    description: "Süre ve gram, PrusaSlicer 2.8.1 çıktısından okunur.",
+    description: "Süre ve gram, üretim analizinden sonra netleşir.",
   },
   {
     title: "İmzalı teklif",

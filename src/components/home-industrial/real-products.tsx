@@ -12,8 +12,19 @@ export const HOME_EMPTY_CATALOG = {
   cta: "MODELİNİ YÜKLE",
 } as const;
 
+function mediaRank(product: Product) {
+  const url = product.media[0]?.url ?? "";
+  if (!url) return 0;
+  if (/^https?:\/\//i.test(url) || url.startsWith("/demo/") || url.startsWith("/images/")) {
+    return 2;
+  }
+  return 1;
+}
+
 export function RealProducts({ products }: { products: Product[] }) {
-  const visible = products.slice(0, 4);
+  const visible = [...products]
+    .sort((left, right) => mediaRank(right) - mediaRank(left))
+    .slice(0, 4);
 
   return (
     <section

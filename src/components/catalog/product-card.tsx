@@ -336,6 +336,9 @@ export function ProductCard({
               currency={product.currency}
               className="store-card-price"
             />
+            <Link href={productHref} className="store-card-inspect">
+              İncele
+            </Link>
             <div className="store-card-buy">{purchaseControl}</div>
           </>
         ) : (

@@ -7,10 +7,9 @@ import { IdeaCommand } from "@/components/home-industrial/idea-command";
 import { IndustrialHeaderEffects } from "@/components/home-industrial/industrial-header";
 import { MaterialsStrip } from "@/components/home-industrial/materials-strip";
 import { MobileStickyCta } from "@/components/home-industrial/mobile-sticky-cta";
-import { ModelArchive } from "@/components/home-industrial/model-archive";
+import { AutoQuote } from "@/components/home-industrial/auto-quote";
 import { ProductionPaths } from "@/components/home-industrial/production-paths";
 import { ProductionProcess } from "@/components/home-industrial/production-process";
-import { QuoteFlow } from "@/components/home-industrial/quote-flow";
 import { RealProducts } from "@/components/home-industrial/real-products";
 import { ScrollThemeProvider } from "@/components/home-industrial/scroll-theme-provider";
 import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
@@ -32,6 +31,7 @@ export function IndustrialHome({
 }) {
   const featured =
     products.find((product) => product.featured) ?? products[0] ?? null;
+  void readyModels;
 
   return (
     <div className="hi-root pb-3 md:pb-0">
@@ -41,10 +41,9 @@ export function IndustrialHome({
       <IdeaCommand />
       <ProductionPaths />
       <HomeCategories products={products} />
-      <ModelArchive models={readyModels} />
+      <AutoQuote />
       <RealProducts products={products} />
       <FeaturedProduct product={featured} />
-      <QuoteFlow />
       <ProductionProcess />
       <MaterialsStrip materials={materials} />
       <WholesaleBand />

@@ -19,11 +19,14 @@ export function MobileStickyCta() {
     const update = () => {
       const hero = document.getElementById("ne-uretmek-istiyorsun");
       const paths = document.getElementById("uc-uretim-yolu");
+      const process = document.getElementById("nasil-calisir");
+      const materials = document.getElementById("malzeme-secenekleri");
       const finalCta = document.getElementById("basla");
       const footer = document.querySelector("footer");
       const catsHeading = document.getElementById("home-cats-heading");
       const archiveHeading = document.getElementById("archive-heading");
       const archiveLede = document.querySelector("#sana-gore-hazir-modeller .hi-lede");
+      const processOverlay = document.querySelector("#nasil-calisir .hi-process-overlay");
       const stickyTop = window.innerHeight - 104;
       const overlapsSticky = (node: Element | null) => {
         if (!node) return false;
@@ -36,11 +39,14 @@ export function MobileStickyCta() {
       setHidden(
         intersecting(hero, 0.08) ||
           intersecting(paths, 0.4) ||
+          intersecting(process, 0.22) ||
+          intersecting(materials, 0.28) ||
           intersecting(finalCta, 0.12) ||
           intersecting(footer, 0.12) ||
           overlapsSticky(catsHeading) ||
           overlapsSticky(archiveHeading) ||
           overlapsSticky(archiveLede) ||
+          overlapsSticky(processOverlay) ||
           categoryCopyOverlaps,
       );
     };

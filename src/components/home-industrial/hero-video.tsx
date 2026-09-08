@@ -79,7 +79,11 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
   const [inView, setInView] = useState(true);
   const [hidden, setHidden] = useState(false);
   const [ready, setReady] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
   const saveData = useSyncExternalStore(
     subscribeSaveData,
     saveDataEnabled,
@@ -98,10 +102,6 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
     if (!video) return;
     pruneUnusedSources(video, isMobile);
   }, [hydrated, isMobile]);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
 
   useEffect(() => {
     const node = rootRef.current;
@@ -155,9 +155,14 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
   }, [eligible, hydrated, isMobile]);
 
   return (
-    <div ref={rootRef} className="hi-hero-media" aria-hidden="true">
+    <div
+      ref={rootRef}
+      className="hi-hero-media"
+      aria-hidden="true"
+      data-industrial-asset="hero-wireframe-vase"
+    >
       {failed ? (
-        <div data-industrial-asset="hero-wireframe-vase" className="hi-hero-still">
+        <div className="hi-hero-still">
           <SlotImage
             src={heroMedia.fallback}
             alt=""

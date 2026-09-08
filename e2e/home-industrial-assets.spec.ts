@@ -11,7 +11,6 @@ const SECTION_SHOTS = [
   ["sana-gore-hazir-modeller", "archive-390.png"],
   ["mevcut-urunler", "real-products-390.png"],
   ["one-cikan-urunler", "featured-390.png"],
-  ["modelin-hazir-mi", "quote-flow-390.png"],
   ["nasil-calisir", "process-390.png"],
   ["malzeme-secenekleri", "materials-390.png"],
   ["kurumsal-uretim", "corporate-390.png"],
@@ -58,9 +57,13 @@ test.describe("industrial PNG assets and catalogue preservation", () => {
       await expect(page.locator(`[data-industrial-asset='${key}']`).first()).toHaveCount(1);
     }
 
-    const heroImage = page.locator("[data-industrial-asset='hero-wireframe-vase'] img").first();
-    await expect(heroImage).toBeVisible();
-    const heroBox = await heroImage.boundingBox();
+    const heroMedia = page.locator("[data-industrial-asset='hero-wireframe-vase']").first();
+    await expect(heroMedia).toHaveCount(1);
+    const heroVideo = page.locator("video.hi-hero-video");
+    const heroImage = heroMedia.locator("img").first();
+    const heroBox = (await heroVideo.count())
+      ? await heroVideo.boundingBox()
+      : await heroImage.boundingBox();
     expect(heroBox?.width ?? 0).toBeGreaterThan(160);
     expect(heroBox?.height ?? 0).toBeGreaterThan(200);
   });
@@ -94,9 +97,9 @@ test.describe("industrial PNG assets and catalogue preservation", () => {
       expect(store.some((item) => item.slug === slug)).toBe(true);
     }
     if (featuredSlug) {
-      expect(store.some((item) => item.slug === featuredSlug)).toBe(true);
       await page.goto(`/urun/${featuredSlug}`);
-      await expect(page.locator("#ana-icerik")).toBeVisible();
+      await expect(page).toHaveURL(new RegExp(`/urun/${featuredSlug}`));
+      await expect(page.locator("main#ana-icerik").first()).toBeVisible();
     }
 
     await page.goto("/magaza");

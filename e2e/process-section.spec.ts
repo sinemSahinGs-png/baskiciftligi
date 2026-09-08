@@ -33,23 +33,12 @@ test.describe("Nasıl çalışır process section", () => {
     await heading.scrollIntoViewIfNeeded();
     await expect(page.locator("[data-process-section]")).toHaveAttribute(
       "data-process-pinned",
-      "true",
+      "false",
     );
     await page.screenshot({ path: path.join(shots, "desktop-before.png") });
 
-    const pin = await page.locator("[data-process-section]").evaluate((node) => {
-      const top = node.getBoundingClientRect().top + window.scrollY;
-      const height = node.getBoundingClientRect().height;
-      return { top, height, travel: Math.max(1, height - window.innerHeight) };
-    });
-
     for (const [index, step] of (["01", "02", "03", "04"] as const).entries()) {
-      await page.evaluate(
-        ({ top, travel, index: stage }) => {
-          window.scrollTo(0, top + travel * ((stage + 0.28) / 4));
-        },
-        { top: pin.top, travel: pin.travel, index },
-      );
+      await page.locator(`[data-process-section] [data-process-step='${step}']`).click();
       await expect(page.locator("[data-process-section]")).toHaveAttribute(
         "data-stage",
         step,
@@ -58,13 +47,14 @@ test.describe("Nasıl çalışır process section", () => {
       await expect(card).toBeVisible();
       await expect(card).toHaveAttribute("data-active", "true");
       await page.screenshot({ path: path.join(shots, `desktop-step-${step}.png`) });
+      void index;
     }
 
     const geometry = await page.locator("[data-process-section]").evaluate((node) => {
       const rect = node.getBoundingClientRect();
       return { height: rect.height };
     });
-    expect(geometry.height).toBeLessThan(900 * 2.8);
+    expect(geometry.height).toBeLessThan(900);
 
     await page.evaluate(() => {
       const section = document.querySelector("#nasil-calisir");
@@ -114,7 +104,7 @@ test.describe("Nasıl çalışır process section", () => {
       return headingBox.top + window.scrollY - (sceneBox.bottom + window.scrollY);
     });
     expect(contentGap).toBeGreaterThanOrEqual(0);
-    expect(contentGap).toBeLessThanOrEqual(96);
+    expect(contentGap).toBeLessThanOrEqual(64);
     await expect(
       page.getByRole("heading", { name: "MALZEMELER" }),
     ).toBeVisible();

@@ -4,13 +4,13 @@ import { HomeTrackLink } from "@/components/home/home-track-link";
 
 const advantages = [
   "STL ve 3MF desteği",
-  "Gerçek PrusaSlicer analizi",
+  "Otomatik üretim analizi",
   "Anlık imzalı teklif",
 ] as const;
 
 const pipeline = [
   { label: "STL / 3MF" },
-  { label: "PrusaSlicer" },
+  { label: "Analiz" },
   { label: "gram / süre" },
   { label: "imzalı fiyat" },
 ] as const;
@@ -49,7 +49,7 @@ export function UploadPromoSection() {
               Nasıl hesaplanıyor?
             </summary>
             <p className="mt-1 max-w-md text-base leading-7 text-white/75">
-              Teklif; katman süresi, malzeme gramı ve `bc-quote-v2` formülünden üretilir.
+              Teklif; baskı süresi, malzeme miktarı ve sunucu formülünden üretilir.
               Dosya analiz edilmeden fiyat gösterilmez.
             </p>
           </details>

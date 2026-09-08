@@ -5,27 +5,23 @@ import { PriceDisplay } from "@/components/commerce/price-display";
 import { SafeImage } from "@/components/media/safe-image";
 import { InteractiveMedia, MagneticAction, WordReveal } from "@/components/motion/premium";
 import { storePremiumAssets } from "@/components/storefront/store-premium-assets";
-import { StoreEditorialArt } from "@/components/storefront/store-premium-media";
 import type { Product } from "@/domain/catalog/types";
 
 export function StoreEditorial({ product }: { product: Product }) {
-  const hasDimensions =
-    product.widthMm != null &&
-    product.depthMm != null &&
-    product.heightMm != null;
+  const image = product.media[0];
 
   return (
     <aside className="store-editorial" aria-labelledby="store-editorial-heading">
       <div className="store-editorial-copy">
-        <p className="store-editorial-kicker text-xs">Seçki</p>
+        <p className="store-editorial-kicker text-xs">Kampanya</p>
         <WordReveal
           as="h2"
           id="store-editorial-heading"
           className="store-editorial-title"
-          text="TASARIMIN DAHA FAZLA ANLAMI VAR"
+          text={product.name}
         />
         <p className="max-w-md text-[0.98rem] leading-6 text-[color:var(--store-muted-light)]">
-          {product.name}
+          Stüdyo üretimi, net ölçü ve KDV dahil fiyat. Tek parça veya küçük seri.
         </p>
         <PriceDisplay
           priceMinor={product.priceMinor}
@@ -33,32 +29,22 @@ export function StoreEditorial({ product }: { product: Product }) {
           currency={product.currency}
           className="text-[color:var(--store-text-light)]"
         />
-        {hasDimensions ? (
-          <p className="font-mono text-xs tracking-wide text-[color:var(--store-muted-light)]">
-            {product.widthMm} × {product.depthMm} × {product.heightMm} mm
-          </p>
-        ) : null}
-        <Link
-          href={`/urun/${product.slug}` as Route}
-          className="store-editorial-cta"
-        >
-          Şimdi keşfet
+        <Link href={`/urun/${product.slug}` as Route} className="store-editorial-cta">
+          Ürünü incele
         </Link>
-        {product.media[0]?.url ? (
-          <span className="store-editorial-live">
-            <SafeImage
-              src={product.media[0].url}
-              alt={product.media[0].alt || product.name}
-              width={72}
-              height={72}
-              className="object-cover"
-            />
-            <span>Katalog kaydı</span>
-          </span>
-        ) : null}
       </div>
-      <InteractiveMedia className="store-editorial-media" aria-hidden="true">
-        <StoreEditorialArt />
+      <InteractiveMedia className="store-editorial-media">
+        {image?.url ? (
+          <SafeImage
+            src={image.url}
+            alt={image.alt || product.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 52vw"
+            className="object-cover"
+          />
+        ) : (
+          <span className="store-editorial-fallback" aria-hidden="true" />
+        )}
       </InteractiveMedia>
     </aside>
   );
@@ -69,9 +55,7 @@ export function StoreUploadBanner() {
     <aside className="store-upload-banner" aria-labelledby="store-upload-heading">
       <div className="store-upload-copy">
         <WordReveal as="h2" id="store-upload-heading" text="DOSYAN HAZIR MI?" />
-        <p className="mt-2">
-          STL veya 3MF dosyanı yükle, gerçek fiyatını gör.
-        </p>
+        <p className="mt-2">STL veya 3MF dosyanı yükle, gerçek fiyatını gör.</p>
         <MagneticAction className="mt-4 w-fit">
           <Link href={"/model-yukle" as Route}>MODELİNİ YÜKLE →</Link>
         </MagneticAction>

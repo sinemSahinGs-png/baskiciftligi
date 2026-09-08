@@ -5,7 +5,6 @@ import { AtSign, Mail, MapPin, Phone, Play } from "lucide-react";
 import { Logo } from "@/components/site/logo";
 import { SiteFooterMobile } from "@/components/site/site-footer-mobile";
 import { siteConfig } from "@/config/site";
-import { storefrontCategories } from "@/domain/catalog/storefront-taxonomy";
 
 export function SiteFooter({
   heading,
@@ -24,15 +23,15 @@ export function SiteFooter({
     <footer data-site-footer className="relative bg-deep-ink text-light-text">
       <SiteFooterMobile description={footerDescription} />
 
-      <div className="shell relative hidden py-8 md:block">
-        <div className="grid gap-8 border-b border-white/10 pb-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.85fr)_minmax(0,0.85fr)]">
-          <div className="max-w-sm">
-            <Logo inverted />
-            <p className="mt-3 text-sm font-semibold leading-6">{footerHeading}</p>
-            <p className="mt-2 max-w-xs text-sm leading-6 text-muted-light">
-              {footerDescription}
-            </p>
-            <div className="mt-4 space-y-1.5 text-sm text-muted-light">
+      <div className="shell relative hidden py-6 md:block">
+        <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
+          <Logo inverted />
+          <p className="max-w-sm text-sm font-semibold leading-6">{footerHeading}</p>
+        </div>
+        <div className="mt-5 grid gap-6 lg:grid-cols-4">
+          <div className="max-w-xs">
+            <p className="max-w-xs text-sm leading-6 text-muted-light">{footerDescription}</p>
+            <div className="mt-3 space-y-1.5 text-sm text-muted-light">
               {siteConfig.contact.email ? (
                 <p className="flex items-center gap-2">
                   <Mail aria-hidden="true" className="size-3.5 text-coral" />
@@ -61,21 +60,6 @@ export function SiteFooter({
                   Tüm ürünler
                 </Link>
               </li>
-              {storefrontCategories.map((category) => (
-                <li key={category.slug}>
-                  <Link
-                    href={category.href}
-                    className="inline-flex min-h-8 items-center hover:text-light-text"
-                  >
-                    {category.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <nav aria-label="Hizmetler">
-            <p className="text-sm font-semibold">Keşif</p>
-            <ul className="mt-2 space-y-0.5 text-sm text-muted-light">
               <li>
                 <Link href={"/model-yukle" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
                   Model yükle
@@ -86,6 +70,31 @@ export function SiteFooter({
                   Hazır modeller
                 </Link>
               </li>
+            </ul>
+          </nav>
+          <nav aria-label="Yardım">
+            <p className="text-sm font-semibold">Yardım</p>
+            <ul className="mt-2 space-y-0.5 text-sm text-muted-light">
+              <li>
+                <Link href={"/siparis-takip" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
+                  Sipariş takibi
+                </Link>
+              </li>
+              <li>
+                <Link href={"/hesabim" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
+                  Hesabım
+                </Link>
+              </li>
+              <li>
+                <Link href={"/iletisim" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
+                  İletişim
+                </Link>
+              </li>
+            </ul>
+          </nav>
+          <nav aria-label="Kurumsal">
+            <p className="text-sm font-semibold">Kurumsal</p>
+            <ul className="mt-2 space-y-0.5 text-sm text-muted-light">
               <li>
                 <Link href={"/toptan" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
                   Toptan & Bayiler
@@ -101,21 +110,11 @@ export function SiteFooter({
                   Malzemeler
                 </Link>
               </li>
-              <li>
-                <Link href={"/hesabim" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Hesabım
-                </Link>
-              </li>
-              <li>
-                <Link href={"/siparis-takip" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Sipariş takibi
-                </Link>
-              </li>
             </ul>
           </nav>
         </div>
 
-        <div className="flex flex-col gap-3 pt-4 text-xs text-muted-light sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-4 text-xs text-muted-light sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} {siteConfig.legalName}
           </p>

@@ -304,7 +304,7 @@ test.describe("centered video hero", () => {
     expect(featuredSlug).toBeTruthy();
     await page.goto(`/urun/${featuredSlug}`);
     await expect(page).toHaveURL(new RegExp(`/urun/${featuredSlug}`));
-    await expect(page.locator("#ana-icerik")).toBeVisible();
+    await expect(page.locator("main#ana-icerik").first()).toBeVisible();
     const after = await storeFingerprint(page);
     expect(after.map((item) => `${item.slug}:${item.price}`).sort()).toEqual(beforeKey);
   });
@@ -324,7 +324,7 @@ test.describe("centered video hero", () => {
       expect(gap.pinned, `${width} pin`).toBe("false");
       expect(gap.sectionGap, `${width} section gap`).toBeLessThanOrEqual(8);
       expect(gap.contentGap, `${width} content gap`).toBeGreaterThanOrEqual(0);
-      expect(gap.contentGap, `${width} content gap`).toBeLessThanOrEqual(96);
+      expect(gap.contentGap, `${width} content gap`).toBeLessThanOrEqual(64);
       expect(gap.processHeight, `${width} process height`).toBeLessThan(844 * 1.4);
     });
   }

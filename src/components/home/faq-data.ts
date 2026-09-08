@@ -21,7 +21,7 @@ export const faqItems: FaqItem[] = [
     id: "fiyat",
     question: "Fiyat ne zaman netleşir?",
     answer:
-      "Hazır üründe karttaki fiyat geçerlidir. Yüklenen modellerde fiyat, PrusaSlicer çıktısı ve imzalı formülden sonra gösterilir.",
+      "Hazır üründe karttaki fiyat geçerlidir. Yüklenen modellerde fiyat, üretim analizi ve imzalı formülden sonra gösterilir.",
   },
   {
     id: "toplu-uretim",

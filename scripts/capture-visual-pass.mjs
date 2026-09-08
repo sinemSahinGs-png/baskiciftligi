@@ -166,10 +166,9 @@ await withPage({ width: 390, height: 844 }, async (page) => {
   for (const [id, file] of [
     ["#uc-uretim-yolu", "home-paths-390.png"],
     ["#kategoriler", "home-categories-390.png"],
-    ["#sana-gore-hazir-modeller", "home-laboratory-390.png"],
+    ["#sana-gore-hazir-modeller", "home-quote-390.png"],
     ["#mevcut-urunler", "home-products-390.png"],
     ["#one-cikan-urunler", "home-featured-390.png"],
-    ["#modelin-hazir-mi", "home-upload-390.png"],
     ["#nasil-calisir", "home-process-390.png"],
     ["#malzeme-secenekleri", "home-materials-390.png"],
   ]) {
@@ -181,6 +180,26 @@ await withPage({ width: 390, height: 844 }, async (page) => {
       await loc.screenshot({ path: path.join(outDir, file) });
     }
   }
+
+  heroProof.homeProducts390 = await page.evaluate(() => {
+    const grid = document.querySelector(".hi-product-grid");
+    if (!grid) return null;
+    const cards = [...grid.querySelectorAll(":scope > li")].map((card) => {
+      const box = card.getBoundingClientRect();
+      return { x: Math.round(box.x), y: Math.round(box.y), w: Math.round(box.width) };
+    });
+    return {
+      count: getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length,
+      template: getComputedStyle(grid).gridTemplateColumns,
+      cards,
+    };
+  });
+
+  await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(700);
+  await page.locator("#sana-gore-hazir-modeller").screenshot({
+    path: path.join(outDir, "home-quote-motion-390.png"),
+  });
 
   await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
   await page.locator('#uc-uretim-yolu [data-journey-panel="02"]').click();
@@ -271,6 +290,31 @@ await withPage({ width: 1440, height: 900 }, async (page) => {
   await page.locator("[data-mega-trigger]").hover();
   await page.waitForTimeout(350);
   await page.screenshot({ path: path.join(outDir, "mega-menu-1440.png") });
+  await page.keyboard.press("Escape");
+  await page.locator("#kategoriler").scrollIntoViewIfNeeded();
+  await waitDecode(page, "#kategoriler");
+  await page.locator(".hi-cats-index-item").nth(1).hover();
+  await page.waitForTimeout(500);
+  await page.locator("#kategoriler").screenshot({
+    path: path.join(outDir, "home-categories-hover-1440.png"),
+  });
+  await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
+  await waitDecode(page, "#sana-gore-hazir-modeller");
+  await page.locator("#sana-gore-hazir-modeller").screenshot({
+    path: path.join(outDir, "home-quote-1440.png"),
+  });
+  await page.locator("#nasil-calisir").scrollIntoViewIfNeeded();
+  await page.locator("#nasil-calisir").screenshot({
+    path: path.join(outDir, "home-process-1440.png"),
+  });
+  await page.locator("#malzeme-secenekleri").scrollIntoViewIfNeeded();
+  await page.locator("#malzeme-secenekleri").screenshot({
+    path: path.join(outDir, "home-materials-1440.png"),
+  });
+  await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
+  await page.locator("[data-site-footer] .shell").first().screenshot({
+    path: path.join(outDir, "home-footer-1440.png"),
+  });
   await page.screenshot({
     path: path.join(outDir, "home-complete-1440.png"),
     fullPage: true,
@@ -282,8 +326,16 @@ await withPage({ width: 390, height: 844 }, async (page) => {
   await page.locator("[data-catalog-grid]").first().waitFor({ state: "visible" });
   const cols = await page.evaluate(() => {
     const grid = document.querySelector("[data-catalog-grid]");
-    if (!grid) return 0;
-    return getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length;
+    if (!grid) return { count: 0, template: "", boxes: [] };
+    const cards = [...grid.querySelectorAll("article")].slice(0, 8).map((card) => {
+      const box = card.getBoundingClientRect();
+      return { x: Math.round(box.x), y: Math.round(box.y), w: Math.round(box.width), h: Math.round(box.height) };
+    });
+    return {
+      count: getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length,
+      template: getComputedStyle(grid).gridTemplateColumns,
+      boxes: cards,
+    };
   });
   await page.evaluate(async () => {
     const cards = [...document.querySelectorAll("[data-catalog-grid] article")];
@@ -296,6 +348,8 @@ await withPage({ width: 390, height: 844 }, async (page) => {
   await waitDecode(page, "[data-catalog-grid]");
   await page.waitForTimeout(300);
   await page.screenshot({ path: path.join(outDir, "store-first-screen-390.png") });
+  const grid = page.locator("[data-catalog-grid]").first();
+  await grid.screenshot({ path: path.join(outDir, "store-two-col-proof-390.png") });
 
   const images = await page.evaluate(() =>
     [...document.querySelectorAll("[data-catalog-grid] article img")].map((image) => ({
@@ -369,6 +423,39 @@ await withPage({ width: 390, height: 844 }, async (page) => {
   heroProof.storeImageCount = proof.length;
   heroProof.storeDecoded = proof.filter((item) => item.decoded && !item.fallback).length;
 });
+
+heroProof.storeColumnsByViewport = {};
+for (const width of [320, 360, 390, 430]) {
+  await withPage({ width, height: 844 }, async (page) => {
+    await page.goto(`${origin}/magaza`, { waitUntil: "networkidle" });
+    await page.locator("[data-catalog-grid]").first().waitFor({ state: "visible" });
+    await waitDecode(page, "[data-catalog-grid]");
+    const measured = await page.evaluate(() => {
+      const grid = document.querySelector("[data-catalog-grid]");
+      if (!grid) return null;
+      const cards = [...grid.querySelectorAll("article")].slice(0, 6).map((card) => {
+        const box = card.getBoundingClientRect();
+        return {
+          x: Math.round(box.x),
+          y: Math.round(box.y),
+          w: Math.round(box.width),
+          h: Math.round(box.height),
+        };
+      });
+      const ys = [...new Set(cards.map((card) => card.y))];
+      return {
+        count: getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length,
+        template: getComputedStyle(grid).gridTemplateColumns,
+        uniqueRows: ys.length,
+        cards,
+      };
+    });
+    heroProof.storeColumnsByViewport[String(width)] = measured;
+    await page.locator("[data-catalog-grid]").first().screenshot({
+      path: path.join(outDir, `store-grid-${width}.png`),
+    });
+  });
+}
 
 await withPage({ width: 1440, height: 900 }, async (page) => {
   await page.goto(`${origin}/magaza`, { waitUntil: "networkidle" });

@@ -21,19 +21,26 @@ const footerGroups: FooterGroup[] = [
     label: "Mağaza",
     links: [
       { href: "/magaza", label: "Tüm ürünler" },
+      { href: "/model-yukle", label: "Model yükle" },
+      { href: "/hazir-modeller", label: "Hazır modeller" },
     ],
   },
   {
-    id: "hizmetler",
-    label: "Keşif",
+    id: "yardim",
+    label: "Yardım",
     links: [
-      { href: "/model-yukle", label: "Model yükle" },
-      { href: "/hazir-modeller", label: "Hazır modeller" },
+      { href: "/siparis-takip", label: "Sipariş takibi" },
+      { href: "/hesabim", label: "Hesabım" },
+      { href: "/iletisim", label: "İletişim" },
+    ],
+  },
+  {
+    id: "kurumsal",
+    label: "Kurumsal",
+    links: [
       { href: "/toptan", label: "Toptan & Bayiler" },
       { href: "/kurumsal-uretim", label: "Kurumsal üretim" },
       { href: "/malzemeler", label: "Malzemeler" },
-      { href: "/hesabim", label: "Hesabım" },
-      { href: "/siparis-takip", label: "Sipariş takibi" },
     ],
   },
   {
@@ -117,10 +124,6 @@ export function SiteFooterMobile({
             />
           ))}
         </div>
-
-        <p className="mt-3 flex items-start gap-2 text-sm leading-5 text-muted-light">
-          Türkiye geneli teslimat. Süre, üretim ve kargo olarak ürün sayfasında görünür.
-        </p>
 
         {hasContact ? (
           <div className="mt-4 space-y-2 text-sm text-muted-light">

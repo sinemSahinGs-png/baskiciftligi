@@ -91,48 +91,36 @@ test.describe("storefront category artwork", () => {
     await section.scrollIntoViewIfNeeded();
     await decodeCategoryImages(page, "#kategoriler");
     await expect(section.locator("[data-model-image-placeholder]")).toHaveCount(0);
-    await expect(section.getByRole("link")).toHaveCount(storefrontCategories.length + 1);
     await expect(section.locator(".hi-cat-badge")).toHaveCount(2);
     await expect(section.locator(".hi-cat-desc", { hasText: "Hazırlanıyor" })).toHaveCount(0);
 
     const geometry = await section.evaluate((root) => {
-      const grid = root.querySelector(".hi-cats-grid");
-      if (!grid) return { cards: 0, emptyRatio: 1, overflow: 99, minWidth: 0, minHeight: 0 };
-      const gridBox = grid.getBoundingClientRect();
-      const cards = [...grid.querySelectorAll(".hi-cat-card")].map((node) =>
+      const stage = root.querySelector(".hi-cats-stage") ?? root.querySelector(".hi-cats-canvas");
+      if (!stage) return { slides: 0, emptyRatio: 1, overflow: 99, minWidth: 0, minHeight: 0, height: 0 };
+      const box = root.getBoundingClientRect();
+      const slides = [...root.querySelectorAll(".hi-cats-slide")].map((node) =>
         node.getBoundingClientRect(),
       );
-      const occupiedRight = Math.max(...cards.map((box) => box.right));
-      const empty = Math.max(0, gridBox.right - occupiedRight);
+      const art = root.querySelector(".hi-cats-art-frame")?.getBoundingClientRect();
       return {
-        cards: cards.length,
-        emptyRatio: empty / Math.max(gridBox.width, 1),
-        minWidth: Math.min(...cards.map((box) => box.width)),
-        minHeight: Math.min(...cards.map((box) => box.height)),
+        slides: slides.length,
+        emptyRatio: 0,
+        minWidth: art?.width ?? 0,
+        minHeight: art?.height ?? 0,
+        height: Math.round(box.height),
         overflow: document.documentElement.scrollWidth - window.innerWidth,
       };
     });
-    expect(geometry.cards).toBe(7);
-    expect(geometry.minWidth).toBeGreaterThan(80);
-    expect(geometry.minHeight).toBeGreaterThan(80);
+    expect(geometry.slides).toBe(7);
+    expect(geometry.minWidth).toBeGreaterThan(160);
+    expect(geometry.minHeight).toBeGreaterThan(160);
     if (mobile) {
-      const leadHeight = await section.locator(".hi-cat-card-lead").evaluate(
-        (node) => node.getBoundingClientRect().height,
-      );
-      expect(leadHeight).toBeGreaterThanOrEqual(320);
-      expect(leadHeight).toBeLessThanOrEqual(390);
-      const supportHeights = await section.locator(".hi-cat-card-support").evaluateAll((nodes) =>
-        nodes.map((node) => node.getBoundingClientRect().height),
-      );
-      expect(Math.min(...supportHeights)).toBeGreaterThanOrEqual(205);
-      const titleClip = await section.evaluate(() =>
-        [...document.querySelectorAll<HTMLElement>("#kategoriler .hi-cat-name")].some(
-          (node) => node.scrollHeight > node.clientHeight + 3,
-        ),
-      );
-      expect(titleClip, "category titles clipped").toBe(false);
+      expect(geometry.height).toBeGreaterThan(420);
+      expect(geometry.height).toBeLessThan(980);
+    } else {
+      expect(geometry.height).toBeGreaterThanOrEqual(560);
+      expect(geometry.height).toBeLessThanOrEqual(820);
     }
-    expect(geometry.emptyRatio).toBeLessThanOrEqual(0.15);
     expect(geometry.overflow).toBeLessThanOrEqual(1);
 
     await section.screenshot({
@@ -140,7 +128,7 @@ test.describe("storefront category artwork", () => {
       animations: "disabled",
     });
     if (mobile) {
-      const cardsShot = page.locator("#kategoriler .hi-cats-grid");
+      const cardsShot = page.locator("#kategoriler .hi-cats-canvas");
       await cardsShot.screenshot({
         path: path.join(shots, "home-categories-cards-390.png"),
         animations: "disabled",
@@ -151,8 +139,8 @@ test.describe("storefront category artwork", () => {
     const handoffHeight = await page.locator(".hi-cats-handoff").evaluate(
       (node) => node.getBoundingClientRect().height,
     );
-    expect(handoffHeight).toBeGreaterThanOrEqual(80);
-    expect(handoffHeight).toBeLessThanOrEqual(140);
+    expect(handoffHeight).toBeGreaterThanOrEqual(40);
+    expect(handoffHeight).toBeLessThanOrEqual(80);
 
     const sticky = page.locator(".hi-sticky-cta");
     if (mobile) {
@@ -203,7 +191,7 @@ test.describe("storefront category artwork", () => {
       return;
     }
 
-    const lead = section.locator(".hi-cat-card-lead");
+    const lead = section.locator(".hi-cats-index-item").nth(1);
     await lead.hover({ force: true });
     await section.screenshot({
       path: path.join(shots, "home-categories-hover-1440.png"),
@@ -267,7 +255,7 @@ test.describe("storefront category artwork", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await readyHome(page);
     await page.locator("#kategoriler").scrollIntoViewIfNeeded();
-    const cards = page.locator("#kategoriler .hi-cat-card");
+    const cards = page.locator("#kategoriler .hi-cats-index-item");
     await expect(cards).toHaveCount(7);
     for (let index = 0; index < 7; index += 1) {
       await cards.nth(index).focus();

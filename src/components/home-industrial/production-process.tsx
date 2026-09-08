@@ -18,40 +18,22 @@ const STAGES = [
 export function ProductionProcess() {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
-  const [progress, setProgress] = useState(0);
-  const [allowPin, setAllowPin] = useState(false);
-  const stageIndex = Math.min(3, Math.floor(progress * 4));
-  const pinned = allowPin && reduce !== true;
-
-  useEffect(() => {
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const desktop = window.matchMedia("(min-width: 768px)");
-    const update = () => setAllowPin(!motion.matches && desktop.matches);
-    update();
-    motion.addEventListener("change", update);
-    desktop.addEventListener("change", update);
-    return () => {
-      motion.removeEventListener("change", update);
-      desktop.removeEventListener("change", update);
-    };
-  }, []);
+  const manual = useRef(false);
+  const [stageIndex, setStageIndex] = useState(0);
 
   useEffect(() => {
     const node = ref.current;
-    if (!node) return;
+    if (!node || reduce === true) return;
     let frame = 0;
     const onScroll = () => {
+      if (manual.current) return;
       window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(() => {
         const box = node.getBoundingClientRect();
-        const span = Math.max(1, pinned ? box.height - window.innerHeight : box.height * 0.7);
-        const raw = Math.min(1, Math.max(0, -box.top / span));
+        const span = Math.max(1, box.height * 0.85);
+        const raw = Math.min(0.999, Math.max(0, (window.innerHeight * 0.45 - box.top) / span));
         node.style.setProperty("--process-progress", String(raw));
-        const nextStage = Math.min(3, Math.floor(raw * 4));
-        setProgress((current) => {
-          const currentStage = Math.min(3, Math.floor(current * 4));
-          return currentStage === nextStage ? current : raw;
-        });
+        setStageIndex(Math.min(3, Math.floor(raw * 4)));
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -60,7 +42,7 @@ export function ProductionProcess() {
       window.cancelAnimationFrame(frame);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [pinned]);
+  }, [reduce]);
 
   return (
     <section
@@ -68,7 +50,7 @@ export function ProductionProcess() {
       id="nasil-calisir"
       data-home-theme="cyan-scan"
       data-process-section=""
-      data-process-pinned={pinned ? "true" : "false"}
+      data-process-pinned="false"
       data-stage={STAGES[stageIndex]?.id}
       className="hi-section hi-process"
       aria-labelledby="process-heading"
@@ -98,7 +80,11 @@ export function ProductionProcess() {
                   data-process-step={item.id}
                   data-active={index === stageIndex ? "true" : "false"}
                   data-complete={index < stageIndex ? "true" : "false"}
-                  onClick={() => setProgress((index + 0.15) / 4)}
+                  onClick={() => {
+                    manual.current = true;
+                    setStageIndex(index);
+                    ref.current?.style.setProperty("--process-progress", String((index + 0.2) / 4));
+                  }}
                 >
                   <p className="hi-mono">{item.id}</p>
                   <p className="hi-path-name mt-1 text-[1.05rem]">{item.title}</p>

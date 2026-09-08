@@ -79,6 +79,7 @@ import {
   takePendingExternalUpload,
   type ExternalQuoteModelContext,
 } from "@/lib/models/external-quote-context";
+import { takePendingOwnedUpload } from "@/lib/home/pending-owned-upload";
 import { announceStatus } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart-store";
@@ -258,6 +259,13 @@ export function PreparationStudio() {
   useEffect(() => {
     const root = globalThis as typeof globalThis & { __bcHandoffConsumed?: boolean };
     if (handoffApplied.current || root.__bcHandoffConsumed) return;
+    const owned = takePendingOwnedUpload();
+    if (owned) {
+      handoffApplied.current = true;
+      root.__bcHandoffConsumed = true;
+      queueMicrotask(() => acceptFile(owned));
+      return;
+    }
     const pending = takePendingExternalUpload() ?? handoff;
     if (!pending) return;
     handoffApplied.current = true;
@@ -567,7 +575,7 @@ export function PreparationStudio() {
                 <p>Kargo ürün fiyatına dahil değil; sepette sipariş başına bir kez gösterilir.</p>
               ) : null}
             </div>
-          ) : <p className="rounded-md border border-white/15 px-3 py-2 text-sm">Fiyat, PrusaSlicer çıktısı olmadan gösterilmez.</p>}
+          ) : <p className="rounded-md border border-white/15 px-3 py-2 text-sm">Fiyat, üretim analizi tamamlanmadan gösterilmez.</p>}
           <button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="mt-3 inline-flex min-h-11 w-full items-center justify-center bg-[color:var(--store-orange)] text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button>
           <button type="button" disabled={!quote} onClick={() => void addQuoteToCart()} className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-cyan text-sm font-semibold disabled:opacity-40">Teklifi sepete ekle</button>
           <p className="text-xs text-muted-light">{siteConfig.name} fiyatı tarayıcıdan kabul etmez.</p>

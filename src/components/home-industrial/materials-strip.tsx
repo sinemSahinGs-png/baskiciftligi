@@ -10,23 +10,36 @@ import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
 import { homepageMaterialCopy, homepageMaterialCore } from "@/domain/home/homepage";
 import type { Material } from "@/domain/catalog/types";
 
-const TRAIT: Record<string, string> = {
-  pla: "Çok yönlü günlük üretim",
-  petg: "Daha dayanıklı, nem ve darbe",
-  tpu: "Esnek, darbeyi emer",
+const TRAIT: Record<string, { strength: string; flex: string; uses: string }> = {
+  pla: {
+    strength: "Günlük mukavemet",
+    flex: "Düşük esneklik",
+    uses: "Dekoratif objeler ve iç mekân parçaları",
+  },
+  petg: {
+    strength: "Yüksek darbe direnci",
+    flex: "Orta esneklik",
+    uses: "Nem gören ve işlevsel ev parçaları",
+  },
+  tpu: {
+    strength: "Darbe sönümleme",
+    flex: "Yüksek esneklik",
+    uses: "Conta, tampon ve koruyucu elemanlar",
+  },
 };
 
 export function MaterialsStrip({ materials }: { materials: Material[] }) {
   const cells = homepageMaterialCore.map((slug) => {
     const material = materials.find((item) => item.slug === slug);
+    const copy = homepageMaterialCopy[slug as keyof typeof homepageMaterialCopy];
+    const trait = TRAIT[slug];
     return {
       slug,
       id: material?.id ?? slug,
       name: material?.name ?? slug.toUpperCase(),
-      trait:
-        TRAIT[slug] ??
-        homepageMaterialCopy[slug as keyof typeof homepageMaterialCopy]?.benefit ??
-        "",
+      strength: trait?.strength ?? copy?.benefit ?? "",
+      flex: trait?.flex ?? "",
+      uses: trait?.uses ?? copy?.usage ?? "",
     };
   });
   const [active, setActive] = useState(cells[0]?.slug ?? "pla");
@@ -65,26 +78,6 @@ export function MaterialsStrip({ materials }: { materials: Material[] }) {
             Tümünü gör →
           </Link>
         </div>
-        {activeCell ? (
-          <InteractiveMedia
-            className="hi-material-hero mt-3 hi-frame"
-            data-material={activeCell.slug}
-          >
-            <SlotImage
-              key={activeCell.slug}
-              src={industrialMaterialSrc[activeCell.slug as keyof typeof industrialMaterialSrc]}
-              alt={`${activeCell.name} katman dokusu`}
-              fill
-              sizes="100vw"
-              className="object-cover"
-            />
-            <span className="hi-material-light" aria-hidden="true" />
-            <p className="hi-material-caption">
-              {activeCell.name}
-              {activeCell.trait ? <span> · {activeCell.trait}</span> : null}
-            </p>
-          </InteractiveMedia>
-        ) : null}
         <div
           className="hi-material-tabs"
           role="tablist"
@@ -109,16 +102,35 @@ export function MaterialsStrip({ materials }: { materials: Material[] }) {
           ))}
         </div>
         {activeCell ? (
-          <p className="hi-material-copy" aria-live="polite">
-            {activeCell.name}
-            <span> · {activeCell.trait}</span>
-            {homepageMaterialCopy[activeCell.slug as keyof typeof homepageMaterialCopy]?.usage ? (
-              <span>
-                {" "}
-                · {homepageMaterialCopy[activeCell.slug as keyof typeof homepageMaterialCopy]?.usage}
+          <InteractiveMedia
+            className="hi-material-hero mt-3 hi-frame"
+            data-material={activeCell.slug}
+          >
+            {cells.map((material) => (
+              <span
+                key={material.slug}
+                className="hi-material-layer"
+                data-active={material.slug === activeCell.slug ? "true" : "false"}
+              >
+                <SlotImage
+                  src={industrialMaterialSrc[material.slug as keyof typeof industrialMaterialSrc]}
+                  alt={`${material.name} yüzey dokusu`}
+                  fill
+                  sizes="100vw"
+                  className="object-cover"
+                />
               </span>
-            ) : null}
-          </p>
+            ))}
+            <span className="hi-material-light" aria-hidden="true" />
+            <span className="hi-material-section" aria-hidden="true" />
+            <div className="hi-material-caption">
+              <p>{activeCell.name}</p>
+              <p>
+                {activeCell.strength} · {activeCell.flex}
+              </p>
+              <p>{activeCell.uses}</p>
+            </div>
+          </InteractiveMedia>
         ) : null}
       </div>
     </section>

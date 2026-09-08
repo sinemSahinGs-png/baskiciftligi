@@ -8,7 +8,6 @@ const SECTION_SHOTS = [
   ["uc-uretim-yolu", "production-paths-390.png"],
   ["sana-gore-hazir-modeller", "model-archive-390.png"],
   ["one-cikan-urunler", "featured-product-390.png"],
-  ["modelin-hazir-mi", "quote-flow-390.png"],
   ["nasil-calisir", "production-process-390.png"],
   ["malzeme-secenekleri", "materials-390.png"],
   ["kurumsal-uretim", "corporate-production-390.png"],
@@ -74,7 +73,7 @@ test.describe("industrial homepage", () => {
   test("upload CTAs go to /model-yukle", async ({ page }) => {
     await readyHome(page);
     await expect(
-      page.locator("#modelin-hazir-mi").getByRole("link", { name: /Modelini yükle/i }),
+      page.locator("#sana-gore-hazir-modeller").getByRole("link", { name: /Modelini yükle/i }),
     ).toHaveAttribute("href", "/model-yukle");
   });
 
