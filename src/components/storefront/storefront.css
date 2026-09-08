@@ -75,7 +75,7 @@
 .store-masthead::after {
   content: "";
   display: block;
-  height: 1.15rem;
+  height: 0.65rem;
   background: linear-gradient(180deg, rgb(5 7 8 / 0.92), #eceae4);
   margin-bottom: -1px;
 }
@@ -114,9 +114,9 @@
 
 .store-intro-lede {
   max-width: 22rem;
-  margin-top: 0.4rem;
-  font-size: 0.92rem;
-  line-height: 1.4;
+  margin-top: 0.25rem;
+  font-size: 0.84rem;
+  line-height: 1.35;
   color: var(--store-muted-light);
 }
 
@@ -684,7 +684,7 @@
 .store-card-media {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
   background: #eceae4 !important;
   border: 0;
 }
@@ -807,7 +807,7 @@
   min-width: 0;
   flex: 1;
   flex-direction: column;
-  padding: 0.55rem 0.6rem 0.65rem;
+  padding: 0.42rem 0.5rem 0.5rem;
 }
 
 .store-card-name {
