@@ -204,6 +204,10 @@ export function HomeCategories({ products }: { products: Product[] }) {
               type="button"
               className="hi-cats-rail-item"
               data-active={index === active ? "true" : "false"}
+              data-coming-soon={category.comingSoon ? "true" : undefined}
+              aria-label={
+                category.comingSoon ? `${category.name}, yakında` : category.name
+              }
               onClick={() => {
                 pointerLock.current = true;
                 go(index);

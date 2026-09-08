@@ -163,8 +163,14 @@ await withPage({ width: 390, height: 844 }, async (page) => {
   };
 
   await page.locator("#kategoriler").scrollIntoViewIfNeeded();
-  await page.locator('[data-coming-soon="true"]').first().scrollIntoViewIfNeeded();
-  await page.screenshot({
+  const comingSoonControl = page.locator("#kategoriler [data-coming-soon='true']:visible").first();
+  if (await comingSoonControl.count()) {
+    await comingSoonControl.click();
+  } else {
+    await page.locator(".hi-cats-rail-item").nth(2).click();
+  }
+  await page.waitForTimeout(300);
+  await page.locator("#kategoriler").screenshot({
     path: path.join(outDir, "categories-coming-soon-390.png"),
   });
 
@@ -286,7 +292,7 @@ await withPage({ width: 1440, height: 900 }, async (page) => {
     animations: "allow",
   });
 
-  await page.locator("[data-mega-trigger]").hover();
+  await page.locator("[data-mega-trigger]").hover({ force: true });
   await page.waitForTimeout(400);
   await page.screenshot({ path: path.join(outDir, "mega-menu-open-1440.png") });
   proof.megaComingSoonHrefs = await page.evaluate(
