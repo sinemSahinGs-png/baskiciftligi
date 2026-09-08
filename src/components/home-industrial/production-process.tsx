@@ -97,6 +97,8 @@ export function ProductionProcess() {
                   key={item.id}
                   data-process-step={item.id}
                   data-active={index === stageIndex ? "true" : "false"}
+                  data-complete={index < stageIndex ? "true" : "false"}
+                  onClick={() => setProgress((index + 0.15) / 4)}
                 >
                   <p className="hi-mono">{item.id}</p>
                   <p className="hi-path-name mt-1 text-[1.05rem]">{item.title}</p>

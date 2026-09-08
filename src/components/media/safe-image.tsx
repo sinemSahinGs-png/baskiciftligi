@@ -19,7 +19,7 @@ interface SafeImageProps extends Omit<ImageProps, "src" | "alt"> {
 }
 
 function shouldUnoptimize(src: string) {
-  if (src.startsWith("/catalog-media/")) return true;
+  if (src.startsWith("/catalog-media/") || src.startsWith("/images/")) return true;
   return src.startsWith("/demo/") && /\.svg(?:\?|$)/i.test(src);
 }
 
@@ -79,6 +79,7 @@ function SafeImageInner({
     const sync = () => markReady(image);
     sync();
     image.addEventListener("load", sync);
+    void image.decode?.().then(sync).catch(() => {});
     const observer = new IntersectionObserver(() => sync(), { threshold: 0.01 });
     observer.observe(image);
     return () => {
@@ -88,7 +89,7 @@ function SafeImageInner({
   }, [failed, markReady, src]);
 
   const showImage = Boolean(src) && !failed;
-  const showPlaceholder = !showImage || failed || (showSkeleton && !loaded);
+  const showPlaceholder = !showImage || (showSkeleton && !loaded && !failed);
 
   return (
     <>
@@ -124,6 +125,7 @@ function SafeImageInner({
           }}
           className={cn(
             fill ? "absolute inset-0 z-[1]" : "relative z-[1]",
+            loaded && "opacity-100",
             className,
           )}
         />

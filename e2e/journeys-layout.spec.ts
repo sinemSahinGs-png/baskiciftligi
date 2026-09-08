@@ -20,7 +20,7 @@ async function journeyMetrics(page: Page) {
     const panels = [
       ...document.querySelectorAll<HTMLElement>("[data-journey-panel]"),
     ];
-    const next = document.getElementById("sana-gore-hazir-modeller");
+    const next = section.nextElementSibling as HTMLElement | null;
     const viewport = window.innerHeight;
     if (!section || !next || panels.length === 0) {
       return null;

@@ -63,7 +63,6 @@ export function ProductionPaths() {
   }
 
   const current = PATHS[active] ?? PATHS[0];
-  const nextPath = PATHS[active + 1] ?? PATHS[0];
 
   return (
     <section
@@ -79,53 +78,44 @@ export function ProductionPaths() {
           <p className="hi-paths-count hi-mono" aria-live="polite">
             {current.id} / 03
           </p>
-          {PATHS.map((path, index) => {
-            const inner = (
-              <>
-                <span className="hi-path-num">{path.id}</span>
-                <span>
-                  <span className="hi-path-name">{path.title}</span>
-                  <span className="hi-path-copy">{path.copy}</span>
-                </span>
-              </>
-            );
-            const shared = {
-              "data-journey-panel": path.id,
-              "data-active": index === active ? "true" : "false",
-              className: "hi-path-btn",
-              onMouseEnter: () => {
+          {PATHS.map((path, index) => (
+            <button
+              key={path.id}
+              type="button"
+              data-journey-panel={path.id}
+              data-active={index === active ? "true" : "false"}
+              className="hi-path-btn"
+              onMouseEnter={() => {
                 if (fineRef.current) select(index);
-              },
-              onFocus: () => select(index),
-            };
-
-            if (path.action === "link") {
-              return (
-                <HomeTrackLink
-                  key={path.id}
-                  event={path.event}
-                  href={path.href}
-                  {...shared}
-                >
-                  {inner}
-                </HomeTrackLink>
-              );
-            }
-
-            return (
-              <button
-                key={path.id}
-                type="button"
-                {...shared}
-                onClick={() => {
-                  select(index);
-                  focusIdea();
-                }}
+              }}
+              onFocus={() => select(index)}
+              onClick={() => select(index)}
+            >
+              <span className="hi-path-num">{path.id}</span>
+              <span>
+                <span className="hi-path-name">{path.title}</span>
+                <span className="hi-path-copy">{path.copy}</span>
+              </span>
+            </button>
+          ))}
+          <div className="hi-path-cta-slot">
+            <p className="hi-path-copy" data-path-mobile-copy="">
+              {current.copy}
+            </p>
+            {current.action === "link" ? (
+              <HomeTrackLink
+                event={current.event}
+                href={current.href}
+                className="hi-btn hi-path-cta"
               >
-                {inner}
+                {current.title} →
+              </HomeTrackLink>
+            ) : (
+              <button type="button" className="hi-btn hi-path-cta" onClick={focusIdea}>
+                Fikrini yaz →
               </button>
-            );
-          })}
+            )}
+          </div>
         </div>
         <InteractiveMedia className="hi-path-media">
           <div
@@ -165,7 +155,7 @@ export function ProductionPaths() {
               {current.id} / 03
             </p>
             <p className="hi-paths-hint hi-mono" aria-hidden="true">
-              {nextPath.title} →
+              {current.title}
             </p>
           </div>
         </InteractiveMedia>

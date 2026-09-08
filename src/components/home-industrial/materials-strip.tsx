@@ -79,6 +79,10 @@ export function MaterialsStrip({ materials }: { materials: Material[] }) {
               className="object-cover"
             />
             <span className="hi-material-light" aria-hidden="true" />
+            <p className="hi-material-caption">
+              {activeCell.name}
+              {activeCell.trait ? <span> · {activeCell.trait}</span> : null}
+            </p>
           </InteractiveMedia>
         ) : null}
         <div
@@ -108,6 +112,12 @@ export function MaterialsStrip({ materials }: { materials: Material[] }) {
           <p className="hi-material-copy" aria-live="polite">
             {activeCell.name}
             <span> · {activeCell.trait}</span>
+            {homepageMaterialCopy[activeCell.slug as keyof typeof homepageMaterialCopy]?.usage ? (
+              <span>
+                {" "}
+                · {homepageMaterialCopy[activeCell.slug as keyof typeof homepageMaterialCopy]?.usage}
+              </span>
+            ) : null}
           </p>
         ) : null}
       </div>

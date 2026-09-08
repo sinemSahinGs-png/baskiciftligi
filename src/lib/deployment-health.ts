@@ -28,6 +28,7 @@ export interface DeploymentHealth {
   service: "baski-ciftligi";
   version: string;
   gitCommit: string | null;
+  deploymentId: string | null;
   environment: string;
   catalog: CatalogSourceState;
   supabase: IntegrationState;

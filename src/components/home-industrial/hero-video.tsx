@@ -65,6 +65,9 @@ async function startPlayback(video: HTMLVideoElement) {
     }
     const message = error instanceof Error ? error.message : "play() rejected";
     video.dataset.playRejection = message;
+    if (video.error || video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+      return "media-error";
+    }
     return message;
   }
 }
@@ -76,6 +79,7 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
   const [inView, setInView] = useState(true);
   const [hidden, setHidden] = useState(false);
   const [ready, setReady] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const saveData = useSyncExternalStore(
     subscribeSaveData,
     saveDataEnabled,
@@ -89,10 +93,15 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
   const eligible = !failed && !reducedMotion && !hidden && inView && !saveData;
 
   useLayoutEffect(() => {
+    if (!hydrated) return;
     const video = videoRef.current;
     if (!video) return;
     pruneUnusedSources(video, isMobile);
-  }, [isMobile]);
+  }, [hydrated, isMobile]);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     const node = rootRef.current;
@@ -139,9 +148,11 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
       video.pause();
       return;
     }
-    pruneUnusedSources(video, isMobile);
-    void startPlayback(video);
-  }, [eligible, isMobile]);
+    if (hydrated) pruneUnusedSources(video, isMobile);
+    void startPlayback(video).then((result) => {
+      if (result === "media-error") setFailed(true);
+    });
+  }, [eligible, hydrated, isMobile]);
 
   return (
     <div ref={rootRef} className="hi-hero-media" aria-hidden="true">

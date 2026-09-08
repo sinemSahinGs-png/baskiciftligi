@@ -66,21 +66,18 @@ export function RealProducts({ products }: { products: Product[] }) {
                       src={product.media[0]?.url}
                       alt={product.media[0]?.alt ?? product.name}
                       fill
-                      sizes={
-                        index === 0
-                          ? "(max-width: 768px) 100vw, 25vw"
-                          : "(max-width: 768px) 50vw, 25vw"
-                      }
+                      sizes="(max-width: 768px) 48vw, 25vw"
                       className="object-cover"
                     />
                   </ProductMediaReveal>
                   <span className="hi-product-meta">
-                    <span className="line-clamp-2 font-semibold">{product.name}</span>
+                    <span className="hi-product-name">{product.name}</span>
                     <PriceDisplay
                       priceMinor={product.priceMinor}
                       compareAtPriceMinor={product.compareAtPriceMinor}
-                      className="mt-1"
+                      className="hi-product-price"
                     />
+                    <span className="hi-product-action">İncele</span>
                   </span>
                 </Link>
               </li>

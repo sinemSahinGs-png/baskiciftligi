@@ -2,7 +2,7 @@ import type { Route } from "next";
 import type { CSSProperties } from "react";
 
 import { HomeTrackLink } from "@/components/home/home-track-link";
-import { industrialAssets } from "@/components/home-industrial/industrial-slots";
+import { storePremiumAssets } from "@/components/storefront/store-premium-assets";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { InteractiveMedia, MagneticAction, TechnicalDivider, WordReveal } from "@/components/motion/premium";
 
@@ -50,7 +50,7 @@ export function QuoteFlow() {
               </li>
             ))}
           </ol>
-          <MagneticAction className="mt-6 w-fit">
+          <MagneticAction className="mt-4 w-fit">
             <HomeTrackLink
               event="upload_cta_clicked"
               href={"/model-yukle" as Route}
@@ -62,11 +62,11 @@ export function QuoteFlow() {
         </div>
         <InteractiveMedia className="hi-quote-media" data-industrial-asset="path-upload-object">
           <SlotImage
-            src={industrialAssets.pathUploadObject}
+            src={storePremiumAssets.uploadObject}
             alt=""
             fill
             sizes="(max-width: 768px) 100vw, 42vw"
-            className="object-contain object-center p-6"
+            className="object-cover object-[72%_center]"
           />
         </InteractiveMedia>
       </div>

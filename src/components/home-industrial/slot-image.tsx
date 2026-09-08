@@ -40,12 +40,11 @@ export function SlotImage({
             if (src) setFailedSrc(src);
             onError?.(event);
           }}
+          unoptimized={
+            typeof src === "string" &&
+            (src.startsWith("/images/") || src.startsWith("/catalog-media/"))
+          }
           onLoad={(event) => {
-            const image = event.currentTarget;
-            if (image.naturalWidth < 8 && src) {
-              setFailedSrc(src);
-              return;
-            }
             onLoad?.(event);
           }}
         />

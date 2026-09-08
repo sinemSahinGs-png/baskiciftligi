@@ -7,7 +7,6 @@ import { useState } from "react";
 
 import { Logo } from "@/components/site/logo";
 import { siteConfig } from "@/config/site";
-import { storefrontCategories } from "@/domain/catalog/storefront-taxonomy";
 import { cn } from "@/lib/utils";
 
 type FooterGroup = {
@@ -22,10 +21,6 @@ const footerGroups: FooterGroup[] = [
     label: "Mağaza",
     links: [
       { href: "/magaza", label: "Tüm ürünler" },
-      ...storefrontCategories.map((category) => ({
-        href: category.href,
-        label: category.name,
-      })),
     ],
   },
   {
@@ -106,11 +101,11 @@ export function SiteFooterMobile({
 
   return (
     <div className="md:hidden" data-site-footer-mobile="">
-      <div className="max-w-none px-4 py-6">
+      <div className="max-w-none px-4 py-3">
         <Logo inverted />
-        <p className="mt-2 max-w-sm text-sm leading-6 text-muted-light">{description}</p>
+        <p className="mt-2 max-w-sm text-sm leading-5 text-muted-light">{description}</p>
 
-        <div className="mt-5">
+        <div className="mt-3">
           {footerGroups.map((group) => (
             <FooterAccordion
               key={group.id}
@@ -123,7 +118,7 @@ export function SiteFooterMobile({
           ))}
         </div>
 
-        <p className="mt-4 flex items-start gap-2 text-sm leading-6 text-muted-light">
+        <p className="mt-3 flex items-start gap-2 text-sm leading-5 text-muted-light">
           Türkiye geneli teslimat. Süre, üretim ve kargo olarak ürün sayfasında görünür.
         </p>
 
@@ -137,10 +132,10 @@ export function SiteFooterMobile({
             ) : null}
           </div>
         ) : (
-          <p className="mt-4 text-sm text-muted-light">İletişim bilgileri yakında</p>
+          <p className="mt-3 text-sm text-muted-light">İletişim bilgileri yakında</p>
         )}
 
-        <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-xs text-muted-light">
+        <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-xs text-muted-light">
           <p>
             © {new Date().getFullYear()} {siteConfig.legalName}
           </p>

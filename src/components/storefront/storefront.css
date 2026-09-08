@@ -543,11 +543,18 @@
 
 .store-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.9rem 0.7rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem 0.7rem;
 }
 
-@media (min-width: 760px) {
+@media (max-width: 767.98px) {
+  .store-grid,
+  .store-results-main .store-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  }
+}
+
+@media (min-width: 768px) {
   .store-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.15rem 1rem;
@@ -597,7 +604,7 @@
   position: relative;
   overflow: hidden;
   aspect-ratio: 1 / 1;
-  background: #161a1c !important;
+  background: #eceae4 !important;
   border: 0;
 }
 
@@ -691,7 +698,7 @@
   display: -webkit-box;
   overflow: hidden;
   min-height: 2.55em;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   font-weight: 700;
   line-height: 1.28;
   letter-spacing: -0.02em;
@@ -715,7 +722,7 @@
 }
 
 .store-card-price .type-price {
-  font-size: 1.12rem;
+  font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: -0.04em;
   color: var(--shop-ink);
@@ -730,14 +737,14 @@
 .store-card-text-action {
   display: inline-flex;
   width: 100%;
-  min-height: 2.75rem;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
   border: 1px solid var(--shop-black);
   background: transparent;
   color: var(--shop-black);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -797,11 +804,23 @@
 
 .store-editorial {
   display: grid;
-  min-height: 14rem;
+  min-height: 0;
   margin-block: 0.7rem;
   overflow: hidden;
   background: var(--shop-black);
   color: var(--shop-white);
+}
+
+@media (max-width: 767.98px) {
+  .store-editorial {
+    grid-template-rows: 12.25rem auto;
+  }
+
+  .store-editorial-media {
+    min-height: 12.25rem;
+    height: 12.25rem;
+    order: -1;
+  }
 }
 
 .store-editorial-copy {
@@ -811,6 +830,13 @@
   justify-content: center;
   gap: 0.85rem;
   padding: 1.6rem 1.25rem 1.5rem 1.45rem;
+}
+
+@media (max-width: 767.98px) {
+  .store-editorial-copy {
+    padding: 1.15rem 1.05rem 1.2rem 1.2rem;
+    gap: 0.55rem;
+  }
 }
 
 .store-editorial-copy::before {

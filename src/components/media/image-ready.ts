@@ -3,5 +3,5 @@ export function imageIsReady(image: {
   naturalWidth: number;
   naturalHeight: number;
 }) {
-  return image.complete && image.naturalWidth >= 8 && image.naturalHeight >= 8;
+  return image.complete && image.naturalWidth > 0 && image.naturalHeight > 0;
 }
