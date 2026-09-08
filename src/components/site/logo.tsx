@@ -1,6 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { FormSignal } from "@/components/brand/form-signal";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
@@ -24,12 +24,18 @@ export function Logo({ className, compact = false, inverted = false }: LogoProps
     >
       <span
         aria-hidden="true"
-        className={cn(
-          "relative grid size-8 place-items-center overflow-hidden rounded-md sm:size-9",
-          inverted ? "bg-white/10" : "bg-midnight",
-        )}
+        className="relative size-8 overflow-hidden rounded-md sm:size-9"
       >
-        <FormSignal tone="light" className="size-5 sm:size-6" />
+        <Image
+          src={siteConfig.logo.src}
+          alt=""
+          width={72}
+          height={72}
+          quality={70}
+          sizes="36px"
+          className="size-full object-cover"
+          priority
+        />
       </span>
       <span
         className={cn(

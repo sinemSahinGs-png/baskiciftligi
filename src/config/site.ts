@@ -30,7 +30,7 @@ export const siteConfig = {
   currency: "TRY" as const,
   city: "Ankara",
   logo: {
-    src: "/icon.svg",
+    src: "/icon.png",
     markLabel: "Marka işareti",
   },
   hero: {
@@ -58,16 +58,13 @@ export const siteConfig = {
     { label: "Mağaza", href: "/magaza" },
     { label: "Model Yükle", href: "/model-yukle" },
     { label: "Hazır Modeller", href: "/hazir-modeller" },
-    { label: "Kurumsal", href: "/kurumsal-uretim" },
+    { label: "Toptan & Bayiler", href: "/toptan" },
   ],
   navigation: [
     { label: "Mağaza", href: "/magaza" },
-    { label: "Kategoriler", href: "/magaza" },
     { label: "Model Yükle", href: "/model-yukle" },
     { label: "Hazır Modeller", href: "/hazir-modeller" },
-    { label: "Kurumsal", href: "/kurumsal-uretim" },
-    { label: "Hizmetler", href: "/hizmetler" },
-    { label: "Hakkımızda", href: "/hakkimizda" },
+    { label: "Toptan & Bayiler", href: "/toptan" },
   ],
 } as const;
 

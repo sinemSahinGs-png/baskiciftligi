@@ -22,17 +22,17 @@ export function DiscoveryHero({
   });
 
   return (
-    <header className="mx-auto w-full max-w-[72rem] px-1 pt-6 text-center sm:pt-8 md:pt-10">
+    <header className="mx-auto w-full max-w-[72rem] px-1 pt-4 text-center sm:pt-5 md:pt-6">
       <p className="eyebrow text-xs sm:text-sm">Hazır modeller</p>
       <h1 className="mt-2 font-heading text-[clamp(1.75rem,7vw,2.125rem)] font-bold leading-[1.15] tracking-[-0.03em] sm:text-4xl lg:text-[2.65rem]">
         Ne üretmek istiyorsun?
       </h1>
-      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-light sm:text-base">
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[color:var(--store-muted-dark)] sm:text-base">
         Binlerce model arasından seç, baskı seçeneklerini belirle, teklifini al.
       </p>
 
       <form
-        className="relative mx-auto mt-6 max-h-[320px] max-w-2xl sm:mt-8"
+        className="relative mx-auto mt-4 max-h-[320px] max-w-2xl sm:mt-5"
         role="search"
         onSubmit={(event) => {
           event.preventDefault();
@@ -48,7 +48,7 @@ export function DiscoveryHero({
           <div className="relative">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-light"
+              className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[color:var(--store-muted-dark)]"
             />
             <input
               data-model-search-input
@@ -58,7 +58,7 @@ export function DiscoveryHero({
               onBlur={() => setFocused(false)}
               placeholder={reducedMotion ? "Vazo, telefon standı, figür…" : " "}
               className={cn(
-                "h-[3.375rem] w-full rounded-2xl border border-white/12 bg-white/[0.05] pr-[6.75rem] pl-11 text-base text-light-text shadow-[0_0_0_1px_rgba(255,255,255,0.02)_inset] outline-none transition-shadow placeholder:text-transparent focus-visible:border-coral/40 focus-visible:ring-2 focus-visible:ring-coral/50 sm:h-14 sm:pl-12 sm:pr-36",
+                "h-[3.375rem] w-full border border-[color:var(--store-line-dark)] bg-white pr-[6.75rem] pl-11 text-base text-[color:var(--store-text-dark)] outline-none placeholder:text-[color:var(--store-muted-dark)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--store-orange)] sm:h-14 sm:pl-12 sm:pr-36",
               )}
               autoComplete="off"
               enterKeyHint="search"
@@ -66,7 +66,7 @@ export function DiscoveryHero({
             {!query && !focused && !reducedMotion ? (
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-11 flex w-[calc(100%-8.5rem)] -translate-y-1/2 items-center truncate text-base text-muted-light sm:left-12 sm:w-[calc(100%-10rem)]"
+                className="pointer-events-none absolute top-1/2 left-11 flex w-[calc(100%-8.5rem)] -translate-y-1/2 items-center truncate text-base text-[color:var(--store-muted-dark)] sm:left-12 sm:w-[calc(100%-10rem)]"
               >
                 {animatedText}
                 {showCaret ? (
@@ -76,7 +76,7 @@ export function DiscoveryHero({
             ) : null}
             <button
               type="submit"
-              className="absolute top-1/2 right-2 inline-flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center gap-1.5 rounded-xl bg-coral px-3.5 text-sm font-semibold text-midnight transition hover:brightness-110 sm:px-5"
+              className="absolute top-1/2 right-2 inline-flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center gap-1.5 bg-[color:var(--store-orange)] px-3.5 text-sm font-semibold text-[color:var(--store-black)] transition hover:opacity-90 sm:px-5"
             >
               <Search aria-hidden="true" className="size-4 sm:hidden" />
               <span className="hidden sm:inline">Model Bul</span>

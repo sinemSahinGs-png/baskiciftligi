@@ -1,11 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
+import {
+  Barlow_Condensed,
+  Bricolage_Grotesque,
+  IBM_Plex_Mono,
+  Plus_Jakarta_Sans,
+} from "next/font/google";
 
 import { Providers } from "@/components/providers";
 import { JsonLd } from "@/components/seo/json-ld";
 import { siteConfig } from "@/config/site";
 
 import "./globals.css";
+import "@/components/motion/premium-motion.css";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -16,6 +22,20 @@ const jakarta = Plus_Jakarta_Sans({
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
+
+const industrialDisplay = Barlow_Condensed({
+  variable: "--font-bc-display",
+  subsets: ["latin", "latin-ext"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
+const industrialMono = IBM_Plex_Mono({
+  variable: "--font-bc-mono",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -57,9 +77,9 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
 };
 
@@ -78,7 +98,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="tr"
-      className={`${jakarta.variable} ${bricolage.variable} h-full antialiased`}
+      data-bc-commit={
+        process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.BC_GIT_COMMIT ?? "local"
+      }
+      className={`${jakarta.variable} ${bricolage.variable} ${industrialDisplay.variable} ${industrialMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
@@ -93,6 +116,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               "@type": "Organization",
               name: siteConfig.name,
               url: siteConfig.url,
+              logo: `${siteConfig.url}${siteConfig.logo.src}`,
               ...(siteConfig.contact.email
                 ? { email: siteConfig.contact.email }
                 : {}),

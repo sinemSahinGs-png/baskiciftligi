@@ -24,6 +24,27 @@ export function displayKindForProduct(product: Product): CartLineDisplayKind {
   return "store";
 }
 
+export type StoreProductActionKind = "add" | "options" | "personalize";
+
+export function storeProductAction(product: Product): {
+  kind: StoreProductActionKind;
+  label: string;
+} {
+  if (
+    isPersonalizableProduct(product) ||
+    product.personalizationEnabled === true
+  ) {
+    return { kind: "personalize", label: "KİŞİSELLEŞTİR" };
+  }
+
+  const activeVariants = product.variants.filter((variant) => variant.isActive);
+  if (activeVariants.length > 1) {
+    return { kind: "options", label: "SEÇENEKLERİ GÖR" };
+  }
+
+  return { kind: "add", label: "SEPETE EKLE" };
+}
+
 export const categoryClusters: Record<string, string[]> = {
   "ev-ve-dekorasyon": ["biblo-ve-heykel", "magnet", "yeni-gelenler"],
   "biblo-ve-heykel": ["ev-ve-dekorasyon", "kisiye-ozel-urunler"],

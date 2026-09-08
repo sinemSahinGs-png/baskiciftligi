@@ -13,15 +13,15 @@ export const metadata: Metadata = {
 
 export default function CartPage() {
   return (
-    <main id="ana-icerik" className="bg-porcelain">
-      <header className="border-b border-hairline bg-optical">
+    <main id="ana-icerik" className="store-page">
+      <header className="store-masthead">
         <div className="shell py-10 sm:py-14">
           <PageMasthead
             eyebrow="Sipariş özeti"
             title="Sepet"
             description="Fiyat, stok ve hazırlık süresi her değişiklikte sunucudan yeniden doğrulanır. Mağaza, kişiselleştirilmiş, yüklenen ve lisanslı satırlar ayrı işaretlenir."
-            titleClassName="mt-4 font-heading text-5xl font-bold tracking-[-0.04em] sm:text-6xl"
-            descriptionClassName="body-large mt-4 max-w-2xl"
+            titleClassName="store-intro-title mt-4"
+            descriptionClassName="store-intro-lede mt-4"
           />
         </div>
       </header>

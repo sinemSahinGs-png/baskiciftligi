@@ -516,12 +516,13 @@ export function ModelLibrary({
 
   return (
     <div
-      className="relative overflow-x-hidden text-light-text"
+      className="store-page relative overflow-x-hidden"
       data-model-library-root
+      data-store-library=""
       data-community-enabled={communityEnabled ? "true" : "false"}
     >
-      <FoundryGrid variant="blueprint" className="pointer-events-none opacity-30" />
-      <div className="shell relative py-5 sm:py-10" data-model-library>
+      <FoundryGrid variant="blueprint" className="pointer-events-none opacity-10" />
+      <div className="shell relative py-4 sm:py-6" data-model-library>
         <DiscoveryHero
           query={query}
           onQueryChange={(value) => {
@@ -539,7 +540,7 @@ export function ModelLibrary({
 
         <DiscoveryRail onSelect={runSearch} />
 
-        <div className="mx-auto mt-8 w-full max-w-[72rem] px-1 sm:mt-10 sm:px-0">
+        <div className="mx-auto mt-5 w-full max-w-[72rem] px-1 sm:mt-6 sm:px-0">
           <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
               <h2 className="font-heading text-base font-semibold sm:text-xl">

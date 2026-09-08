@@ -40,7 +40,7 @@ test.describe("scroll motion language", () => {
     await waitForMotion(page);
 
     const heading = page.getByRole("heading", {
-      name: "Fikrini yükle. Biz üretelim.",
+      name: /SEN TARİF ET/,
     });
     await expect(heading).toBeVisible();
     await expect.poll(async () => opacityOf(page, "h1")).toBeGreaterThan(0.98);
@@ -142,12 +142,12 @@ test.describe("scroll motion language", () => {
     test.setTimeout(90_000);
     await page.goto("/magaza");
     await waitForMotion(page);
-    await expect(page.getByRole("heading", { name: "Tüm ürünler" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "3D BASKI KOLEKSİYONU" })).toBeVisible();
     await page.goto("/urun/flux-vazo-demo");
     await waitForMotion(page);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await page.goBack();
-    await expect(page.getByRole("heading", { name: "Tüm ürünler" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "3D BASKI KOLEKSİYONU" })).toBeVisible();
     const hiddenCards = await page.locator("#ana-icerik [data-motion-item='idle']").count();
     expect(hiddenCards).toBeLessThan(8);
   });

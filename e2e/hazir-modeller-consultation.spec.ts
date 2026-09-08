@@ -56,7 +56,7 @@ test.describe("Hazır modeller quotation flow", () => {
     await expect(
       page
         .locator("[data-mobile-sticky-cta]")
-        .getByRole("button", { name: /Dosya Yükle, Fiyatı Gör/i }),
+        .getByRole("button", { name: /Bununla fiyat al/i }),
     ).toBeVisible();
     await expect(page.getByText("Fiyat için dosya gerekli")).toBeVisible();
     await expect(page.locator("[data-estimated-price]")).toHaveCount(0);

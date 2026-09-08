@@ -16,7 +16,7 @@ const pages = [
   { name: "store", path: "/magaza" },
   { name: "store-filtered", path: "/magaza?koleksiyon=cok-satanlar" },
   { name: "category", path: "/magaza/biblo-ve-heykel" },
-  { name: "category-home", path: "/magaza/ev-ve-dekorasyon" },
+  { name: "category-home", path: "/kategori/dekorasyon-yasam" },
   { name: "pdp", path: "/urun/flux-vazo-demo" },
   { name: "pdp-personal", path: "/urun/type-kisiye-ozel-masa-isimligi-demo" },
   { name: "models", path: "/hazir-modeller" },

@@ -1,71 +1,95 @@
-"use client";
-
 import type { Route } from "next";
-import Link from "next/link";
 
-import { FoundryGrid } from "@/components/brand/foundry-grid";
-import { RevealBlock } from "@/components/motion/reveal-copy";
-import { RevealCopy } from "@/components/motion/reveal-copy";
-import { RevealHeading } from "@/components/motion/reveal-words";
+import { HomeTrackLink } from "@/components/home/home-track-link";
 
-const formats = ["STL", "3MF", "OBJ", "100 MB"] as const;
+const advantages = [
+  "STL ve 3MF desteği",
+  "Otomatik üretim analizi",
+  "Anlık imzalı teklif",
+] as const;
+
+const pipeline = [
+  { label: "STL / 3MF" },
+  { label: "Analiz" },
+  { label: "gram / süre" },
+  { label: "imzalı fiyat" },
+] as const;
 
 export function UploadPromoSection() {
   return (
-    <section
-      id="modelin-hazir-mi"
-      className="relative overflow-hidden bg-midnight text-light-text"
-    >
-      <FoundryGrid variant="fade" />
-      <div className="shell relative grid items-center gap-10 py-16 lg:grid-cols-2 lg:py-24">
+    <section id="modelin-hazir-mi" className="home-section relative overflow-hidden">
+      <div className="home-shell relative grid items-center gap-7 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
-          <p className="eyebrow">Dijital üretim kokpiti</p>
-          <RevealHeading
-            id="modelin-hazir-mi-baslik"
-            text="Modelin hazır mı?"
-            className="section-title stack-title text-light-text"
-          />
-          <RevealCopy
-            text="STL, 3MF veya OBJ bırak. Dilimleme bağlı değil; kesin fiyat değerlendirmeden sonra bildirilir."
-            className="stack-body max-w-xl text-[1.05rem] leading-7 text-muted-light"
-          />
-          <RevealBlock delay={0.12} className="mt-8">
-            <Link
-              href={"/model-yukle" as Route}
-              className="inline-flex min-h-12 items-center rounded-md bg-cobalt px-6 text-sm font-semibold text-light-text"
-            >
-              Model yükle
-            </Link>
-          </RevealBlock>
-        </div>
-        <RevealBlock className="relative min-h-72 overflow-hidden rounded-xl border border-white/10 bg-carbon">
-          <FoundryGrid variant="measure" />
-          <div
-            aria-hidden="true"
-            className="motion-measure-box absolute inset-8 border border-dashed border-cyan/35"
-          />
-          <div
-            aria-hidden="true"
-            className="motion-measure-shape absolute top-1/2 left-1/2 h-36 w-44 -translate-x-1/2 -translate-y-1/2 border border-cyan/80 [clip-path:polygon(50%_0,100%_28%,82%_100%,18%_100%,0_28%)]"
-          />
-          <span className="absolute top-6 left-6 text-xs tracking-[0.18em] text-cyan/80">
-            X
-          </span>
-          <span className="absolute top-6 right-6 text-xs tracking-[0.18em] text-cyan/80">
-            Y
-          </span>
-          <span className="absolute bottom-16 left-6 text-xs tracking-[0.18em] text-cyan/80">
-            Z
-          </span>
-          <p className="absolute bottom-5 left-5 flex flex-wrap gap-2 text-xs text-muted-light">
-            {formats.map((format, index) => (
-              <span key={format}>
-                {format}
-                {index < formats.length - 1 ? " ·" : null}
-              </span>
-            ))}
+          <p className="text-[0.8125rem] font-semibold tracking-[0.14em] text-[#c9b8ff] uppercase">
+            Dijital model
           </p>
-        </RevealBlock>
+          <h2 id="modelin-hazir-mi-baslik" className="home-title home-mask-reveal mt-2">
+            Modelini ürüne dönüştür
+          </h2>
+          <p className="home-lede">
+            Dosyanı yükle. Üretim öncesi kontrol ve imzalı teklif, gerçek dilimlemeden sonra gelir.
+          </p>
+          <ul className="mt-4 space-y-1.5 text-base leading-7 text-white/80">
+            {advantages.map((item) => (
+              <li key={item} className="flex min-h-10 items-center gap-2">
+                <span className="size-1.5 rounded-full bg-cyan" aria-hidden="true" />
+                {item}
+              </li>
+            ))}
+          </ul>
+          <HomeTrackLink
+            event="upload_cta_clicked"
+            href={"/model-yukle" as Route}
+            className="home-cta-press mt-5 inline-flex min-h-12 items-center rounded-xl bg-orange px-5 text-[0.9375rem] font-semibold text-midnight"
+          >
+            Dosyanı yükle
+          </HomeTrackLink>
+          <details className="mt-2">
+            <summary className="min-h-11 cursor-pointer list-none text-left text-[0.875rem] font-semibold text-white/75 underline-offset-4 hover:underline [&::-webkit-details-marker]:hidden">
+              Nasıl hesaplanıyor?
+            </summary>
+            <p className="mt-1 max-w-md text-base leading-7 text-white/75">
+              Teklif; baskı süresi, malzeme miktarı ve sunucu formülünden üretilir.
+              Dosya analiz edilmeden fiyat gösterilmez.
+            </p>
+          </details>
+        </div>
+        <div className="home-card relative overflow-hidden p-5 sm:p-6" aria-hidden="true">
+          <p className="text-[0.8125rem] font-semibold tracking-[0.14em] text-cyan uppercase">
+            Üretim hattı
+          </p>
+          <svg viewBox="0 0 320 92" className="mt-4 h-auto w-full text-cyan">
+            <path
+              d="M18 46 H302"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="home-pipeline-line"
+              opacity="0.85"
+            />
+            {pipeline.map((node, index) => (
+              <g key={node.label} transform={`translate(${18 + index * 94} 46)`}>
+                <circle
+                  r="8"
+                  fill="#0c1014"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="home-pipeline-node"
+                />
+              </g>
+            ))}
+          </svg>
+          <ol className="mt-2 grid grid-cols-4 gap-2 text-center">
+            {pipeline.map((node) => (
+              <li
+                key={node.label}
+                className="home-pipeline-node text-[0.8125rem] leading-5 font-semibold text-white/85"
+              >
+                {node.label}
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     </section>
   );

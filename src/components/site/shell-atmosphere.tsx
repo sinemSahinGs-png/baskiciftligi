@@ -10,23 +10,21 @@ export function ShellAtmosphere({ children }: { children: ReactNode }) {
   const atmosphere =
     pathname === "/"
       ? "cinematic"
-      : pathname.startsWith("/hazir-modeller")
-        ? "violet"
-        : pathname.startsWith("/model-yukle")
-          ? "cockpit"
-          : pathname.startsWith("/kurumsal")
-            ? "foundry"
-            : "porcelain";
+      : pathname.startsWith("/model-yukle")
+        ? "cockpit"
+        : pathname.startsWith("/kurumsal")
+          ? "foundry"
+          : "porcelain";
 
   return (
     <div
       data-atmosphere={atmosphere}
+      data-storefront={atmosphere === "cinematic" ? undefined : ""}
       className={cn(
         "flex min-h-screen flex-col",
         atmosphere === "cinematic" && "bg-midnight text-light-text",
-        atmosphere === "porcelain" && "bg-porcelain text-dark-text",
-        atmosphere === "violet" && "atmosphere-violet",
-        atmosphere === "cockpit" && "bg-midnight text-light-text",
+        atmosphere === "porcelain" && "bg-[color:var(--store-paper,#f0eee8)] text-[color:var(--store-text-dark,#080a0b)]",
+        atmosphere === "cockpit" && "bg-[#050708] text-light-text",
         atmosphere === "foundry" && "atmosphere-foundry",
       )}
     >

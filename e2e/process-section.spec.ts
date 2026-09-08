@@ -16,7 +16,7 @@ async function waitForMotion(page: Page) {
 test.describe("Nasıl çalışır process section", () => {
   test.describe.configure({ mode: "serial" });
 
-  test("desktop sequence reaches all five steps then the next section", async ({
+  test("desktop sequence reaches all four steps then the next section", async ({
     page,
     isMobile,
   }) => {
@@ -28,7 +28,7 @@ test.describe("Nasıl çalışır process section", () => {
     await waitForMotion(page);
 
     const heading = page.getByRole("heading", {
-      name: "Modelden ürüne, beş adımda.",
+      name: "ÜRETİM SÜRECİ",
     });
     await heading.scrollIntoViewIfNeeded();
     await expect(page.locator("[data-process-section]")).toHaveAttribute(
@@ -37,19 +37,24 @@ test.describe("Nasıl çalışır process section", () => {
     );
     await page.screenshot({ path: path.join(shots, "desktop-before.png") });
 
-    for (const step of ["01", "02", "03", "04", "05"] as const) {
+    for (const [index, step] of (["01", "02", "03", "04"] as const).entries()) {
+      await page.locator(`[data-process-section] [data-process-step='${step}']`).click();
+      await expect(page.locator("[data-process-section]")).toHaveAttribute(
+        "data-stage",
+        step,
+      );
       const card = page.locator(`[data-process-section] [data-process-step='${step}']`);
-      await card.scrollIntoViewIfNeeded();
       await expect(card).toBeVisible();
-      await expect(card).toHaveCSS("opacity", "1");
+      await expect(card).toHaveAttribute("data-active", "true");
       await page.screenshot({ path: path.join(shots, `desktop-step-${step}.png`) });
+      void index;
     }
 
     const geometry = await page.locator("[data-process-section]").evaluate((node) => {
       const rect = node.getBoundingClientRect();
       return { height: rect.height };
     });
-    expect(geometry.height).toBeLessThan(900 * 2.05);
+    expect(geometry.height).toBeLessThan(900);
 
     await page.evaluate(() => {
       const section = document.querySelector("#nasil-calisir");
@@ -65,7 +70,7 @@ test.describe("Nasıl çalışır process section", () => {
     );
     expect(overflowX).toBeLessThanOrEqual(1);
     await expect(
-      page.getByRole("heading", { name: "Malzeme laboratuvarı" }),
+      page.getByRole("heading", { name: "MALZEMELER" }),
     ).toBeVisible();
   });
 
@@ -77,22 +82,31 @@ test.describe("Nasıl çalışır process section", () => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto("/");
     await waitForMotion(page);
-    const mobile = page.locator("[data-process-mobile]");
+    const mobile = page.locator("[data-process-section]");
     await mobile.scrollIntoViewIfNeeded();
     await expect(mobile).toBeVisible();
-    expect(await mobile.locator(".sticky").count()).toBe(0);
-    for (const step of ["01", "02", "03", "04", "05"] as const) {
+    for (const step of ["01", "02", "03", "04"] as const) {
       await mobile.locator(`[data-process-step='${step}']`).scrollIntoViewIfNeeded();
       await expect(mobile.locator(`[data-process-step='${step}']`)).toBeVisible();
       await page.screenshot({
         path: path.join(shots, `mobile-step-${step}.png`),
       });
     }
+    await expect(mobile).toHaveAttribute("data-process-pinned", "false");
+    const processHeight = await mobile.evaluate((node) => node.getBoundingClientRect().height);
+    expect(processHeight).toBeLessThan(915 * 1.35);
+    const contentGap = await page.evaluate(() => {
+      const scene = document.querySelector("#nasil-calisir .hi-process-scene");
+      const heading = document.querySelector("#materials-heading");
+      if (!scene || !heading) return 9999;
+      const sceneBox = scene.getBoundingClientRect();
+      const headingBox = heading.getBoundingClientRect();
+      return headingBox.top + window.scrollY - (sceneBox.bottom + window.scrollY);
+    });
+    expect(contentGap).toBeGreaterThanOrEqual(0);
+    expect(contentGap).toBeLessThanOrEqual(64);
     await expect(
-      page.locator("#nasil-calisir").getByRole("link", { name: "Mağazayı keşfet" }),
-    ).toBeVisible();
-    await expect(
-      page.locator("#nasil-calisir").getByRole("link", { name: "Model yükle" }),
+      page.getByRole("heading", { name: "MALZEMELER" }),
     ).toBeVisible();
   });
 
@@ -106,7 +120,7 @@ test.describe("Nasıl çalışır process section", () => {
       "data-process-pinned",
       "false",
     );
-    for (const step of ["01", "02", "03", "04", "05"] as const) {
+    for (const step of ["01", "02", "03", "04"] as const) {
       await expect(
         page.locator(`[data-process-section] [data-process-step='${step}']`),
       ).toBeVisible();
@@ -121,13 +135,11 @@ test.describe("Nasıl çalışır process section", () => {
         { file: "desktop-step-02.png", caption: "Desktop — step 02" },
         { file: "desktop-step-03.png", caption: "Desktop — step 03" },
         { file: "desktop-step-04.png", caption: "Desktop — step 04" },
-        { file: "desktop-step-05.png", caption: "Desktop — step 05" },
         { file: "desktop-after.png", caption: "Desktop — next section" },
         { file: "mobile-step-01.png", caption: "Mobile — step 01" },
         { file: "mobile-step-02.png", caption: "Mobile — step 02" },
         { file: "mobile-step-03.png", caption: "Mobile — step 03" },
         { file: "mobile-step-04.png", caption: "Mobile — step 04" },
-        { file: "mobile-step-05.png", caption: "Mobile — step 05" },
         { file: "reduced-process.png", caption: "Reduced motion" },
       ],
     });

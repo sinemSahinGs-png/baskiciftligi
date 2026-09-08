@@ -15,6 +15,10 @@ import {
 } from "@/components/models/print-production-options";
 import { QuoteCtaButton } from "@/components/models/quote-cta-button";
 import { communityModelPricing } from "@/domain/external-models/pricing-state";
+import {
+  externalQuoteReasonTr,
+  resolveExternalQuoteAction,
+} from "@/domain/external-models/quote-action";
 import type { ExternalQuoteModelContext } from "@/lib/models/external-quote-context";
 import type { ExternalModelSummary } from "@/providers/contracts";
 import { cn } from "@/lib/utils";
@@ -47,6 +51,10 @@ export function ThingiverseDetail({
   }, []);
 
   const pricing = useMemo(() => communityModelPricing(), []);
+  const quoteAction = resolveExternalQuoteAction(model, {
+    printableFilesVerified: true,
+  });
+  const quoteReason = externalQuoteReasonTr(model);
 
   const originalSourceHref = `/api/hazir-modeller/source-open?kind=thingiverse&id=${encodeURIComponent(model.externalId)}`;
 
@@ -184,7 +192,19 @@ export function ThingiverseDetail({
 
             {isDesktopLayout ? (
               <div className="space-y-3">
-                <QuoteCtaButton onClick={() => setUploadOpen(true)} />
+                {quoteAction === "quote" ? (
+                  <QuoteCtaButton
+                    label="Bununla fiyat al"
+                    onClick={() => setUploadOpen(true)}
+                  />
+                ) : (
+                  <p
+                    data-quote-action={quoteAction}
+                    className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-3 text-sm leading-6 text-muted-light"
+                  >
+                    {quoteReason}
+                  </p>
+                )}
                 <button
                   type="button"
                   data-consultation-fallback=""
@@ -215,11 +235,25 @@ export function ThingiverseDetail({
 
       {!modalOpen && !isDesktopLayout ? (
         <div
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-carbon/90 px-4 pt-3 backdrop-blur-md"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-carbon px-4 pt-3"
           style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
           data-mobile-sticky-cta=""
         >
-          <QuoteCtaButton variant="sticky" onClick={() => setUploadOpen(true)} />
+          {quoteAction === "quote" ? (
+            <QuoteCtaButton
+              variant="sticky"
+              label="Bununla fiyat al"
+              mobileLabel="Bununla fiyat al"
+              onClick={() => setUploadOpen(true)}
+            />
+          ) : (
+            <p
+              data-quote-action={quoteAction}
+              className="pb-1 text-sm leading-6 text-muted-light"
+            >
+              {quoteReason}
+            </p>
+          )}
         </div>
       ) : null}
 

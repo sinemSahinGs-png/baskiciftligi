@@ -7,12 +7,14 @@ interface CatalogGridProps {
   products: Product[];
   priorityCount?: number;
   featuredFirst?: boolean;
+  tone?: "default" | "store";
 }
 
 export function CatalogGrid({
   products,
   priorityCount = 0,
   featuredFirst = false,
+  tone = "default",
 }: CatalogGridProps) {
   const resultKey = products.map((product) => product.id).join();
 
@@ -21,7 +23,11 @@ export function CatalogGrid({
       key={resultKey}
       as="ul"
       data-catalog-grid=""
-      className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-10 md:grid-cols-3 xl:grid-cols-4"
+      className={cn(
+        tone === "store"
+          ? "store-grid"
+          : "grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-10 md:grid-cols-3 xl:grid-cols-4",
+      )}
     >
       {products.map((product, index) => (
         <StaggerItem
@@ -33,6 +39,7 @@ export function CatalogGrid({
             product={product}
             priority={index < priorityCount}
             featured={featuredFirst && index === 0}
+            tone={tone}
           />
         </StaggerItem>
       ))}

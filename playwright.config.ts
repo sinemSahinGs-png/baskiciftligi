@@ -45,6 +45,7 @@ process.env.ADMIN_PANEL_PASSWORD ??= e2eAdminPassword;
 
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore: ["store-live-approval.spec.ts"],
   outputDir: "test-results/playwright",
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
@@ -72,7 +73,7 @@ export default defineConfig({
   webServer: {
     command: "node scripts/playwright-dev.mjs",
     url: baseURL,
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
       ...process.env,

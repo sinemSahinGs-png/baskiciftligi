@@ -18,7 +18,7 @@ export default async function AccountLayout({
   }
 
   return (
-    <div className="min-h-screen bg-porcelain text-dark-text">
+    <div className="store-page min-h-screen bg-[color:var(--store-paper)] text-[color:var(--store-text-dark)]">
       <header className="border-b border-hairline bg-optical">
         <div className="shell flex min-h-16 items-center justify-between gap-4 py-3">
           <Logo />

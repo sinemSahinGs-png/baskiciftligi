@@ -20,6 +20,7 @@ interface ProductStageProps {
   alt: string;
   sizes?: string;
   preload?: boolean;
+  eager?: boolean;
   framed?: boolean;
   isolated?: boolean;
   objectPosition?: string;
@@ -40,6 +41,7 @@ export function ProductStage({
   alt,
   sizes = "(max-width: 640px) 50vw, 25vw",
   preload,
+  eager = false,
   framed,
   isolated = false,
   objectPosition = "50% 50%",
@@ -123,6 +125,7 @@ export function ProductStage({
       ) : null}
 
       <div
+        data-stage-frame=""
         className={cn(
           "absolute inset-0",
           isolated ? "inset-[8%] sm:inset-[11%]" : honestFrame && "inset-4 sm:inset-6",
@@ -134,7 +137,8 @@ export function ProductStage({
             alt={alt}
             fill
             sizes={sizes}
-            preload={preload}
+            priority={preload}
+            eager={eager}
             className={cn(
               "product-stage-media md:hidden",
               fitClass,
@@ -148,7 +152,8 @@ export function ProductStage({
           alt={alt}
           fill
           sizes={sizes}
-          preload={preload}
+          priority={preload}
+          eager={eager}
           className={cn(
             "product-stage-media",
             mobileSrc && "max-md:hidden",

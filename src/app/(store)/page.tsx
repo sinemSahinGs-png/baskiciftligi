@@ -1,29 +1,15 @@
 import type { Metadata } from "next";
 
-import { Hero } from "@/components/home/hero";
-import {
-  B2bSection,
-  CategoriesSection,
-  FeaturedCollectionsSection,
-  FeaturedProductsSection,
-  FaqSection,
-  GallerySection,
-  MaterialsSection,
-  PrintLibrarySection,
-  ProcessSection,
-  SocialProofSection,
-  ThreePathsSection,
-  UploadPromoSection,
-} from "@/components/home/storefront-sections";
+import { IndustrialHome } from "@/components/home-industrial/industrial-home";
+import { faqItems } from "@/components/home/faq-data";
 import { siteConfig } from "@/config/site";
 import {
-  listCategories,
   listMaterials,
   listProducts,
 } from "@/domain/catalog/repository";
 import { listPublishedCuratedModels } from "@/domain/curated-models/repository";
-import { faqItems } from "@/components/home/faq-data";
-import { getSiteContent } from "@/domain/site/content-repository";
+import { platformLabel } from "@/domain/curated-models/types";
+import { homepagePrintLibrary } from "@/domain/home/homepage";
 
 export const metadata: Metadata = {
   title: siteConfig.tagline,
@@ -37,13 +23,40 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [products, categories, materials, content, curatedModels] = await Promise.all([
+  const [products, materials, curatedModels] = await Promise.all([
     listProducts(),
-    listCategories(),
     listMaterials(),
-    getSiteContent(),
     listPublishedCuratedModels(4, "curated_external"),
   ]);
+
+  const readyFallback =
+    curatedModels.length > 0
+      ? curatedModels.map((model) => ({
+          id: model.id,
+          name: model.titleTr,
+          category: model.categoryLabel ?? "Küratörlü",
+          imageUrl: model.previewImageUrl,
+          href: `/hazir-modeller/katalog/${model.slug}`,
+          source: "curated" as const,
+          sourceLabel: platformLabel(model.platformType),
+          licenseLabel: model.licenseCode,
+          licenseVerified: model.licenseVerified,
+          fileVerified: Boolean(model.downloadUrl),
+          quoteEligible: model.permissionKind === "owned" && Boolean(model.downloadUrl),
+        }))
+      : homepagePrintLibrary.map((model) => ({
+          id: model.id,
+          name: model.name,
+          category: model.category,
+          imageUrl: model.imageUrl,
+          href: model.href,
+          source: "fallback" as const,
+          sourceLabel: "Stüdyo vitrini",
+          licenseLabel: model.licenseLabel,
+          licenseVerified: model.licenseStatus === "owned",
+          fileVerified: false,
+          quoteEligible: false,
+        }));
 
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -57,26 +70,11 @@ export default async function HomePage() {
 
   return (
     <main id="ana-icerik">
-      <Hero />
-      <FeaturedCollectionsSection products={products} categories={categories} />
-      <FeaturedProductsSection products={products} />
-      <CategoriesSection
-        categories={categories}
+      <IndustrialHome
         products={products}
-        categoriesIntro={{
-          title: content.categoriesIntroTitle,
-          description: content.categoriesIntroDescription,
-        }}
+        materials={materials}
+        readyModels={readyFallback}
       />
-      <ThreePathsSection />
-      <UploadPromoSection />
-      <PrintLibrarySection curatedModels={curatedModels} />
-      <ProcessSection />
-      <MaterialsSection materials={materials} />
-      <B2bSection />
-      <SocialProofSection />
-      <GallerySection />
-      <FaqSection />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

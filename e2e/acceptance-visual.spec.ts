@@ -48,12 +48,12 @@ test.describe("acceptance visual inspection", () => {
       page.getByRole("contentinfo").getByText("© 2026 Baskı Çiftliği"),
     ).toBeVisible();
     await page
-      .getByRole("heading", { name: "Kategori dünyaları" })
+      .getByRole("heading", { name: "Kategoriler" })
       .scrollIntoViewIfNeeded();
     await shot(page, "mobile-home-categories");
 
     await page.goto("/magaza", { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { name: "Tüm ürünler" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "3D BASKI KOLEKSİYONU" })).toBeVisible();
     await shot(page, "mobile-store-products");
 
     await page.goto("/hazir-modeller", { waitUntil: "networkidle" });
@@ -66,7 +66,7 @@ test.describe("acceptance visual inspection", () => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/", { waitUntil: "networkidle" });
     await page
-      .getByRole("heading", { name: "Kategori dünyaları" })
+      .getByRole("heading", { name: "Kategoriler" })
       .scrollIntoViewIfNeeded();
     await shot(page, "desktop-home-categories");
 

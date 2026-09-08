@@ -1,76 +1,78 @@
-"use client";
-
 import type { Route } from "next";
 import Link from "next/link";
 
-import { SectionIntro } from "@/components/home/section-intro";
-import { StaggerGrid } from "@/components/motion/stagger-grid";
-import {
-  homepageMaterialCopy,
-  homepageMaterialOrder,
-} from "@/domain/home/homepage";
+import { homepageMaterialCopy, homepageMaterialCore } from "@/domain/home/homepage";
 import type { Material } from "@/domain/catalog/types";
 
-const swatches = ["#4054FF", "#FF6542", "#30D5D2", "#171721", "#7A42F4"];
+function appearanceLabel(material: Material) {
+  if (material.surfaceQuality >= 4) return "Pürüzsüz, detaylı yüzey";
+  if (material.flexibility >= 4) return "Esnek, kavrayan yüzey";
+  return "Dengeli üretim yüzeyi";
+}
 
-function MaterialCards({ materials }: { materials: Material[] }) {
-  return materials.map((material, index) => {
-    const extra =
-      homepageMaterialCopy[material.slug as keyof typeof homepageMaterialCopy];
-    const sample = material.colors[0]?.hex ?? swatches[index] ?? "#4054FF";
-    return (
-      <Link
-        key={material.id}
-        href={`/malzemeler/${material.slug}` as Route}
-        data-motion-item="visible"
-        className="motion-item min-w-0 overflow-hidden rounded-lg bg-optical"
-      >
-        <span className="relative block h-28 overflow-hidden sm:h-32">
-          <span
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(160deg, ${sample}, color-mix(in srgb, ${sample} 40%, #171721))`,
-            }}
-          />
-          <span
-            aria-hidden="true"
-            className="absolute top-1/2 left-1/2 size-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-[10px] border-white/25 shadow-[inset_0_0_0_10px_rgb(0_0_0/0.18)]"
-            style={{ background: sample }}
-          />
-        </span>
-        <span className="block p-4 text-dark-text">
-          <span className="font-heading text-2xl font-bold tracking-[-0.04em]">
-            {material.slug === "standart-recine" ? "SLA" : material.name}
-          </span>
-          <span className="mt-3 block text-sm font-semibold">{extra?.benefit}</span>
-          <span className="mt-1 block text-sm text-ink-secondary">{extra?.usage}</span>
-          <span className="mt-3 flex flex-wrap gap-2 text-[0.78rem] text-ink-secondary">
-            <span>Esneklik {material.flexibility}/5</span>
-            <span>Detay {material.surfaceQuality}/5</span>
-            <span>{material.suitability}</span>
-          </span>
-        </span>
-      </Link>
-    );
-  });
+function pickHint(material: Material) {
+  if (material.slug === "pla") return "İç mekân dekor ve hediye için ilk tercih.";
+  if (material.slug === "petg") return "Nem ve darbe gören günlük parçalar için.";
+  if (material.slug === "tpu") return "Conta, kılıf ve esneyen detaylar için.";
+  return material.summary;
 }
 
 export function MaterialsSection({ materials }: { materials: Material[] }) {
-  const visible = homepageMaterialOrder
+  const visible = homepageMaterialCore
     .map((slug) => materials.find((material) => material.slug === slug))
     .filter((material): material is Material => Boolean(material));
 
   return (
-    <section className="atmosphere-porcelain section-space">
-      <div className="shell">
-        <SectionIntro
-          title="Malzeme laboratuvarı"
-          description="Yüzey ve teknoloji birlikte okunur."
-          action={{ href: "/malzemeler" as Route, label: "Malzeme rehberi" }}
-        />
-        <StaggerGrid className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <MaterialCards materials={visible} />
-        </StaggerGrid>
+    <section id="malzeme-secenekleri" className="home-section">
+      <div className="home-shell">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="home-title home-mask-reveal">Malzeme seçenekleri</h2>
+            <p className="home-lede">Yalnızca stüdyoda gerçekten açılan temel malzemeler.</p>
+          </div>
+          <Link href={"/malzemeler" as Route} className="home-see-all hidden sm:inline-flex">
+            Tümünü gör
+          </Link>
+        </div>
+        {visible.length > 0 ? (
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            {visible.map((material) => {
+              const extra =
+                homepageMaterialCopy[material.slug as keyof typeof homepageMaterialCopy];
+              const sample = material.colors[0]?.hex ?? "#30d5d2";
+              return (
+                <Link
+                  key={material.id}
+                  href={`/malzemeler/${material.slug}` as Route}
+                  className="home-press-card overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#f3efe6] text-[#14161c]"
+                >
+                  <span className="relative block h-20">
+                    <span
+                      className="absolute inset-0"
+                      style={{
+                        background: `radial-gradient(circle at 30% 40%, ${sample}, color-mix(in srgb, ${sample} 35%, #171721))`,
+                      }}
+                    />
+                  </span>
+                  <span className="block p-3.5">
+                    <span className="font-heading text-xl font-bold tracking-[-0.04em]">
+                      {material.name}
+                    </span>
+                    <span className="mt-1.5 block text-base leading-6 font-semibold">
+                      {extra?.benefit ?? appearanceLabel(material)}
+                    </span>
+                    <span className="mt-2 block text-[0.875rem] leading-6 text-[#3d4148]">
+                      {pickHint(material)}
+                    </span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        ) : null}
+        <Link href={"/malzemeler" as Route} className="home-see-all mt-4 sm:hidden">
+          Tümünü gör
+        </Link>
       </div>
     </section>
   );

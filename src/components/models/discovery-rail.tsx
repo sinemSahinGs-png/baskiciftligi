@@ -67,7 +67,7 @@ export function DiscoveryRail({ onSelect }: { onSelect: (term: string) => void }
 
   return (
     <section
-      className="mx-auto mt-6 w-full max-w-[72rem] px-4 sm:mt-8"
+      className="mx-auto mt-4 w-full max-w-[72rem] px-4 sm:mt-5"
       aria-label="Şu anda keşfedilenler"
     >
       <p className="text-center text-sm font-medium text-muted-light">

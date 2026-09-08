@@ -79,6 +79,7 @@ import {
   takePendingExternalUpload,
   type ExternalQuoteModelContext,
 } from "@/lib/models/external-quote-context";
+import { takePendingOwnedUpload } from "@/lib/home/pending-owned-upload";
 import { announceStatus } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart-store";
@@ -258,6 +259,13 @@ export function PreparationStudio() {
   useEffect(() => {
     const root = globalThis as typeof globalThis & { __bcHandoffConsumed?: boolean };
     if (handoffApplied.current || root.__bcHandoffConsumed) return;
+    const owned = takePendingOwnedUpload();
+    if (owned) {
+      handoffApplied.current = true;
+      root.__bcHandoffConsumed = true;
+      queueMicrotask(() => acceptFile(owned));
+      return;
+    }
     const pending = takePendingExternalUpload() ?? handoff;
     if (!pending) return;
     handoffApplied.current = true;
@@ -558,7 +566,7 @@ export function PreparationStudio() {
           {workerOnline === false ? <p className="rounded-md border border-warm/40 bg-warm/10 px-3 py-2 text-sm">{mapWorkerServiceUnavailableError().message}</p> : null}
           {jobLabel && !quote ? <p className="flex items-center gap-2 text-sm"><FormSignal spinning className="size-4" />{jobLabel}</p> : null}
           {quote ? (
-            <div className="space-y-1 rounded-md border border-lime/30 bg-lime/10 px-3 py-2 text-sm">
+            <div className="space-y-1 border border-white/15 bg-[#f0eee8] px-3 py-2 text-sm text-[#080a0b]">
               <p className="font-semibold">{quote.reviewRequired ? "Geçici teklif" : "Otomatik teklif hazır"}</p>
               <p>{formatMoney(quote.grossMinor)} KDV dahil</p>
               <p>{quote.grams.toFixed(2)} g · {fmtDur(quote.duration)}</p>
@@ -567,8 +575,8 @@ export function PreparationStudio() {
                 <p>Kargo ürün fiyatına dahil değil; sepette sipariş başına bir kez gösterilir.</p>
               ) : null}
             </div>
-          ) : <p className="rounded-md border border-white/15 px-3 py-2 text-sm">Fiyat, PrusaSlicer çıktısı olmadan gösterilmez.</p>}
-          <button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-cobalt text-sm font-semibold text-light-text disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button>
+          ) : <p className="rounded-md border border-white/15 px-3 py-2 text-sm">Fiyat, üretim analizi tamamlanmadan gösterilmez.</p>}
+          <button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="mt-3 inline-flex min-h-11 w-full items-center justify-center bg-[color:var(--store-orange)] text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button>
           <button type="button" disabled={!quote} onClick={() => void addQuoteToCart()} className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-cyan text-sm font-semibold disabled:opacity-40">Teklifi sepete ekle</button>
           <p className="text-xs text-muted-light">{siteConfig.name} fiyatı tarayıcıdan kabul etmez.</p>
         </>
@@ -606,7 +614,7 @@ export function PreparationStudio() {
           <button type="button" className="min-h-10 px-3 text-sm" onClick={() => setFitKey((v) => v + 1)}>Sığdır</button>
           <button type="button" className="min-h-10 px-3 text-sm" onClick={reset}>Sıfırla</button>
           <button type="button" aria-label="Tel kafes" className="min-h-10 px-3 text-sm" onClick={() => setWireframe((v) => !v)}>Tel kafes</button>
-          <button type="button" className="min-h-10 rounded-md bg-cobalt px-3 text-sm font-semibold" onClick={() => { setTab("analysis"); if (!isDesktop) setMobileOpen(true); }}>Analiz et</button>
+          <button type="button" className="min-h-10 rounded-md bg-[color:var(--store-orange)] px-3 text-sm font-semibold text-[color:var(--store-black)]" onClick={() => { setTab("analysis"); if (!isDesktop) setMobileOpen(true); }}>Analiz et</button>
         </div>
       </header>
       <div className="flex min-h-0 flex-1 flex-col lg:col-span-full lg:grid lg:grid-cols-[3.5rem_minmax(0,1fr)_20rem]">
@@ -630,7 +638,7 @@ export function PreparationStudio() {
             {toolRail(false)}
             <button type="button" aria-label="İnceleyici panelini sürükle" onClick={() => setMobileOpen((o) => !o)} className="flex min-h-8 items-center justify-center pt-1"><GripHorizontal className="size-5 text-muted-light" aria-hidden="true" /></button>
             <div className="flex items-center justify-between gap-2 px-4 pb-2"><p className="min-w-0 truncate text-sm font-semibold">{file?.name ?? "Dosya seçilmedi"}{dims ? ` · ${fmtMm(dims.x)} × ${fmtMm(dims.y)} × ${fmtMm(dims.z)}` : ""}</p><button type="button" aria-expanded={mobileOpen} onClick={() => setMobileOpen((o) => !o)} className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-md px-3 text-sm font-semibold">{mobileOpen ? "Küçült" : "Genişlet"}<ChevronDown className={cn("size-4 transition-transform", mobileOpen && "rotate-180")} aria-hidden="true" /></button></div>
-            <div className="flex items-center justify-between gap-3 px-4 pb-3"><p className="min-w-0 truncate text-xs text-muted-light">{priceHint}</p><button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="inline-flex min-h-10 shrink-0 items-center rounded-md bg-cobalt px-3 text-sm font-semibold text-light-text disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button></div>
+            <div className="flex items-center justify-between gap-3 px-4 pb-3"><p className="min-w-0 truncate text-xs text-muted-light">{priceHint}</p><button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="inline-flex min-h-10 shrink-0 items-center bg-[color:var(--store-orange)] px-3 text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button></div>
             {mobileOpen ? <div className="min-h-0 flex-1 overflow-y-auto">{tabNav}{inspector}</div> : <div className="px-2 pb-2">{tabNav}</div>}
           </div>
         ) : null}

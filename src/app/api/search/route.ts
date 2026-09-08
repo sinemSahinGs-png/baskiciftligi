@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { listCategories, listProducts } from "@/domain/catalog/repository";
+import { publicCategoryHref } from "@/domain/catalog/storefront-taxonomy";
 import { discoverExternalModels } from "@/lib/model-discovery/discover";
 import { clientKey, rateLimit } from "@/lib/manufacturing/rate-limit";
 import { matchesTurkish } from "@/lib/search/turkish-match";
@@ -57,7 +58,7 @@ export async function GET(request: Request) {
       id: category.id,
       name: category.name,
       slug: category.slug,
-      href: `/magaza/${category.slug}`,
+      href: publicCategoryHref(category.slug),
     }));
 
   const modelHits = discovery.items.slice(0, 8).map((item) => ({

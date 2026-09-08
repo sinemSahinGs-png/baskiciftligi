@@ -122,6 +122,15 @@ test.describe("Thingiverse model detail", () => {
     }
   });
 
+  test("non-commercial fixture does not open automatic pricing", async ({ page }) => {
+    await page.goto("/hazir-modeller/thingiverse/2002");
+    await expect(page.locator("[data-thingiverse-detail]")).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.locator("[data-production-request-cta]")).toHaveCount(0);
+    await expect(page.getByText(/ticari üretime izin vermiyor/i)).toBeVisible();
+  });
+
   test("discovery card handoff opens the same model", async ({ page }) => {
     await page.route("**/api/hazir-modeller/search**", async (route) => {
       await route.fulfill({

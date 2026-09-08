@@ -2,27 +2,12 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { ChevronDown, Mail, Play, Truck } from "lucide-react";
+import { ChevronDown, Mail, Play } from "lucide-react";
 import { useState } from "react";
 
 import { Logo } from "@/components/site/logo";
 import { siteConfig } from "@/config/site";
-import { homepageShopCategorySlugs } from "@/domain/home/homepage";
 import { cn } from "@/lib/utils";
-
-const storeCategoryLinks = [
-  { slug: "ev-ve-dekorasyon", label: "Ev ve Dekorasyon" },
-  { slug: "biblo-ve-heykel", label: "Biblo ve Heykel" },
-  { slug: "anahtarlik", label: "Anahtarlık" },
-  { slug: "magnet", label: "Magnet" },
-  { slug: "masaustu-aksesuarlari", label: "Masaüstü Aksesuarları" },
-  { slug: "kisiye-ozel-urunler", label: "Kişiye Özel Ürünler" },
-  { slug: "fonksiyonel-parcalar", label: "Fonksiyonel Parçalar" },
-  { slug: "kurumsal-promosyon", label: "Kurumsal Promosyon" },
-] as const satisfies ReadonlyArray<{
-  slug: (typeof homepageShopCategorySlugs)[number];
-  label: string;
-}>;
 
 type FooterGroup = {
   id: string;
@@ -36,32 +21,26 @@ const footerGroups: FooterGroup[] = [
     label: "Mağaza",
     links: [
       { href: "/magaza", label: "Tüm ürünler" },
-      ...storeCategoryLinks.map((c) => ({
-        href: `/magaza/${c.slug}`,
-        label: c.label,
-      })),
-    ],
-  },
-  {
-    id: "hizmetler",
-    label: "Hizmetler",
-    links: [
       { href: "/model-yukle", label: "Model yükle" },
       { href: "/hazir-modeller", label: "Hazır modeller" },
-      { href: "/kurumsal-uretim", label: "Kurumsal üretim" },
-      { href: "/malzemeler", label: "Malzemeler" },
-      { href: "/hizmetler/3d-baski", label: "3D baskı" },
     ],
   },
   {
-    id: "hesap",
-    label: "Hesabım",
+    id: "yardim",
+    label: "Yardım",
     links: [
-      { href: "/hesabim", label: "Hesabım" },
-      { href: "/favoriler", label: "Favoriler" },
-      { href: "/sepet", label: "Sepet" },
-      { href: "/hesabim/siparisler", label: "Siparişlerim" },
       { href: "/siparis-takip", label: "Sipariş takibi" },
+      { href: "/hesabim", label: "Hesabım" },
+      { href: "/iletisim", label: "İletişim" },
+    ],
+  },
+  {
+    id: "kurumsal",
+    label: "Kurumsal",
+    links: [
+      { href: "/toptan", label: "Toptan & Bayiler" },
+      { href: "/kurumsal-uretim", label: "Kurumsal üretim" },
+      { href: "/malzemeler", label: "Malzemeler" },
     ],
   },
   {
@@ -129,11 +108,11 @@ export function SiteFooterMobile({
 
   return (
     <div className="md:hidden" data-site-footer-mobile="">
-      <div className="max-w-none px-4 py-8">
+      <div className="max-w-none px-4 py-3">
         <Logo inverted />
-        <p className="mt-3 max-w-sm text-sm leading-6 text-muted-light">{description}</p>
+        <p className="mt-2 max-w-sm text-sm leading-5 text-muted-light">{description}</p>
 
-        <div className="mt-5">
+        <div className="mt-3">
           {footerGroups.map((group) => (
             <FooterAccordion
               key={group.id}
@@ -146,25 +125,6 @@ export function SiteFooterMobile({
           ))}
         </div>
 
-        <p className="mt-5 flex items-start gap-2 text-sm leading-6 text-muted-light">
-          <Truck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-cyan" />
-          Türkiye geneli teslimat. Süre, üretim ve kargo olarak ürün sayfasında görünür.
-        </p>
-
-        <fieldset disabled className="mt-4 flex flex-col gap-2">
-          <label htmlFor="newsletter-email-mobile" className="sr-only">
-            E-posta
-          </label>
-          <input
-            id="newsletter-email-mobile"
-            type="email"
-            disabled
-            readOnly
-            placeholder="Bülten yakında"
-            className="min-h-11 rounded-lg border border-white/20 bg-white/5 px-3 text-sm disabled:opacity-70"
-          />
-        </fieldset>
-
         {hasContact ? (
           <div className="mt-4 space-y-2 text-sm text-muted-light">
             {siteConfig.contact.email ? (
@@ -173,12 +133,15 @@ export function SiteFooterMobile({
                 {siteConfig.contact.email}
               </p>
             ) : null}
+            {siteConfig.contact.phone ? (
+              <p className="flex items-center gap-2">
+                {siteConfig.contact.phone}
+              </p>
+            ) : null}
           </div>
-        ) : (
-          <p className="mt-4 text-sm text-muted-light">İletişim bilgileri yakında</p>
-        )}
+        ) : null}
 
-        <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-xs text-muted-light">
+        <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-xs text-muted-light">
           <p>
             © {new Date().getFullYear()} {siteConfig.legalName}
           </p>

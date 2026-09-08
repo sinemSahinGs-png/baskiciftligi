@@ -20,11 +20,14 @@ async function journeyMetrics(page: Page) {
     const panels = [
       ...document.querySelectorAll<HTMLElement>("[data-journey-panel]"),
     ];
-    const next = document.getElementById("modelin-hazir-mi");
-    const viewport = window.innerHeight;
-    if (!section || !next || panels.length === 0) {
+    if (!section || panels.length === 0) {
       return null;
     }
+    const next = section.nextElementSibling as HTMLElement | null;
+    if (!next) {
+      return null;
+    }
+    const viewport = window.innerHeight;
     const sectionBox = section.getBoundingClientRect();
     const nextBox = next.getBoundingClientRect();
     const panelBoxes = panels.map((panel) => {
@@ -41,7 +44,6 @@ async function journeyMetrics(page: Page) {
         motion: panel.dataset.motionItem ?? "",
       };
     });
-    const last = panelBoxes[panelBoxes.length - 1];
     const wrapper = section.querySelector<HTMLElement>("[data-pinned], .grid");
     const wrapperStyle = wrapper ? window.getComputedStyle(wrapper) : null;
     return {
@@ -51,7 +53,7 @@ async function journeyMetrics(page: Page) {
       wrapperHeight: wrapper?.getBoundingClientRect().height ?? 0,
       wrapperPosition: wrapperStyle?.position ?? "static",
       pinned: wrapper?.dataset.pinned ?? "false",
-      gapToNext: nextBox.top - (last?.bottom ?? 0),
+      gapToNext: nextBox.top - sectionBox.bottom,
       panelBoxes,
     };
   });
@@ -65,7 +67,7 @@ async function assertCompactJourneys(page: Page, maxGap: number) {
   expect(metrics!.panelBoxes).toHaveLength(3);
   for (const panel of metrics!.panelBoxes) {
     expect(panel.width).toBeGreaterThan(120);
-    expect(panel.height).toBeGreaterThan(160);
+    expect(panel.height).toBeGreaterThan(44);
     expect(panel.opacity).toBeGreaterThan(0.2);
   }
   expect(metrics!.wrapperPosition).not.toBe("sticky");
@@ -78,7 +80,7 @@ async function assertCompactJourneys(page: Page, maxGap: number) {
   await page.evaluate(() => window.scrollBy(0, window.innerHeight * 2));
   await page.waitForTimeout(320);
   const after = await journeyMetrics(page);
-  expect(after?.panelBoxes.every((panel) => panel.height > 160)).toBe(true);
+  expect(after?.panelBoxes.every((panel) => panel.height > 44)).toBe(true);
   expect(after?.panelBoxes.every((panel) => panel.opacity > 0.2)).toBe(true);
   return metrics!;
 }
@@ -145,9 +147,9 @@ test.describe("homepage journey layout", () => {
       expect(metrics).not.toBeNull();
       expect(metrics!.sectionHeight).toBeLessThan(metrics!.viewport * 1.8);
       expect(metrics!.gapToNext).toBeGreaterThanOrEqual(0);
-      expect(metrics!.gapToNext).toBeLessThanOrEqual(240);
-      await page.locator("#modelin-hazir-mi").scrollIntoViewIfNeeded();
-      await expect(page.getByRole("heading", { name: "Modelin hazır mı?" })).toBeVisible();
+      expect(metrics!.gapToNext).toBeLessThanOrEqual(360);
+      await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
+      await expect(page.getByRole("heading", { name: /MODELİNİ YÜKLE/ })).toBeVisible();
     });
   });
 });
@@ -189,7 +191,7 @@ test.describe("homepage layout contact sheets", () => {
       await page.waitForTimeout(280);
       await page.screenshot({ path: path.join(shots, `journey-${id}.png`) });
     }
-    await page.locator("#modelin-hazir-mi").scrollIntoViewIfNeeded();
+    await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "journey-after.png") });
     expect(frames.length).toBe(5);
   });

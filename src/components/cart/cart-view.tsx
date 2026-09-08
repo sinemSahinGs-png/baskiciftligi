@@ -477,7 +477,7 @@ export function CartView() {
 
       <aside
         aria-labelledby="cart-summary-heading"
-        className="rounded-lg border border-hairline bg-optical p-5 lg:sticky lg:top-24"
+        className="store-summary p-5 lg:sticky lg:top-24"
       >
         <h2 id="cart-summary-heading" className="font-heading text-2xl font-bold">
           Sipariş özeti
@@ -569,7 +569,7 @@ export function CartView() {
         ) : (
           <Link
             href={"/odeme" as Route}
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-brand px-5 py-3 text-center text-sm font-semibold text-paper hover:bg-brand-hover"
+            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[color:var(--store-orange)] px-5 py-3 text-center text-sm font-semibold text-[color:var(--store-black)] hover:opacity-90"
           >
             Ödeme adımına geç
             <ArrowRight aria-hidden="true" className="size-4" />

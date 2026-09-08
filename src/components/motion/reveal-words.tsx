@@ -1,4 +1,6 @@
-import { cn } from "@/lib/utils";
+"use client";
+
+import { WordReveal } from "@/components/motion/premium";
 
 interface RevealWordsProps {
   text: string;
@@ -15,16 +17,7 @@ export function RevealWords({
   className,
   id,
 }: RevealWordsProps) {
-  return (
-    <Tag
-      id={id}
-      className={cn(className)}
-      data-motion-state="visible"
-      data-reduced-motion="true"
-    >
-      {text}
-    </Tag>
-  );
+  return <WordReveal text={text} as={Tag} className={className} id={id} />;
 }
 
 export function RevealHeading({
@@ -33,5 +26,5 @@ export function RevealHeading({
   className,
   id,
 }: Omit<RevealWordsProps, "as"> & { as?: "h1" | "h2" | "h3" }) {
-  return <RevealWords text={text} as={as} className={className} id={id} />;
+  return <WordReveal text={text} as={as} className={className} id={id} />;
 }

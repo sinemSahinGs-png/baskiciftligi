@@ -10,6 +10,12 @@ import { ArrowUpRight, Loader2, Search } from "lucide-react";
 import { FormSignal } from "@/components/brand/form-signal";
 import { siteConfig } from "@/config/site";
 import type { Category, Product } from "@/domain/catalog/types";
+import {
+  getStorefrontCategory,
+  publicCategoryHref,
+  publicCategoryName,
+  storefrontSlugFromSource,
+} from "@/domain/catalog/storefront-taxonomy";
 import { matchesTurkish } from "@/lib/search/turkish-match";
 import { foundryEase } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -121,15 +127,25 @@ export function SearchOverlay({
         : [],
     [trimmed, products],
   );
-  const categoryHits = useMemo(
-    () =>
-      trimmed
-        ? categories
-            .filter((category) => matchesTurkish(category.name, trimmed))
-            .slice(0, 4)
-        : [],
-    [categories, trimmed],
-  );
+  const categoryHits = useMemo(() => {
+    if (!trimmed) return [];
+    const seen = new Set<string>();
+    const hits: Array<{ href: string; name: string }> = [];
+    for (const category of categories) {
+      const name = publicCategoryName(category.slug, category.name);
+      const href = publicCategoryHref(category.slug);
+      const storefront =
+        getStorefrontCategory(category.slug) ??
+        getStorefrontCategory(storefrontSlugFromSource(category.slug) ?? "");
+      if (storefront?.comingSoon) continue;
+      if (seen.has(href)) continue;
+      if (!matchesTurkish(`${name} ${category.name}`, trimmed)) continue;
+      seen.add(href);
+      hits.push({ href, name });
+      if (hits.length >= 4) break;
+    }
+    return hits;
+  }, [categories, trimmed]);
 
   useEffect(() => {
     abortRef.current?.abort();
@@ -187,7 +203,7 @@ export function SearchOverlay({
       group: "Ürünler",
     })),
     ...categoryHits.map((category) => ({
-      href: `/magaza/${category.slug}`,
+      href: category.href,
       label: category.name,
       meta: "Kategori",
       group: "Kategoriler",

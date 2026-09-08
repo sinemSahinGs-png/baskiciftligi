@@ -101,7 +101,7 @@ export default async function SearchPage(props: PageProps<"/arama">) {
             </div>
 
             {products.length > 0 ? (
-              <CatalogGrid products={products} priorityCount={3} />
+              <CatalogGrid products={products} priorityCount={3} tone="store" />
             ) : (
               <div className="flex min-h-72 flex-col items-center justify-center rounded-xl border border-hairline bg-optical px-6 py-12 text-center">
                 <SearchX aria-hidden="true" className="size-9 text-cobalt" />
