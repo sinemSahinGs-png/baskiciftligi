@@ -8,7 +8,7 @@ const shots = path.join("test-results", "home-industrial-assets");
 const SECTION_SHOTS = [
   ["ne-uretmek-istiyorsun", "hero-390.png"],
   ["modelini-yukle", "upload-demo-390.png"],
-  ["sana-gore-hazir-modeller", "archive-390.png"],
+  ["kategoriler", "categories-390.png"],
   ["mevcut-urunler", "real-products-390.png"],
   ["one-cikan-urunler", "featured-390.png"],
   ["nasil-calisir", "process-390.png"],
@@ -157,7 +157,7 @@ test.describe("industrial PNG assets and catalogue preservation", () => {
     const sections = [
       ["ne-uretmek-istiyorsun", "hero-390.png"],
       ["modelini-yukle", "upload-demo-390.png"],
-      ["sana-gore-hazir-modeller", "archive-390.png"],
+      ["kategoriler", "categories-390.png"],
       ["mevcut-urunler", "products-390.png"],
       ["one-cikan-urunler", "featured-390.png"],
       ["nasil-calisir", "process-390.png"],

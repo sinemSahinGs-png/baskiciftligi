@@ -27,7 +27,7 @@ test.describe("homepage discovery redesign", () => {
     const hero = heroSection(page);
     await expect(hero.getByRole("heading", { name: /SEN TARİF ET/i })).toBeVisible();
     await expect(ideaInput(page)).toBeVisible();
-    await expect(page.getByRole("link", { name: /Modelini yükle/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /STL \/ 3MF|Model yüklemeye geç|Modelini yükle/i }).first()).toBeVisible();
   });
 
   test("fills an example idea without auto-searching", async ({ page }) => {

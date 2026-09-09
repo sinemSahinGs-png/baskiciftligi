@@ -6,7 +6,7 @@ const shots = path.join("test-results", "home-industrial");
 const SECTION_SHOTS = [
   ["ne-uretmek-istiyorsun", "idea-command-390.png"],
   ["modelini-yukle", "upload-demo-390.png"],
-  ["sana-gore-hazir-modeller", "model-archive-390.png"],
+  ["kategoriler", "categories-390.png"],
   ["one-cikan-urunler", "featured-product-390.png"],
   ["nasil-calisir", "production-process-390.png"],
   ["malzeme-secenekleri", "materials-390.png"],
@@ -65,6 +65,7 @@ test.describe("industrial homepage", () => {
     await readyHome(page);
     await page.locator("#idea-command-input").fill("telefon standı");
     await page.getByRole("button", { name: /MODEL ÖNERİLERİNİ BUL/i }).click();
+    await expect(page.getByRole("link", { name: "MODELE BAK" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Uygunluğu kontrol et" })).toBeVisible();
     expect(used).toBe(true);
   });
@@ -72,7 +73,7 @@ test.describe("industrial homepage", () => {
   test("upload CTAs go to /model-yukle", async ({ page }) => {
     await readyHome(page);
     await expect(
-      page.locator("#sana-gore-hazir-modeller").getByRole("link", { name: /Modelini yükle/i }),
+      page.locator("#modelini-yukle").getByRole("link", { name: /Model yüklemeye geç/i }),
     ).toHaveAttribute("href", "/model-yukle");
   });
 

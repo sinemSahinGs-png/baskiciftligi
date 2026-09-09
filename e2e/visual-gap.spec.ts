@@ -255,7 +255,7 @@ test.describe("visual gap and visibility audit", () => {
     expect(order[0]).toMatch(/SEN TARİF ET/i);
     expect(order.some((title) => /MODELİNİ YÜKLE/i.test(title))).toBe(true);
     expect(order).toContain("KATEGORİLER");
-    expect(order.some((title) => /ÜRETİM ANALİZİ/i.test(title))).toBe(true);
+    expect(order.some((title) => /ÜRETİM ANALİZİ/i.test(title))).toBe(false);
     expect(order).toContain("MAĞAZA ÜRÜNLERİ");
     expect(order).toContain("ÖNE ÇIKAN ÜRÜN");
     expect(order).toContain("ÜRETİM SÜRECİ");

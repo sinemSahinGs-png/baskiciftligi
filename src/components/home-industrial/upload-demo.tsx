@@ -1,9 +1,7 @@
 "use client";
 
 import type { Route } from "next";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { useReducedMotion } from "motion/react";
 
 import { WordReveal } from "@/components/motion/premium";
 import { HomeTrackLink } from "@/components/home/home-track-link";
@@ -14,42 +12,15 @@ const STEPS = [
   { n: "03", title: "Fiyatı gör", body: "KDV dahil üretim bedeli." },
 ] as const;
 
-function saveDataSubscribe() {
-  return () => undefined;
-}
-
-function getSaveData() {
-  return Boolean(
-    (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
-  );
-}
-
-function emptySubscribe() {
-  return () => undefined;
-}
+/**
+ * Real silent MP4s are not in the repo yet. Do not request missing files
+ * (that produces 404 loops). Keep these paths for a later recording pass:
+ * /videos/upload-flow/upload-demo-desktop.mp4
+ * /videos/upload-flow/upload-demo-mobile.mp4
+ */
+const UPLOAD_DEMO_VIDEO_READY = false;
 
 export function UploadDemo() {
-  const reduceMotion = useReducedMotion() === true;
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [hasVideo, setHasVideo] = useState(true);
-  const dataSaver = useSyncExternalStore(saveDataSubscribe, getSaveData, () => false);
-  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
-
-  useEffect(() => {
-    const node = videoRef.current;
-    if (!node) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.some((entry) => entry.isIntersecting);
-        if (visible && !reduceMotion && !dataSaver) void node.play().catch(() => undefined);
-        else node.pause();
-      },
-      { threshold: 0.35 },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [dataSaver, reduceMotion]);
-
   return (
     <section
       id="modelini-yukle"
@@ -78,18 +49,19 @@ export function UploadDemo() {
             Model yüklemeye geç
             <ArrowUpRight className="size-4" aria-hidden="true" />
           </HomeTrackLink>
+          <p className="hi-upload-demo-note">
+            Gerçek üretim fiyatı, dosyayı yükledikten ve seçenekleri onayladıktan sonra hesaplanır.
+          </p>
         </div>
         <figure className="hi-upload-demo-media">
-          {mounted && hasVideo && !reduceMotion && !dataSaver ? (
+          {UPLOAD_DEMO_VIDEO_READY ? (
             <video
-              ref={videoRef}
               className="hi-upload-demo-video"
               muted
               loop
               playsInline
               preload="none"
               poster="/images/upload-flow/upload-demo-poster.webp"
-              onError={() => setHasVideo(false)}
             >
               <source src="/videos/upload-flow/upload-demo-mobile.mp4" media="(max-width: 767px)" type="video/mp4" />
               <source src="/videos/upload-flow/upload-demo-desktop.mp4" type="video/mp4" />
@@ -98,12 +70,13 @@ export function UploadDemo() {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src="/images/upload-flow/upload-demo-poster.webp"
-              alt="Dosya yükleme ve anında fiyat adımları"
+              alt="Örnek akış: yüklenmiş model, malzeme seçimi ve hesaplanmış fiyat özeti"
               className="hi-upload-demo-poster"
             />
           )}
+          <p className="hi-upload-demo-badge">ÖRNEK AKIŞ</p>
           <figcaption className="hi-upload-demo-caption">
-            Gerçek arayüz: dosya, seçenekler, hesaplanan fiyat.
+            Yükleme arayüzü: model plakada, seçenekler açık, örnek fiyat görünür.
           </figcaption>
         </figure>
       </div>

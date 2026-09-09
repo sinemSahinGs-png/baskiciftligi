@@ -61,14 +61,24 @@ async function putWithProgress(url: string, file: File, onProgress?: (percent: n
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", url);
-    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+    xhr.setRequestHeader("Content-Type", "application/octet-stream");
     xhr.upload.onprogress = (event) => {
       if (!event.lengthComputable) return;
       onProgress?.(Math.max(8, Math.min(92, Math.round((event.loaded / event.total) * 80) + 10)));
     };
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new UploadPricingError("Dosya depoya yazılamadı.", xhr.status, "UPSTREAM_UNAVAILABLE"));
+      else if (xhr.status === 400 || xhr.status === 403 || xhr.status === 410) {
+        reject(
+          new UploadPricingError(
+            "Yükleme adresi süresi doldu. Aynı dosyayla yeniden deneyin.",
+            xhr.status,
+            "UNAUTHORIZED",
+          ),
+        );
+      } else {
+        reject(new UploadPricingError("Dosya depoya yazılamadı.", xhr.status, "UPSTREAM_UNAVAILABLE"));
+      }
     };
     xhr.onerror = () =>
       reject(new UploadPricingError("Dosya yükleme bağlantısı kesildi.", 502, "UPSTREAM_UNAVAILABLE"));

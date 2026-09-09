@@ -10,9 +10,14 @@ import {
   maxUploadBytes,
   readPrivateObject,
   writePrivateObject,
+  deletePrivateObject,
 } from "@/lib/manufacturing/paths";
 import { uniformScalePercent } from "@/domain/manufacturing/transform";
 import { manufacturingUploadConfigSchema } from "@/domain/manufacturing/upload-config-schema";
+import {
+  hasSupportedMeshExtension,
+  isOwnedManufacturingStorageKey,
+} from "@/lib/manufacturing/upload-limits";
 
 export const runtime = "nodejs";
 
@@ -85,7 +90,17 @@ export async function POST(request: Request) {
   }
 
   const actor = await getManufacturingActor();
-  if (!parsed.data.storageKey.startsWith(`${actor.sessionId}/`)) {
+  if (!isOwnedManufacturingStorageKey(actor.sessionId, parsed.data.storageKey)) {
+    return jsonError({ status: 403, code: "UNAUTHORIZED", message: "Yükleme oturumu doğrulanamadı." });
+  }
+  if (!hasSupportedMeshExtension(parsed.data.originalFilename)) {
+    return jsonError({
+      status: 415,
+      code: "UNSUPPORTED_TYPE",
+      message: "Bu dosya türü kabul edilmiyor. STL veya 3MF yükleyin.",
+    });
+  }
+  if (parsed.data.fileId !== parsed.data.storageKey.split("/")[1]) {
     return jsonError({ status: 403, code: "UNAUTHORIZED", message: "Yükleme oturumu doğrulanamadı." });
   }
 
@@ -101,6 +116,13 @@ export async function POST(request: Request) {
   }
   if (bytes.byteLength <= 0) {
     return jsonError({ status: 422, code: "EMPTY_FILE", message: "Dosya boş." });
+  }
+  if (Math.abs(bytes.byteLength - parsed.data.sizeBytes) > 64) {
+    return jsonError({
+      status: 422,
+      code: "UNPROCESSABLE",
+      message: "Yüklenen dosya boyutu eşleşmiyor. Aynı dosyayla yeniden deneyin.",
+    });
   }
 
   const manufacturingTransform = await parseUploadedTransform(
@@ -149,6 +171,7 @@ export async function POST(request: Request) {
     return jsonOk(result);
   } catch (error) {
     if (error instanceof MeshValidationError) {
+      await deletePrivateObject(parsed.data.storageKey).catch(() => undefined);
       return jsonError({
         status: 422,
         code: "CORRUPT_MESH",

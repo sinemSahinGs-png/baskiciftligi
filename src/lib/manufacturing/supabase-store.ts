@@ -14,6 +14,7 @@ import type {
 } from "@/domain/manufacturing/types";
 import { JOB_LOCK_MS } from "@/domain/manufacturing/types";
 import { isClaimedQuoteJobRow, sqlUuidOrNull } from "@/lib/manufacturing/sql-uuid";
+import { isManufacturingSourceKey } from "@/lib/manufacturing/upload-limits";
 import { assertServiceRoleClient } from "@/lib/supabase/admin";
 
 function asIso(value: string | null | undefined): string | null {
@@ -667,7 +668,21 @@ export async function supabaseReadObject(storageKey: string): Promise<Uint8Array
   return new Uint8Array(await data.arrayBuffer());
 }
 
+export async function supabaseDeleteObject(storageKey: string) {
+  if (!isManufacturingSourceKey(storageKey)) {
+    throw new Error("Depolama anahtarı geçersiz.");
+  }
+  const client = assertServiceRoleClient();
+  const { error } = await client.storage.from("manufacturing-objects").remove([storageKey]);
+  if (error) {
+    throwFrom(error, "Geçici üretim dosyası silinemedi.");
+  }
+}
+
 export async function supabaseCreateSignedUploadUrl(storageKey: string) {
+  if (!isManufacturingSourceKey(storageKey)) {
+    throw new Error("Depolama anahtarı geçersiz.");
+  }
   const client = assertServiceRoleClient();
   const { data, error } = await client.storage
     .from("manufacturing-objects")

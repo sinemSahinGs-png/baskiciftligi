@@ -12,7 +12,7 @@ const preview =
 const SECTION_IDS = [
   "ne-uretmek-istiyorsun",
   "modelini-yukle",
-  "sana-gore-hazir-modeller",
+  "kategoriler",
   "mevcut-urunler",
   "one-cikan-urunler",
   "nasil-calisir",

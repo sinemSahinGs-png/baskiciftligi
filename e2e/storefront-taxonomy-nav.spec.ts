@@ -67,7 +67,7 @@ test.describe("storefront category navigation", () => {
     const sections = [
       { name: "hero", selector: null },
       { name: "categories", selector: "#kategoriler" },
-      { name: "laboratory", selector: "#sana-gore-hazir-modeller" },
+      { name: "laboratory", selector: "#mevcut-urunler" },
     ];
 
     await page.goto("/");

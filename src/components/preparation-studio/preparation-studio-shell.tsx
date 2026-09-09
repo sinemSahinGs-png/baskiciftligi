@@ -19,7 +19,6 @@ import {
   Layers,
   Maximize2,
   Move,
-  RotateCcw,
   RotateCw,
   Ruler,
   Scan,
@@ -157,6 +156,9 @@ export function PreparationStudio() {
   );
 
   const { geometry, status, originalDimensionsMm, triangleCount } = useGeometryLoader(file);
+  const modelReady = Boolean(file) && status === "ready" && Boolean(geometry);
+  const emptyStudio = !file;
+  const fittedFor = useRef<string | null>(null);
   const bed = DEVELOPMENT_PRINTER.buildVolumeMm;
   const transform = history.present;
   const dims = useMemo(
@@ -222,6 +224,19 @@ export function PreparationStudio() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [invalidateQuote]);
+
+  useEffect(() => {
+    if (!file) fittedFor.current = null;
+  }, [file]);
+
+  useEffect(() => {
+    if (status !== "ready" || !file || !originalDimensionsMm) return;
+    const key = `${file.name}:${file.size}:${file.lastModified}`;
+    if (fittedFor.current === key) return;
+    fittedFor.current = key;
+    applyTransform(centerOnPlateTransform(DEFAULT_MANUFACTURING_TRANSFORM, originalDimensionsMm, bed));
+    setFitKey((value) => value + 1);
+  }, [applyTransform, bed, file, originalDimensionsMm, status]);
 
   useEffect(() => {
     savePreparationSession({
@@ -486,14 +501,12 @@ export function PreparationStudio() {
     { id: "move", label: "Taşı", icon: Move, tool: "move" as const },
     { id: "lay", label: "Düzle", icon: Layers, run: layFlat },
     { id: "auto", label: "Oto yön", icon: Scan, run: autoOrient },
-    { id: "center", label: "Ortala", icon: Crosshair, run: center },
-    { id: "reset", label: "Sıfırla", icon: RotateCcw, run: reset },
     { id: "wire", label: "Tel kafes", icon: Ruler, run: () => setWireframe((v) => !v) },
   ];
   const tabNav = (
-    <nav aria-label="İnceleyici sekmeleri" className="flex gap-1 overflow-x-auto border-b border-white/10 px-2 py-2 text-xs">
+    <nav aria-label="İnceleyici sekmeleri" className="flex gap-1 overflow-x-auto border-b border-white/10 px-2 py-2 text-sm">
       {TABS.map(([id, label]) => (
-        <button key={id} type="button" onClick={() => setTab(id)} className={cn("shrink-0 rounded-md px-2 py-1.5 font-semibold", tab === id ? "bg-cobalt text-light-text" : "text-muted-light")}>{label}</button>
+        <button key={id} type="button" onClick={() => setTab(id)} className={cn("shrink-0 min-h-11 rounded-md px-3 py-1.5 font-semibold", tab === id ? "bg-cobalt text-light-text" : "text-muted-light")}>{label}</button>
       ))}
     </nav>
   );
@@ -503,25 +516,20 @@ export function PreparationStudio() {
       {tab === "file" && (
         <>
           <h2 className="font-heading text-xl font-bold">Dosya</h2>
-          <p className="text-sm text-muted-light">STL veya 3MF. En fazla 100 MB. Bozuk dosya seçili kalır; yeniden deneyebilirsiniz.</p>
-          <label htmlFor="model-file" onDragOver={(e) => e.preventDefault()} onDrop={onDrop} className="mt-3 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-cyan/40 bg-midnight/50 px-4 text-center">
+          <p className="text-sm leading-6 text-muted-light">STL veya 3MF. En fazla 100 MB. Bozuk dosya seçili kalır; yeniden deneyebilirsiniz.</p>
+          <label htmlFor="model-file" onDragOver={(e) => e.preventDefault()} onDrop={onDrop} className="mt-3 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-cyan/40 bg-midnight/50 px-4 py-6 text-center">
             <UploadCloud className="size-6 text-cyan" aria-hidden="true" />
             <span className="mt-2 text-sm font-semibold">Sürükle veya dosya seç</span>
-            <span className="mt-1 text-xs text-muted-light">.stl / .3mf / .obj</span>
+            <span className="mt-1 text-sm leading-6 text-muted-light">Desteklenen: .stl / .3mf / .obj · en fazla 100 MB</span>
           </label>
           {file ? <p className="text-sm">{file.name}{triangleCount ? ` · ${triangleCount} üçgen` : ""}{status === "parsing" ? " · okunuyor" : ""}</p> : null}
           {uploadProgress != null ? (
             <p className="text-sm tabular-nums" aria-live="polite">Yükleme %{uploadProgress}</p>
           ) : null}
           <label className="flex items-start gap-3 text-sm leading-6">
-            <input type="checkbox" checked={rights} onChange={(e) => setRights(e.target.checked)} className="mt-1" />
+            <input type="checkbox" checked={rights} onChange={(e) => setRights(e.target.checked)} className="mt-1 size-4" />
             <span>{RIGHTS}</span>
           </label>
-          <div className="flex gap-2">
-            <button type="button" className="min-h-11 flex-1 rounded-md border border-white/15 text-sm" onClick={center}>Ortala</button>
-            <button type="button" className="min-h-11 flex-1 rounded-md border border-white/15 text-sm" onClick={() => setFitKey((v) => v + 1)}>Görünüme sığdır</button>
-            <button type="button" className="min-h-11 flex-1 rounded-md border border-white/15 text-sm" onClick={reset}>Sıfırla</button>
-          </div>
         </>
       )}
       {tab === "production" && (
@@ -533,7 +541,7 @@ export function PreparationStudio() {
           ))}</div>
           <p className="text-sm font-semibold">Kalite</p>
           <div className="grid gap-2">{QUALITY_PROFILES.map((q) => (
-            <button key={q.id} type="button" onClick={() => setPreset(q.id as typeof preset)} className={cn("min-h-11 rounded-md border px-3 text-sm font-semibold", preset === q.id ? "border-info bg-info text-light-text" : "border-white/12")}>{q.name} · {q.layerHeightMm} mm</button>
+            <button key={q.id} type="button" disabled={!modelReady} onClick={() => setPreset(q.id as typeof preset)} className={cn("min-h-11 rounded-md border px-3 text-sm font-semibold disabled:opacity-40", preset === q.id ? "border-info bg-info text-light-text" : "border-white/12")}>{q.name} · {q.layerHeightMm} mm</button>
           ))}</div>
           <label className="block text-sm font-semibold">Adet
             <input type="number" min={1} max={20} value={quantity} onChange={(e) => setQuantity(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} className="mt-2 h-11 w-full rounded-md border border-white/15 bg-midnight px-3" />
@@ -594,7 +602,7 @@ export function PreparationStudio() {
           ) : <p className="rounded-md border border-white/15 px-3 py-2 text-sm">Fiyat, üretim analizi tamamlanmadan gösterilmez.</p>}
           <button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="mt-3 inline-flex min-h-11 w-full items-center justify-center bg-[color:var(--store-orange)] text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-40">{submitting ? "Hesaplanıyor" : quote && analysisStale ? "Yeniden hesapla" : "Analiz et ve fiyatı hesapla"}</button>
           <button type="button" disabled={!quote} onClick={() => void addQuoteToCart()} className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-cyan text-sm font-semibold disabled:opacity-40">Teklifi sepete ekle</button>
-          <p className="text-xs text-muted-light">{siteConfig.name} fiyatı tarayıcıdan kabul etmez.</p>
+          <p className="text-sm leading-6 text-muted-light">{siteConfig.name} fiyatı tarayıcıdan kabul etmez.</p>
         </>
       )}
       {error || geometryError ? (
@@ -603,7 +611,7 @@ export function PreparationStudio() {
           {error ?? geometryError}
         </p>
       ) : null}
-      {analysisStale && quote ? <p className="text-xs text-warm">Ayarlar değişti; fiyatı yenileyin. Dosya duruyor.</p> : null}
+      {analysisStale && quote ? <p className="text-sm leading-6 text-warm">Ayarlar değişti; fiyatı yenileyin. Dosya duruyor.</p> : null}
     </div>
   );
 
@@ -613,7 +621,7 @@ export function PreparationStudio() {
         const Icon = t.icon;
         const active = t.id === "wire" ? wireframe : "tool" in t && t.tool === activeTool;
         return (
-          <button key={t.id} type="button" aria-label={t.label} title={t.label} onClick={() => { if ("run" in t && t.run) t.run(); else if ("tool" in t && t.tool) setActiveTool(t.tool); }} className={cn("inline-flex min-h-11 items-center justify-center rounded-md text-xs font-semibold", vertical ? "w-full flex-col gap-1 px-1 py-2" : "flex-1 px-2", active ? "bg-cyan/20 text-cyan" : "text-muted-light hover:bg-white/8")}>
+          <button key={t.id} type="button" aria-label={t.label} title={t.label} disabled={!modelReady} onClick={() => { if ("run" in t && t.run) t.run(); else if ("tool" in t && t.tool) setActiveTool(t.tool); }} className={cn("inline-flex min-h-11 items-center justify-center rounded-md text-xs font-semibold disabled:opacity-35", vertical ? "w-full flex-col gap-1 px-1 py-2" : "flex-1 px-2", active ? "bg-cyan/20 text-cyan" : "text-muted-light hover:bg-white/8")}>
             <Icon className="size-4" aria-hidden="true" />{vertical ? <span className="text-[10px] leading-none">{t.label}</span> : null}
           </button>
         );
@@ -621,45 +629,71 @@ export function PreparationStudio() {
     </div>
   );
 
+  const emptyDropzone = (
+    <div className="space-y-3 p-4 lg:hidden">
+      <h2 className="font-heading text-xl font-bold">Modelini yükle</h2>
+      <p className="text-sm leading-6 text-muted-light">STL veya 3MF. En fazla 100 MB. Dosya tarayıcıda kalır; fiyat yüklemeden sonra hesaplanır.</p>
+      <label htmlFor="model-file" onDragOver={(e) => e.preventDefault()} onDrop={onDrop} className="flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-cyan/40 bg-midnight/50 px-4 py-6 text-center">
+        <UploadCloud className="size-7 text-cyan" aria-hidden="true" />
+        <span className="mt-2 text-sm font-semibold">Sürükle veya dosya seç</span>
+        <span className="mt-1 text-sm leading-6 text-muted-light">.stl / .3mf / .obj</span>
+      </label>
+      <label className="flex items-start gap-3 text-sm leading-6">
+        <input type="checkbox" checked={rights} onChange={(e) => setRights(e.target.checked)} className="mt-1 size-4" />
+        <span>{RIGHTS}</span>
+      </label>
+    </div>
+  );
+
   return (
-    <div data-testid="configurator-shell" className="flex h-[calc(100svh-4rem)] min-h-[calc(100svh-4rem)] min-w-0 flex-col bg-midnight text-light-text lg:grid lg:min-h-[calc(100svh-4rem)] lg:grid-rows-[auto_1fr_auto]">
-      {externalContext ? <p className="border-b border-white/10 bg-white/5 px-4 py-2 text-xs text-muted-light lg:col-span-full">Hazır modelden devam ediyorsun: {externalContext.title}</p> : null}
+    <div data-testid="configurator-shell" className="flex h-[calc(100svh-4rem)] min-h-[calc(100svh-4rem)] min-w-0 flex-col overflow-x-hidden bg-midnight text-light-text lg:grid lg:min-h-[calc(100svh-4rem)] lg:grid-rows-[auto_1fr_auto]">
+      {externalContext ? <p className="border-b border-white/10 bg-white/5 px-4 py-2 text-sm leading-6 text-muted-light lg:col-span-full">Hazır modelden devam ediyorsun: {externalContext.title}</p> : null}
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-2 lg:col-span-full">
         <p className="flex items-center gap-2 text-sm"><FormSignal className="size-4" />Görüntüleyici · {file?.name ?? "Dosya seçilmedi"}</p>
         <div className="flex flex-wrap gap-1">
-          <button type="button" className="min-h-11 px-3 text-sm" onClick={center}>Ortala</button>
-          <button type="button" className="min-h-11 px-3 text-sm" onClick={() => setFitKey((v) => v + 1)}>Görünüme sığdır</button>
-          <button type="button" className="min-h-11 px-3 text-sm" onClick={reset}>Sıfırla</button>
-          <button type="button" className="min-h-11 rounded-md bg-[color:var(--store-orange)] px-3 text-sm font-semibold text-[color:var(--store-black)]" onClick={() => { setTab("price"); if (!isDesktop) setMobileOpen(true); }}>Fiyat</button>
+          <button type="button" disabled={!modelReady} className="min-h-11 px-3 text-sm disabled:opacity-35" onClick={center}>Ortala</button>
+          <button type="button" disabled={!modelReady} className="min-h-11 px-3 text-sm disabled:opacity-35" onClick={() => setFitKey((v) => v + 1)}>Görünüme sığdır</button>
+          <button type="button" disabled={!modelReady} className="min-h-11 px-3 text-sm disabled:opacity-35" onClick={reset}>Sıfırla</button>
+          <button type="button" disabled={emptyStudio} className="min-h-11 rounded-md bg-[color:var(--store-orange)] px-3 text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-35" onClick={() => { setTab("price"); if (!isDesktop) setMobileOpen(true); }}>Fiyat</button>
         </div>
       </header>
-      <div className="flex min-h-0 flex-1 flex-col lg:col-span-full lg:grid lg:grid-cols-[3.5rem_minmax(0,1fr)_20rem]">
-        {isDesktop ? toolRail(true) : null}
-        <section data-testid="mesh-viewer" className={cn("relative min-h-0", isDesktop ? "min-h-[28rem]" : "h-[42svh] shrink-0")}>
+      {!isDesktop && emptyStudio ? emptyDropzone : null}
+      <div className={cn("flex min-h-0 flex-1 flex-col lg:col-span-full lg:grid", emptyStudio ? "lg:grid-cols-[minmax(0,1fr)_18.5rem]" : "lg:grid-cols-[3.5rem_minmax(0,1fr)_18.5rem]")}>
+        {isDesktop && !emptyStudio ? toolRail(true) : null}
+        <section data-testid="mesh-viewer" className={cn("relative min-h-0", isDesktop ? (emptyStudio ? "min-h-[16rem] max-h-[52vh]" : "min-h-[28rem]") : emptyStudio ? "h-[28svh] max-h-64 shrink-0" : "h-[38svh] shrink-0")}>
           <input id="model-file" type="file" accept=".stl,.obj,.3mf" onChange={onChange} className="sr-only" />
           <div className="h-full" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
-            {file ? <BuildPlateViewport geometry={geometry} transform={transform} activeTool={activeTool} previewColor={previewColorHex(colorId)} wireframe={wireframe} showBoundingBox={false} buildVolumeMm={bed} fitKey={fitKey} resetCameraKey={resetCameraKey} reducedMotion={typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches} onTransformCommit={applyTransform} /> : <div className="grid h-full place-items-center p-8 text-center text-sm text-muted-light">Dosya seçildiğinde gerçek mesh burada açılır.</div>}
+            <BuildPlateViewport geometry={geometry} transform={transform} activeTool={modelReady ? activeTool : "select"} previewColor={previewColorHex(colorId)} wireframe={wireframe} showBoundingBox={false} buildVolumeMm={bed} fitKey={fitKey} resetCameraKey={resetCameraKey} reducedMotion={typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches} onTransformCommit={applyTransform} />
           </div>
+          {emptyStudio ? (
+            <p className="pointer-events-none absolute inset-x-3 bottom-3 z-10 rounded-md bg-midnight/70 px-3 py-2 text-center text-sm leading-6 text-muted-light">
+              Boş plaka. Dosya seçince model ortalanır.
+            </p>
+          ) : null}
           {dims ? <><span className="pointer-events-none absolute top-14 left-10 z-10 text-xs text-cyan/80">X {dims.x.toFixed(1)}</span><span className="pointer-events-none absolute top-14 right-10 z-10 text-xs text-cyan/80">Y {dims.y.toFixed(1)}</span><span className="pointer-events-none absolute right-10 bottom-14 z-10 text-xs text-cyan/80">Z {dims.z.toFixed(1)}</span></> : null}
-          {status === "parsing" ? <p className="absolute bottom-3 left-3 z-10 text-xs">Model okunuyor</p> : null}
+          {status === "parsing" ? (
+            <p className="absolute inset-x-3 bottom-3 z-10 rounded-md border border-cyan/40 bg-midnight/85 px-3 py-2 text-sm" aria-live="polite">
+              Model okunuyor…
+            </p>
+          ) : null}
           {geometryError ? (
-            <p role="alert" className="absolute top-3 left-3 z-10 max-w-[min(100%,20rem)] rounded-md border border-error/40 bg-error/10 px-3 py-2 text-xs text-error">
+            <p role="alert" className="absolute top-3 left-3 z-10 max-w-[min(100%,20rem)] rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm text-error">
               {geometryError}
             </p>
           ) : null}
         </section>
-        {isDesktop ? <aside className="flex w-80 min-w-80 flex-col border-l border-white/10 bg-carbon">{tabNav}<div className="min-h-0 flex-1 overflow-y-auto">{inspector}</div></aside> : null}
-        {!isDesktop ? (
-          <div data-testid="config-drawer" data-expanded={mobileOpen ? "true" : "false"} className={cn("z-30 flex flex-col border-t border-white/10 bg-carbon pb-[env(safe-area-inset-bottom)]", mobileOpen ? "min-h-0 max-h-[58%] flex-1" : "shrink-0")}>
+        {isDesktop ? <aside className="flex min-w-0 w-[18.5rem] flex-col border-l border-white/10 bg-carbon">{tabNav}<div className="min-h-0 flex-1 overflow-y-auto">{inspector}</div></aside> : null}
+        {!isDesktop && !emptyStudio ? (
+          <div data-testid="config-drawer" data-expanded={mobileOpen ? "true" : "false"} className={cn("z-30 flex flex-col border-t border-white/10 bg-carbon pb-[env(safe-area-inset-bottom)]", mobileOpen ? "min-h-0 max-h-[48%] flex-1" : "shrink-0")}>
             {toolRail(false)}
-            <button type="button" aria-label="İnceleyici panelini sürükle" onClick={() => setMobileOpen((o) => !o)} className="flex min-h-8 items-center justify-center pt-1"><GripHorizontal className="size-5 text-muted-light" aria-hidden="true" /></button>
-            <div className="flex items-center justify-between gap-2 px-4 pb-2"><p className="min-w-0 truncate text-sm font-semibold">{file?.name ?? "Dosya seçilmedi"}{dims ? ` · ${fmtMm(dims.x)} × ${fmtMm(dims.y)} × ${fmtMm(dims.z)}` : ""}</p><button type="button" aria-expanded={mobileOpen} onClick={() => setMobileOpen((o) => !o)} className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-md px-3 text-sm font-semibold">{mobileOpen ? "Küçült" : "Genişlet"}<ChevronDown className={cn("size-4 transition-transform", mobileOpen && "rotate-180")} aria-hidden="true" /></button></div>
-            <div className="flex items-center justify-between gap-3 px-4 pb-3"><p className="min-w-0 truncate text-xs text-muted-light">{priceHint}</p><button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="inline-flex min-h-10 shrink-0 items-center bg-[color:var(--store-orange)] px-3 text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button></div>
+            <button type="button" aria-label="İnceleyici panelini sürükle" onClick={() => setMobileOpen((o) => !o)} className="flex min-h-11 items-center justify-center pt-1"><GripHorizontal className="size-5 text-muted-light" aria-hidden="true" /></button>
+            <div className="flex items-center justify-between gap-2 px-4 pb-2"><p className="min-w-0 truncate text-sm font-semibold">{file?.name ?? "Dosya seçilmedi"}{dims ? ` · ${fmtMm(dims.x)} × ${fmtMm(dims.y)} × ${fmtMm(dims.z)}` : ""}</p><button type="button" aria-expanded={mobileOpen} onClick={() => setMobileOpen((o) => !o)} className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md px-3 text-sm font-semibold">{mobileOpen ? "Küçült" : "Genişlet"}<ChevronDown className={cn("size-4 transition-transform", mobileOpen && "rotate-180")} aria-hidden="true" /></button></div>
+            <div className="flex items-center justify-between gap-3 px-4 pb-3"><p className="min-w-0 truncate text-sm leading-6 text-muted-light">{priceHint}</p><button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="inline-flex min-h-11 shrink-0 items-center bg-[color:var(--store-orange)] px-3 text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button></div>
             {mobileOpen ? <div className="min-h-0 flex-1 overflow-y-auto">{tabNav}{inspector}</div> : <div className="px-2 pb-2">{tabNav}</div>}
           </div>
         ) : null}
       </div>
-      <footer className="flex items-center justify-between gap-3 border-t border-white/10 bg-carbon px-4 py-2 text-xs lg:col-span-full"><p className="truncate">{file?.name ?? "Dosya seçilmedi"}</p><p className="text-muted-light">{priceHint}</p>{fit ? <p className={fit.fits ? "text-lime" : "text-warm"}>{fit.fits ? "Plakaya sığıyor" : "Sığmıyor"}</p> : null}</footer>
+      <footer className="flex items-center justify-between gap-3 border-t border-white/10 bg-carbon px-4 py-2 text-sm lg:col-span-full"><p className="truncate">{file?.name ?? "Dosya seçilmedi"}</p><p className="text-muted-light">{priceHint}</p>{fit ? <p className={fit.fits ? "text-lime" : "text-warm"}>{fit.fits ? "Plakaya sığıyor" : "Sığmıyor"}</p> : null}</footer>
     </div>
   );
 }

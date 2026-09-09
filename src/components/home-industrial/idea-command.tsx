@@ -12,7 +12,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Upload } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 
 import { HeroVideo } from "@/components/home-industrial/hero-video";
@@ -427,6 +427,7 @@ export function IdeaCommand() {
           onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
           className="hi-hero-upload"
         >
+          <Upload className="size-4" aria-hidden="true" />
           VEYA STL / 3MF DOSYANI YÜKLE
           <ArrowUpRight className="size-4" aria-hidden="true" />
         </Link>

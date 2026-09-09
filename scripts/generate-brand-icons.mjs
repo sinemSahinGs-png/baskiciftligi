@@ -6,7 +6,6 @@ import sharp from "sharp";
 const root = process.cwd();
 const source = path.join(root, "public", "icon.png");
 const iconsDir = path.join(root, "public", "icons");
-const posterDir = path.join(root, "public", "images", "upload-flow");
 
 function pngToIco(pngBuffers) {
   const count = pngBuffers.length;
@@ -101,40 +100,12 @@ const svg = `<?xml version="1.0" encoding="UTF-8"?>
 `;
 await writeFile(path.join(root, "public", "icon.svg"), svg);
 
-const posterIcon = await pngAt(280);
-const poster = await sharp({
-  create: {
-    width: 1600,
-    height: 900,
-    channels: 3,
-    background: { r: 12, g: 16, b: 18 },
-  },
-})
-  .composite([
-    {
-      input: Buffer.from(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900">
-          <rect width="1600" height="900" fill="#0c1012"/>
-          <rect x="48" y="48" width="1504" height="804" fill="none" stroke="#ff5a0a" stroke-width="2" opacity="0.55"/>
-          <rect x="56" y="56" width="1488" height="788" fill="none" stroke="#30d5d2" stroke-width="1" opacity="0.35"/>
-        </svg>`,
-      ),
-      top: 0,
-      left: 0,
-    },
-    { input: posterIcon, gravity: "centre" },
-  ])
-  .webp({ quality: 82 })
-  .toBuffer();
-await writeFile(path.join(posterDir, "upload-demo-poster.webp"), poster);
-
 console.log(
   JSON.stringify(
     {
       source,
       faviconBytes: ico.length,
       files: Object.keys(files),
-      poster: path.join(posterDir, "upload-demo-poster.webp"),
     },
     null,
     2,

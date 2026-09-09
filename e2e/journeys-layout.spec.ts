@@ -107,8 +107,8 @@ test.describe("homepage journey layout", () => {
       expect(metrics!.sectionHeight).toBeLessThan(metrics!.viewport * 1.8);
       expect(metrics!.gapToNext).toBeGreaterThanOrEqual(0);
       expect(metrics!.gapToNext).toBeLessThanOrEqual(360);
-      await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
-      await expect(page.getByRole("heading", { name: /MODELİNİ YÜKLE/ })).toBeVisible();
+      await page.locator("#kategoriler").scrollIntoViewIfNeeded();
+      await expect(page.getByRole("heading", { name: "KATEGORİLER" })).toBeVisible();
     });
   });
 });
@@ -150,7 +150,7 @@ test.describe("homepage layout contact sheets", () => {
       await page.waitForTimeout(280);
       await page.screenshot({ path: path.join(shots, `journey-${id}.png`) });
     }
-    await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
+    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "journey-after.png") });
     expect(frames.length).toBe(5);
   });

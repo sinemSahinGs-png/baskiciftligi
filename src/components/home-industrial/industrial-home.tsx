@@ -6,7 +6,6 @@ import { IdeaCommand } from "@/components/home-industrial/idea-command";
 import { IndustrialHeaderEffects } from "@/components/home-industrial/industrial-header";
 import { MaterialsStrip } from "@/components/home-industrial/materials-strip";
 import { MobileStickyCta } from "@/components/home-industrial/mobile-sticky-cta";
-import { AutoQuote } from "@/components/home-industrial/auto-quote";
 import { ProductDiscoveryRail } from "@/components/home-industrial/product-discovery-rail";
 import { ProductionProcess } from "@/components/home-industrial/production-process";
 import { ScrollThemeProvider } from "@/components/home-industrial/scroll-theme-provider";
@@ -40,7 +39,6 @@ export function IndustrialHome({
       <IdeaCommand />
       <UploadDemo />
       <HomeCategories products={products} />
-      <AutoQuote />
       <ProductDiscoveryRail products={products} />
       <FeaturedProduct product={featured} />
       <ProductionProcess />

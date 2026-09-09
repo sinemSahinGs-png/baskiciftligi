@@ -22,8 +22,7 @@ export function MobileStickyCta() {
       const materials = document.getElementById("malzeme-secenekleri");
       const footer = document.querySelector("footer");
       const catsHeading = document.getElementById("home-cats-heading");
-      const quoteSection = document.getElementById("sana-gore-hazir-modeller");
-      const quoteCta = document.querySelector("[data-quote-cta]");
+      const quoteCta = document.querySelector("#modelini-yukle a[href='/model-yukle']");
       const processOverlay = document.querySelector("#nasil-calisir .hi-process-overlay");
       const uploadDemo = document.getElementById("modelini-yukle");
       const stickyTop = window.innerHeight - 104;
@@ -42,7 +41,6 @@ export function MobileStickyCta() {
           intersecting(materials, 0.28) ||
           intersecting(footer, 0.12) ||
           overlapsSticky(catsHeading) ||
-          intersecting(quoteSection, 0.16) ||
           overlapsSticky(quoteCta) ||
           overlapsSticky(processOverlay) ||
           categoryCopyOverlaps,

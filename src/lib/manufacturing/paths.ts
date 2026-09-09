@@ -138,7 +138,12 @@ export async function readPrivateObject(storageKey: string): Promise<Uint8Array>
 }
 
 export async function deletePrivateObject(storageKey: string) {
-  await rm(manufacturingObjectPath(storageKey), { force: true });
+  if (manufacturingUsesLocalPersistence()) {
+    await rm(manufacturingObjectPath(storageKey), { force: true });
+    return;
+  }
+  const { supabaseDeleteObject } = await import("@/lib/manufacturing/supabase-store");
+  await supabaseDeleteObject(storageKey);
 }
 
 export async function readUtf8IfExists(filePath: string) {

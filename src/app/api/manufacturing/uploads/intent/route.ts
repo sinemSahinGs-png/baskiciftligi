@@ -6,6 +6,11 @@ import {
   manufacturingUsesLocalPersistence,
   maxUploadBytes,
 } from "@/lib/manufacturing/paths";
+import {
+  SIGNED_UPLOAD_EXPIRES_SECONDS,
+  hasSupportedMeshExtension,
+  manufacturingStorageKey,
+} from "@/lib/manufacturing/upload-limits";
 
 export const runtime = "nodejs";
 
@@ -55,7 +60,7 @@ export async function POST(request: Request) {
       message: "Dosya yükleme sınırını aşıyor.",
     });
   }
-  if (!/\.(stl|3mf|obj)$/i.test(filename)) {
+  if (!hasSupportedMeshExtension(filename)) {
     return jsonError({
       status: 415,
       code: "UNSUPPORTED_TYPE",
@@ -69,7 +74,7 @@ export async function POST(request: Request) {
 
   const actor = await getManufacturingActor();
   const fileId = crypto.randomUUID();
-  const storageKey = `${actor.sessionId}/${fileId}/source`;
+  const storageKey = manufacturingStorageKey(actor.sessionId, fileId);
   const { supabaseCreateSignedUploadUrl } = await import("@/lib/manufacturing/supabase-store");
   try {
     const signed = await supabaseCreateSignedUploadUrl(storageKey);
@@ -79,6 +84,7 @@ export async function POST(request: Request) {
       storageKey,
       uploadUrl: signed.signedUrl,
       token: signed.token,
+      expiresInSeconds: SIGNED_UPLOAD_EXPIRES_SECONDS,
     });
   } catch {
     return jsonError({
