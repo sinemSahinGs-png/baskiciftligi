@@ -11,14 +11,13 @@ const preview =
 
 const SECTION_IDS = [
   "ne-uretmek-istiyorsun",
-  "uc-uretim-yolu",
+  "modelini-yukle",
   "sana-gore-hazir-modeller",
   "mevcut-urunler",
   "one-cikan-urunler",
   "nasil-calisir",
   "malzeme-secenekleri",
   "kurumsal-uretim",
-  "basla",
 ] as const;
 
 async function readyHome(page: Page, url = "/") {

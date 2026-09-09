@@ -18,15 +18,14 @@ export function MobileStickyCta() {
   useEffect(() => {
     const update = () => {
       const hero = document.getElementById("ne-uretmek-istiyorsun");
-      const paths = document.getElementById("uc-uretim-yolu");
       const process = document.getElementById("nasil-calisir");
       const materials = document.getElementById("malzeme-secenekleri");
-      const finalCta = document.getElementById("basla");
       const footer = document.querySelector("footer");
       const catsHeading = document.getElementById("home-cats-heading");
       const quoteSection = document.getElementById("sana-gore-hazir-modeller");
       const quoteCta = document.querySelector("[data-quote-cta]");
       const processOverlay = document.querySelector("#nasil-calisir .hi-process-overlay");
+      const uploadDemo = document.getElementById("modelini-yukle");
       const stickyTop = window.innerHeight - 104;
       const overlapsSticky = (node: Element | null) => {
         if (!node) return false;
@@ -38,10 +37,9 @@ export function MobileStickyCta() {
       );
       setHidden(
         intersecting(hero, 0.08) ||
-          intersecting(paths, 0.4) ||
+          intersecting(uploadDemo, 0.4) ||
           intersecting(process, 0.22) ||
           intersecting(materials, 0.28) ||
-          intersecting(finalCta, 0.12) ||
           intersecting(footer, 0.12) ||
           overlapsSticky(catsHeading) ||
           intersecting(quoteSection, 0.16) ||

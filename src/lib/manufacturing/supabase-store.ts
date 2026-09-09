@@ -666,3 +666,18 @@ export async function supabaseReadObject(storageKey: string): Promise<Uint8Array
   }
   return new Uint8Array(await data.arrayBuffer());
 }
+
+export async function supabaseCreateSignedUploadUrl(storageKey: string) {
+  const client = assertServiceRoleClient();
+  const { data, error } = await client.storage
+    .from("manufacturing-objects")
+    .createSignedUploadUrl(storageKey, { upsert: false });
+  if (error || !data?.signedUrl || !data.token) {
+    throwFrom(error, "Doğrudan yükleme adresi oluşturulamadı.");
+  }
+  return {
+    signedUrl: data.signedUrl,
+    token: data.token,
+    path: data.path ?? storageKey,
+  };
+}

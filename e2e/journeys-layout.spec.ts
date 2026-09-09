@@ -16,72 +16,34 @@ async function readyHome(page: Page) {
 
 async function journeyMetrics(page: Page) {
   return page.evaluate(() => {
-    const section = document.querySelector<HTMLElement>("[data-journey-section]");
-    const panels = [
-      ...document.querySelectorAll<HTMLElement>("[data-journey-panel]"),
-    ];
-    if (!section || panels.length === 0) {
+    const section = document.getElementById("modelini-yukle");
+    const steps = [...(section?.querySelectorAll("ol li") ?? [])];
+    if (!section || steps.length === 0) {
       return null;
     }
     const next = section.nextElementSibling as HTMLElement | null;
-    if (!next) {
-      return null;
-    }
-    const viewport = window.innerHeight;
     const sectionBox = section.getBoundingClientRect();
-    const nextBox = next.getBoundingClientRect();
-    const panelBoxes = panels.map((panel) => {
-      const box = panel.getBoundingClientRect();
-      const style = window.getComputedStyle(panel);
-      return {
-        id: panel.dataset.journeyPanel,
-        width: box.width,
-        height: box.height,
-        top: box.top,
-        bottom: box.bottom,
-        opacity: Number(style.opacity),
-        position: style.position,
-        motion: panel.dataset.motionItem ?? "",
-      };
-    });
-    const wrapper = section.querySelector<HTMLElement>("[data-pinned], .grid");
-    const wrapperStyle = wrapper ? window.getComputedStyle(wrapper) : null;
+    const nextBox = next?.getBoundingClientRect();
     return {
       overflowX: document.documentElement.scrollWidth - window.innerWidth,
-      viewport,
+      viewport: window.innerHeight,
       sectionHeight: sectionBox.height,
-      wrapperHeight: wrapper?.getBoundingClientRect().height ?? 0,
-      wrapperPosition: wrapperStyle?.position ?? "static",
-      pinned: wrapper?.dataset.pinned ?? "false",
-      gapToNext: nextBox.top - sectionBox.bottom,
-      panelBoxes,
+      stepCount: steps.length,
+      gapToNext: nextBox ? nextBox.top - sectionBox.bottom : 0,
     };
   });
 }
 
 async function assertCompactJourneys(page: Page, maxGap: number) {
-  await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
-  await page.waitForTimeout(480);
+  await page.locator("#modelini-yukle").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(240);
   const metrics = await journeyMetrics(page);
   expect(metrics).not.toBeNull();
-  expect(metrics!.panelBoxes).toHaveLength(3);
-  for (const panel of metrics!.panelBoxes) {
-    expect(panel.width).toBeGreaterThan(120);
-    expect(panel.height).toBeGreaterThan(44);
-    expect(panel.opacity).toBeGreaterThan(0.2);
-  }
-  expect(metrics!.wrapperPosition).not.toBe("sticky");
-  expect(metrics!.pinned).toBe("false");
+  expect(metrics!.stepCount).toBe(3);
   expect(metrics!.sectionHeight).toBeLessThan(metrics!.viewport * 2.4);
   expect(metrics!.gapToNext).toBeGreaterThanOrEqual(0);
   expect(metrics!.gapToNext).toBeLessThanOrEqual(maxGap);
   expect(metrics!.overflowX).toBeLessThanOrEqual(1);
-
-  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 2));
-  await page.waitForTimeout(320);
-  const after = await journeyMetrics(page);
-  expect(after?.panelBoxes.every((panel) => panel.height > 44)).toBe(true);
-  expect(after?.panelBoxes.every((panel) => panel.opacity > 0.2)).toBe(true);
   return metrics!;
 }
 
@@ -136,13 +98,10 @@ test.describe("homepage journey layout", () => {
     }) => {
       test.setTimeout(60_000);
       await readyHome(page);
-      const section = page.locator("#uc-uretim-yolu");
+      const section = page.locator("#modelini-yukle");
       await section.scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      await expect(page.locator("#uc-uretim-yolu [data-pinned='true']")).toHaveCount(0);
-      await expect(page.locator("[data-journey-panel='01']")).toBeVisible();
-      await expect(page.locator("[data-journey-panel='02']")).toBeVisible();
-      await expect(page.locator("[data-journey-panel='03']")).toBeVisible();
+      await expect(page.locator("#modelini-yukle ol li")).toHaveCount(3);
       const metrics = await journeyMetrics(page);
       expect(metrics).not.toBeNull();
       expect(metrics!.sectionHeight).toBeLessThan(metrics!.viewport * 1.8);
@@ -183,11 +142,11 @@ test.describe("homepage layout contact sheets", () => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await readyHome(page);
     const frames = ["before", "01", "02", "03", "after"] as const;
-    await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
+    await page.locator("#modelini-yukle").scrollIntoViewIfNeeded();
     await page.evaluate(() => window.scrollBy(0, -140));
     await page.screenshot({ path: path.join(shots, "journey-before.png") });
     for (const id of ["01", "02", "03"] as const) {
-      await page.locator(`[data-journey-panel='${id}']`).scrollIntoViewIfNeeded();
+      await page.locator("#modelini-yukle ol li").nth(Number(id) - 1).scrollIntoViewIfNeeded();
       await page.waitForTimeout(280);
       await page.screenshot({ path: path.join(shots, `journey-${id}.png`) });
     }

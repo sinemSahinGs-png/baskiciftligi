@@ -77,9 +77,23 @@ export const metadata: Metadata = {
     follow: true,
   },
   icons: {
-    icon: [{ url: "/icon.png", type: "image/png" }],
-    shortcut: "/icon.png",
-    apple: "/icon.png",
+    icon: [
+      { url: `/favicon.ico?v=${siteConfig.brandIconVersion}`, sizes: "any" },
+      { url: `/icons/icon-16.png?v=${siteConfig.brandIconVersion}`, sizes: "16x16", type: "image/png" },
+      { url: `/icons/icon-32.png?v=${siteConfig.brandIconVersion}`, sizes: "32x32", type: "image/png" },
+      { url: `/icons/icon-48.png?v=${siteConfig.brandIconVersion}`, sizes: "48x48", type: "image/png" },
+      { url: `/icon.svg?v=${siteConfig.brandIconVersion}`, type: "image/svg+xml" },
+      { url: `/icons/icon-192.png?v=${siteConfig.brandIconVersion}`, sizes: "192x192", type: "image/png" },
+      { url: `/icons/icon-512.png?v=${siteConfig.brandIconVersion}`, sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: `/icons/icon-32.png?v=${siteConfig.brandIconVersion}`,
+    apple: [
+      {
+        url: `/icons/icon-180.png?v=${siteConfig.brandIconVersion}`,
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
   },
 };
 

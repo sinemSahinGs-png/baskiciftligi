@@ -5,13 +5,12 @@ const shots = path.join("test-results", "home-industrial");
 
 const SECTION_SHOTS = [
   ["ne-uretmek-istiyorsun", "idea-command-390.png"],
-  ["uc-uretim-yolu", "production-paths-390.png"],
+  ["modelini-yukle", "upload-demo-390.png"],
   ["sana-gore-hazir-modeller", "model-archive-390.png"],
   ["one-cikan-urunler", "featured-product-390.png"],
   ["nasil-calisir", "production-process-390.png"],
   ["malzeme-secenekleri", "materials-390.png"],
   ["kurumsal-uretim", "corporate-production-390.png"],
-  ["basla", "final-cta-390.png"],
 ] as const;
 
 async function readyHome(page: Page) {

@@ -1,10 +1,10 @@
 import { COLOR_OPTIONS } from "@/domain/manufacturing/profiles";
 
 export const PREVIEW_COLOR_HEX: Record<string, string> = {
-  black: "#2a2f36",
-  white: "#e8edf2",
-  gray: "#8b949e",
-  orange: "#f97316",
+  black: "#4a4450",
+  white: "#efe8dc",
+  gray: "#c4b8a8",
+  orange: "#ff7a33",
 };
 
 export function previewColorHex(colorId: string): string {

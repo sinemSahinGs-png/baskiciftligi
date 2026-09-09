@@ -37,7 +37,7 @@ test.describe("homepage discovery redesign", () => {
     await idea.locator("input[name='idea']").fill("telefon standı");
     await expect(idea.locator("input[name='idea']")).toHaveValue("telefon standı");
     await expect(idea.getByRole("button", { name: "Daha fazla göster" })).toHaveCount(0);
-    await expect(idea.getByRole("link", { name: "Modeli incele" })).toHaveCount(0);
+    await expect(idea.getByRole("link", { name: "MODELE BAK" })).toHaveCount(0);
   });
 
   test("searches from Turkish copy and opens a Thingiverse result", async ({
@@ -82,12 +82,12 @@ test.describe("homepage discovery redesign", () => {
     await idea.scrollIntoViewIfNeeded();
     await idea.locator("input[name='idea']").fill("Ejderha şeklinde telefon standı");
     await searchButton(page).click();
-    await expect(idea.getByRole("link", { name: "Modeli incele" }).first()).toBeVisible({
+    await expect(idea.getByRole("link", { name: "MODELE BAK" }).first()).toBeVisible({
       timeout: 20_000,
     });
     await expect(idea.getByRole("link", { name: "Uygunluğu kontrol et" }).first()).toBeVisible();
     await expect(idea.getByRole("link", { name: "Bununla fiyat al" })).toHaveCount(0);
-    await idea.getByRole("link", { name: "Modeli incele" }).first().click();
+    await idea.getByRole("link", { name: "MODELE BAK" }).first().click();
     await expect(page).toHaveURL(/\/hazir-modeller\/thingiverse\//);
   });
 
@@ -143,7 +143,7 @@ test.describe("homepage discovery redesign", () => {
     await expect(quoteCard.getByRole("link", { name: "Bununla fiyat al" })).toBeVisible({
       timeout: 20_000,
     });
-    await expect(inspectCard.getByRole("link", { name: "Modeli incele" })).toBeVisible();
+    await expect(inspectCard.getByRole("link", { name: "MODELE BAK" })).toBeVisible();
     await expect(inspectCard.getByRole("link", { name: "Bununla fiyat al" })).toHaveCount(0);
     await expect(inspectCard.getByRole("link", { name: "Uygunluğu kontrol et" })).toHaveCount(0);
   });
@@ -195,7 +195,7 @@ test.describe("homepage discovery redesign", () => {
     await searchButton(page).click();
     await expect(idea.getByText("Bağlantı hatası")).toBeVisible();
     await expect(heroSection(page)).toBeVisible();
-    await expect(page.locator("#uc-uretim-yolu")).toBeVisible();
+    await expect(page.locator("#modelini-yukle")).toBeVisible();
   });
 
   for (const width of [320, 360, 390, 430] as const) {
@@ -203,7 +203,7 @@ test.describe("homepage discovery redesign", () => {
       await page.setViewportSize({ width, height: 844 });
       await readyHome(page);
       await expect.poll(() => overflowX(page)).toBeLessThanOrEqual(1);
-      await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
+      await page.locator("#modelini-yukle").scrollIntoViewIfNeeded();
       await expect.poll(() => overflowX(page)).toBeLessThanOrEqual(1);
       await page.locator("#one-cikan-urunler").scrollIntoViewIfNeeded();
       await expect.poll(() => overflowX(page)).toBeLessThanOrEqual(1);
@@ -243,7 +243,7 @@ test.describe("homepage discovery redesign", () => {
     const idea = page.locator("#ne-uretmek-istiyorsun");
     await idea.locator("input[name='idea']").fill("telefon standı");
     await idea.locator("input[name='idea']").press("Enter");
-    await expect(idea.getByRole("link", { name: "Modeli incele" }).first()).toBeVisible({
+    await expect(idea.getByRole("link", { name: "MODELE BAK" }).first()).toBeVisible({
       timeout: 20_000,
     });
   });
@@ -256,7 +256,7 @@ test.describe("homepage discovery redesign", () => {
     await page.locator("#ne-uretmek-istiyorsun input[name='idea']").focus();
     await expect(page.locator("#ne-uretmek-istiyorsun input[name='idea']")).toBeFocused();
     await expect(page.getByRole("heading", { name: /SEN TARİF ET/i })).toBeVisible();
-    await expect(page.locator("#uc-uretim-yolu [data-journey-panel='01']").first()).toBeVisible();
+    await expect(page.locator("#modelini-yukle ol li").first()).toBeVisible();
   });
 
   for (const width of [320, 390, 430, 1440] as const) {

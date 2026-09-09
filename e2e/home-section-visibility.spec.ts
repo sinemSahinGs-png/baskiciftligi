@@ -3,7 +3,7 @@ import path from "node:path";
 
 const SECTION_IDS = [
   "ne-uretmek-istiyorsun",
-  "uc-uretim-yolu",
+  "modelini-yukle",
   "kategoriler",
   "sana-gore-hazir-modeller",
   "mevcut-urunler",
@@ -14,14 +14,13 @@ const SECTION_IDS = [
   "kurumsal-uretim",
   "guven",
   "sik-sorulanlar",
-  "basla",
 ] as const;
 
 const HEADINGS = [
   /SEN TARİF ET/,
-  "Üç üretim yolu",
-  "KATEGORİLER",
   /MODELİNİ YÜKLE/,
+  "KATEGORİLER",
+  /ÜRETİM ANALİZİ/,
   "MAĞAZA ÜRÜNLERİ",
   "ÖNE ÇIKAN ÜRÜN",
   "ÜRETİM SÜRECİ",
@@ -30,7 +29,6 @@ const HEADINGS = [
   /ÖLÇEKLENEBİLİR ÜRETİM/,
   "Güven unsurları",
   "KISA SSS",
-  /FİKRİN HAZIR MI/,
 ] as const;
 
 const shots = path.join("test-results", "home-visibility");
@@ -96,11 +94,14 @@ async function scrollHomeToFooter(page: Page) {
   await page.goto("/");
   await page.locator("#ana-icerik").waitFor({ state: "visible" });
   for (const id of SECTION_IDS) {
-    const section = page.locator(`#${id}`);
-    await expect(section).toHaveCount(1);
-    await section.scrollIntoViewIfNeeded();
+    await expect.poll(() => page.locator(`#${id}`).count()).toBe(1);
+    await page.locator(`#${id}`).evaluate((node) => {
+      node.scrollIntoView({ block: "start", inline: "nearest" });
+    });
   }
-  await page.locator("[data-site-footer]").first().scrollIntoViewIfNeeded();
+  await page.locator("[data-site-footer]").first().evaluate((node) => {
+    node.scrollIntoView({ block: "start", inline: "nearest" });
+  });
 }
 
 async function assertSectionsLaidOut(page: Page) {
@@ -161,7 +162,6 @@ test.describe("homepage section visibility", () => {
       await expect(page.locator(`#${id}`)).toHaveCount(1);
     }
     await expect(page.getByRole("heading", { name: "ÖNE ÇIKAN ÜRÜN" })).toHaveCount(1);
-    await expect(page.getByRole("heading", { name: /FİKRİN HAZIR MI/ })).toHaveCount(1);
     await expect(page.locator("footer")).toHaveCount(1);
     await context.close();
   });

@@ -21,6 +21,31 @@ export type GeometryLoadStatus =
 
 const PREVIEW_TRIANGLES = 400_000;
 
+function parseStlOffMainThread(buffer: ArrayBuffer) {
+  return new Promise<Float32Array>((resolve, reject) => {
+    const worker = new Worker(new URL("./stl-parse.worker.ts", import.meta.url), {
+      type: "module",
+    });
+    const id = crypto.randomUUID();
+    const timer = window.setTimeout(() => {
+      worker.terminate();
+      reject(new Error("timeout"));
+    }, 20_000);
+    worker.onmessage = (event: MessageEvent<{ id: string; ok: boolean; positions?: Float32Array; error?: string }>) => {
+      window.clearTimeout(timer);
+      worker.terminate();
+      if (event.data.ok && event.data.positions) resolve(event.data.positions);
+      else reject(new Error(event.data.error ?? "corrupt"));
+    };
+    worker.onerror = () => {
+      window.clearTimeout(timer);
+      worker.terminate();
+      reject(new Error("corrupt"));
+    };
+    worker.postMessage({ id, buffer }, [buffer]);
+  });
+}
+
 function geometryFromObject(root: Object3D): BufferGeometry | null {
   let found: BufferGeometry | null = null;
   root.traverse((child) => {
@@ -107,7 +132,13 @@ export function useGeometryLoader(file: File | null) {
         const lower = sourceFile.name.toLocaleLowerCase("tr-TR");
         let geo: BufferGeometry | null = null;
         if (lower.endsWith(".stl")) {
-          geo = new STLLoader().parse(buffer);
+          try {
+            const positions = await parseStlOffMainThread(buffer);
+            geo = new BufferGeometry();
+            geo.setAttribute("position", new Float32BufferAttribute(positions, 3));
+          } catch {
+            geo = new STLLoader().parse(await sourceFile.arrayBuffer());
+          }
         } else if (lower.endsWith(".obj")) {
           geo = geometryFromObject(new OBJLoader().parse(new TextDecoder().decode(buffer)));
         } else if (lower.endsWith(".3mf")) {

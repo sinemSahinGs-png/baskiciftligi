@@ -147,16 +147,16 @@ export default async function StorePage(props: PageProps<"/magaza">) {
                         Demo etiketli ürünler vitrin içindir.
                       </p>
                     ) : null}
-                    <CatalogGrid products={firstGroup} priorityCount={firstGroup.length} tone="store" />
+                    <CatalogGrid products={firstGroup} priorityCount={Math.min(4, firstGroup.length)} tone="store" />
                     {!hasActiveFilters && featuredProduct ? (
                       <StoreEditorial product={featuredProduct} />
                     ) : null}
                     {secondGroup.length > 0 ? (
-                      <CatalogGrid products={secondGroup} priorityCount={secondGroup.length} tone="store" />
+                      <CatalogGrid products={secondGroup} priorityCount={0} tone="store" />
                     ) : null}
                     {!hasActiveFilters ? <StoreUploadBanner /> : null}
                     {restGroup.length > 0 ? (
-                      <CatalogGrid products={restGroup} priorityCount={restGroup.length} tone="store" />
+                      <CatalogGrid products={restGroup} priorityCount={0} tone="store" />
                     ) : null}
                     {page.pageCount > 1 ? (
                       <nav className="mt-10 flex gap-2" aria-label="Sayfalar">

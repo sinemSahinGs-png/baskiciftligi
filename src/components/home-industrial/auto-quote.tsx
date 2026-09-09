@@ -99,8 +99,7 @@ export function AutoQuote() {
       <div className="hi-shell">
         <p className="hi-kicker">ÜRETİM ANALİZ KONSOLU</p>
         <h2 id="archive-heading" className="hi-title">
-          <WordReveal as="span" className="hi-quote-title-line" text="MODELİNİ YÜKLE." />
-          <WordReveal as="span" className="hi-quote-title-line" text="FİYATINI ANINDA GÖR." />
+          <WordReveal as="span" className="hi-quote-title-line" text="ÜRETİM ANALİZİ" />
         </h2>
         <ol className="hi-quote-stages">
           {STEPS.map((step) => (

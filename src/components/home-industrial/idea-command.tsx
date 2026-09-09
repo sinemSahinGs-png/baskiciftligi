@@ -26,6 +26,7 @@ import { trackHomeEvent } from "@/lib/home/analytics";
 import { announceStatus } from "@/lib/motion";
 import type { IdeaSearchCard } from "@/lib/model-discovery/idea-search";
 import { IDEA_SEARCH_MOBILE_PAGE_SIZE } from "@/lib/model-discovery/idea-search";
+import { parseApiResponse } from "@/lib/http/parse-json-response";
 import { cn } from "@/lib/utils";
 
 type SearchUiStatus =
@@ -117,6 +118,7 @@ export function IdeaCommand() {
   const abortRef = useRef<AbortController | null>(null);
   const cacheRef = useRef<Map<string, { at: number; payload: IdeaSearchResponse }>>(new Map());
   const phaseTimer = useRef<number>(0);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const canSearch = query.trim().length >= 2;
   const typewriterEnabled =
@@ -211,13 +213,17 @@ export function IdeaCommand() {
           body: JSON.stringify({ query: nextQuery }),
           signal: controller.signal,
         });
-        const payload = (await response.json()) as IdeaSearchResponse;
+        const parsed = await parseApiResponse(response);
         if (controller.signal.aborted) return;
+        const payload = (parsed.json ?? {
+          status: parsed.ok ? "empty" : "unavailable",
+          items: [],
+        }) as IdeaSearchResponse;
         cacheRef.current.set(nextQuery.toLocaleLowerCase("tr-TR"), {
           at: Date.now(),
           payload,
         });
-        applyPayload(payload, response.status);
+        applyPayload(payload, parsed.status);
       } catch (error) {
         if (controller.signal.aborted && controller.signal.reason !== "timeout") {
           return;
@@ -246,8 +252,68 @@ export function IdeaCommand() {
     void runSearch(query);
   }
 
+  function closeResults() {
+    abortRef.current?.abort();
+    setStatus("idle");
+    setItems([]);
+    setErrorDetail(null);
+    document.getElementById(inputId)?.focus();
+  }
+
+  const resultsOpen =
+    status === "searching" ||
+    status === "ok" ||
+    status === "empty" ||
+    status === "slow" ||
+    status === "rate_limited" ||
+    status === "unavailable" ||
+    status === "blocked";
+
+  useEffect(() => {
+    if (!resultsOpen) return;
+    function onDocumentKey(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeResults();
+      }
+    }
+    document.addEventListener("keydown", onDocumentKey);
+    return () => document.removeEventListener("keydown", onDocumentKey);
+  }, [resultsOpen]);
+
+  useEffect(() => {
+    if (!resultsOpen) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+    const selectors =
+      "a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex='-1'])";
+    function trap(event: globalThis.KeyboardEvent) {
+      if (event.key !== "Tab" || !panel) return;
+      const nodes = [...panel.querySelectorAll<HTMLElement>(selectors)].filter(
+        (node) => !node.hasAttribute("disabled") && node.tabIndex !== -1,
+      );
+      if (nodes.length === 0) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    panel.addEventListener("keydown", trap);
+    return () => panel.removeEventListener("keydown", trap);
+  }, [resultsOpen, status]);
+
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Escape") {
+      if (status !== "idle" && status !== "typing") {
+        event.preventDefault();
+        closeResults();
+        return;
+      }
       setHalted(true);
       return;
     }
@@ -362,75 +428,101 @@ export function IdeaCommand() {
           className="hi-hero-upload"
         >
           VEYA STL / 3MF DOSYANI YÜKLE
+          <ArrowUpRight className="size-4" aria-hidden="true" />
         </Link>
         </div>
         </div>
 
-        {status === "searching" ? (
-          <p className="hi-hero-results mt-4 text-sm font-medium">{phase}</p>
-        ) : null}
-
-        {status === "ok" && visibleItems.length > 0 ? (
-          <div className="hi-hero-results mt-5">
-            {closest ? (
-              <p className="mb-3 text-sm text-[color:var(--bc-muted)]">
-                Tam eşleşme yok. Bunlar fikrine en yakın modeller.
-              </p>
-            ) : null}
-            <ul className="grid gap-px border border-[color:var(--bc-line)] sm:grid-cols-2">
-              {visibleItems.map((item) => (
-                <li key={item.externalId} className="border-[color:var(--bc-line)] bg-[color:var(--bc-panel)] sm:border-r sm:odd:border-r">
-                  <IdeaResultCard item={item} />
-                </li>
-              ))}
-            </ul>
-            {items.length > visibleCount ? (
-              <button
-                type="button"
-                onClick={() => setVisibleCount((count) => count + IDEA_SEARCH_MOBILE_PAGE_SIZE)}
-                className="hi-link mt-3"
-              >
-                Daha fazla göster
+        {resultsOpen ? (
+          <div
+            ref={panelRef}
+            className="hi-hero-results-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="idea-results-heading"
+          >
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 id="idea-results-heading" className="text-sm font-semibold">
+                {status === "searching" ? phase : "Model önerileri"}
+              </h2>
+              <button type="button" className="hi-link min-h-11" onClick={closeResults}>
+                Kapat
               </button>
-            ) : null}
-          </div>
-        ) : null}
-
-        {status === "empty" ||
-        status === "slow" ||
-        status === "rate_limited" ||
-        status === "unavailable" ||
-        status === "blocked" ? (
-          <div className="hi-hero-results mt-5 border border-[color:var(--bc-line)] p-4">
-            <h3 className="font-medium">
-              {status === "unavailable"
-                ? "Bağlantı hatası"
-                : status === "empty"
-                  ? "Tam eşleşme bulamadık"
-                  : status === "slow"
-                    ? "Thingiverse yavaşladı"
-                    : status === "rate_limited"
-                      ? "Biraz bekleyelim"
-                      : "Arama yapılamadı"}
-            </h3>
-            <p className="mt-2 text-sm text-[color:var(--bc-muted)]">
-              {errorDetail ?? messageForStatus(status)}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Link href={"/hazir-modeller" as Route} className="hi-link">
-                Hazır modellere git
-              </Link>
-              <Link
-                href={"/model-yukle" as Route}
-                onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
-                className="hi-link"
-              >
-                Dosyanı yükle
-              </Link>
-              <Link href={"/iletisim" as Route} className="hi-link">
-                Model danışmanlığı
-              </Link>
             </div>
+            {status === "searching" ? (
+              <div className="grid gap-3">
+                {Array.from({ length: 3 }, (_, index) => (
+                  <div key={index} className="hi-hero-result-card animate-pulse">
+                    <div className="hi-hero-result-thumb" />
+                    <div className="space-y-2">
+                      <div className="h-4 w-3/4 bg-white/10" />
+                      <div className="h-3 w-1/2 bg-white/10" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {status === "ok" && visibleItems.length > 0 ? (
+              <>
+                {closest ? (
+                  <p className="mb-3 text-sm text-[color:var(--bc-muted)]">
+                    Tam eşleşme yok. Bunlar fikrine en yakın modeller.
+                  </p>
+                ) : null}
+                <ul>
+                  {visibleItems.map((item) => (
+                    <li key={item.externalId}>
+                      <IdeaResultCard item={item} />
+                    </li>
+                  ))}
+                </ul>
+                {items.length > visibleCount ? (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleCount((count) => count + IDEA_SEARCH_MOBILE_PAGE_SIZE)}
+                    className="hi-link mt-3 min-h-11"
+                  >
+                    Daha fazla göster
+                  </button>
+                ) : null}
+              </>
+            ) : null}
+            {status === "empty" ||
+            status === "slow" ||
+            status === "rate_limited" ||
+            status === "unavailable" ||
+            status === "blocked" ? (
+              <div>
+                <h3 className="font-medium">
+                  {status === "unavailable"
+                    ? "Bağlantı hatası"
+                    : status === "empty"
+                      ? "Tam eşleşme bulamadık"
+                      : status === "slow"
+                        ? "Arama yavaşladı"
+                        : status === "rate_limited"
+                          ? "Biraz bekleyelim"
+                          : "Arama yapılamadı"}
+                </h3>
+                <p className="mt-2 text-sm text-[color:var(--bc-muted)]">
+                  {errorDetail ?? messageForStatus(status)}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button type="button" className="hi-link min-h-11" onClick={() => void runSearch(query)}>
+                    Yeniden dene
+                  </button>
+                  <Link href={"/hazir-modeller" as Route} className="hi-link">
+                    Hazır modellere git
+                  </Link>
+                  <Link href={"/model-yukle" as Route} className="hi-link">
+                    Dosyanı yükle
+                  </Link>
+                  <Link href={"/iletisim" as Route} className="hi-link">
+                    Model danışmanlığı
+                  </Link>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -447,42 +539,36 @@ function IdeaResultCard({ item }: { item: IdeaSearchCard }) {
   const quoteLabel = externalQuoteCtaLabel(action);
 
   return (
-    <article className="flex h-full flex-col">
-      <div className="relative aspect-[4/5] bg-[color:var(--bc-panel-2)]">
+    <article className="hi-hero-result-card">
+      <div className="hi-hero-result-thumb">
         <SlotImage
           src={item.thumbnailUrl}
-          alt={item.title}
+          alt=""
           fill
-          sizes="(max-width: 640px) 100vw, 50vw"
+          sizes="76px"
         />
       </div>
-      <div className="flex flex-1 flex-col p-3">
+      <div className="min-w-0">
+        <p className="text-[0.68rem] uppercase tracking-[0.12em] text-[color:var(--bc-muted)]">
+          {item.source === "thingiverse" ? "Thingiverse" : item.source}
+        </p>
         <h3 className="line-clamp-2 text-sm font-semibold">{item.title}</h3>
-        <div className="mt-3 flex flex-col gap-2">
+        <Link
+          href={item.detailPath as Route}
+          onClick={() => trackHomeEvent({ name: "idea_result_opened" })}
+          className="hi-link mt-2 min-h-11"
+        >
+          MODELE BAK
+          <ArrowUpRight className="size-4" aria-hidden="true" />
+        </Link>
+        {quoteLabel ? (
           <Link
             href={item.detailPath as Route}
-            onClick={() => trackHomeEvent({ name: "idea_result_opened" })}
-            className="hi-link"
+            onClick={() => trackHomeEvent({ name: "idea_result_quote_started" })}
+            className="hi-link mt-1"
           >
-            Modeli incele
-            <ArrowUpRight className="size-4" aria-hidden="true" />
+            {quoteLabel}
           </Link>
-          {quoteLabel ? (
-            <Link
-              href={item.detailPath as Route}
-              onClick={() => trackHomeEvent({ name: "idea_result_quote_started" })}
-              className="hi-link"
-            >
-              {quoteLabel}
-            </Link>
-          ) : null}
-        </div>
-        {action !== "quote" ? (
-          <p className="mt-2 text-[0.75rem] leading-5 text-[color:var(--bc-muted)]">
-            {action === "inspect"
-              ? "Bu model otomatik fiyata uygun değil. Önce detayı incele."
-              : "Fiyat, lisans ve indirilebilir üretim dosyası doğrulanınca netleşir."}
-          </p>
         ) : null}
       </div>
     </article>

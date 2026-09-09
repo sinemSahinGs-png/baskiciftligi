@@ -33,6 +33,7 @@ export const siteConfig = {
     src: "/icon.png",
     markLabel: "Marka işareti",
   },
+  brandIconVersion: "20260909",
   hero: {
     eyebrow: "Online 3D üretim platformu",
     headline: "Fikrini yükle. Biz üretelim.",

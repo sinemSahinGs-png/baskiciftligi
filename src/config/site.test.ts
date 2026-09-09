@@ -45,4 +45,9 @@ describe("siteConfig brand", () => {
     expect(new URL(PRODUCTION_SITE_URL).hostname).toBe("baskiciftligi.com");
     expect(PRODUCTION_SITE_URL).not.toMatch(/localhost|vercel\.app|octostudio|somut/i);
   });
+
+  it("versions Baskı Çiftliği icon metadata", () => {
+    expect(siteConfig.logo.src).toBe("/icon.png");
+    expect(siteConfig.brandIconVersion).toMatch(/^\d{8}$/);
+  });
 });

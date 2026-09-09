@@ -253,9 +253,9 @@ test.describe("visual gap and visibility audit", () => {
         .filter(Boolean);
     });
     expect(order[0]).toMatch(/SEN TARİF ET/i);
-    expect(order).toContain("Üç üretim yolu");
-    expect(order).toContain("KATEGORİLER");
     expect(order.some((title) => /MODELİNİ YÜKLE/i.test(title))).toBe(true);
+    expect(order).toContain("KATEGORİLER");
+    expect(order.some((title) => /ÜRETİM ANALİZİ/i.test(title))).toBe(true);
     expect(order).toContain("MAĞAZA ÜRÜNLERİ");
     expect(order).toContain("ÖNE ÇIKAN ÜRÜN");
     expect(order).toContain("ÜRETİM SÜRECİ");
@@ -264,10 +264,10 @@ test.describe("visual gap and visibility audit", () => {
     expect(order.some((title) => /ÖLÇEKLENEBİLİR ÜRETİM/i.test(title))).toBe(true);
     expect(order).toContain("Güven unsurları");
     expect(order).toContain("KISA SSS");
-    expect(order.some((title) => /FİKRİN HAZIR MI/i.test(title))).toBe(true);
-    expect(order.indexOf("Üç üretim yolu")).toBeLessThan(order.indexOf("KATEGORİLER"));
+    expect(order.some((title) => /FİKRİN HAZIR MI/i.test(title))).toBe(false);
     const quoteHeading = order.find((title) => /MODELİNİ YÜKLE/i.test(title)) ?? "";
-    expect(order.indexOf("KATEGORİLER")).toBeLessThan(order.indexOf(quoteHeading));
+    expect(order.indexOf(quoteHeading)).toBeLessThan(order.indexOf("KATEGORİLER"));
+    expect(order.indexOf("KATEGORİLER")).toBeLessThan(order.indexOf("MAĞAZA ÜRÜNLERİ"));
     expect(order.indexOf(quoteHeading)).toBeLessThan(order.indexOf("MAĞAZA ÜRÜNLERİ"));
     expect(order.indexOf("MAĞAZA ÜRÜNLERİ")).toBeLessThan(order.indexOf("ÖNE ÇIKAN ÜRÜN"));
     expect(order.indexOf("ÜRETİM SÜRECİ")).toBeLessThan(order.indexOf("MALZEMELER"));

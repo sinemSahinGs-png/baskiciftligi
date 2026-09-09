@@ -50,7 +50,7 @@ export function StoreCategoryBar() {
               data-coming-soon="true"
             >
               <span>{category.name}</span>
-              <span className="store-cat-soon">Yakında</span>
+              <span className="store-cat-soon">YAKINDA</span>
             </span>
           ) : (
             <Link
