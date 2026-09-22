@@ -2154,9 +2154,9 @@ html[data-home-industrial] footer {
   .hi-hero-video,
   .hi-hero-poster,
   .hi-hero-still {
-    width: 118%;
+    width: 114%;
     height: 138%;
-    left: -9%;
+    left: -3%;
     top: -30%;
     object-position: 50% 42%;
   }
@@ -2166,9 +2166,9 @@ html[data-home-industrial] footer {
   .hi-hero-video,
   .hi-hero-poster,
   .hi-hero-still {
-    width: 116%;
+    width: 112%;
     height: 140%;
-    left: -8%;
+    left: -2%;
     top: -32%;
     object-position: 50% 40%;
   }

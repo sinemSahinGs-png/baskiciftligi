@@ -11,6 +11,8 @@ import { listPublishedCuratedModels } from "@/domain/curated-models/repository";
 import { platformLabel } from "@/domain/curated-models/types";
 import { homepagePrintLibrary } from "@/domain/home/homepage";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: siteConfig.tagline,
   description: siteConfig.description,
