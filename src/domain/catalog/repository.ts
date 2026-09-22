@@ -247,29 +247,15 @@ async function loadSupabaseCatalog(): Promise<CatalogSnapshot> {
         .eq("is_public", true),
     ]);
 
-  const firstError = [
-    productsResult.error,
-    categoriesResult.error,
-    collectionsResult.error,
-    materialsResult.error,
-    settingsResult.error,
-  ].find(Boolean);
-
-  if (firstError) {
-    const missingSchema =
-      firstError.code === "PGRST205" ||
-      /schema cache/i.test(firstError.message);
-    if (missingSchema) {
-      return productionVitrineSnapshot();
-    }
-    throw new Error(`Katalog sorgusu başarısız: ${firstError.message}`);
+  if (productsResult.error) {
+    throw new Error(`Katalog sorgusu başarısız: ${productsResult.error.message}`);
   }
 
   const products = (
     (productsResult.data ?? []) as unknown as DatabaseProductRow[]
   ).map(mapProduct);
 
-  const categories = (categoriesResult.data ?? []).map(
+  const categories = (categoriesResult.error ? [] : categoriesResult.data ?? []).map(
     (row): Category => ({
       id: row.id,
       slug: row.slug,
@@ -286,7 +272,7 @@ async function loadSupabaseCatalog(): Promise<CatalogSnapshot> {
     }),
   );
 
-  const collections = (collectionsResult.data ?? []).map(
+  const collections = (collectionsResult.error ? [] : collectionsResult.data ?? []).map(
     (row): Collection => ({
       id: row.id,
       slug: row.slug,
@@ -303,7 +289,7 @@ async function loadSupabaseCatalog(): Promise<CatalogSnapshot> {
     }),
   );
 
-  const materials = (materialsResult.data ?? []).map((row): Material => {
+  const materials = (materialsResult.error ? [] : materialsResult.data ?? []).map((row): Material => {
     const properties = asRecord(row.properties);
     const materialType = String(row.material_type ?? "").toUpperCase();
     const technology: Material["technology"] =
@@ -350,7 +336,7 @@ async function loadSupabaseCatalog(): Promise<CatalogSnapshot> {
     };
   });
 
-  const announcements = (settingsResult.data ?? []).flatMap(
+  const announcements = (settingsResult.error ? [] : settingsResult.data ?? []).flatMap(
     (row, index): Announcement[] => {
       const value = asRecord(row.value);
       const message =
@@ -394,10 +380,10 @@ async function loadSupabaseCatalog(): Promise<CatalogSnapshot> {
 
 const loadSupabaseCatalogCached = unstable_cache(
   loadSupabaseCatalog,
-  ["public-catalog-v1"],
+  ["public-catalog-v2"],
   {
     tags: [...PUBLIC_CATALOG_CACHE_TAGS],
-    revalidate: 300,
+    revalidate: 60,
   },
 );
 
