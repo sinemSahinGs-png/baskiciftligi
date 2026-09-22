@@ -39,6 +39,7 @@ const footerGroups: FooterGroup[] = [
     label: "Kurumsal",
     links: [
       { href: "/toptan", label: "Toptan & Bayiler" },
+      { href: "/toptan/katalog", label: "Toptan katalog" },
       { href: "/kurumsal-uretim", label: "Kurumsal üretim" },
       { href: "/malzemeler", label: "Malzemeler" },
     ],
