@@ -109,12 +109,24 @@ describe("planIdeaSearch", () => {
     expect(planIdeaSearch("Masaüstü kulaklık standı").variants.join(" ")).toMatch(
       /headphone|headset/i,
     );
-    expect(requiredTokensForObject("headphone stand")).toEqual(["headphone", "headset"]);
+    expect(requiredTokensForObject("headphone stand")).toEqual([
+      "headphone",
+      "headset",
+      "kulaklik",
+      "kulaklık",
+    ]);
     expect(planIdeaSearch("İsme özel anahtarlık").variants).toEqual([
       "personalized keychain",
       "custom keychain",
       "name keychain",
     ]);
+  });
+
+  it("maps telefon standı to phone stand tokens", () => {
+    const plan = planIdeaSearch("telefon standı");
+    expect(plan.object).toBe("phone stand");
+    expect(plan.variants.join(" ")).toMatch(/phone stand|smartphone holder/i);
+    expect(requiredTokensForObject(plan.object)).toContain("telefon");
   });
 
   it("blocks weapon queries", () => {
@@ -158,5 +170,24 @@ describe("rankAndDedupeIdeaResults", () => {
     expect(ranked.map((item) => item.title).slice(0, 1).join(" ")).toMatch(
       /headphone|headset/i,
     );
+  });
+
+  it("keeps phone-stand results and drops unrelated titles", () => {
+    const ranked = rankAndDedupeIdeaResults(
+      [
+        summary({ externalId: "1", title: "Garden gnome", sourceUrl: "https://www.thingiverse.com/thing:1" }),
+        summary({ externalId: "2", title: "Phone Stand Dock", sourceUrl: "https://www.thingiverse.com/thing:2" }),
+        summary({
+          externalId: "2b",
+          title: "Phone Stand Dock copy",
+          sourceUrl: "https://www.thingiverse.com/thing:2",
+        }),
+        summary({ externalId: "3", title: "Random cube", sourceUrl: "https://www.thingiverse.com/thing:3" }),
+      ],
+      ["phone stand", "smartphone holder"],
+      ["phone", "smartphone", "telefon"],
+    );
+    expect(ranked[0]?.externalId).toBe("2");
+    expect(ranked.filter((item) => item.sourceUrl?.includes("thing:2"))).toHaveLength(1);
   });
 });

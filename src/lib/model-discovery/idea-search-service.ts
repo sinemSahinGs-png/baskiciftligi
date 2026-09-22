@@ -184,8 +184,18 @@ export async function executeIdeaSearch(input: {
     collected,
     input.plan.variants,
     requiredTokens,
-  ).slice(0, IDEA_SEARCH_RESULT_CAP);
-  const items = ranked
+  );
+  const withThumb = ranked.filter((item) => hasUsableThingiverseThumbnail(item.thumbnailUrl));
+  const matched = requiredTokens.length
+    ? withThumb.filter((item) => {
+        const haystack = `${item.title} ${item.description ?? ""}`.toLocaleLowerCase("en-US");
+        return requiredTokens.some((token) => haystack.includes(token));
+      })
+    : withThumb;
+  const selected =
+    matched.length >= 3 ? matched : matched.length > 0 ? matched : withThumb.slice(0, 8);
+  const items = selected
+    .slice(0, IDEA_SEARCH_RESULT_CAP)
     .map(toCard)
     .filter((item): item is IdeaSearchCard => Boolean(item));
 

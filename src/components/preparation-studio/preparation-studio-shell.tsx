@@ -19,7 +19,6 @@ import {
   Layers,
   Maximize2,
   Move,
-  RotateCcw,
   RotateCw,
   Ruler,
   Scan,
@@ -60,8 +59,6 @@ import {
   placeOnBedTransform,
 } from "@/domain/manufacturing/transform-math";
 import {
-  canRedoTransform,
-  canUndoTransform,
   commitTransformHistory,
   createTransformHistory,
   redoTransformHistory,
@@ -73,6 +70,9 @@ import {
   mapWorkerServiceUnavailableError,
 } from "@/domain/manufacturing/worker-errors";
 import { formatMoney } from "@/lib/money";
+import { submitManufacturingUpload } from "@/lib/manufacturing/browser-upload";
+import { readApiJson } from "@/lib/http/parse-json-response";
+import { UploadPricingError } from "@/lib/http/public-api-error";
 import { applyExternalProductionOptions } from "@/lib/models/apply-production-options";
 import {
   peekPendingExternalUpload,
@@ -97,12 +97,10 @@ const ALLOWED = [".stl", ".obj", ".3mf"];
 const RIGHTS =
   "Bu dosyayı üretme ve çoğaltma hakkına sahip olduğumu ve kaynak modelin lisans koşullarını kontrol ettiğimi onaylıyorum.";
 const TABS = [
-  ["model", "Model"],
-  ["transform", "Transform"],
-  ["production", "Production"],
-  ["quality", "Quality"],
-  ["quantity", "Quantity"],
-  ["analysis", "Analiz"],
+  ["file", "Dosya"],
+  ["production", "Üretim"],
+  ["delivery", "Teslimat"],
+  ["price", "Fiyat"],
 ] as const;
 type TabId = (typeof TABS)[number][0];
 
@@ -126,7 +124,7 @@ export function PreparationStudio() {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rights, setRights] = useState(false);
-  const [tab, setTab] = useState<TabId>("model");
+  const [tab, setTab] = useState<TabId>("file");
   const [activeTool, setActiveTool] = useState<StudioTool>("select");
   const [wireframe, setWireframe] = useState(false);
   const [fitKey, setFitKey] = useState(0);
@@ -135,8 +133,8 @@ export function PreparationStudio() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [history, setHistory] = useState(createTransformHistory);
   const [autoIdx, setAutoIdx] = useState(-1);
-  const [technology, setTechnology] = useState<"FDM" | "SLA">("FDM");
-  const [colorId, setColorId] = useState("black");
+  const [technology] = useState<"FDM" | "SLA">("FDM");
+  const [colorId, setColorId] = useState("white");
   const [preset, setPreset] = useState<"ekonomik" | "standart" | "detayli">("standart");
   const [infill, setInfill] = useState(20);
   const [supports, setSupports] = useState<"auto" | "on" | "off">("auto");
@@ -147,6 +145,8 @@ export function PreparationStudio() {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [analysisStale, setAnalysisStale] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [workerOnline, setWorkerOnline] = useState<boolean | null>(null);
   const [handoff] = useState(() =>
     typeof window === "undefined" ? null : peekPendingExternalUpload(),
@@ -156,6 +156,9 @@ export function PreparationStudio() {
   );
 
   const { geometry, status, originalDimensionsMm, triangleCount } = useGeometryLoader(file);
+  const modelReady = Boolean(file) && status === "ready" && Boolean(geometry);
+  const emptyStudio = !file;
+  const fittedFor = useRef<string | null>(null);
   const bed = DEVELOPMENT_PRINTER.buildVolumeMm;
   const transform = history.present;
   const dims = useMemo(
@@ -206,8 +209,8 @@ export function PreparationStudio() {
 
   useEffect(() => {
     void fetch("/api/manufacturing/status", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((p: { worker?: { online?: boolean } }) => setWorkerOnline(Boolean(p.worker?.online)))
+      .then((r) => readApiJson<{ worker?: { online?: boolean } }>(r))
+      .then((p) => setWorkerOnline(Boolean(p.worker?.online)))
       .catch(() => setWorkerOnline(false));
   }, []);
 
@@ -221,6 +224,19 @@ export function PreparationStudio() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [invalidateQuote]);
+
+  useEffect(() => {
+    if (!file) fittedFor.current = null;
+  }, [file]);
+
+  useEffect(() => {
+    if (status !== "ready" || !file || !originalDimensionsMm) return;
+    const key = `${file.name}:${file.size}:${file.lastModified}`;
+    if (fittedFor.current === key) return;
+    fittedFor.current = key;
+    applyTransform(centerOnPlateTransform(DEFAULT_MANUFACTURING_TRANSFORM, originalDimensionsMm, bed));
+    setFitKey((value) => value + 1);
+  }, [applyTransform, bed, file, originalDimensionsMm, status]);
 
   useEffect(() => {
     savePreparationSession({
@@ -248,7 +264,7 @@ export function PreparationStudio() {
       setHistory(createTransformHistory());
       setAutoIdx(-1);
       if (opts?.rightsOk) setRights(true);
-      setTab("model");
+      setTab("file");
       setMobileOpen(false);
       announceStatus(`${next.name} yerel olarak okunuyor.`);
     },
@@ -300,52 +316,51 @@ export function PreparationStudio() {
     }
     if (submitting) return;
     if (jobId && !quote && !error) return;
-    setSubmitting(true);
+      setSubmitting(true);
+    setUploadProgress(4);
     setError(null);
     setQuote(null);
     try {
-      const form = new FormData();
-      form.set("file", file);
-      form.set("rightsConfirmed", "true");
-      form.set("materialId", "pla");
-      form.set("colorId", colorId);
-      form.set("qualityId", preset);
-      form.set("infillPercent", String(infill));
-      form.set("supports", supports);
-      form.set("scalePercent", String(scalePct));
-      form.set("quantity", String(quantity));
-      form.set("unit", "mm");
-      form.set("manufacturingTransform", serializeTransformForUpload(transform));
-      form.set(
-        "idempotencyKey",
-        `studio:${file.name}:${file.size}:${file.lastModified}:${serializeTransformForUpload(transform)}:${preset}:${infill}:${supports}:${quantity}`,
-      );
+      const extra: Record<string, string> = {};
       if (externalContext) {
-        form.set("externalModelId", externalContext.externalModelId);
-        form.set("sourceType", externalContext.sourceType);
-        form.set("sourceUrl", externalContext.sourceUrl);
-        form.set("sourceTitle", externalContext.title);
-        if (externalContext.attribution) form.set("attribution", externalContext.attribution);
+        extra.externalModelId = externalContext.externalModelId;
+        extra.sourceType = externalContext.sourceType;
+        extra.sourceUrl = externalContext.sourceUrl;
+        extra.sourceTitle = externalContext.title;
+        if (externalContext.attribution) extra.attribution = externalContext.attribution;
         if (externalContext.licenseVerified && externalContext.licenseName) {
-          form.set("licenseName", externalContext.licenseName);
-          form.set("licenseVerified", "true");
+          extra.licenseName = externalContext.licenseName;
+          extra.licenseVerified = "true";
         }
       }
-      const res = await fetch("/api/manufacturing/uploads", { method: "POST", body: form });
-      const payload = (await res.json()) as {
-        error?: string;
-        jobId?: string;
-        existing?: boolean;
-      };
-      if (!res.ok) throw new Error(payload.error ?? "Yükleme doğrulanamadı.");
-      if (!payload.jobId) throw new Error("İş oluşturulamadı.");
+      const payload = await submitManufacturingUpload({
+        file,
+        rightsConfirmed: true,
+        materialId: "pla",
+        colorId,
+        qualityId: preset,
+        infillPercent: infill,
+        supports,
+        scalePercent: scalePct,
+        quantity,
+        unit: "mm",
+        manufacturingTransform: serializeTransformForUpload(transform),
+        idempotencyKey: `studio:${file.name}:${file.size}:${file.lastModified}:${serializeTransformForUpload(transform)}:${preset}:${infill}:${supports}:${quantity}`,
+        extra,
+        onProgress: setUploadProgress,
+      });
       setJobId(payload.jobId);
       setJobLabel(payload.existing ? "Analiz sırasına alındı" : "Güvenlik kontrolü");
       setAnalysisStale(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gönderim başarısız.");
+      setError(
+        e instanceof UploadPricingError || e instanceof Error
+          ? e.message
+          : "Gönderim başarısız.",
+      );
     } finally {
       setSubmitting(false);
+      setUploadProgress(null);
     }
   }
 
@@ -355,8 +370,9 @@ export function PreparationStudio() {
     const started = Date.now();
     let timer = 0;
     const poll = async () => {
+      try {
       const res = await fetch(`/api/manufacturing/jobs/${jobId}`, { cache: "no-store" });
-      const p = (await res.json()) as {
+      const p = await readApiJson<{
         state?: string;
         stateLabel?: string;
         quoteId?: string | null;
@@ -364,7 +380,7 @@ export function PreparationStudio() {
         errorMessage?: string | null;
         pollHint?: "queued" | "worker_busy" | "worker_unavailable" | null;
         worker?: { online?: boolean };
-      };
+      }>(res);
       if (cancelled) return;
       setJobLabel(p.stateLabel ?? null);
       if (p.worker?.online !== undefined) {
@@ -372,7 +388,7 @@ export function PreparationStudio() {
       }
       if (p.stateLabel) announceStatus(p.stateLabel);
       if (p.quoteId) {
-        const q = (await (await fetch(`/api/manufacturing/quotes/${p.quoteId}`, { cache: "no-store" })).json()) as {
+        const q = await readApiJson<{
           id: string;
           breakdown: {
             grossMinor: number;
@@ -383,7 +399,7 @@ export function PreparationStudio() {
             shippingStatus: "not_included";
           };
           metrics: { filamentWeightGrams: number };
-        };
+        }>(await fetch(`/api/manufacturing/quotes/${p.quoteId}`, { cache: "no-store" }));
         setQuote({
           id: q.id,
           grossMinor: q.breakdown.grossMinor,
@@ -426,6 +442,11 @@ export function PreparationStudio() {
         return;
       }
       timer = window.setTimeout(() => void poll(), 2000);
+      } catch (error) {
+        if (cancelled) return;
+        setError(error instanceof Error ? error.message : "İş durumu okunamadı.");
+        setSubmitting(false);
+      }
     };
     void poll();
     return () => { cancelled = true; window.clearTimeout(timer); };
@@ -433,18 +454,21 @@ export function PreparationStudio() {
 
   async function addQuoteToCart() {
     if (!quote) return;
-    const res = await fetch(`/api/manufacturing/quotes/${quote.id}/cart`, { method: "POST" });
-    const payload = (await res.json()) as {
-      error?: string;
-      line?: { productId: string; quoteId: string; quantity: number };
-    };
-    if (!res.ok || !payload.line) return setError(payload.error ?? "Teklif sepete eklenemedi.");
-    addLine({
-      productId: payload.line.productId,
-      quoteId: payload.line.quoteId,
-      quantity: payload.line.quantity,
-    });
-    router.push("/sepet");
+    try {
+      const payload = await readApiJson<{
+        error?: string;
+        line?: { productId: string; quoteId: string; quantity: number };
+      }>(await fetch(`/api/manufacturing/quotes/${quote.id}/cart`, { method: "POST" }));
+      if (!payload.line) return setError(payload.error ?? "Teklif sepete eklenemedi.");
+      addLine({
+        productId: payload.line.productId,
+        quoteId: payload.line.quoteId,
+        quantity: payload.line.quantity,
+      });
+      router.push("/sepet");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Teklif sepete eklenemedi.");
+    }
   }
 
   const onDrop = (e: DragEvent<HTMLElement>) => { e.preventDefault(); const next = e.dataTransfer.files[0]; if (next) acceptFile(next); };
@@ -477,98 +501,98 @@ export function PreparationStudio() {
     { id: "move", label: "Taşı", icon: Move, tool: "move" as const },
     { id: "lay", label: "Düzle", icon: Layers, run: layFlat },
     { id: "auto", label: "Oto yön", icon: Scan, run: autoOrient },
-    { id: "center", label: "Ortala", icon: Crosshair, run: center },
-    { id: "reset", label: "Sıfırla", icon: RotateCcw, run: reset },
     { id: "wire", label: "Tel kafes", icon: Ruler, run: () => setWireframe((v) => !v) },
   ];
   const tabNav = (
-    <nav aria-label="İnceleyici sekmeleri" className="flex gap-1 overflow-x-auto border-b border-white/10 px-2 py-2 text-xs">
+    <nav aria-label="İnceleyici sekmeleri" className="flex gap-1 overflow-x-auto border-b border-white/10 px-2 py-2 text-sm">
       {TABS.map(([id, label]) => (
-        <button key={id} type="button" onClick={() => setTab(id)} className={cn("shrink-0 rounded-md px-2 py-1.5 font-semibold", tab === id ? "bg-cobalt text-light-text" : "text-muted-light")}>{label}</button>
+        <button key={id} type="button" onClick={() => setTab(id)} className={cn("shrink-0 min-h-11 rounded-md px-3 py-1.5 font-semibold", tab === id ? "bg-cobalt text-light-text" : "text-muted-light")}>{label}</button>
       ))}
     </nav>
   );
 
   const inspector = (
     <div className="space-y-4 p-4">
-      {tab === "model" && (
+      {tab === "file" && (
         <>
-          <h2 className="font-heading text-xl font-bold">Model</h2>
-          <label htmlFor="model-file" onDragOver={(e) => e.preventDefault()} onDrop={onDrop} className="mt-3 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-cyan/40 bg-midnight/50 px-4 text-center">
+          <h2 className="font-heading text-xl font-bold">Dosya</h2>
+          <p className="text-sm leading-6 text-muted-light">STL veya 3MF. En fazla 100 MB. Bozuk dosya seçili kalır; yeniden deneyebilirsiniz.</p>
+          <label htmlFor="model-file" onDragOver={(e) => e.preventDefault()} onDrop={onDrop} className="mt-3 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-cyan/40 bg-midnight/50 px-4 py-6 text-center">
             <UploadCloud className="size-6 text-cyan" aria-hidden="true" />
             <span className="mt-2 text-sm font-semibold">Sürükle veya dosya seç</span>
+            <span className="mt-1 text-sm leading-6 text-muted-light">Desteklenen: .stl / .3mf / .obj · en fazla 100 MB</span>
           </label>
-          {file ? <p className="text-sm">{file.name}{triangleCount ? ` · ${triangleCount} üçgen` : ""}</p> : null}
+          {file ? <p className="text-sm">{file.name}{triangleCount ? ` · ${triangleCount} üçgen` : ""}{status === "parsing" ? " · okunuyor" : ""}</p> : null}
+          {uploadProgress != null ? (
+            <p className="text-sm tabular-nums" aria-live="polite">Yükleme %{uploadProgress}</p>
+          ) : null}
           <label className="flex items-start gap-3 text-sm leading-6">
-            <input type="checkbox" checked={rights} onChange={(e) => setRights(e.target.checked)} className="mt-1" />
+            <input type="checkbox" checked={rights} onChange={(e) => setRights(e.target.checked)} className="mt-1 size-4" />
             <span>{RIGHTS}</span>
           </label>
         </>
       )}
-      {tab === "transform" && (
-        <>
-          <h2 className="font-heading text-xl font-bold">Transform</h2>
-          <h3 className="mt-2 text-sm font-semibold">Baskı yönü</h3>
-          <p className="text-xs text-muted-light">Modelin tablaya hangi yönde yerleşeceğini belirle.</p>
-          {dims ? <p className="text-sm">{fmtMm(dims.x)} × {fmtMm(dims.y)} × {fmtMm(dims.z)}</p> : null}
-          <label className="block text-sm font-semibold">Ölçek %{scalePct}
-            <input type="range" min={10} max={400} value={scalePct} onChange={(e) => applyTransform(applyUniformScaleFromPercent(transform, Number(e.target.value)))} className="mt-2 w-full" />
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={placeOnBed} onChange={(e) => { setPlaceOnBed(e.target.checked); applyTransform({ ...transform, placeOnBed: e.target.checked }); }} />
-            Plakaya oturt
-          </label>
-          <div className="flex gap-2">
-            <button type="button" disabled={!canUndoTransform(history)} onClick={() => { setHistory((s) => undoTransformHistory(s)); invalidateQuote(); }} className="min-h-10 flex-1 rounded-md border border-white/15 text-sm disabled:opacity-40">Geri al</button>
-            <button type="button" disabled={!canRedoTransform(history)} onClick={() => { setHistory((s) => redoTransformHistory(s)); invalidateQuote(); }} className="min-h-10 flex-1 rounded-md border border-white/15 text-sm disabled:opacity-40">Yinele</button>
-          </div>
-        </>
-      )}
       {tab === "production" && (
         <>
-          <h2 className="font-heading text-xl font-bold">Production</h2>
-          <div className="grid gap-2">{(["FDM", "SLA"] as const).map((t) => (
-            <button key={t} type="button" onClick={() => setTechnology(t)} className={cn("rounded-md border px-3 py-2 text-sm", technology === t ? "border-violet bg-violet/20" : "border-white/12")}>{t}</button>
-          ))}</div>
+          <h2 className="font-heading text-xl font-bold">Üretim</h2>
+          <p className="text-sm font-semibold">Malzeme · PLA</p>
           <div className="grid grid-cols-2 gap-2">{COLOR_OPTIONS.map((c) => (
-            <button key={c.id} type="button" onClick={() => setColorId(c.id)} className={cn("min-h-10 rounded-md border text-sm", colorId === c.id ? "border-cyan bg-cyan/20" : "border-white/12")}>{c.label}</button>
+            <button key={c.id} type="button" onClick={() => setColorId(c.id)} className={cn("min-h-11 rounded-md border text-sm", colorId === c.id ? "border-cyan bg-cyan/20" : "border-white/12")}>{c.label}</button>
           ))}</div>
-        </>
-      )}
-      {tab === "quality" && (
-        <>
-          <h2 className="font-heading text-xl font-bold">Quality</h2>
+          <p className="text-sm font-semibold">Kalite</p>
           <div className="grid gap-2">{QUALITY_PROFILES.map((q) => (
-            <button key={q.id} type="button" onClick={() => setPreset(q.id as typeof preset)} className={cn("min-h-10 rounded-md border px-3 text-sm font-semibold", preset === q.id ? "border-info bg-info text-light-text" : "border-white/12")}>{q.name} · {q.layerHeightMm} mm</button>
+            <button key={q.id} type="button" disabled={!modelReady} onClick={() => setPreset(q.id as typeof preset)} className={cn("min-h-11 rounded-md border px-3 text-sm font-semibold disabled:opacity-40", preset === q.id ? "border-info bg-info text-light-text" : "border-white/12")}>{q.name} · {q.layerHeightMm} mm</button>
           ))}</div>
-          <label className="block text-sm font-semibold">Dolgu %{infill}
-            <select value={infill} onChange={(e) => setInfill(Number(e.target.value))} className="mt-2 h-10 w-full rounded-md border border-white/15 bg-midnight px-3">{[10, 15, 20, 30, 50, 100].map((v) => <option key={v} value={v}>%{v}</option>)}</select>
-          </label>
-          <label className="block text-sm font-semibold">Destek
-            <select value={supports} onChange={(e) => setSupports(e.target.value as typeof supports)} className="mt-2 h-10 w-full rounded-md border border-white/15 bg-midnight px-3">
-              <option value="auto">Otomatik</option><option value="on">Açık</option><option value="off">Kapalı</option>
-            </select>
-          </label>
-        </>
-      )}
-      {tab === "quantity" && (
-        <>
-          <h2 className="font-heading text-xl font-bold">Quantity</h2>
           <label className="block text-sm font-semibold">Adet
-            <input type="number" min={1} max={20} value={quantity} onChange={(e) => setQuantity(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} className="mt-2 h-10 w-full rounded-md border border-white/15 bg-midnight px-3" />
+            <input type="number" min={1} max={20} value={quantity} onChange={(e) => setQuantity(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} className="mt-2 h-11 w-full rounded-md border border-white/15 bg-midnight px-3" />
           </label>
+          <button type="button" className="min-h-11 w-full rounded-md border border-white/15 text-sm font-semibold" onClick={() => setAdvancedOpen((v) => !v)} aria-expanded={advancedOpen}>
+            {advancedOpen ? "Gelişmiş ayarları gizle" : "GELİŞMİŞ AYARLAR"}
+          </button>
+          {advancedOpen ? (
+            <div className="space-y-3 rounded-md border border-white/10 p-3">
+              {dims ? <p className="text-sm">{fmtMm(dims.x)} × {fmtMm(dims.y)} × {fmtMm(dims.z)}</p> : null}
+              <label className="block text-sm font-semibold">Ölçek %{scalePct}
+                <input type="range" min={10} max={400} value={scalePct} onChange={(e) => applyTransform(applyUniformScaleFromPercent(transform, Number(e.target.value)))} className="mt-2 w-full" />
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={placeOnBed} onChange={(e) => { setPlaceOnBed(e.target.checked); applyTransform({ ...transform, placeOnBed: e.target.checked }); }} />
+                Plakaya oturt
+              </label>
+              <label className="block text-sm font-semibold">Dolgu %{infill}
+                <select value={infill} onChange={(e) => setInfill(Number(e.target.value))} className="mt-2 h-11 w-full rounded-md border border-white/15 bg-midnight px-3">{[10, 15, 20, 30, 50, 100].map((v) => <option key={v} value={v}>%{v}</option>)}</select>
+              </label>
+              <label className="block text-sm font-semibold">Destek
+                <select value={supports} onChange={(e) => setSupports(e.target.value as typeof supports)} className="mt-2 h-11 w-full rounded-md border border-white/15 bg-midnight px-3">
+                  <option value="auto">Otomatik</option><option value="on">Açık</option><option value="off">Kapalı</option>
+                </select>
+              </label>
+            </div>
+          ) : null}
         </>
       )}
-      {tab === "analysis" && (
+      {tab === "delivery" && (
         <>
-          <h2 className="font-heading text-xl font-bold">Analiz</h2>
+          <h2 className="font-heading text-xl font-bold">Teslimat</h2>
+          <p className="text-sm leading-6 text-muted-light">
+            Kargo ürün fiyatına dahil değildir. Sepette sipariş başına bir kez hesaplanır. Üretim süresi kalite seçimine göre fiyat adımında görünür.
+          </p>
+          {preset === "ekonomik" ? <p className="text-sm">Ekonomik profil daha uzun katman aralığı kullanır.</p> : null}
+          {preset === "detayli" ? <p className="text-sm">Detaylı profil daha uzun üretim süresi gerektirebilir.</p> : null}
+          <button type="button" className="min-h-11 w-full bg-[color:var(--store-orange)] text-sm font-semibold text-[color:var(--store-black)]" onClick={() => setTab("price")}>Fiyata geç</button>
+        </>
+      )}
+      {tab === "price" && (
+        <>
+          <h2 className="font-heading text-xl font-bold">Fiyat</h2>
           {fit && !fit.fits ? <p className="text-sm text-warm">Model plakaya sığmıyor.</p> : null}
           {workerOnline === false ? <p className="rounded-md border border-warm/40 bg-warm/10 px-3 py-2 text-sm">{mapWorkerServiceUnavailableError().message}</p> : null}
+          {uploadProgress != null ? <p className="text-sm tabular-nums">Yükleme %{uploadProgress}</p> : null}
           {jobLabel && !quote ? <p className="flex items-center gap-2 text-sm"><FormSignal spinning className="size-4" />{jobLabel}</p> : null}
           {quote ? (
             <div className="space-y-1 border border-white/15 bg-[#f0eee8] px-3 py-2 text-sm text-[#080a0b]">
               <p className="font-semibold">{quote.reviewRequired ? "Geçici teklif" : "Otomatik teklif hazır"}</p>
-              <p>{formatMoney(quote.grossMinor)} KDV dahil</p>
+              <p>Birim {formatMoney(Math.round(quote.grossMinor / Math.max(1, quantity)))} · Toplam {formatMoney(quote.grossMinor)} KDV dahil</p>
               <p>{quote.grams.toFixed(2)} g · {fmtDur(quote.duration)}</p>
               <p>Net {formatMoney(quote.netMinor)} · KDV {formatMoney(quote.vatMinor)}</p>
               {quote.shippingStatus === "not_included" ? (
@@ -576,9 +600,9 @@ export function PreparationStudio() {
               ) : null}
             </div>
           ) : <p className="rounded-md border border-white/15 px-3 py-2 text-sm">Fiyat, üretim analizi tamamlanmadan gösterilmez.</p>}
-          <button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="mt-3 inline-flex min-h-11 w-full items-center justify-center bg-[color:var(--store-orange)] text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button>
+          <button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="mt-3 inline-flex min-h-11 w-full items-center justify-center bg-[color:var(--store-orange)] text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-40">{submitting ? "Hesaplanıyor" : quote && analysisStale ? "Yeniden hesapla" : "Analiz et ve fiyatı hesapla"}</button>
           <button type="button" disabled={!quote} onClick={() => void addQuoteToCart()} className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-cyan text-sm font-semibold disabled:opacity-40">Teklifi sepete ekle</button>
-          <p className="text-xs text-muted-light">{siteConfig.name} fiyatı tarayıcıdan kabul etmez.</p>
+          <p className="text-sm leading-6 text-muted-light">{siteConfig.name} fiyatı tarayıcıdan kabul etmez.</p>
         </>
       )}
       {error || geometryError ? (
@@ -587,7 +611,7 @@ export function PreparationStudio() {
           {error ?? geometryError}
         </p>
       ) : null}
-      {analysisStale && quote ? <p className="text-xs text-warm">Dönüşüm değişti; analizi yenileyin.</p> : null}
+      {analysisStale && quote ? <p className="text-sm leading-6 text-warm">Ayarlar değişti; fiyatı yenileyin. Dosya duruyor.</p> : null}
     </div>
   );
 
@@ -597,7 +621,7 @@ export function PreparationStudio() {
         const Icon = t.icon;
         const active = t.id === "wire" ? wireframe : "tool" in t && t.tool === activeTool;
         return (
-          <button key={t.id} type="button" aria-label={t.label} title={t.label} onClick={() => { if ("run" in t && t.run) t.run(); else if ("tool" in t && t.tool) setActiveTool(t.tool); }} className={cn("inline-flex min-h-11 items-center justify-center rounded-md text-xs font-semibold", vertical ? "w-full flex-col gap-1 px-1 py-2" : "flex-1 px-2", active ? "bg-cyan/20 text-cyan" : "text-muted-light hover:bg-white/8")}>
+          <button key={t.id} type="button" aria-label={t.label} title={t.label} disabled={!modelReady} onClick={() => { if ("run" in t && t.run) t.run(); else if ("tool" in t && t.tool) setActiveTool(t.tool); }} className={cn("inline-flex min-h-11 items-center justify-center rounded-md text-xs font-semibold disabled:opacity-35", vertical ? "w-full flex-col gap-1 px-1 py-2" : "flex-1 px-2", active ? "bg-cyan/20 text-cyan" : "text-muted-light hover:bg-white/8")}>
             <Icon className="size-4" aria-hidden="true" />{vertical ? <span className="text-[10px] leading-none">{t.label}</span> : null}
           </button>
         );
@@ -605,45 +629,71 @@ export function PreparationStudio() {
     </div>
   );
 
+  const emptyDropzone = (
+    <div className="space-y-3 p-4 lg:hidden">
+      <h2 className="font-heading text-xl font-bold">Modelini yükle</h2>
+      <p className="text-sm leading-6 text-muted-light">STL veya 3MF. En fazla 100 MB. Dosya tarayıcıda kalır; fiyat yüklemeden sonra hesaplanır.</p>
+      <label htmlFor="model-file" onDragOver={(e) => e.preventDefault()} onDrop={onDrop} className="flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-cyan/40 bg-midnight/50 px-4 py-6 text-center">
+        <UploadCloud className="size-7 text-cyan" aria-hidden="true" />
+        <span className="mt-2 text-sm font-semibold">Sürükle veya dosya seç</span>
+        <span className="mt-1 text-sm leading-6 text-muted-light">.stl / .3mf / .obj</span>
+      </label>
+      <label className="flex items-start gap-3 text-sm leading-6">
+        <input type="checkbox" checked={rights} onChange={(e) => setRights(e.target.checked)} className="mt-1 size-4" />
+        <span>{RIGHTS}</span>
+      </label>
+    </div>
+  );
+
   return (
-    <div data-testid="configurator-shell" className="flex h-[calc(100svh-4rem)] min-h-[calc(100svh-4rem)] min-w-0 flex-col bg-midnight text-light-text lg:grid lg:min-h-[calc(100svh-4rem)] lg:grid-rows-[auto_1fr_auto]">
-      {externalContext ? <p className="border-b border-white/10 bg-white/5 px-4 py-2 text-xs text-muted-light lg:col-span-full">Hazır modelden devam ediyorsun: {externalContext.title}</p> : null}
+    <div data-testid="configurator-shell" className="flex h-[calc(100svh-4rem)] min-h-[calc(100svh-4rem)] min-w-0 flex-col overflow-x-hidden bg-midnight text-light-text lg:grid lg:min-h-[calc(100svh-4rem)] lg:grid-rows-[auto_1fr_auto]">
+      {externalContext ? <p className="border-b border-white/10 bg-white/5 px-4 py-2 text-sm leading-6 text-muted-light lg:col-span-full">Hazır modelden devam ediyorsun: {externalContext.title}</p> : null}
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-2 lg:col-span-full">
         <p className="flex items-center gap-2 text-sm"><FormSignal className="size-4" />Görüntüleyici · {file?.name ?? "Dosya seçilmedi"}</p>
         <div className="flex flex-wrap gap-1">
-          <button type="button" className="min-h-10 px-3 text-sm" onClick={() => setFitKey((v) => v + 1)}>Sığdır</button>
-          <button type="button" className="min-h-10 px-3 text-sm" onClick={reset}>Sıfırla</button>
-          <button type="button" aria-label="Tel kafes" className="min-h-10 px-3 text-sm" onClick={() => setWireframe((v) => !v)}>Tel kafes</button>
-          <button type="button" className="min-h-10 rounded-md bg-[color:var(--store-orange)] px-3 text-sm font-semibold text-[color:var(--store-black)]" onClick={() => { setTab("analysis"); if (!isDesktop) setMobileOpen(true); }}>Analiz et</button>
+          <button type="button" disabled={!modelReady} className="min-h-11 px-3 text-sm disabled:opacity-35" onClick={center}>Ortala</button>
+          <button type="button" disabled={!modelReady} className="min-h-11 px-3 text-sm disabled:opacity-35" onClick={() => setFitKey((v) => v + 1)}>Görünüme sığdır</button>
+          <button type="button" disabled={!modelReady} className="min-h-11 px-3 text-sm disabled:opacity-35" onClick={reset}>Sıfırla</button>
+          <button type="button" disabled={emptyStudio} className="min-h-11 rounded-md bg-[color:var(--store-orange)] px-3 text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-35" onClick={() => { setTab("price"); if (!isDesktop) setMobileOpen(true); }}>Fiyat</button>
         </div>
       </header>
-      <div className="flex min-h-0 flex-1 flex-col lg:col-span-full lg:grid lg:grid-cols-[3.5rem_minmax(0,1fr)_20rem]">
-        {isDesktop ? toolRail(true) : null}
-        <section data-testid="mesh-viewer" className={cn("relative min-h-0", isDesktop ? "min-h-[28rem]" : "h-[42svh] shrink-0")}>
+      {!isDesktop && emptyStudio ? emptyDropzone : null}
+      <div className={cn("flex min-h-0 flex-1 flex-col lg:col-span-full lg:grid", emptyStudio ? "lg:grid-cols-[minmax(0,1fr)_18.5rem]" : "lg:grid-cols-[3.5rem_minmax(0,1fr)_18.5rem]")}>
+        {isDesktop && !emptyStudio ? toolRail(true) : null}
+        <section data-testid="mesh-viewer" className={cn("relative min-h-0", isDesktop ? (emptyStudio ? "min-h-[16rem] max-h-[52vh]" : "min-h-[28rem]") : emptyStudio ? "h-[28svh] max-h-64 shrink-0" : "h-[38svh] shrink-0")}>
           <input id="model-file" type="file" accept=".stl,.obj,.3mf" onChange={onChange} className="sr-only" />
           <div className="h-full" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
-            {file ? <BuildPlateViewport geometry={geometry} transform={transform} activeTool={activeTool} previewColor={previewColorHex(colorId)} wireframe={wireframe} showBoundingBox={false} buildVolumeMm={bed} fitKey={fitKey} resetCameraKey={resetCameraKey} reducedMotion={typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches} onTransformCommit={applyTransform} /> : <div className="grid h-full place-items-center p-8 text-center text-sm text-muted-light">Dosya seçildiğinde gerçek mesh burada açılır.</div>}
+            <BuildPlateViewport geometry={geometry} transform={transform} activeTool={modelReady ? activeTool : "select"} previewColor={previewColorHex(colorId)} wireframe={wireframe} showBoundingBox={false} buildVolumeMm={bed} fitKey={fitKey} resetCameraKey={resetCameraKey} reducedMotion={typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches} onTransformCommit={applyTransform} />
           </div>
+          {emptyStudio ? (
+            <p className="pointer-events-none absolute inset-x-3 bottom-3 z-10 rounded-md bg-midnight/70 px-3 py-2 text-center text-sm leading-6 text-muted-light">
+              Boş plaka. Dosya seçince model ortalanır.
+            </p>
+          ) : null}
           {dims ? <><span className="pointer-events-none absolute top-14 left-10 z-10 text-xs text-cyan/80">X {dims.x.toFixed(1)}</span><span className="pointer-events-none absolute top-14 right-10 z-10 text-xs text-cyan/80">Y {dims.y.toFixed(1)}</span><span className="pointer-events-none absolute right-10 bottom-14 z-10 text-xs text-cyan/80">Z {dims.z.toFixed(1)}</span></> : null}
-          {status === "parsing" ? <p className="absolute bottom-3 left-3 z-10 text-xs">Model okunuyor</p> : null}
+          {status === "parsing" ? (
+            <p className="absolute inset-x-3 bottom-3 z-10 rounded-md border border-cyan/40 bg-midnight/85 px-3 py-2 text-sm" aria-live="polite">
+              Model okunuyor…
+            </p>
+          ) : null}
           {geometryError ? (
-            <p role="alert" className="absolute top-3 left-3 z-10 max-w-[min(100%,20rem)] rounded-md border border-error/40 bg-error/10 px-3 py-2 text-xs text-error">
+            <p role="alert" className="absolute top-3 left-3 z-10 max-w-[min(100%,20rem)] rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm text-error">
               {geometryError}
             </p>
           ) : null}
         </section>
-        {isDesktop ? <aside className="flex w-80 min-w-80 flex-col border-l border-white/10 bg-carbon">{tabNav}<div className="min-h-0 flex-1 overflow-y-auto">{inspector}</div></aside> : null}
-        {!isDesktop ? (
-          <div data-testid="config-drawer" data-expanded={mobileOpen ? "true" : "false"} className={cn("z-30 flex flex-col border-t border-white/10 bg-carbon pb-[env(safe-area-inset-bottom)]", mobileOpen ? "min-h-0 max-h-[58%] flex-1" : "shrink-0")}>
+        {isDesktop ? <aside className="flex min-w-0 w-[18.5rem] flex-col border-l border-white/10 bg-carbon">{tabNav}<div className="min-h-0 flex-1 overflow-y-auto">{inspector}</div></aside> : null}
+        {!isDesktop && !emptyStudio ? (
+          <div data-testid="config-drawer" data-expanded={mobileOpen ? "true" : "false"} className={cn("z-30 flex flex-col border-t border-white/10 bg-carbon pb-[env(safe-area-inset-bottom)]", mobileOpen ? "min-h-0 max-h-[48%] flex-1" : "shrink-0")}>
             {toolRail(false)}
-            <button type="button" aria-label="İnceleyici panelini sürükle" onClick={() => setMobileOpen((o) => !o)} className="flex min-h-8 items-center justify-center pt-1"><GripHorizontal className="size-5 text-muted-light" aria-hidden="true" /></button>
-            <div className="flex items-center justify-between gap-2 px-4 pb-2"><p className="min-w-0 truncate text-sm font-semibold">{file?.name ?? "Dosya seçilmedi"}{dims ? ` · ${fmtMm(dims.x)} × ${fmtMm(dims.y)} × ${fmtMm(dims.z)}` : ""}</p><button type="button" aria-expanded={mobileOpen} onClick={() => setMobileOpen((o) => !o)} className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-md px-3 text-sm font-semibold">{mobileOpen ? "Küçült" : "Genişlet"}<ChevronDown className={cn("size-4 transition-transform", mobileOpen && "rotate-180")} aria-hidden="true" /></button></div>
-            <div className="flex items-center justify-between gap-3 px-4 pb-3"><p className="min-w-0 truncate text-xs text-muted-light">{priceHint}</p><button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="inline-flex min-h-10 shrink-0 items-center bg-[color:var(--store-orange)] px-3 text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button></div>
+            <button type="button" aria-label="İnceleyici panelini sürükle" onClick={() => setMobileOpen((o) => !o)} className="flex min-h-11 items-center justify-center pt-1"><GripHorizontal className="size-5 text-muted-light" aria-hidden="true" /></button>
+            <div className="flex items-center justify-between gap-2 px-4 pb-2"><p className="min-w-0 truncate text-sm font-semibold">{file?.name ?? "Dosya seçilmedi"}{dims ? ` · ${fmtMm(dims.x)} × ${fmtMm(dims.y)} × ${fmtMm(dims.z)}` : ""}</p><button type="button" aria-expanded={mobileOpen} onClick={() => setMobileOpen((o) => !o)} className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-md px-3 text-sm font-semibold">{mobileOpen ? "Küçült" : "Genişlet"}<ChevronDown className={cn("size-4 transition-transform", mobileOpen && "rotate-180")} aria-hidden="true" /></button></div>
+            <div className="flex items-center justify-between gap-3 px-4 pb-3"><p className="min-w-0 truncate text-sm leading-6 text-muted-light">{priceHint}</p><button type="button" disabled={!rights || submitting || !file || technology === "SLA"} onClick={() => void submitJob()} className="inline-flex min-h-11 shrink-0 items-center bg-[color:var(--store-orange)] px-3 text-sm font-semibold text-[color:var(--store-black)] disabled:opacity-40">{submitting ? "Gönderiliyor" : "Analiz et ve fiyatı hesapla"}</button></div>
             {mobileOpen ? <div className="min-h-0 flex-1 overflow-y-auto">{tabNav}{inspector}</div> : <div className="px-2 pb-2">{tabNav}</div>}
           </div>
         ) : null}
       </div>
-      <footer className="flex items-center justify-between gap-3 border-t border-white/10 bg-carbon px-4 py-2 text-xs lg:col-span-full"><p className="truncate">{file?.name ?? "Dosya seçilmedi"}</p><p className="text-muted-light">{priceHint}</p>{fit ? <p className={fit.fits ? "text-lime" : "text-warm"}>{fit.fits ? "Plakaya sığıyor" : "Sığmıyor"}</p> : null}</footer>
+      <footer className="flex items-center justify-between gap-3 border-t border-white/10 bg-carbon px-4 py-2 text-sm lg:col-span-full"><p className="truncate">{file?.name ?? "Dosya seçilmedi"}</p><p className="text-muted-light">{priceHint}</p>{fit ? <p className={fit.fits ? "text-lime" : "text-warm"}>{fit.fits ? "Plakaya sığıyor" : "Sığmıyor"}</p> : null}</footer>
     </div>
   );
 }

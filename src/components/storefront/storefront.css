@@ -50,7 +50,7 @@
 }
 
 .store-page .shell {
-  width: min(100% - 2rem, 78rem);
+  width: min(100% - 1.75rem, 78rem);
 }
 
 @media (min-width: 768px) {
@@ -69,7 +69,9 @@
   background:
     linear-gradient(180deg, #050708 0%, #0b0d0e 88%, #161410 100%);
   color: var(--shop-white);
-  box-shadow: inset 0 -1px 0 rgb(255 90 10 / 0.42);
+  box-shadow:
+    inset 0 -1px 0 rgb(48 213 210 / 0.38),
+    inset 0 -3px 0 rgb(255 90 10 / 0.82);
 }
 
 .store-masthead::after {
@@ -104,7 +106,7 @@
 
 .store-intro-title {
   font-family: var(--font-bc-display), var(--font-bricolage), sans-serif;
-  font-size: clamp(1.22rem, 2.35vw, 1.62rem);
+  font-size: clamp(1.55rem, 3.2vw, 2.35rem);
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1.02;
@@ -611,7 +613,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-auto-rows: max-content;
   align-content: start;
-  gap: 0.85rem 0.7rem;
+  gap: 0.75rem 0.7rem;
 }
 
 @media (max-width: 1023.98px) {
@@ -644,7 +646,7 @@
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1440px) {
   .store-results-main .store-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -838,10 +840,11 @@
   overflow: hidden;
   min-height: 2.6em;
   max-height: 2.6em;
-  font-size: 0.8125rem;
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.88rem;
   font-weight: 650;
   line-height: 1.3;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: var(--shop-ink);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -999,8 +1002,10 @@
   margin-block: 0.85rem;
   overflow: hidden;
   background:
-    linear-gradient(135deg, #101314 0%, #17120e 62%, #1d1610 100%);
+    radial-gradient(ellipse at 78% 40%, rgb(255 90 10 / 0.16), transparent 46%),
+    linear-gradient(135deg, #121618 0%, #1a1713 62%, #211910 100%);
   color: var(--shop-white);
+  outline: 1px solid rgb(48 213 210 / 0.18);
 }
 
 @media (max-width: 767.98px) {

@@ -29,9 +29,9 @@ await check("live products", async () => {
   await expect(page.getByText("Bubble Formlu Modern Dekoratif Vazo").first()).toBeVisible();
   await expect(page.getByText("₺449,00").first()).toBeVisible();
 });
-await check("calm cart actions", async () => {
+await check("cart actions", async () => {
   expect(await page.locator(".store-card-cart").count()).toBeGreaterThan(0);
-  expect(await page.getByRole("button", { name: "SEPETE EKLE", exact: true }).count()).toBe(0);
+  await expect(page.locator(".store-card-cart").first()).toContainText("SEPETE EKLE");
 });
 await check("bottom nav", async () => {
   const nav = page.getByRole("navigation", { name: "Mobil mağaza menüsü" });
@@ -73,8 +73,11 @@ await check("list toggle", async () => {
   await page.getByRole("button", { name: "Izgara görünümü" }).click();
 });
 await check("favorites", async () => {
-  const fav = page.getByRole("button", { name: /favorilere ekle/ }).first();
-  await fav.click();
+  const card = page.locator("[data-catalog-results] .store-card").first();
+  await card.scrollIntoViewIfNeeded();
+  const fav = card.getByRole("button", { name: /favori/ });
+  await expect(fav).toBeEnabled();
+  await fav.click({ timeout: 8000 });
   await expect(fav).toHaveAttribute("aria-pressed", "true");
 });
 await check("add to cart", async () => {
@@ -115,7 +118,7 @@ await check("desktop 1440", async () => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`${base}/magaza`, { waitUntil: "networkidle" });
   await expect(page.getByRole("heading", { name: "Filtrele" })).toBeVisible();
-  expect(await page.locator(".store-card").count()).toBe(21);
+  expect(await page.locator("[data-catalog-results] .store-card").count()).toBe(21);
 });
 
 await browser.close();

@@ -251,7 +251,7 @@ export function ProductCard({
             sizes={
               featured
                 ? "(max-width: 768px) 100vw, 40vw"
-                : "(max-width: 640px) 46vw, (max-width: 1280px) 22vw, 18vw"
+                : "(max-width: 430px) 46vw, (max-width: 1099px) 46vw, (max-width: 1439px) 28vw, 18vw"
             }
             preload={priority}
             eager

@@ -54,10 +54,10 @@ function BuildPlate({ sizeX, sizeY }: { sizeX: number; sizeY: number }) {
     <group>
       <mesh position={[sizeX / 2, 0.4, sizeY / 2]} receiveShadow>
         <boxGeometry args={[sizeX, 0.8, sizeY]} />
-        <meshStandardMaterial color="#141a22" metalness={0.15} roughness={0.85} />
+        <meshStandardMaterial color="#2a3038" metalness={0.08} roughness={0.78} />
       </mesh>
       <gridHelper
-        args={[Math.max(sizeX, sizeY), Math.round(Math.max(sizeX, sizeY) / 10), "#1f4f5c", "#17343d"]}
+        args={[Math.max(sizeX, sizeY), Math.round(Math.max(sizeX, sizeY) / 10), "#5a6a72", "#3a454c"]}
         position={[sizeX / 2, 0.81, sizeY / 2]}
       />
     </group>
@@ -86,8 +86,10 @@ function ModelMesh({
     () =>
       new MeshStandardMaterial({
         color: new Color(previewColor),
-        metalness: 0.12,
-        roughness: 0.46,
+        metalness: 0.08,
+        roughness: 0.42,
+        emissive: new Color("#1a120c"),
+        emissiveIntensity: 0.12,
         wireframe,
         side: DoubleSide,
       }),
@@ -281,9 +283,11 @@ export function BuildPlateViewport({
         }}
         style={{ width: "100%", height: "100%", touchAction: "none" }}
       >
-        <color attach="background" args={["#0a1016"]} />
-        <ambientLight intensity={0.55} />
-        <directionalLight castShadow position={[120, 220, 80]} intensity={1.05} />
+        <color attach="background" args={["#12161c"]} />
+        <ambientLight intensity={0.72} />
+        <directionalLight castShadow position={[120, 220, 80]} intensity={1.15} color="#fff4ea" />
+        <directionalLight position={[-90, 80, -40]} intensity={0.55} color="#9ad7ff" />
+        <pointLight position={[buildVolumeMm.x / 2, 40, buildVolumeMm.y / 2]} intensity={0.35} color="#ffb088" />
         <BuildPlate sizeX={buildVolumeMm.x} sizeY={buildVolumeMm.y} />
         {geometry ? (
           <ModelMesh

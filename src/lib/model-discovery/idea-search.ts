@@ -399,19 +399,19 @@ const GENERIC_SCORE_TERMS = new Set([
 ]);
 
 const REQUIRED_OBJECT_TOKENS: Record<string, string[]> = {
-  "phone stand": ["phone", "smartphone"],
-  "headphone stand": ["headphone", "headset"],
-  "guitar hanger": ["guitar"],
-  planter: ["planter", "pot"],
-  keychain: ["keychain", "keyring"],
-  "pet bowl": ["bowl", "feeder"],
-  vase: ["vase"],
-  "desk organizer": ["organizer", "organiser"],
-  figurine: ["figurine", "figure", "statue", "sculpture"],
-  lamp: ["lamp", "lampshade"],
-  "candle holder": ["candle", "tealight"],
+  "phone stand": ["phone", "smartphone", "telefon"],
+  "headphone stand": ["headphone", "headset", "kulaklik", "kulaklık"],
+  "guitar hanger": ["guitar", "gitar"],
+  planter: ["planter", "pot", "saksi", "saksı"],
+  keychain: ["keychain", "keyring", "anahtarlik", "anahtarlık"],
+  "pet bowl": ["bowl", "feeder", "mama"],
+  vase: ["vase", "vazo"],
+  "desk organizer": ["organizer", "organiser", "duzenleyici", "düzenleyici"],
+  figurine: ["figurine", "figure", "statue", "sculpture", "heykel"],
+  lamp: ["lamp", "lampshade", "lamba"],
+  "candle holder": ["candle", "tealight", "mumluk"],
   "wall decor": ["decor", "art", "sculpture"],
-  "pet accessory": ["pet", "cat", "dog"],
+  "pet accessory": ["pet", "cat", "dog", "kedi", "kopek", "köpek"],
 };
 
 export function requiredTokensForObject(object: string | null) {
@@ -465,8 +465,10 @@ export function rankAndDedupeIdeaResults(
   const unique: ExternalModelSummary[] = [];
   for (const item of items) {
     const id = item.externalId?.trim();
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
+    const canonical = item.sourceUrl?.split("?")[0]?.trim();
+    if ((id && seen.has(id)) || (canonical && seen.has(canonical))) continue;
+    if (id) seen.add(id);
+    if (canonical) seen.add(canonical);
     unique.push(item);
   }
   return unique.sort(

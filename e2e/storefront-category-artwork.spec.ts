@@ -45,7 +45,7 @@ async function captureTransition(page: Page, fileName: string) {
     node.scrollIntoView({ block: "center", inline: "nearest" });
   });
   const handoffBox = await page.locator(".hi-cats-handoff").boundingBox();
-  const archiveBox = await page.locator("#sana-gore-hazir-modeller").boundingBox();
+  const archiveBox = await page.locator("#mevcut-urunler").boundingBox();
   const viewport = page.viewportSize();
   expect(handoffBox).toBeTruthy();
   expect(archiveBox).toBeTruthy();
@@ -146,8 +146,8 @@ test.describe("storefront category artwork", () => {
     if (mobile) {
       const collision = await page.evaluate(() => {
         const stickyEl = document.querySelector(".hi-sticky-cta");
-        const heading = document.getElementById("archive-heading");
-        const lede = document.querySelector("#sana-gore-hazir-modeller .hi-lede");
+        const heading = document.getElementById("home-cats-heading");
+        const lede = document.querySelector("#kategoriler .hi-lede, #mevcut-urunler");
         if (!stickyEl || !heading || !lede) return true;
         const stickyBox = stickyEl.getBoundingClientRect();
         const hidden = stickyEl.getAttribute("data-hidden") === "true";
