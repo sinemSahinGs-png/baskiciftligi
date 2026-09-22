@@ -20,6 +20,7 @@ const staticPaths = [
   "/kurumsal-uretim",
   "/kurumsal-teklif",
   "/toptan",
+  "/toptan/katalog",
   "/hakkimizda",
   "/iletisim",
   "/sss",

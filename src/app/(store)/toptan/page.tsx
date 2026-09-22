@@ -7,8 +7,10 @@ import {
   SectionHeading,
 } from "@/components/content/content-layout";
 import { createPageMetadata } from "@/components/content/metadata";
+import { WholesaleCatalogPreview } from "@/components/wholesale/wholesale-catalog";
 import { siteConfig } from "@/config/site";
 import { buttonVariants } from "@/components/ui/button";
+import { getCatalogSnapshot, listProducts } from "@/domain/catalog/repository";
 
 export const metadata = createPageMetadata({
   title: "Toptan & Bayiler",
@@ -44,11 +46,17 @@ const offerPoints = [
   },
 ] as const;
 
-export default function WholesalePage() {
+export const dynamic = "force-dynamic";
+
+export default async function WholesalePage() {
   const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || null;
   const mailtoHref = email
     ? `mailto:${email}?subject=${encodeURIComponent("Toptan / bayi üretim brief’i")}`
     : null;
+  const [products, snapshot] = await Promise.all([
+    listProducts(),
+    getCatalogSnapshot(),
+  ]);
 
   return (
     <ContentPage
@@ -57,7 +65,7 @@ export default function WholesalePage() {
       description="Hediyelik, konsept mağaza, etkinlik ve kurumsal alımlar için aynı üretim standardı. Teklif, mevcut kurumsal brief hattı üzerinden yürür; ikinci bir fiyat motoru yoktur."
       actions={[
         { href: "/kurumsal-teklif" as Route, label: "Toptan teklif al" },
-        { href: "/magaza" as Route, label: "Ürün gruplarını incele", variant: "outline" },
+        { href: "/toptan/katalog" as Route, label: "Katalogu aç", variant: "outline" },
       ]}
     >
       <SectionHeading
@@ -100,6 +108,13 @@ export default function WholesalePage() {
             {siteConfig.contact.email}
           </a>
         ) : null}
+      </div>
+
+      <div className="mt-12">
+        <WholesaleCatalogPreview
+          products={products}
+          unavailable={snapshot.unavailable === true}
+        />
       </div>
     </ContentPage>
   );

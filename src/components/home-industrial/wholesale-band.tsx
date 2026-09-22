@@ -34,10 +34,10 @@ export function WholesaleBand() {
             </HomeTrackLink>
           </MagneticAction>
           <HomeTrackLink
-            href={"/magaza" as Route}
+            href={"/toptan/katalog" as Route}
             className="hi-link"
           >
-            ÜRÜN GRUPLARINI İNCELE →
+            TOPTAN KATALOG →
           </HomeTrackLink>
         </div>
       </div>

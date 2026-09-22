@@ -64,11 +64,18 @@ const nextConfig: NextConfig = {
     proxyClientMaxBodySize: "110mb",
   },
   async redirects() {
-    return STOREFRONT_CATEGORY_REDIRECTS.map((item) => ({
-      source: item.source,
-      destination: item.destination,
-      permanent: true,
-    }));
+    return [
+      ...STOREFRONT_CATEGORY_REDIRECTS.map((item) => ({
+        source: item.source,
+        destination: item.destination,
+        permanent: true,
+      })),
+      {
+        source: "/katalog",
+        destination: "/toptan/katalog",
+        permanent: true,
+      },
+    ];
   },
   async headers() {
     return [
