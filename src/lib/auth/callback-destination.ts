@@ -1,6 +1,7 @@
 export const AUTH_CALLBACK_NEXT_ALLOWLIST = [
   "/sifre-yenile",
   "/hesabim",
+  "/hesabim/siparisler",
   "/giris",
 ] as const;
 

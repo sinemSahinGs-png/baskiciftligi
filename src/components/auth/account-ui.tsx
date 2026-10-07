@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 import type { ReactNode } from "react";
 import { ArrowRight } from "lucide-react";
 
@@ -38,7 +39,7 @@ interface AccountEmptyStateProps {
   description: string;
   note?: string;
   action?: {
-    href: "/" | "/hesabim" | "/hesabim/siparisler";
+    href: Route;
     label: string;
   };
 }
