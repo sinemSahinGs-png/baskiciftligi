@@ -1,0 +1,178 @@
+.ws-page {
+  --ws-ink: #1b1c1a;
+  --ws-muted: #5c5a55;
+  --ws-line: #e4dfd4;
+  --ws-paper: #f6f3ec;
+  --ws-card: #fffdf8;
+  --ws-accent: #ff6542;
+  min-height: 100dvh;
+  overflow-x: clip;
+  background: var(--ws-paper);
+  color: var(--ws-ink);
+}
+
+.ws-shell {
+  width: min(72rem, calc(100% - 1.5rem));
+  margin-inline: auto;
+}
+
+.ws-header,
+.ws-footer {
+  border-color: var(--ws-line);
+}
+
+.ws-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ws-accent);
+}
+
+.ws-pack {
+  text-align: left;
+  min-height: 11rem;
+  border: 1px solid var(--ws-line);
+  background: var(--ws-card);
+  border-radius: 1.1rem;
+  padding: 1.15rem 1.2rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ws-pack[data-selected="true"] {
+  border-color: var(--ws-ink);
+  box-shadow: 0 0 0 1px var(--ws-ink);
+}
+
+.ws-pack:focus-visible,
+.ws-cta:focus-visible,
+.ws-field:focus-visible,
+.ws-check:focus-visible,
+.ws-link:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ws-accent) 55%, white);
+  outline-offset: 3px;
+}
+
+.ws-cta {
+  display: inline-flex;
+  min-height: 44px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--ws-accent);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.ws-cta:disabled {
+  opacity: 0.45;
+}
+
+.ws-field {
+  min-height: 44px;
+  width: 100%;
+  border: 1px solid var(--ws-line);
+  background: white;
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.8rem;
+  font-size: 1rem;
+}
+
+.ws-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  border-top: 1px solid var(--ws-line);
+  background: color-mix(in srgb, var(--ws-card) 92%, white);
+  padding: 0.7rem 0.75rem calc(0.7rem + env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-pack,
+  .ws-cta {
+    transition: none;
+  }
+}
+
+.ws-iframe-wrap {
+  overflow: visible;
+}
+
+.ws-iframe {
+  display: block;
+  width: 100%;
+  min-height: min(78dvh, 46rem);
+  height: 78dvh;
+  border: 0;
+  background: white;
+}
+
+.ws-summary {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.ws-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+  font-size: 0.9rem;
+}
+
+.ws-summary-row dt,
+.ws-summary-row dd {
+  overflow-wrap: anywhere;
+}
+
+.ws-photo {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+  background: #efe8d9;
+}
+
+.ws-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ws-photo-fallback {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  gap: 0.4rem;
+  color: #5c5a55;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ws-photo-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.55rem;
+  background: #ff6542;
+}
+
+.ws-notice {
+  margin-top: 1rem;
+  border: 1px solid var(--ws-line);
+  background: white;
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 430px) {
+  .ws-pack {
+    padding: 1rem;
+  }
+}
