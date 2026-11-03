@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 import { formatMoney } from "@/lib/money";
+import { useTranslations } from "next-intl";
 import {
   fulfilmentStateLabel,
   paymentStateLabel,
@@ -16,8 +17,8 @@ import type {
 
 interface TrackStatus {
   orderNumber: string;
-  paymentState: WholesalePaymentState;
-  fulfilmentState: WholesaleFulfilmentState;
+  paymentState: WholesalePaymentState | string;
+  fulfilmentState: WholesaleFulfilmentState | string;
   paymentLabel?: string;
   fulfilmentLabel?: string;
   packageTitle?: string;
@@ -27,39 +28,42 @@ interface TrackStatus {
   shipmentTrackingUrl: string | null;
 }
 
-const STEPS = [
-  { id: "received", label: "Sipariş alındı", match: () => true },
-  {
-    id: "paid",
-    label: "Ödeme onaylandı",
-    match: (s: TrackStatus) =>
-      s.paymentState === "paid" || s.paymentState === "refunded",
-  },
-  {
-    id: "preparing",
-    label: "Hazırlanıyor",
-    match: (s: TrackStatus) =>
-      ["preparing", "ready_to_ship", "shipped", "delivered"].includes(
-        s.fulfilmentState,
-      ),
-  },
-  {
-    id: "shipped",
-    label: "Kargoya verildi",
-    match: (s: TrackStatus) =>
-      s.fulfilmentState === "shipped" || s.fulfilmentState === "delivered",
-  },
-  {
-    id: "delivered",
-    label: "Teslim edildi",
-    match: (s: TrackStatus) => s.fulfilmentState === "delivered",
-  },
-] as const;
-
 function TrackForm() {
+  const t = useTranslations();
+  const STEPS = [
+    { id: "received", label: t("track.received"), match: () => true },
+    {
+      id: "paid",
+      label: t("track.paid"),
+      match: (s: TrackStatus) =>
+        s.paymentState === "paid" ||
+        s.paymentState === "refunded" ||
+        s.paymentState === "payment_pending",
+    },
+    {
+      id: "preparing",
+      label: t("track.preparing"),
+      match: (s: TrackStatus) =>
+        ["preparing", "ready_to_ship", "shipped", "delivered", "unfulfilled", "fulfilled"].includes(
+          s.fulfilmentState,
+        ),
+    },
+    {
+      id: "shipped",
+      label: t("track.shipped"),
+      match: (s: TrackStatus) =>
+        s.fulfilmentState === "shipped" || s.fulfilmentState === "delivered",
+    },
+    {
+      id: "delivered",
+      label: t("track.delivered"),
+      match: (s: TrackStatus) => s.fulfilmentState === "delivered",
+    },
+  ] as const;
   const params = useSearchParams();
   const [orderNumber, setOrderNumber] = useState(params.get("order") ?? "");
   const [token, setToken] = useState(params.get("token") ?? "");
+  const [email, setEmail] = useState(params.get("email") ?? "");
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<TrackStatus | null>(null);
   const [customerName, setCustomerName] = useState<string | null>(null);
@@ -71,13 +75,34 @@ function TrackForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function submit(nextOrder = orderNumber, nextToken = token) {
+  async function submit(nextOrder = orderNumber, nextToken = token, nextEmail = email) {
     setError(null);
+    const order = nextOrder.trim();
+    if (nextEmail.trim()) {
+      const storeRes = await fetch("/api/orders/track", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          orderNumber: order,
+          email: nextEmail.trim(),
+        }),
+      });
+      const storeData = (await storeRes.json()) as {
+        error?: string;
+        status?: TrackStatus;
+        customerName?: string;
+      };
+      if (storeRes.ok && storeData.status) {
+        setStatus(storeData.status);
+        setCustomerName(storeData.customerName ?? null);
+        return;
+      }
+    }
     const response = await fetch("/api/wholesale/track", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        orderNumber: nextOrder.trim().toUpperCase(),
+        orderNumber: order.toUpperCase(),
         token: nextToken.trim(),
       }),
     });
@@ -88,7 +113,7 @@ function TrackForm() {
     };
     if (!response.ok || !data.status) {
       setStatus(null);
-      setError(data.error ?? "Sipariş bulunamadı.");
+      setError(data.error ?? t("track.notFound"));
       return;
     }
     setStatus(data.status);
@@ -109,11 +134,10 @@ function TrackForm() {
 
   return (
     <div className="shell max-w-xl py-12">
-      <p className="eyebrow">Takip</p>
-      <h1 className="mt-3 font-heading text-4xl">Sipariş takip</h1>
+      <p className="eyebrow">{t("track.kicker")}</p>
+      <h1 className="mt-3 font-heading text-4xl">{t("track.title")}</h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        Sipariş numarası tek başına yeterli değildir. Size verilen takip
-        anahtarını girin.
+        {t("track.lede")}
       </p>
       <form
         className="mt-6 space-y-3"
@@ -123,7 +147,7 @@ function TrackForm() {
         }}
       >
         <label className="block text-sm font-semibold">
-          Sipariş numarası
+          {t("track.orderNumber")}
           <input
             className="mt-1 min-h-11 w-full rounded-md border px-3"
             value={orderNumber}
@@ -132,7 +156,17 @@ function TrackForm() {
           />
         </label>
         <label className="block text-sm font-semibold">
-          Takip anahtarı
+          {t("track.email")}
+          <input
+            className="mt-1 min-h-11 w-full rounded-md border px-3"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
+          />
+        </label>
+        <label className="block text-sm font-semibold">
+          {t("track.token")}
           <input
             className="mt-1 min-h-11 w-full rounded-md border px-3"
             value={token}
@@ -141,7 +175,7 @@ function TrackForm() {
           />
         </label>
         <button className="min-h-11 rounded-full bg-coral px-5 text-sm font-semibold text-white" type="submit">
-          Sorgula
+          {t("track.submit")}
         </button>
       </form>
       {error ? (
@@ -156,8 +190,11 @@ function TrackForm() {
           <p className="mt-1 text-sm">{status.packageTitle}</p>
           <p className="text-sm">{formatMoney(status.grandTotalMinor)}</p>
           <p className="mt-1 text-sm">
-            {status.paymentLabel ?? paymentStateLabel(status.paymentState)} ·{" "}
-            {status.fulfilmentLabel ?? fulfilmentStateLabel(status.fulfilmentState)}
+            {status.paymentLabel ??
+              paymentStateLabel(status.paymentState as WholesalePaymentState)}{" "}
+            ·{" "}
+            {status.fulfilmentLabel ??
+              fulfilmentStateLabel(status.fulfilmentState as WholesaleFulfilmentState)}
           </p>
           <ol className="mt-5 space-y-2">
             {visibleSteps.map((step) => {
@@ -176,7 +213,7 @@ function TrackForm() {
               rel="noreferrer"
               target="_blank"
             >
-              Kargoyu takip et
+              {t("track.followCargo")}
             </a>
           ) : null}
         </div>

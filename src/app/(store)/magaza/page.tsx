@@ -25,6 +25,8 @@ import {
 } from "@/domain/catalog/repository";
 import { storefrontFilterCategories } from "@/domain/catalog/storefront-taxonomy";
 import { parseStoreQuery } from "@/domain/home/homepage";
+import { getMessages, msg } from "@/i18n/get-messages";
+import { getRequestLocale } from "@/i18n/request-locale";
 
 export const dynamic = "force-dynamic";
 
@@ -72,15 +74,16 @@ export default async function StorePage(props: PageProps<"/magaza">) {
     !hasActiveFilters &&
     page.total === 0 &&
     recentPool.length === 0;
+  const messages = getMessages(await getRequestLocale());
   const filterCategories = storefrontFilterCategories().map((category) => ({
     id: category.slug,
     slug: category.slug,
-    name: category.name,
+    name: msg(messages, `categories.${category.slug}.name`),
   }));
-  const title = activeCollection ? activeCollection.name : "3D BASKI KOLEKSİYONU";
+  const title = activeCollection ? activeCollection.name : msg(messages, "pages.shopCollection");
   const lead = activeCollection
     ? activeCollection.description
-    : "Hazır koleksiyon, tek parça üretim.";
+    : msg(messages, "pages.shopLead");
   const leadCount = Math.min(8, page.items.length);
   const followCount = Math.min(8, Math.max(0, page.items.length - leadCount));
   const firstGroup = page.items.slice(0, leadCount);
@@ -93,19 +96,19 @@ export default async function StorePage(props: PageProps<"/magaza">) {
         <div className="shell">
           <p className="store-crumb">
             <Link href="/" className="hover:underline">
-              Ana sayfa
+              {msg(messages, "pages.home")}
             </Link>
             <span aria-hidden="true"> / </span>
-            Mağaza
+            {msg(messages, "pages.shop")}
           </p>
           <div className="store-intro" data-has-art="false">
             <div>
-              <p className="store-intro-kicker">MAĞAZA</p>
+              <p className="store-intro-kicker">{msg(messages, "pages.shop")}</p>
               <StoreHeroTitle title={title} />
               <p className="store-intro-lede">{lead}</p>
               <p className="store-intro-count">
                 {catalogUnavailable
-                  ? "Katalog şu anda okunamadı"
+                  ? msg(messages, "pages.catalogUnread")
                   : isGenuinelyEmpty
                     ? "Koleksiyon yayına hazırlanıyor"
                     : `${page.total} ürün`}

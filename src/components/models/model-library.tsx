@@ -70,7 +70,7 @@ function buildLibrarySearch(next: {
   const params = new URLSearchParams();
   if (next.query.trim()) params.set("q", next.query.trim());
   const apiSource = discoverySourceToApiParam(next.source);
-  if (apiSource !== "all") params.set("source", apiSource);
+  params.set("source", apiSource);
   if (next.category.trim()) params.set("category", next.category.trim());
   return params;
 }
@@ -260,7 +260,7 @@ export function ModelLibrary({
     () => searchParams.get("category") ?? "",
   );
   const [sort, setSort] = useState<SortOption>("recommended");
-  const [results, setResults] = useState<UnifiedDiscoveryResult[]>(initialCards);
+  const [results, setResults] = useState<UnifiedDiscoveryResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -330,7 +330,7 @@ export function ModelLibrary({
     const params = new URLSearchParams();
     if (committedQuery.trim()) params.set("q", committedQuery.trim());
     const apiSource = discoverySourceToApiParam(source);
-    if (apiSource !== "all") params.set("source", apiSource);
+    params.set("source", apiSource === "internal" ? "internal" : "thingiverse");
     if (category.trim()) params.set("category", category.trim());
     params.set("page", "1");
 
@@ -493,10 +493,11 @@ export function ModelLibrary({
   function runSearch(term: string) {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setQuery(term);
-    setSource("all");
+    const nextSource = source === "internal" ? "internal" : "thingiverse";
+    setSource(nextSource);
     setCategory("");
     setCommittedQuery(term.trim());
-    persistHistory({ query: term, source: "all", category: "" });
+    persistHistory({ query: term, source: nextSource, category: "" });
   }
 
   function openCuratedQuote(model: CuratedCatalogCardData) {

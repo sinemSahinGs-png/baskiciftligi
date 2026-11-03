@@ -55,7 +55,7 @@ html.motion-ready:not([data-reduced-motion="true"])
 .section-reveal-index {
   display: block;
   margin-bottom: 0.45rem;
-  font-family: var(--font-bc-mono, ui-monospace, monospace);
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 0.68rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;

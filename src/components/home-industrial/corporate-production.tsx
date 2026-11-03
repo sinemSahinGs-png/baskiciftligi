@@ -1,17 +1,16 @@
+"use client";
+
 import type { Route } from "next";
+import { useTranslations } from "next-intl";
 
 import { HomeTrackLink } from "@/components/home/home-track-link";
 import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { InteractiveMedia, MagneticAction, WordReveal } from "@/components/motion/premium";
 
-const POINTS = [
-  "Aynı üretim standardı her parçada.",
-  "Fiyat, dilimleme çıktısı olmadan vaat edilmez.",
-  "Kurumsal işler için ayrı teklif hattı.",
-] as const;
-
 export function CorporateProduction() {
+  const t = useTranslations();
+  const POINTS = [t("home.corporate1"), t("home.corporate2"), t("home.corporate3")];
   return (
     <section
       id="kurumsal-uretim"
@@ -34,7 +33,7 @@ export function CorporateProduction() {
           as="h2"
           id="corporate-heading"
           className="hi-title max-w-[12ch]"
-          text="ÖLÇEKLENEBİLİR ÜRETİM. TEK ÜRETİM STANDARDI."
+          text={t("home.corporateTitle")}
         />
         <ul className="hi-corporate-points">
           {POINTS.map((point) => (
@@ -47,7 +46,7 @@ export function CorporateProduction() {
             href={"/kurumsal-teklif" as Route}
             className="hi-btn"
           >
-            Kurumsal teklif al →
+            {t("home.corporateCta")}
           </HomeTrackLink>
         </MagneticAction>
       </div>

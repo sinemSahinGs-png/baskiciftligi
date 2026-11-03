@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 
+import { LanguageSwitcher } from "@/components/site/language-switcher";
 import { Logo } from "@/components/site/logo";
 import { SearchOverlay } from "@/components/site/search-overlay";
 import { StoreMegaMenu, MobileStoreNav } from "@/components/site/store-mega-menu";
@@ -25,6 +26,7 @@ import { announceStatus, foundryEase } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { selectCartCount, useCartStore } from "@/stores/cart-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
+import { useTranslations } from "next-intl";
 
 interface SiteHeaderProps {
   categories: Category[];
@@ -38,6 +40,7 @@ export function SiteHeader({
   categoryArtwork,
 }: SiteHeaderProps) {
   const pathname = usePathname();
+  const t = useTranslations();
   const darkShell = true;
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -81,13 +84,13 @@ export function SiteHeader({
     }
     if (cartCount > previousCartCount.current) {
       setCartPulse(true);
-      announceStatus("Ürün sepete eklendi.");
+      announceStatus(t("header.cartAdded"));
       const timer = window.setTimeout(() => setCartPulse(false), 480);
       previousCartCount.current = cartCount;
       return () => window.clearTimeout(timer);
     }
     previousCartCount.current = cartCount;
-  }, [cartCount, cartHydrated]);
+  }, [cartCount, cartHydrated, t]);
 
   useEffect(() => {
     if (!mobileOpen) {
@@ -105,20 +108,18 @@ export function SiteHeader({
 
   return (
     <>
-      <header
+      <header data-scrolled={scrolled ? "true" : "false"}
         className={cn(
-          "sticky top-0 z-40 isolate overflow-visible border-b transition-[background-color,border-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          inverted
-            ? "border-transparent bg-transparent text-light-text"
-              : darkShell
-                ? "border-white/10 bg-[#050708] text-light-text backdrop-blur-sm md:backdrop-blur-md"
-                : "border-hairline bg-porcelain/92 text-ink backdrop-blur-sm md:backdrop-blur-md",
+          "octo-header sticky top-0 z-40 isolate overflow-visible border-b transition-[background-color,border-color,color,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] text-light-text",
+          inverted && !scrolled
+            ? "border-transparent bg-transparent"
+            : "border-[color:var(--octo-border)] bg-[color:rgb(2_7_11_/_0.72)] backdrop-blur-md",
         )}
       >
-        <div className="shell flex h-14 items-center gap-2 sm:h-16 md:gap-3">
-          <Logo inverted={darkShell} className="mr-auto" />
+        <div className="shell flex h-14 items-center gap-2 sm:h-16 md:gap-3" data-scrolled={scrolled ? "true" : "false"}>
+          <Logo inverted={darkShell} className="me-auto" />
 
-          <nav aria-label="Ana menü" className="hidden h-full items-center gap-1 self-stretch lg:flex">
+          <nav aria-label={t("nav.main")} className="hidden h-full items-center gap-1 self-stretch lg:flex">
             <StoreMegaMenu inverted={inverted} categoryArtwork={categoryArtwork} />
             {siteConfig.primaryNavigation.slice(1).map((item) => (
               <Link
@@ -127,15 +128,20 @@ export function SiteHeader({
                 data-active={pathname.startsWith(item.href) ? "true" : undefined}
                 className="nav-signal inline-flex min-h-11 items-center px-3 text-sm font-medium"
               >
-                {item.label}
+                {item.href === "/model-yukle"
+                  ? t("common.upload")
+                  : item.href === "/hazir-modeller"
+                    ? t("common.readyModels")
+                    : t("common.wholesale")}
               </Link>
             ))}
           </nav>
 
-          <div className="flex items-center">
+          <div className="flex items-center gap-1">
+            <LanguageSwitcher inverted={inverted} />
             <button
               type="button"
-              aria-label="Ara"
+              aria-label={t("common.search")}
               onClick={() => setSearchOpen(true)}
               className="inline-flex size-11 items-center justify-center"
             >
@@ -143,7 +149,7 @@ export function SiteHeader({
             </button>
             <Link
               href={"/hesabim" as Route}
-              aria-label="Hesabım"
+              aria-label={t("common.account")}
               className="inline-flex size-11 items-center justify-center"
             >
               <UserRound aria-hidden="true" className="size-5" />
@@ -151,7 +157,9 @@ export function SiteHeader({
             <Link
               href={"/favoriler" as Route}
               aria-label={
-                favoritesHydrated ? `Favoriler, ${favoriteCount}` : "Favoriler"
+                favoritesHydrated
+                  ? `${t("common.favorites")}, ${favoriteCount}`
+                  : t("common.favorites")
               }
               className="relative inline-flex size-11 items-center justify-center"
             >
@@ -159,7 +167,7 @@ export function SiteHeader({
             </Link>
             <Link
               href={"/sepet" as Route}
-              aria-label={cartHydrated ? `Sepet, ${cartCount}` : "Sepet"}
+              aria-label={cartHydrated ? `${t("common.cart")}, ${cartCount}` : t("common.cart")}
               className="relative inline-flex size-11 items-center justify-center"
             >
               <ShoppingBag aria-hidden="true" className="size-5" />
@@ -177,7 +185,7 @@ export function SiteHeader({
             <button
               ref={menuButtonRef}
               type="button"
-              aria-label={mobileOpen ? "Menüyü kapat" : "Menüyü aç"}
+              aria-label={mobileOpen ? t("nav.closeMenu") : t("nav.openMenu")}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((open) => !open)}
               className="inline-flex size-11 items-center justify-center lg:hidden"
@@ -206,7 +214,7 @@ export function SiteHeader({
             <button
               ref={closeButtonRef}
               type="button"
-              aria-label="Menüyü kapat"
+              aria-label={t("nav.closeMenu")}
               onClick={() => {
                 setMobileOpen(false);
                 menuButtonRef.current?.focus();
@@ -216,14 +224,14 @@ export function SiteHeader({
               <X aria-hidden="true" className="size-5" />
             </button>
           </div>
-          <nav aria-label="Mobil menü" className="shell overflow-y-auto pb-16">
+          <nav aria-label={t("nav.mobile")} className="shell overflow-y-auto pb-16">
             <ul>
               <MobileStoreNav
                 categoryArtwork={categoryArtwork}
                 onNavigate={() => setMobileOpen(false)}
               />
               {siteConfig.primaryNavigation
-                .filter((item) => item.label !== "Mağaza")
+                .filter((item) => item.href !== "/magaza")
                 .map((item) => (
                 <li key={`${item.href}-${item.label}`} className="border-b border-hairline">
                   <Link
@@ -231,7 +239,11 @@ export function SiteHeader({
                     className="flex min-h-14 items-center justify-between font-heading text-[1.85rem] font-bold tracking-[-0.04em] sm:text-3xl"
                     onClick={() => setMobileOpen(false)}
                   >
-                    {item.label}
+                    {item.href === "/model-yukle"
+                      ? t("common.upload")
+                      : item.href === "/hazir-modeller"
+                        ? t("common.readyModels")
+                        : t("common.wholesale")}
                     <ArrowUpRight aria-hidden="true" className="size-5 text-muted-light" />
                   </Link>
                 </li>
@@ -242,13 +254,13 @@ export function SiteHeader({
                 href={"/hesabim" as Route}
                 className="flex min-h-12 items-center rounded-md bg-cobalt px-4 text-sm font-bold"
               >
-                Hesabım
+                {t("common.account")}
               </Link>
               <Link
                 href={"/favoriler" as Route}
                 className="flex min-h-12 items-center justify-between rounded-md bg-white/8 px-4 text-sm font-semibold"
               >
-                Favoriler
+                {t("common.favorites")}
                 <span className="tabular text-muted-light">
                   {favoritesHydrated ? favoriteCount : "—"}
                 </span>
@@ -257,7 +269,7 @@ export function SiteHeader({
                 href={"/sepet" as Route}
                 className="flex min-h-12 items-center justify-between rounded-md bg-white/8 px-4 text-sm font-semibold"
               >
-                Sepet
+                {t("common.cart")}
                 <span className="tabular text-muted-light">
                   {cartHydrated ? cartCount : "—"}
                 </span>

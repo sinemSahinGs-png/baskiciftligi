@@ -7,6 +7,7 @@ import {
   listPopularThings,
   ThingiverseApiError,
 } from "@/providers/thingiverse/client";
+import { hydrateThingiverseOauthToken } from "@/providers/thingiverse/oauth-store";
 import {
   getThingiverseConfigStatus,
   mapThingiverseHttpStatus,
@@ -24,6 +25,7 @@ export async function POST() {
     return NextResponse.json({ error: "Yalnızca owner test edebilir." }, { status: 403 });
   }
 
+  await hydrateThingiverseOauthToken();
   const configStatus = getThingiverseConfigStatus();
   const envPresence = {
     THINGIVERSE_CLIENT_ID: Boolean(serverEnv.THINGIVERSE_CLIENT_ID),
@@ -33,14 +35,14 @@ export async function POST() {
     THINGIVERSE_API_BASE_URL: serverEnv.THINGIVERSE_API_BASE_URL ?? "https://api.thingiverse.com",
   };
 
-  if (!serverEnv.THINGIVERSE_ACCESS_TOKEN) {
+  if (configStatus !== "connected") {
     return NextResponse.json({
       ok: false,
       configStatus,
       envPresence,
       probe: null,
       message:
-        "THINGIVERSE_ACCESS_TOKEN tanımlı değil. Vercel production env’e App Token ekleyin.",
+        "Thingiverse bağlı değil. Admin entegrasyonlarından hesabı bağlayın.",
     });
   }
 
@@ -97,6 +99,7 @@ export async function GET() {
   } catch {
     return NextResponse.json({ error: "Yalnızca owner okuyabilir." }, { status: 403 });
   }
+  await hydrateThingiverseOauthToken();
   return NextResponse.json({
     configStatus: getThingiverseConfigStatus(),
     envPresence: {

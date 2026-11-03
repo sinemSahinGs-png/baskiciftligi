@@ -3,6 +3,7 @@ import "server-only";
 import { getIntegrationStatus, touchIntegration } from "@/domain/manufacturing/repository";
 import type { WorkerReadiness } from "@/domain/manufacturing/job-poll";
 import { slicerWorkerSecret, slicerWorkerUrl } from "@/lib/manufacturing/paths";
+import { siteOrigin } from "@/lib/wholesale/credentials";
 import type { WorkerHealthPayload } from "@/lib/manufacturing/worker-ops";
 
 export type { WorkerReadiness, WorkerReadinessState, JobPollHint } from "@/domain/manufacturing/job-poll";
@@ -66,6 +67,30 @@ export async function probeSlicerWorkerHealth(): Promise<{
     return { healthReachable: true, health };
   } catch {
     return { healthReachable: false, health: null };
+  }
+}
+
+export async function wakeSlicerWorker(): Promise<boolean> {
+  const base = slicerWorkerUrl();
+  const secret = slicerWorkerSecret();
+  if (!base || !secret) {
+    return false;
+  }
+  try {
+    const response = await fetch(`${base.replace(/\/$/, "")}/configure`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        "Content-Type": "application/json",
+        "x-slicer-worker-id": "app-wake",
+      },
+      body: JSON.stringify({ appBaseUrl: siteOrigin() }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(4_000),
+    });
+    return response.ok;
+  } catch {
+    return false;
   }
 }
 

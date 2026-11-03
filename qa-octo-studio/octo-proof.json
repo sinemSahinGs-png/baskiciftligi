@@ -1,0 +1,31 @@
+{
+  "viewportSizes": [
+    390,
+    1440
+  ],
+  "consoleErrors": {
+    "390": 0,
+    "1440": 4
+  },
+  "overflowX": {
+    "home-390": 0,
+    "home-1440": 0
+  },
+  "headers": {
+    "home-390": 1,
+    "home-1440": 1
+  },
+  "bottomNavs": {
+    "home-390": 1,
+    "home-1440": 1
+  },
+  "brokenImages": {
+    "home-390": 0,
+    "home-1440": 0
+  },
+  "routes": {
+    "home": 200,
+    "store": 200,
+    "upload": 200
+  }
+}

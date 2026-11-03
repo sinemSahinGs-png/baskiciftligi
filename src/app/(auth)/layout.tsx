@@ -1,29 +1,35 @@
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 
+import { LanguageSwitcher } from "@/components/site/language-switcher";
 import { Logo } from "@/components/site/logo";
 import { SiteFooter } from "@/components/site/site-footer";
 import { siteConfig } from "@/config/site";
+import { getMessages, msg } from "@/i18n/get-messages";
+import { getRequestLocale } from "@/i18n/request-locale";
 
-const assurances = [
-  "Sipariş ve teklif tek hesapta",
-  "Parola uygulama sunucusunda tutulmaz",
-  "Özel üretim dosyaları henüz yüklenmez",
-] as const;
-
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const messages = getMessages(await getRequestLocale());
+  const assurances = [
+    msg(messages, "auth.a1"),
+    msg(messages, "auth.a2"),
+    msg(messages, "auth.a3"),
+  ];
   return (
     <div className="min-h-screen bg-porcelain text-dark-text">
       <header className="border-b border-hairline bg-optical">
         <div className="shell flex h-16 items-center justify-between">
           <Logo />
-          <Link href="/" className="text-sm font-medium hover:underline">
-            Mağazaya dön
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <Link href="/" className="text-sm font-medium hover:underline">
+              {msg(messages, "nav.backToShop")}
+            </Link>
+          </div>
         </div>
       </header>
       <main
@@ -33,7 +39,7 @@ export default function AuthLayout({
         <section className="relative hidden max-w-lg overflow-hidden rounded-xl bg-midnight p-8 text-light-text lg:block">
           <p className="text-sm text-cyan">{siteConfig.tagline}</p>
           <h2 className="mt-4 font-heading text-5xl leading-[0.95] font-bold tracking-[-0.05em]">
-            Üretim sürecin, net bir hesapta.
+            {msg(messages, "auth.headline")}
           </h2>
           <ul className="mt-8 space-y-3">
             {assurances.map((assurance) => (

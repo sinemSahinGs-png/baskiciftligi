@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getJobEvents, getQuoteJob } from "@/domain/manufacturing/repository";
+import { maybeApplyMeshQuoteIfWorkerOffline } from "@/domain/manufacturing/quote-service";
 import { publicJobPoll } from "@/domain/manufacturing/public-dto";
 import { getManufacturingActor, ownsRecord } from "@/lib/manufacturing/session";
 import { clientKey, rateLimit } from "@/lib/manufacturing/rate-limit";
@@ -21,9 +22,12 @@ export async function GET(
   }
 
   const { id } = await context.params;
-  const job = await getQuoteJob(id);
+  let job = await getQuoteJob(id);
   if (!job) {
     return NextResponse.json({ error: "İş bulunamadı." }, { status: 404 });
+  }
+  if (!job.quoteId) {
+    job = (await maybeApplyMeshQuoteIfWorkerOffline(job.id)) ?? job;
   }
   const actor = await getManufacturingActor();
   if (!ownsRecord(actor, job) && !canViewInternalCost(actor.role)) {

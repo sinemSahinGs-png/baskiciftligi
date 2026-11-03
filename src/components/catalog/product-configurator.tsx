@@ -11,8 +11,10 @@ import { announceStatus } from "@/lib/motion";
 import { formatMoney } from "@/lib/money";
 import { useCartStore } from "@/stores/cart-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
+import { useTranslations } from "next-intl";
 
 export function ProductConfigurator({ product }: { product: Product }) {
+  const t = useTranslations();
   const activeVariants = useMemo(
     () => product.variants.filter((variant) => variant.isActive),
     [product.variants],
@@ -246,10 +248,10 @@ export function ProductConfigurator({ product }: { product: Product }) {
             <ShoppingBag aria-hidden="true" className="size-4" />
           )}
           {layerComplete
-            ? "Katman tamam"
+            ? t("commerce.layerDone")
             : canPurchase
-              ? "Sepete ekle"
-              : "Stokta yok"}
+              ? t("commerce.addToCart")
+              : t("commerce.outOfStock")}
         </button>
 
         <button
@@ -299,7 +301,7 @@ export function ProductConfigurator({ product }: { product: Product }) {
             onClick={addToCart}
             className="inline-flex min-h-12 flex-1 items-center justify-center bg-[color:var(--store-orange,#ff5a0a)] px-4 text-sm font-semibold text-[color:var(--store-black,#080a0b)] disabled:opacity-45"
           >
-            {canPurchase ? "Sepete ekle" : "Stokta yok"}
+            {canPurchase ? t("commerce.addToCart") : t("commerce.outOfStock")}
           </button>
         </div>
       </div>

@@ -47,23 +47,44 @@ export default async function OrdersPage() {
     verifiedEmail: viewer.email,
   });
   const orders = await store.listByUserId(viewer.id);
+  const { createServiceRoleSupabaseClient } = await import("@/lib/supabase/admin");
+  const client = createServiceRoleSupabaseClient();
+  const { data: storeOrders } = client
+    ? await client
+        .from("orders")
+        .select("id, order_number, payment_status, total_minor, placed_at")
+        .eq("user_id", viewer.id)
+        .order("placed_at", { ascending: false })
+        .limit(40)
+    : { data: [] };
+
+  const hasAny = orders.length > 0 || (storeOrders ?? []).length > 0;
 
   return (
     <>
       <AccountPageHeader
         eyebrow="Hesabım / Siparişler"
         title="Siparişler"
-        description="Yalnızca bu oturumdaki e-postaya sunucu tarafında bağlanmış siparişler listelenir."
+        description="Üyelik hesabına bağlı mağaza ve toptan siparişlerin."
       />
-      {orders.length === 0 ? (
+      {!hasAny ? (
         <AccountEmptyState
           icon={<PackageSearch className="size-6" aria-hidden="true" />}
           title="Henüz sipariş yok"
-          description="Toptan paketi satın aldığınızda siparişiniz burada görünür."
-          action={{ href: "/toptan", label: "Toptan sipariş ver" }}
+          description="Mağazadan veya model yükleyerek sipariş verdiğinde burada görünür."
+          action={{ href: "/magaza", label: "Mağazaya git" }}
         />
       ) : (
         <ul className="space-y-3">
+          {(storeOrders ?? []).map((order) => (
+            <li key={order.id} className="rounded-xl border border-hairline bg-paper p-4">
+              <p className="font-semibold">{order.order_number}</p>
+              <p className="text-sm text-ink-muted">
+                Mağaza siparişi · {formatMoney(Number(order.total_minor ?? 0))}
+              </p>
+              <p className="text-xs">{order.payment_status}</p>
+            </li>
+          ))}
           {orders.map((order) => (
             <li key={order.id}>
               <Link

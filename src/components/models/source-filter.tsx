@@ -4,32 +4,29 @@ import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export type DiscoverySource = "all" | "internal" | "thingiverse";
-
-const SOURCE_OPTIONS: Array<{ id: DiscoverySource; label: string }> = [
-  { id: "all", label: "Tümü" },
-  { id: "internal", label: "Baskı Çiftliği" },
-  { id: "thingiverse", label: "Topluluk" },
-];
 
 export function SourceFilter({
   value,
   onChange,
-  communityEnabled,
 }: {
   value: DiscoverySource;
   onChange: (next: DiscoverySource) => void;
-  communityEnabled: boolean;
+  communityEnabled?: boolean;
 }) {
-  const options = communityEnabled
-    ? SOURCE_OPTIONS
-    : SOURCE_OPTIONS.filter((item) => item.id !== "thingiverse");
+  const t = useTranslations();
+  const options: Array<{ id: DiscoverySource; label: string }> = [
+    { id: "all", label: t("models.all") },
+    { id: "internal", label: t("models.internal") },
+    { id: "thingiverse", label: t("models.community") },
+  ];
 
   return (
     <>
       <div className="hidden items-center gap-2 sm:flex" data-source-filter="">
-        <span className="text-sm font-medium text-muted-light">Kaynak</span>
+        <span className="text-sm font-medium text-muted-light">{t("models.source")}</span>
         <div className="rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
           {options.map((option) => (
             <button
@@ -64,6 +61,7 @@ function MobileSourceSheet({
   onChange: (next: DiscoverySource) => void;
   options: Array<{ id: DiscoverySource; label: string }>;
 }) {
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const openerRef = useRef<HTMLButtonElement>(null);
   const current = options.find((item) => item.id === value) ?? options[0]!;
@@ -97,24 +95,24 @@ function MobileSourceSheet({
         onClick={() => setOpen(true)}
         className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/12 bg-white/[0.04] px-3.5 text-sm font-semibold text-light-text"
       >
-        Kaynak: {current.label}
+        {t("models.source")}: {current.label}
         <ChevronDown aria-hidden="true" className="size-4 text-muted-light" />
       </button>
       {open ? (
         <>
           <button
             type="button"
-            aria-label="Kaynak filtresini kapat"
+            aria-label={t("models.closeSource")}
             className="fixed inset-0 z-50 bg-black/55"
             onClick={close}
           />
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Kaynak filtresi"
+            aria-label={t("models.sourceFilter")}
             className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-white/10 bg-carbon px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl"
           >
-            <p className="text-sm font-semibold">Kaynak</p>
+            <p className="text-sm font-semibold">{t("models.source")}</p>
             <ul className="mt-3 space-y-1">
               {options.map((option) => (
                 <li key={option.id}>
@@ -131,7 +129,7 @@ function MobileSourceSheet({
                   >
                     {option.label}
                     {value === option.id ? (
-                      <span className="text-xs text-coral">Seçili</span>
+                      <span className="text-xs text-coral">{t("models.selected")}</span>
                     ) : null}
                   </button>
                 </li>
@@ -152,13 +150,14 @@ export function discoverySourceToApiParam(source: DiscoverySource): string {
 
 export function parseDiscoverySource(
   raw: string | null,
-  communityEnabled: boolean,
+  _communityEnabled?: boolean,
 ): DiscoverySource {
   if (raw === "thingiverse" || raw === "community") {
-    return communityEnabled ? "thingiverse" : "all";
+    return "thingiverse";
   }
   if (raw === "internal" || raw === "owned" || raw === "curated") return "internal";
-  return "all";
+  if (raw === "all") return "all";
+  return "thingiverse";
 }
 
 export type SortOption = "recommended" | "newest" | "with_image";
@@ -170,18 +169,19 @@ export function SortFilter({
   value: SortOption;
   onChange: (next: SortOption) => void;
 }) {
+  const t = useTranslations();
   return (
     <label className="hidden items-center gap-2 md:flex">
-      <span className="sr-only">Sırala</span>
+      <span className="sr-only">{t("models.sort")}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value as SortOption)}
         className="min-h-10 rounded-lg border border-white/10 bg-white/[0.03] px-2 text-sm font-semibold text-light-text"
-        aria-label="Sırala"
+        aria-label={t("models.sort")}
       >
-        <option value="recommended">Önerilen</option>
-        <option value="newest">En yeni</option>
-        <option value="with_image">Görseli olanlar</option>
+        <option value="recommended">{t("models.recommended")}</option>
+        <option value="newest">{t("models.newest")}</option>
+        <option value="with_image">{t("models.withImage")}</option>
       </select>
     </label>
   );

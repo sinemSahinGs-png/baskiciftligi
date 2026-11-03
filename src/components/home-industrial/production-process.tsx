@@ -7,15 +7,16 @@ import { industrialAssets } from "@/components/home-industrial/industrial-slots"
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { CadFrame } from "@/components/home-industrial/technical-grid";
 import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
-
-const STAGES = [
-  { id: "01", title: "DİLİMLEME", copy: "Katmanlar ve baskı hazırlığı." },
-  { id: "02", title: "ÜRETİM", copy: "Parça yazıcıda üretilir." },
-  { id: "03", title: "KALİTE KONTROL", copy: "Form ve yüzey kontrolü." },
-  { id: "04", title: "PAKETLEME", copy: "Koruyucu paket ve sevkiyat." },
-] as const;
+import { useTranslations } from "next-intl";
 
 export function ProductionProcess() {
+  const t = useTranslations();
+  const STAGES = [
+    { id: "01", title: t("home.stage1"), copy: t("home.stage1Copy") },
+    { id: "02", title: t("home.stage2"), copy: t("home.stage2Copy") },
+    { id: "03", title: t("home.stage3"), copy: t("home.stage3Copy") },
+    { id: "04", title: t("home.stage4"), copy: t("home.stage4Copy") },
+  ] as const;
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
   const manual = useRef(false);
@@ -56,7 +57,7 @@ export function ProductionProcess() {
       aria-labelledby="process-heading"
     >
       <div className="hi-process-pin hi-shell">
-        <WordReveal as="h2" id="process-heading" className="hi-title" text="ÜRETİM SÜRECİ" />
+        <WordReveal as="h2" id="process-heading" className="hi-title" text={t("home.processTitle")} />
         <InteractiveMedia>
           <CadFrame
             className="hi-process-scene mt-4 overflow-hidden bg-[color:var(--bc-panel)]"
@@ -64,7 +65,7 @@ export function ProductionProcess() {
           >
             <SlotImage
               src={industrialAssets.productionTunnel}
-              alt="Üretim tüneli: yazıcı sırası ve baskı nesnesi"
+              alt={t("home.processAlt")}
               fill
               sizes="100vw"
               className="object-cover"

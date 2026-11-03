@@ -5,6 +5,11 @@ import { decideExternalModelPurchase } from "@/domain/external-models/permission
 import { getExternalPermission } from "@/domain/external-models/permission-store";
 import { parseStrictEnvBoolean } from "@/lib/env-boolean";
 import { serverEnv } from "@/lib/env.server";
+import { sanitizeThingiverseToken } from "@/providers/thingiverse/auth";
+import {
+  hydrateThingiverseOauthToken,
+  peekThingiverseOauthToken,
+} from "@/providers/thingiverse/oauth-store";
 import type {
   BrowsableExternalModelProvider,
   ExternalModelBrowseResult,
@@ -69,7 +74,9 @@ export function getThingiverseConfigStatus(): ThingiverseIntegrationStatus {
   return resolveThingiverseConfigStatus({
     clientId: serverEnv.THINGIVERSE_CLIENT_ID,
     clientSecret: serverEnv.THINGIVERSE_CLIENT_SECRET,
-    accessToken: serverEnv.THINGIVERSE_ACCESS_TOKEN,
+    accessToken:
+      sanitizeThingiverseToken(serverEnv.THINGIVERSE_ACCESS_TOKEN) ||
+      peekThingiverseOauthToken(),
   });
 }
 
@@ -261,6 +268,7 @@ export const thingiverseProvider: BrowsableExternalModelProvider = {
     context: ProviderContext,
   ): Promise<ExternalModelBrowseResult> {
     void context;
+    await hydrateThingiverseOauthToken();
     if (!canCallThingiverse()) {
       return { items: [], page: input.page, perPage, hasMore: false };
     }
@@ -292,6 +300,7 @@ export const thingiverseProvider: BrowsableExternalModelProvider = {
     };
   },
   async getById(externalId) {
+    await hydrateThingiverseOauthToken();
     if (!canCallThingiverse()) {
       return null;
     }

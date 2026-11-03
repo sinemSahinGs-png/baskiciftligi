@@ -13,6 +13,11 @@ vi.mock("@/providers/thingiverse/provider", () => ({
   },
 }));
 
+vi.mock("@/providers/thingiverse/oauth-store", () => ({
+  hydrateThingiverseOauthToken: async () => undefined,
+  peekThingiverseOauthToken: () => undefined,
+}));
+
 vi.mock("@/providers/thingiverse/client", () => ({
   ThingiverseApiError: class ThingiverseApiError extends Error {
     status: number;

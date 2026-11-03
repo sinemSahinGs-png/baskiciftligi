@@ -32,15 +32,14 @@ export function paytrCallbackUrl(): string {
   if (serverEnv.PAYTR_CALLBACK_URL) {
     return serverEnv.PAYTR_CALLBACK_URL;
   }
-  const site =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000";
-  return `${site}/api/paytr/callback`;
+  return `${siteOrigin()}/api/paytr/callback`;
 }
 
 export function siteOrigin(): string {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000"
-  );
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  if (fromEnv) return fromEnv;
+  if (process.env.NODE_ENV === "production") {
+    return "https://baskiciftligi.com";
+  }
+  return "http://localhost:3000";
 }

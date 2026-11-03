@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 
+import { applyStorePaytrCallback } from "@/lib/store-checkout/service";
 import { handlePaytrCallback } from "@/lib/wholesale/callback-service";
 import { getPaytrCredentials } from "@/lib/wholesale/credentials";
 import { sendWholesaleEmail } from "@/lib/wholesale/email";
-import type { PaytrCallbackPayload } from "@/lib/wholesale/paytr";
+import {
+  parsePaytrTotalAmount,
+  type PaytrCallbackPayload,
+} from "@/lib/wholesale/paytr";
 import { getWholesaleStore } from "@/lib/wholesale/repository";
 import { requestIdFrom } from "@/lib/wholesale/request-ip";
 
@@ -56,6 +60,24 @@ export async function POST(request: Request) {
       credentials,
       requestId,
     });
+
+    if (!result.ok && result.reason === "unknown_order") {
+      let amountMinor = 0;
+      try {
+        amountMinor = parsePaytrTotalAmount(payload.totalAmount);
+      } catch {
+        return new NextResponse("invalid_amount", { status: 400 });
+      }
+      const storeResult = await applyStorePaytrCallback({
+        merchantOid: payload.merchantOid,
+        success: payload.status === "success",
+        amountMinor,
+      });
+      if (!storeResult.ok) {
+        return new NextResponse(storeResult.reason, { status: 400 });
+      }
+      return okResponse();
+    }
 
     if (!result.ok) {
       console.info("[paytr-callback]", {

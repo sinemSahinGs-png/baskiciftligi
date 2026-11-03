@@ -95,7 +95,7 @@
 }
 
 .store-intro-kicker {
-  font-family: var(--font-bc-mono), ui-monospace, monospace;
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -103,7 +103,7 @@
 }
 
 .store-intro-title {
-  font-family: var(--font-bc-display), var(--font-bricolage), sans-serif;
+  font-family: var(--font-jakarta), sans-serif;
   font-size: clamp(1.22rem, 2.35vw, 1.62rem);
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -122,7 +122,7 @@
 
 .store-intro-count {
   margin-top: 0.55rem;
-  font-family: var(--font-bc-mono), ui-monospace, monospace;
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 0.72rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -316,7 +316,7 @@
   margin: 0;
   padding: 0.08rem 0.36rem;
   border: 1px solid rgb(245 244 239 / 0.5);
-  font-family: var(--font-bc-mono, ui-monospace, monospace);
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 0.56rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -418,7 +418,7 @@
 
 .store-tool-count {
   margin-left: auto;
-  font-family: var(--font-bc-mono), ui-monospace, monospace;
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -507,14 +507,14 @@
 }
 
 .store-filter-title {
-  font-family: var(--font-bc-display), var(--font-bricolage), sans-serif;
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 1.35rem;
   letter-spacing: -0.03em;
 }
 
 .store-filter-count {
   margin-bottom: 0.35rem;
-  font-family: var(--font-bc-mono), ui-monospace, monospace;
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 0.68rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1043,13 +1043,13 @@
 
 .store-editorial-kicker,
 .store-editorial-cta {
-  font-family: var(--font-bc-mono), ui-monospace, monospace;
+  font-family: var(--font-jakarta), sans-serif;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .store-editorial-title {
-  font-family: var(--font-bc-display), var(--font-bricolage), sans-serif;
+  font-family: var(--font-jakarta), sans-serif;
   font-size: clamp(1.45rem, 5vw, 2.2rem);
   font-weight: 700;
   letter-spacing: -0.045em;
@@ -1124,7 +1124,7 @@
 }
 
 .store-upload-banner h2 {
-  font-family: var(--font-bc-display), var(--font-bricolage), sans-serif;
+  font-family: var(--font-jakarta), sans-serif;
   font-size: clamp(1.25rem, 4.4vw, 1.7rem);
   font-weight: 700;
   letter-spacing: -0.035em;
@@ -1619,7 +1619,7 @@ html[data-bc-capture="fullpage"] .hi-root {
   margin-top: 0.2rem;
   padding: 0.12rem 0.38rem;
   border: 1px solid rgb(241 240 235 / 0.55);
-  font-family: var(--font-bc-mono, ui-monospace, monospace);
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 0.58rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1643,7 +1643,7 @@ html[data-bc-capture="fullpage"] .hi-root {
 
 .store-mega-wholesale-kicker {
   margin: 0;
-  font-family: var(--font-bc-mono, ui-monospace, monospace);
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 0.62rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1792,7 +1792,7 @@ html[data-bc-capture="fullpage"] .hi-root {
   align-items: center;
   gap: 0.65rem;
   margin-top: 0.85rem;
-  font-family: var(--font-bc-mono, ui-monospace, monospace);
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 0.68rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;

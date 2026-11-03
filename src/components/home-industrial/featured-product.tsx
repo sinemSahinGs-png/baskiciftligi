@@ -1,3 +1,5 @@
+"use client";
+
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -8,8 +10,11 @@ import { SlotImage } from "@/components/home-industrial/slot-image";
 import { InteractiveMedia, MagneticAction, WordReveal } from "@/components/motion/premium";
 import { resolveProductVisual } from "@/domain/catalog/media";
 import type { Product } from "@/domain/catalog/types";
+import { useTranslations } from "next-intl";
+import { OctoSignature } from "@/components/brand/octo-signature";
 
 export function FeaturedProduct({ product }: { product: Product | null }) {
+  const t = useTranslations();
   const visual = product ? resolveProductVisual(product) : null;
   const liveSrc = visual?.primary?.url ?? null;
   const liveAlt = visual?.primary?.alt ?? product?.name ?? "";
@@ -23,9 +28,10 @@ export function FeaturedProduct({ product }: { product: Product | null }) {
       className="hi-section hi-featured"
       aria-labelledby="featured-heading"
     >
-      <div className="hi-shell hi-featured-layout">
+      <div className="hi-shell hi-featured-layout relative">
+        <OctoSignature />
         <article className="hi-featured-copy">
-          <WordReveal as="h2" id="featured-heading" className="hi-kicker" text="ÖNE ÇIKAN ÜRÜN" />
+          <WordReveal as="h2" id="featured-heading" className="hi-kicker" text={t("home.featured")} />
           {product ? (
             <>
               <p className="hi-title mt-3 max-w-[14ch]">{product.name}</p>
@@ -41,17 +47,17 @@ export function FeaturedProduct({ product }: { product: Product | null }) {
                     data-featured-product-slug={product.slug}
                     className="hi-btn whitespace-nowrap"
                   >
-                    Ürünü incele →
+                    {t("home.inspectProduct")}
                   </Link>
                 </MagneticAction>
               </div>
             </>
           ) : (
             <>
-              <WordReveal as="p" className="hi-title mt-3 max-w-[14ch]" text="MAĞAZAYI KEŞFET" />
+              <WordReveal as="p" className="hi-title mt-3 max-w-[14ch]" text={t("home.exploreShop")} />
               <div className="mt-5">
                 <Link href={"/magaza" as Route} className="hi-btn">
-                  Tüm ürünleri gör →
+                  {t("home.allProductsLink")}
                 </Link>
               </div>
             </>

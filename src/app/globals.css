@@ -1,15 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "../styles/octo-tokens.css";
+@import "../styles/octo-atmosphere.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: var(--font-jakarta);
-  --font-heading: var(--font-bricolage);
-  --font-serif: var(--font-bricolage);
-  --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas,
-    monospace;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-display), var(--font-jakarta), sans-serif;
+  --font-serif: var(--font-jakarta);
+  --font-mono: var(--font-mono), ui-monospace, monospace;
   --color-midnight: var(--midnight);
   --color-deep-ink: var(--deep-ink);
   --color-carbon: var(--carbon);
@@ -108,10 +109,10 @@
   --store-orange: var(--shop-orange);
   --store-line-dark: var(--shop-line);
   --store-line-light: rgba(242, 241, 236, 0.18);
-  --midnight: #070713;
-  --deep-ink: #10101a;
-  --carbon: #171721;
-  --porcelain: #f7f5f0;
+  --midnight: #02070b;
+  --deep-ink: #06141d;
+  --carbon: #0a202a;
+  --porcelain: #f1f0e8;
   --optical: #ffffff;
   --neutral: #e8e6e1;
   --dark-text: #111119;
@@ -120,8 +121,8 @@
   --muted-dark: rgb(17 17 25 / 0.62);
   --cobalt: #4054ff;
   --violet: #7a42f4;
-  --cyan: #30d5d2;
-  --coral: #ff6542;
+  --cyan: #11c5bf;
+  --coral: #ff5b3d;
   --orange: #ff9238;
   --lime: #c8f55a;
   --success: #39b77b;
@@ -217,11 +218,25 @@
   }
 
   html {
+    --font-bc-display: var(--font-jakarta);
+    --font-bc-mono: var(--font-jakarta);
+    --font-bricolage: var(--font-jakarta);
     @apply font-sans;
     overflow-x: clip;
     background: var(--midnight);
     color: var(--light-text);
     text-rendering: optimizeLegibility;
+  }
+
+  html[lang="ar"] {
+    --font-sans: var(--font-arabic);
+    --font-heading: var(--font-arabic);
+    --font-serif: var(--font-arabic);
+    --font-mono: var(--font-arabic);
+    --font-bc-display: var(--font-arabic);
+    --font-bc-mono: var(--font-arabic);
+    --font-bricolage: var(--font-arabic);
+    font-family: var(--font-arabic), var(--font-jakarta), sans-serif;
   }
 
   body {
@@ -237,7 +252,7 @@
   h1,
   h2,
   h3 {
-    font-family: var(--font-bricolage), var(--font-jakarta), sans-serif;
+    font-family: var(--font-display), var(--font-jakarta), sans-serif;
     font-weight: 700;
     letter-spacing: -0.045em;
     line-height: 0.98;
@@ -329,7 +344,7 @@
   }
 
   .display-title {
-    font-family: var(--font-bricolage), sans-serif;
+    font-family: var(--font-jakarta), sans-serif;
     font-size: clamp(2.65rem, 12vw, 4.25rem);
     font-weight: 750;
     letter-spacing: -0.055em;
@@ -338,7 +353,7 @@
   }
 
   .section-title {
-    font-family: var(--font-bricolage), sans-serif;
+    font-family: var(--font-jakarta), sans-serif;
     font-size: clamp(2.15rem, 4.6vw, 4.15rem);
     font-weight: 700;
     letter-spacing: -0.05em;
@@ -1413,3 +1428,4 @@ html.motion-ready:not([data-reduced-motion="true"]) [data-motion-item="visible"]
     transform: scaleY(1) !important;
   }
 }
+

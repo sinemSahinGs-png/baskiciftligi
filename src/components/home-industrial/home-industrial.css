@@ -14,8 +14,8 @@ html[data-home-industrial] {
   --bc-dark-text: #080a0b;
   --hi-bg: var(--bc-black);
   --hi-fg: var(--bc-white);
-  --hi-display: var(--font-bc-display), var(--font-bricolage), sans-serif;
-  --hi-mono: var(--font-bc-mono), ui-monospace, monospace;
+  --hi-display: var(--font-jakarta), sans-serif;
+  --hi-mono: var(--font-jakarta), sans-serif;
   --hi-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --hi-spot: 0;
 }
@@ -2898,6 +2898,27 @@ html[data-home-industrial] footer {
 .hi-quote-drop[data-dragging="true"] {
   border-color: var(--bc-orange);
   background: #17120e;
+}
+
+.hi-quote-support {
+  display: flex;
+  min-height: 8.5rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+  padding: 1.1rem 1.15rem;
+  border: 1px solid rgb(241 240 235 / 0.16);
+  background: #101314;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 280ms var(--hi-ease);
+}
+
+.hi-quote-support:hover,
+.hi-quote-support:focus-visible {
+  border-color: var(--bc-cyan);
+  outline: none;
 }
 
 .hi-quote-drop-kicker {
