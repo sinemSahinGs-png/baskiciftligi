@@ -125,7 +125,8 @@ async function run(width, height, suffix, extras = {}) {
     const menu = page.getByTestId("octo-open-menu");
     if (await menu.count()) {
       await page.evaluate(() => {
-        document.querySelector<HTMLButtonElement>("[data-testid='octo-open-menu']")?.click();
+        const button = document.querySelector("[data-testid='octo-open-menu']");
+        if (button instanceof HTMLButtonElement) button.click();
       });
       await page.waitForTimeout(500);
       await shot(page, "octo-mobile-menu-390");
