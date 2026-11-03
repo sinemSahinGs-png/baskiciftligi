@@ -204,8 +204,8 @@ export function SiteHeader({
       <AnimatePresence>
         {mobileOpen ? (
         <m.div
-          initial={reduceMotion ? false : { opacity: 0.92, y: -16 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={reduceMotion ? false : { y: -16 }}
+          animate={{ y: 0 }}
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
           transition={{ duration: 0.32, ease: foundryEase }}
           className="octo-mobile-panel fixed inset-0 z-50 bg-[color:var(--octo-void)] text-light-text lg:hidden"
