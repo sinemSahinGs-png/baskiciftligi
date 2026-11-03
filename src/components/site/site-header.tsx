@@ -150,7 +150,7 @@ export function SiteHeader({
             <Link
               href={"/hesabim" as Route}
               aria-label={t("common.account")}
-              className="inline-flex size-11 items-center justify-center"
+              className="hidden size-11 items-center justify-center lg:inline-flex"
             >
               <UserRound aria-hidden="true" className="size-5" />
             </Link>
@@ -161,14 +161,14 @@ export function SiteHeader({
                   ? `${t("common.favorites")}, ${favoriteCount}`
                   : t("common.favorites")
               }
-              className="relative inline-flex size-11 items-center justify-center"
+              className="relative hidden size-11 items-center justify-center lg:inline-flex"
             >
               <Heart aria-hidden="true" className="size-5" />
             </Link>
             <Link
               href={"/sepet" as Route}
               aria-label={cartHydrated ? `${t("common.cart")}, ${cartCount}` : t("common.cart")}
-              className="relative inline-flex size-11 items-center justify-center"
+              className="relative hidden size-11 items-center justify-center lg:inline-flex"
             >
               <ShoppingBag aria-hidden="true" className="size-5" />
               {cartHydrated && cartCount > 0 ? (

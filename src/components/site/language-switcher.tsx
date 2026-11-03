@@ -32,7 +32,7 @@ export function LanguageSwitcher({ inverted }: { inverted?: boolean }) {
 
   return (
     <div
-      className="flex items-center gap-0.5 rounded-md border border-white/15 p-0.5"
+      className="flex max-w-[7.5rem] shrink-0 items-center gap-0.5 rounded-md border border-white/15 p-0.5 sm:max-w-none"
       role="group"
       aria-label={t("language")}
     >

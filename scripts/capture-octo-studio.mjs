@@ -124,7 +124,9 @@ async function run(width, height, suffix, extras = {}) {
     await page.waitForTimeout(200);
     const menu = page.getByTestId("octo-open-menu");
     if (await menu.count()) {
-      await menu.click();
+      await page.evaluate(() => {
+        document.querySelector<HTMLButtonElement>("[data-testid='octo-open-menu']")?.click();
+      });
       await page.waitForTimeout(500);
       await shot(page, "octo-mobile-menu-390");
       await page.keyboard.press("Escape");
