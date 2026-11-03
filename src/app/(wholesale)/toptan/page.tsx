@@ -29,6 +29,16 @@ export default async function WholesaleCheckoutPage() {
     viewer = null;
   }
 
+  const signedIn = Boolean(viewer && !viewer.isDemo);
+  const isAdmin = Boolean(
+    viewer && (viewer.role === "admin" || viewer.role === "owner" || viewer.isDemo),
+  );
+
+  let checkoutOpen = false;
+  let shippingConfigured = false;
+  let shippingGrossMinor: number | null = null;
+  let adminNote: string | null = null;
+
   try {
     const store = await getWholesaleStore();
     const settings = await store.getSettings();
@@ -39,36 +49,29 @@ export default async function WholesaleCheckoutPage() {
       paytrTestMode: isPaytrTestMode() || stub,
       schemaAvailable: true,
     });
-    const isAdmin = Boolean(
-      viewer && (viewer.role === "admin" || viewer.role === "owner" || viewer.isDemo),
-    );
-
-    return (
-      <WholesaleCheckout
-        checkoutOpen={readiness.checkoutOpen}
-        shippingConfigured={readiness.shippingConfigured}
-        shippingGrossMinor={settings.shippingGrossMinor}
-        adminNote={
-          isAdmin && !readiness.checkoutOpen
-            ? "Yönetici: Vitrin kapalı. Kargo, firma bilgileri, ödeme bilgileri ve sözleşme maddeleri /admin/toptan-siparisler kontrol listesinde tamamlanmalıdır."
-            : null
-        }
-        photos={photos}
-        signedIn={Boolean(viewer && !viewer.isDemo)}
-        supportEmail={siteConfig.contact.email}
-      />
-    );
+    checkoutOpen = readiness.checkoutOpen;
+    shippingConfigured = readiness.shippingConfigured;
+    shippingGrossMinor = settings.shippingGrossMinor;
+    adminNote =
+      isAdmin && !readiness.checkoutOpen
+        ? "Yönetici: Vitrin kapalı. Kargo, firma bilgileri, ödeme bilgileri ve sözleşme maddeleri /admin/toptan-siparisler kontrol listesinde tamamlanmalıdır."
+        : null;
   } catch {
-    return (
-      <WholesaleCheckout
-        checkoutOpen={false}
-        shippingConfigured={false}
-        shippingGrossMinor={null}
-        adminNote={null}
-        photos={photos}
-        signedIn={Boolean(viewer && !viewer.isDemo)}
-        supportEmail={siteConfig.contact.email}
-      />
-    );
+    checkoutOpen = false;
+    shippingConfigured = false;
+    shippingGrossMinor = null;
+    adminNote = null;
   }
+
+  return (
+    <WholesaleCheckout
+      checkoutOpen={checkoutOpen}
+      shippingConfigured={shippingConfigured}
+      shippingGrossMinor={shippingGrossMinor}
+      adminNote={adminNote}
+      photos={photos}
+      signedIn={signedIn}
+      supportEmail={siteConfig.contact.email}
+    />
+  );
 }
