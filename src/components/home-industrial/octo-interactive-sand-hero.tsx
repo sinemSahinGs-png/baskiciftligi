@@ -69,7 +69,7 @@ export function OctoInteractiveSandHero() {
     let observer: IntersectionObserver | null = null;
     const timeout = window.setTimeout(() => {
       if (!cancelled && !engineRef.current) {
-        setMode("static-sand");
+        setMode((current) => (current === "interactive" ? current : "static-sand"));
         setReady(true);
         setStatus("Statik yüzey");
       }

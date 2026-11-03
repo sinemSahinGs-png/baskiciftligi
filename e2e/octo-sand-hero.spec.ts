@@ -43,4 +43,13 @@ test.describe("OCTO sand hero", () => {
     const y = await page.evaluate(() => window.scrollY);
     expect(y).toBeGreaterThan(40);
   });
+
+  test("uses a single hero video and pauses it after leaving the section", async ({ page }) => {
+    await page.goto("/");
+    const video = page.locator("video[data-hero-video]");
+    await expect(video).toHaveCount(1);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(800);
+    await expect.poll(async () => video.evaluate((node) => (node as HTMLVideoElement).paused)).toBe(true);
+  });
 });

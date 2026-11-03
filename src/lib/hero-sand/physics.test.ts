@@ -20,6 +20,9 @@ describe("octo sand physics helpers", () => {
       chooseSandGrid({ width: 390, reducedMotion: false, saveData: false, webgl2: true }),
     ).toBe(256);
     expect(
+      chooseSandGrid({ width: 768, reducedMotion: false, saveData: false, webgl2: true }),
+    ).toBe(384);
+    expect(
       chooseSandGrid({ width: 1440, reducedMotion: false, saveData: false, webgl2: true }),
     ).toBe(512);
   });

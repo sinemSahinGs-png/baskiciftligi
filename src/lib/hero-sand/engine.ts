@@ -1,3 +1,5 @@
+import { SAND_RESET_MS } from "@/lib/hero-sand/physics";
+
 const SIM_VS = `#version 300 es
 in vec2 aPos;
 out vec2 vUv;
@@ -32,10 +34,11 @@ void main() {
   vec2 vel = decode(state.zw);
   float dist = distance(vUv, uPointer);
   float falloff = exp(-dist * dist / max(uRadius * uRadius, 0.0004));
-  vel += uDelta * falloff * uForce;
-  vel *= 0.9;
+  float grain = fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453);
+  vel += uDelta * falloff * uForce * (0.8 + grain * 0.4);
+  vel *= 0.88;
   disp += vel;
-  disp *= mix(1.0, 0.994, uSettle);
+  disp += (vUv - vec2(0.5)) * length(disp) * 0.002 * uSettle;
   disp = mix(disp, vec2(0.0), uReset);
   vel = mix(vel, vec2(0.0), uReset);
   fragColor = vec4(encode(disp), encode(vel));
@@ -263,7 +266,7 @@ export class OctoSandEngine {
 
   startReset() {
     if (this.resetUntil > performance.now()) return;
-    this.resetUntil = performance.now() + 1600;
+    this.resetUntil = performance.now() + SAND_RESET_MS;
   }
 
   setPaused(paused: boolean) {
@@ -316,9 +319,11 @@ export class OctoSandEngine {
   }
 
   private loop(now: number) {
-    if (this.lost) return;
+    if (this.lost || this.paused) {
+      this.raf = 0;
+      return;
+    }
     this.raf = requestAnimationFrame(this.loop);
-    if (this.paused) return;
     const dt = this.last ? Math.min(0.033, (now - this.last) / 1000) : 0.016;
     this.last = now;
     this.frames += 1;

@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { OctoInteractiveSandHero } from "@/components/home-industrial/octo-interactive-sand-hero";
@@ -51,5 +51,16 @@ describe("OctoInteractiveSandHero", () => {
     );
     expect(screen.getByRole("heading", { name: /FİKRİNİ DERİNLİKTEN ÇIKAR/ })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Kumu sıfırla" })).toBeNull();
+  });
+
+  it("exits the loader after the asset timeout when WebGL never starts", () => {
+    vi.useFakeTimers();
+    render(<OctoInteractiveSandHero />);
+    act(() => {
+      vi.advanceTimersByTime(5100);
+    });
+    expect(document.querySelector("[data-octo-sand-ready='true']")).toBeTruthy();
+    expect(document.querySelector(".octo-sand-loader")).toBeNull();
+    vi.useRealTimers();
   });
 });
