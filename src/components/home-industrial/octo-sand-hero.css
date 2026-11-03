@@ -4,6 +4,7 @@
 
 .hi-hero .hi-hero-inner {
   z-index: 4;
+  pointer-events: auto;
 }
 
 .octo-sand-layer {

@@ -4,6 +4,7 @@ node_modules
 test-results
 playwright-report
 coverage
+qa-*
 .git
 e2e
 *.pem

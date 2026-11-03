@@ -100,13 +100,13 @@ void main() {
   float r = 0.52 + vSeed * 0.38;
   if (d > r) discard;
   float alpha = smoothstep(r, r - 0.42, d) * (0.78 + vSeed * 0.2) * vCover;
-  vec3 dark = vec3(0.031, 0.024, 0.018);
-  vec3 brown = vec3(0.145, 0.086, 0.048);
-  vec3 bronze = vec3(0.58, 0.4, 0.24);
-  vec3 champ = vec3(0.82, 0.7, 0.5);
-  vec3 color = mix(dark, brown, vSeed);
-  color = mix(color, bronze, step(0.91, vSeed) * 0.42);
-  color = mix(color, champ, step(0.978, vSeed) * 0.28);
+  vec3 dark = vec3(0.022, 0.018, 0.014);
+  vec3 brown = vec3(0.11, 0.07, 0.04);
+  vec3 bronze = vec3(0.48, 0.32, 0.2);
+  vec3 champ = vec3(0.72, 0.6, 0.42);
+  vec3 color = mix(dark, brown, vSeed * 0.55);
+  color = mix(color, bronze, step(0.97, vSeed) * 0.28);
+  color = mix(color, champ, step(0.993, vSeed) * 0.16);
   fragColor = vec4(color, alpha);
 }`;
 

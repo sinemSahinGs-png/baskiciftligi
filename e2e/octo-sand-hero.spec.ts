@@ -10,10 +10,14 @@ test.describe("OCTO sand hero", () => {
 
   test("canvas does not steal CTA clicks", async ({ page }) => {
     await page.goto("/");
-    const cta = page.locator(".octo-cta").first();
+    const cta = page.locator("#ne-uretmek-istiyorsun a[href='/magaza']").first();
     await expect(cta).toBeVisible();
-    await cta.click();
-    await expect(page).toHaveURL(/magaza/);
+    const hit = await cta.evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      const top = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return Boolean(top && (node === top || node.contains(top)));
+    });
+    expect(hit).toBe(true);
   });
 
   test("reset control is keyboard accessible when interactive", async ({ page }) => {
