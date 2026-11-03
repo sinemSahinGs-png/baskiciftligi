@@ -48,6 +48,8 @@ const DRAW_VS = `#version 300 es
 in vec2 aUv;
 uniform sampler2D uState;
 uniform vec2 uResolution;
+uniform vec4 uScreen;
+uniform float uRadius;
 uniform float uPoint;
 out float vSeed;
 out float vCover;
@@ -60,33 +62,31 @@ float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 }
 
-float sdCircle(vec2 p, float r) {
-  return length(p) - r;
+float sdRoundBox(vec2 p, vec2 b, float r) {
+  vec2 q = abs(p) - b + r;
+  return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
 }
 
-float octoAperture(vec2 uv) {
-  vec2 centered = (uv - vec2(0.5, 0.46)) * vec2(1.0, uResolution.x / max(uResolution.y, 1.0));
-  float ring = abs(sdCircle(centered, 0.16)) - 0.018;
-  vec2 q = centered - vec2(0.09, 0.05);
-  float curve = abs(q.y - 0.55 * q.x * q.x) - 0.03;
-  float window = min(ring, curve);
-  float copyWell = sdCircle((uv - vec2(0.5, 0.34)) * vec2(1.35, 1.0), 0.22);
-  return 1.0 - smoothstep(0.0, 0.08, min(window, copyWell));
+float screenWindow(vec2 uv) {
+  vec2 center = uScreen.xy + uScreen.zw * 0.5;
+  vec2 halfSize = uScreen.zw * 0.5;
+  float d = sdRoundBox(uv - center, halfSize, uRadius * min(uScreen.z, uScreen.w));
+  return 1.0 - smoothstep(-0.012, 0.018, d);
 }
 
 void main() {
   vec4 state = texture(uState, aUv);
   vec2 disp = decode(state.xy);
   vec2 pos = aUv * 2.0 - 1.0;
-  pos += disp * 2.0;
+  pos += disp * 1.15;
   pos.y *= -1.0;
   float seed = hash(aUv);
-  float aperture = octoAperture(aUv);
-  vCover = mix(1.0, 0.18, aperture);
-  vCover *= step(aperture * 0.72, seed);
+  float aperture = screenWindow(aUv);
+  vCover = mix(0.34, 0.0, aperture);
+  vCover *= 0.42 + seed * 0.38;
   vSeed = seed;
   gl_Position = vec4(pos, 0.0, 1.0);
-  gl_PointSize = mix(1.2, uPoint, 0.45 + seed * 0.7) * (0.35 + vCover);
+  gl_PointSize = mix(1.05, uPoint, 0.4 + seed * 0.55) * (0.28 + vCover);
 }`;
 
 const DRAW_FS = `#version 300 es
@@ -102,14 +102,12 @@ void main() {
   float d = length(p);
   float r = 0.52 + vSeed * 0.38;
   if (d > r) discard;
-  float alpha = smoothstep(r, r - 0.42, d) * (0.78 + vSeed * 0.2) * vCover;
-  vec3 dark = vec3(0.022, 0.018, 0.014);
-  vec3 brown = vec3(0.11, 0.07, 0.04);
-  vec3 bronze = vec3(0.48, 0.32, 0.2);
-  vec3 champ = vec3(0.72, 0.6, 0.42);
-  vec3 color = mix(dark, brown, vSeed * 0.55);
-  color = mix(color, bronze, step(0.97, vSeed) * 0.28);
-  color = mix(color, champ, step(0.993, vSeed) * 0.16);
+  float alpha = smoothstep(r, r - 0.38, d) * (0.55 + vSeed * 0.18) * vCover;
+  vec3 dark = vec3(0.22, 0.14, 0.08);
+  vec3 brown = vec3(0.42, 0.28, 0.16);
+  vec3 bronze = vec3(0.52, 0.34, 0.18);
+  vec3 color = mix(dark, brown, vSeed * 0.7);
+  color = mix(color, bronze, step(0.985, vSeed) * 0.18);
   fragColor = vec4(color, alpha);
 }`;
 
@@ -211,6 +209,7 @@ export class OctoSandEngine {
   private fps = 0;
   private frameMs = 0;
   private pointer = { x: 0.5, y: 0.5, dx: 0, dy: 0, force: 0 };
+  private screen = { left: 0.308375, top: 0.142202, width: 0.377704, height: 0.682339, radius: 0.062 };
   private onLost = () => {
     this.lost = true;
     this.stop();
@@ -262,6 +261,10 @@ export class OctoSandEngine {
 
   impulse(nx: number, ny: number, dx: number, dy: number, force: number) {
     this.pointer = { x: nx, y: ny, dx, dy, force };
+  }
+
+  setScreen(next: { left: number; top: number; width: number; height: number; radius: number }) {
+    this.screen = next;
   }
 
   startReset() {
@@ -372,7 +375,15 @@ export class OctoSandEngine {
       this.canvas.width,
       this.canvas.height,
     );
-    gl.uniform1f(gl.getUniformLocation(this.draw, "uPoint"), this.dpr * (this.grid <= 256 ? 2.4 : 2.8));
+    gl.uniform4f(
+      gl.getUniformLocation(this.draw, "uScreen"),
+      this.screen.left,
+      this.screen.top,
+      this.screen.width,
+      this.screen.height,
+    );
+    gl.uniform1f(gl.getUniformLocation(this.draw, "uRadius"), this.screen.radius);
+    gl.uniform1f(gl.getUniformLocation(this.draw, "uPoint"), this.dpr * (this.grid <= 256 ? 2.1 : 2.4));
     const uvLoc = gl.getAttribLocation(this.draw, "aUv");
     gl.bindBuffer(gl.ARRAY_BUFFER, this.particles);
     gl.enableVertexAttribArray(uvLoc);

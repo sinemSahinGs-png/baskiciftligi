@@ -15,11 +15,12 @@ import {
 import { ArrowUpRight } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 
+import "./octo-sand-hero.css";
 import { HeroVideo } from "@/components/home-industrial/hero-video";
 import { OctoInteractiveSandHero } from "@/components/home-industrial/octo-interactive-sand-hero";
 import { HeroTypewriter } from "@/components/home-industrial/hero-typewriter";
-import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
 import { SlotImage } from "@/components/home-industrial/slot-image";
+import { OCTO_TV_SHELL, OCTO_TV_MOBILE_MEDIA } from "@/lib/hero-sand/tv-screen";
 import { MagneticAction, WordReveal, useHeroPointer } from "@/components/motion/premium";
 import { externalQuoteCtaLabel } from "@/domain/external-models/quote-action";
 import { trackHomeEvent } from "@/lib/home/analytics";
@@ -267,17 +268,30 @@ export function IdeaCommand() {
       id="ne-uretmek-istiyorsun"
       data-home-theme="mono"
       data-hero-first-example={t("home.example1")}
-      className="hi-hero"
+      className="hi-hero octo-tv-hero"
       aria-labelledby="idea-command-heading"
     >
-      <HeroVideo reducedMotion={reduceMotion} />
-      <OctoInteractiveSandHero />
-      <TechnicalGrid className="hi-hero-grid" />
-      <div className="hi-hero-vignette" aria-hidden="true" />
-      <div className="hi-hero-copy-scrim" aria-hidden="true" />
-      <div className="hi-hero-search-scrim" aria-hidden="true" />
-      <div className="hi-hero-fade" aria-hidden="true" />
-      <div className="hi-hero-path" aria-hidden="true" />
+      <div className="octo-tv-stage">
+        <div className="octo-tv-frame">
+          <picture className="octo-tv-shell-picture">
+            <source media={OCTO_TV_MOBILE_MEDIA} srcSet={OCTO_TV_SHELL.mobile} type="image/webp" />
+            <source media="(min-width: 768px)" srcSet={OCTO_TV_SHELL.desktop} type="image/webp" />
+            <img
+              className="octo-tv-shell"
+              src={OCTO_TV_SHELL.desktop}
+              alt=""
+              width={1803}
+              height={872}
+              decoding="async"
+              fetchPriority="high"
+            />
+          </picture>
+          <div className="octo-tv-screen" data-octo-tv-screen="">
+            <HeroVideo reducedMotion={reduceMotion} />
+            <div className="octo-tv-glass" aria-hidden="true" />
+          </div>
+          <OctoInteractiveSandHero />
+          <div className="octo-tv-content">
       <div className="hi-hero-inner">
         <div className="hi-hero-cluster">
         <div className="hi-hero-copy">
@@ -371,11 +385,16 @@ export function IdeaCommand() {
         </form>
         </div>
         </div>
-        <p className="octo-scroll-hint mt-6">
+          </div>
+          </div>
+        </div>
+        <p className="octo-scroll-hint octo-tv-scroll">
           {t("home.heroScroll")}
           <span />
         </p>
+      </div>
 
+      <div className="octo-tv-below">
         {status === "searching" ? (
           <p className="hi-hero-results mt-4 text-sm font-medium">{phase}</p>
         ) : null}

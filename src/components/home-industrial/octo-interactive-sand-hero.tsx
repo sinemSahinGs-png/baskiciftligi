@@ -15,6 +15,7 @@ import {
   isHeroChrome,
   sandImpulseFromPointer,
 } from "@/lib/hero-sand/physics";
+import { readTvScreenFromStyles } from "@/lib/hero-sand/tv-screen";
 
 type FallbackMode = "interactive" | "static-sand" | "poster" | "obsidian";
 
@@ -94,6 +95,8 @@ export function OctoInteractiveSandHero() {
         const dpr = chooseSandDpr(window.devicePixelRatio, host.clientWidth);
         const next = new OctoSandEngine(canvas, grid, dpr);
         next.resize(host.clientWidth, host.clientHeight, dpr);
+        const frame = canvas.closest(".octo-tv-frame") ?? host;
+        next.setScreen(readTvScreenFromStyles(getComputedStyle(frame)));
         engineRef.current = next;
         setMode("interactive");
         setReady(true);
@@ -114,6 +117,8 @@ export function OctoInteractiveSandHero() {
         host.clientHeight,
         chooseSandDpr(window.devicePixelRatio, host.clientWidth),
       );
+      const frame = canvas.closest(".octo-tv-frame") ?? host;
+      engineRef.current.setScreen(readTvScreenFromStyles(getComputedStyle(frame)));
     };
     if (typeof IntersectionObserver !== "undefined") {
       observer = new IntersectionObserver(

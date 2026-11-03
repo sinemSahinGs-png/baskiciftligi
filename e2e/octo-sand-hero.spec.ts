@@ -52,4 +52,20 @@ test.describe("OCTO sand hero", () => {
     await page.waitForTimeout(800);
     await expect.poll(async () => video.evaluate((node) => (node as HTMLVideoElement).paused)).toBe(true);
   });
+
+  test("keeps the video inside the television screen", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    const screenBox = await page.locator("[data-octo-tv-screen]").boundingBox();
+    const videoBox = await page.locator("video[data-hero-video]").boundingBox();
+    expect(screenBox).toBeTruthy();
+    expect(videoBox).toBeTruthy();
+    if (!screenBox || !videoBox) return;
+    expect(videoBox.x).toBeGreaterThanOrEqual(screenBox.x - 1);
+    expect(videoBox.y).toBeGreaterThanOrEqual(screenBox.y - 1);
+    expect(videoBox.x + videoBox.width).toBeLessThanOrEqual(screenBox.x + screenBox.width + 1);
+    expect(videoBox.y + videoBox.height).toBeLessThanOrEqual(screenBox.y + screenBox.height + 1);
+    await expect(page.locator("header")).toHaveCount(1);
+    await expect(page.locator(".octo-tv-shell")).toHaveCount(1);
+  });
 });
