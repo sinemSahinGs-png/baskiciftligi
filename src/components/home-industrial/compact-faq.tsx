@@ -1,7 +1,6 @@
 "use client";
 
 import { faqItems } from "@/components/home/faq-data";
-import { WordReveal } from "@/components/motion/premium";
 import { useTranslations } from "next-intl";
 
 export function CompactFaq() {
@@ -16,7 +15,9 @@ export function CompactFaq() {
       aria-labelledby="faq-heading"
     >
       <div className="hi-shell">
-        <WordReveal as="h2" id="faq-heading" className="hi-title" text={t("home.faqTitle")} />
+        <h2 id="faq-heading" className="hi-title">
+          {t("home.faqTitle")}
+        </h2>
         <div className="mt-5 border-t border-[color:var(--bc-line)]">
           {items.map((item, index) => (
             <details key={item.id} className="hi-faq-item border-b border-[color:var(--bc-line)]">
