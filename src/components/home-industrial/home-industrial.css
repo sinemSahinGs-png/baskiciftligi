@@ -1447,7 +1447,7 @@ html[data-home-industrial] footer {
   font-weight: 700;
   line-height: 1.25;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
 }
 
 .hi-product-meta .hi-product-price,
@@ -3277,6 +3277,212 @@ html[data-home-industrial] footer {
   .hi-material-layer {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* OCTO abyss repair: content always visible, mobile is a first-class layout. */
+.hi-root.octo-world {
+  background: transparent;
+}
+
+.hi-title,
+.hi-paths-title,
+.hi-hero-display,
+.hi-kicker {
+  color: var(--octo-ivory);
+}
+
+.hi-lede,
+.hi-cats-meta-desc {
+  color: rgb(240 233 218 / 0.78);
+}
+
+.hi-featured,
+.hi-featured[data-hi-contrast="dark"] {
+  --hi-fill: 0%;
+  background:
+    radial-gradient(80% 70% at 80% 20%, rgb(168 95 53 / 0.16), transparent 48%),
+    linear-gradient(180deg, #140e0a, #071014);
+  color: var(--octo-ivory);
+}
+
+.hi-featured .hi-title,
+.hi-featured .hi-kicker,
+.hi-featured .type-price,
+.hi-featured .tabular {
+  color: var(--octo-ivory);
+}
+
+.hi-featured .hi-btn {
+  background: var(--octo-action);
+  color: var(--octo-action-text);
+}
+
+.hi-archive,
+.hi-store-stage,
+.hi-materials {
+  background:
+    linear-gradient(180deg, rgb(7 16 20 / 0.55), rgb(2 5 7 / 0.92));
+  color: var(--octo-ivory);
+  --bc-muted: rgb(240 233 218 / 0.7);
+  --bc-line: rgb(216 180 124 / 0.16);
+  --bc-panel: #0f1619;
+}
+
+.hi-archive .hi-title,
+.hi-store-stage .hi-title,
+.hi-materials .hi-title,
+.hi-archive .hi-link,
+.hi-store-stage .hi-link,
+.hi-materials .hi-link {
+  color: var(--octo-ivory);
+}
+
+.hi-store-stage .hi-product-card {
+  background: rgb(15 22 25 / 0.92);
+  color: var(--octo-ivory);
+  border-color: rgb(216 180 124 / 0.16);
+}
+
+.hi-store-stage .hi-product-name,
+.hi-store-stage .hi-product-meta .hi-product-price,
+.hi-store-stage .hi-product-meta .type-price {
+  color: var(--octo-ivory);
+}
+
+.hi-path-stage > div {
+  opacity: 1;
+}
+
+.hi-path-stage > div:not([data-active="true"]) {
+  opacity: 0.22;
+}
+
+.hi-path-stage > div:not([data-active="true"]) img {
+  opacity: 1;
+}
+
+.hi-archive-slide,
+.hi-archive-slide:not([data-active="true"]) img {
+  opacity: 1;
+}
+
+.hi-archive-slide:not([data-active="true"]) {
+  opacity: 0.35;
+}
+
+.hi-process-step-copy {
+  display: block;
+}
+
+.hi-hero::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  z-index: 6;
+  height: min(18vh, 7rem);
+  background:
+    radial-gradient(120% 90% at 50% 0%, transparent 40%, rgb(2 5 7 / 0.35) 72%, #020507 100%);
+}
+
+@media (min-width: 768px) {
+  .hi-cats-slide:not([data-active="true"]) {
+    opacity: 0.18;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .hi-section {
+    padding: 1.15rem 1rem 1.35rem;
+  }
+
+  .hi-title {
+    font-size: clamp(1.55rem, 8.4vw, 2.15rem);
+    line-height: 0.95;
+  }
+
+  .hi-cats {
+    background: transparent;
+  }
+
+  .hi-cats-stage {
+    max-height: 78svh;
+  }
+
+  .hi-cats-art,
+  .hi-cats-art-frame {
+    height: min(48svh, 21rem);
+    min-height: 16rem;
+  }
+
+  .hi-cats-slide {
+    flex-basis: 76%;
+  }
+
+  .hi-process-scene {
+    height: auto;
+    min-height: 12rem;
+    max-height: none;
+  }
+
+  .hi-process-overlay {
+    position: relative;
+    inset: auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-top: 0.7rem;
+    background: rgb(7 16 20 / 0.72);
+  }
+
+  .hi-process-overlay li {
+    min-height: 2.75rem;
+    padding: 0.55rem 0.2rem;
+    border-bottom: 1px solid rgb(216 180 124 / 0.12);
+  }
+
+  .hi-quote-layout,
+  .hi-quote-lab-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hi-quote-drop,
+  .hi-quote-preview {
+    min-height: 11rem;
+  }
+
+  .hi-path-stage {
+    height: 16.5rem;
+    min-height: 16.5rem;
+  }
+}
+
+.octo-process-current {
+  display: block;
+  width: min(22rem, 100%);
+  height: 1.4rem;
+  margin: 0.55rem 0 0.15rem;
+  color: rgb(216 180 124 / 0.45);
+}
+
+.hi-material-caption {
+  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hi-path-stage > div,
+  .hi-archive-slide,
+  .hi-cats-slide,
+  .word-reveal [data-word],
+  .section-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
   }
 }
 

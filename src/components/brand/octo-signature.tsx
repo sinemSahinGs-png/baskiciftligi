@@ -1,9 +1,6 @@
 "use client";
 
-import { useReducedMotion } from "motion/react";
-
 export function OctoSignature({ className }: { className?: string }) {
-  const reduce = useReducedMotion() === true;
   return (
     <svg
       className={className ?? "octo-signature"}
@@ -16,7 +13,7 @@ export function OctoSignature({ className }: { className?: string }) {
           <path
             key={index}
             d={`M400 240 C ${220 - index * 12} ${start}, ${120 + index * 8} ${380 - index * 18}, ${90 + index * 10} 460`}
-            strokeDasharray={reduce ? "none" : "6 14"}
+            strokeDasharray="6 14"
             style={{ animationDelay: `${index * 0.18}s` }}
           />
         );

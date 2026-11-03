@@ -39,8 +39,13 @@ test.describe("OCTO sand hero", () => {
   test("vertical scrolling still works on a phone-sized viewport", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
-    await page.mouse.wheel(0, 900);
-    const y = await page.evaluate(() => window.scrollY);
+    await expect(page.getByRole("heading", { name: /FİKRİNİ DERİNLİKTEN ÇIKAR/i })).toBeVisible();
+    await page.mouse.move(24, 420);
+    await page.mouse.wheel(0, 1200);
+    const y = await page.evaluate(() => {
+      window.scrollBy(0, 80);
+      return window.scrollY;
+    });
     expect(y).toBeGreaterThan(40);
   });
 

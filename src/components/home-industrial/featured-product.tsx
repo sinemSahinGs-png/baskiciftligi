@@ -22,7 +22,7 @@ export function FeaturedProduct({ product }: { product: Product | null }) {
   return (
     <section
       id="one-cikan-urunler"
-      data-home-theme="orange"
+      data-home-theme="mono"
       data-featured-product-slug={product?.slug ?? undefined}
       data-featured-art={liveSrc ? "live" : product ? "empty" : "campaign"}
       className="hi-section hi-featured"

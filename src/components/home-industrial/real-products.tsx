@@ -59,6 +59,10 @@ export function RealProducts({ products }: { products: Product[] }) {
             </Link>
           </div>
         ) : (
+          <>
+          <p className="hi-mono mt-3 text-[0.72rem] tracking-[0.14em] text-[color:var(--octo-champagne)] md:hidden">
+            ← kaydır →
+          </p>
           <ul className="octo-product-rail mt-5">
             {visible.map((product, index) => (
               <li
@@ -98,6 +102,7 @@ export function RealProducts({ products }: { products: Product[] }) {
               </li>
             ))}
           </ul>
+          </>
         )}
       </div>
     </section>

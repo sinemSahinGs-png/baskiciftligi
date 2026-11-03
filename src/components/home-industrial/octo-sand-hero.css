@@ -243,12 +243,18 @@
 }
 
 .octo-sand-static {
-  opacity: 0;
-  background: transparent;
+  opacity: 0.42;
+  background:
+    radial-gradient(ellipse at 50% 80%, rgb(168 95 53 / 0.28), transparent 55%),
+    repeating-radial-gradient(circle at 20% 70%, rgb(75 43 24 / 0.18) 0 1px, transparent 1px 4px);
+}
+
+.octo-sand-layer[data-octo-sand-ready="true"][data-octo-sand-mode="interactive"] .octo-sand-static {
+  opacity: 0.12;
 }
 
 .octo-sand-grain {
-  opacity: 0.06;
+  opacity: 0.22;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -332,8 +338,10 @@
 
 @media (max-width: 767.98px) {
   .octo-tv-stage {
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
     flex-direction: column;
+    padding: calc(env(safe-area-inset-top, 0px) + 3.6rem) 3% calc(4.8rem + env(safe-area-inset-bottom, 0px));
   }
 
   .octo-tv-hero {
@@ -345,11 +353,13 @@
   }
 
   .octo-tv-hero .octo-tv-frame {
-    width: 100%;
+    width: 94%;
+    max-width: 94%;
     min-width: 0;
     height: auto;
     aspect-ratio: unset;
-    margin-top: calc(env(safe-area-inset-top, 0px) + 0.55rem);
+    margin-top: 0;
+    margin-inline: auto;
   }
 
   .octo-tv-shell-picture {

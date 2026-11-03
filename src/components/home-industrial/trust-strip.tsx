@@ -15,7 +15,7 @@ export function TrustStrip() {
   return (
     <section id="guven" data-home-theme="mono" className="hi-section" aria-labelledby="trust-heading">
       <div className="hi-shell">
-        <h2 id="trust-heading" className="sr-only">
+        <h2 id="trust-heading" className="hi-title mb-4">
           {t("home.trustHeading")}
         </h2>
         <ul className="grid grid-cols-2 gap-px border border-[color:var(--bc-line)] md:grid-cols-4">

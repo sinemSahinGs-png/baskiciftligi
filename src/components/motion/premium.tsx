@@ -20,19 +20,17 @@ function useInView<T extends HTMLElement>() {
     const show = () => {
       node.dataset.inview = "true";
     };
+    show();
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
-      show();
       return;
     }
     const box = node.getBoundingClientRect();
     const alreadyVisible =
       box.bottom > 0 && box.top < window.innerHeight && box.height > 0;
     if (alreadyVisible) {
-      show();
       return;
     }
-    node.dataset.inview = "false";
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
@@ -103,6 +101,7 @@ export function WordReveal({
       id={id}
       className={className}
       data-word-reveal=""
+      data-inview="true"
     >
       <span className="word-reveal">
         {tokens.map((token) =>

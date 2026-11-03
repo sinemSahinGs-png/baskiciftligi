@@ -82,8 +82,8 @@ void main() {
   pos.y *= -1.0;
   float seed = hash(aUv);
   float aperture = screenWindow(aUv);
-  vCover = mix(0.34, 0.0, aperture);
-  vCover *= 0.42 + seed * 0.38;
+  vCover = mix(0.82, 0.08, aperture);
+  vCover *= 0.62 + seed * 0.38;
   vSeed = seed;
   gl_Position = vec4(pos, 0.0, 1.0);
   gl_PointSize = mix(1.05, uPoint, 0.4 + seed * 0.55) * (0.28 + vCover);
@@ -102,10 +102,10 @@ void main() {
   float d = length(p);
   float r = 0.52 + vSeed * 0.38;
   if (d > r) discard;
-  float alpha = smoothstep(r, r - 0.38, d) * (0.55 + vSeed * 0.18) * vCover;
-  vec3 dark = vec3(0.22, 0.14, 0.08);
-  vec3 brown = vec3(0.42, 0.28, 0.16);
-  vec3 bronze = vec3(0.52, 0.34, 0.18);
+  float alpha = smoothstep(r, r - 0.38, d) * (0.78 + vSeed * 0.18) * vCover;
+  vec3 dark = vec3(0.28, 0.16, 0.08);
+  vec3 brown = vec3(0.55, 0.34, 0.16);
+  vec3 bronze = vec3(0.72, 0.48, 0.24);
   vec3 color = mix(dark, brown, vSeed * 0.7);
   color = mix(color, bronze, step(0.985, vSeed) * 0.18);
   fragColor = vec4(color, alpha);

@@ -59,6 +59,14 @@ export function ProductionProcess() {
       <div className="hi-process-pin hi-shell">
         <WordReveal as="h2" id="process-heading" className="hi-title" text={t("home.processTitle")} />
         <InteractiveMedia>
+          <svg className="octo-process-current" viewBox="0 0 320 24" aria-hidden="true">
+            <path
+              d="M4 12 C 60 2, 100 22, 160 12 S 260 2, 316 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+            />
+          </svg>
           <CadFrame
             className="hi-process-scene mt-4 overflow-hidden bg-[color:var(--bc-panel)]"
             data-industrial-asset="production-tunnel"

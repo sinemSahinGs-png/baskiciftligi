@@ -4,6 +4,7 @@ export function OceanAtmosphere() {
       <div className="octo-caustics" />
       <div className="octo-fog" />
       <div className="octo-currents" />
+      <div className="octo-tentacle" />
     </div>
   );
 }

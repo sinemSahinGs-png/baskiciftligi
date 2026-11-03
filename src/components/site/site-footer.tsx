@@ -25,7 +25,7 @@ export async function SiteFooter({
     description && locale === "tr" ? description : msg(messages, "footer.description");
 
   return (
-    <footer data-site-footer className="site-footer-brand relative bg-deep-ink text-light-text">
+    <footer data-site-footer className="site-footer-brand octo-abyss-floor relative bg-deep-ink text-light-text">
       <SiteFooterMobile description={footerDescription} />
 
       <div className="shell relative hidden py-6 md:block">

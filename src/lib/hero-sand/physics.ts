@@ -51,7 +51,7 @@ export function sandImpulseFromPointer({
   }
   const capped = Math.min(dist, 42);
   return {
-    force: capped * 0.0026,
+    force: capped * 0.0064,
     nx: dx / dist,
     ny: dy / dist,
     scrolling: false,
