@@ -208,7 +208,7 @@ export function SiteHeader({
           animate={{ opacity: 1, y: 0 }}
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
           transition={{ duration: 0.32, ease: foundryEase }}
-          className="fixed inset-0 z-50 bg-midnight text-light-text lg:hidden"
+          className="octo-mobile-panel fixed inset-0 z-50 bg-[color:var(--octo-void)] text-light-text lg:hidden"
         >
           <div className="shell flex h-16 items-center justify-between">
             <Logo inverted />

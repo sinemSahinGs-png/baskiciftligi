@@ -2,7 +2,7 @@
   position: relative;
   isolation: isolate;
   background:
-    radial-gradient(120% 80% at 50% calc(var(--octo-depth, 0) * -20%), rgb(95 251 241 / 0.16), transparent 46%),
+    radial-gradient(120% 70% at 50% calc(var(--octo-depth, 0) * -18%), rgb(216 183 122 / 0.12), transparent 48%),
     linear-gradient(
       180deg,
       var(--octo-depth-0) 0%,
@@ -23,14 +23,14 @@
 
 .octo-world::before {
   background:
-    radial-gradient(ellipse at 20% 8%, rgb(17 197 191 / 0.18), transparent 36%),
-    radial-gradient(ellipse at 80% 18%, rgb(95 251 241 / 0.08), transparent 32%);
-  opacity: calc(0.9 - var(--octo-depth, 0) * 0.55);
+    radial-gradient(ellipse at 18% 6%, rgb(168 101 58 / 0.16), transparent 38%),
+    radial-gradient(ellipse at 82% 14%, rgb(216 183 122 / 0.08), transparent 34%);
+  opacity: calc(0.92 - var(--octo-depth, 0) * 0.5);
 }
 
 .octo-world::after {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
-  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.38'/%3E%3C/svg%3E");
+  opacity: 0.08;
   mix-blend-mode: overlay;
 }
 
@@ -46,32 +46,32 @@
 
 .octo-caustics {
   background:
-    radial-gradient(40% 18% at 30% 0%, rgb(200 255 244 / 0.16), transparent 70%),
-    radial-gradient(28% 12% at 70% 6%, rgb(17 197 191 / 0.12), transparent 70%);
+    radial-gradient(42% 16% at 32% 0%, rgb(216 183 122 / 0.14), transparent 70%),
+    radial-gradient(26% 12% at 72% 8%, rgb(168 101 58 / 0.1), transparent 70%);
   animation: octoCaustic 18s var(--ease-octo) infinite alternate;
-  opacity: calc(0.85 - var(--octo-depth, 0) * 0.7);
+  opacity: calc(0.82 - var(--octo-depth, 0) * 0.65);
 }
 
 .octo-fog {
-  background: linear-gradient(180deg, transparent, rgb(2 7 11 / calc(0.12 + var(--octo-depth, 0) * 0.45)));
+  background: linear-gradient(180deg, transparent, rgb(5 4 3 / calc(0.14 + var(--octo-depth, 0) * 0.48)));
 }
 
 .octo-currents {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' fill='none'%3E%3Cpath d='M-20 90 C 180 20, 320 160, 540 80 S 940 20, 1220 110' stroke='%235FFBF1' stroke-opacity='.18' stroke-width='1.2'/%3E%3Cpath d='M-20 140 C 220 80, 380 180, 620 120 S 980 70, 1220 150' stroke='%2311C5BF' stroke-opacity='.12' stroke-width='1'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200' fill='none'%3E%3Cpath d='M-20 90 C 180 20, 320 160, 540 80 S 940 20, 1220 110' stroke='%23D8B77A' stroke-opacity='.2' stroke-width='1.2'/%3E%3Cpath d='M-20 140 C 220 80, 380 180, 620 120 S 980 70, 1220 150' stroke='%23A8653A' stroke-opacity='.16' stroke-width='1'/%3E%3C/svg%3E");
   background-size: 1200px 200px;
   background-repeat: repeat-x;
-  opacity: 0.45;
+  opacity: 0.5;
   mix-blend-mode: screen;
 }
 
 .octo-particle {
   position: absolute;
-  width: 3px;
-  height: 3px;
+  width: 2px;
+  height: 2px;
   border-radius: 999px;
-  background: rgb(95 251 241 / 0.55);
-  box-shadow: 0 0 10px rgb(17 197 191 / 0.6);
-  animation: octoRise 16s linear infinite;
+  background: rgb(228 214 194 / 0.55);
+  box-shadow: 0 0 8px rgb(216 183 122 / 0.35);
+  animation: octoRise 18s linear infinite;
 }
 
 @keyframes octoCaustic {
@@ -81,7 +81,7 @@
 
 @keyframes octoRise {
   from { transform: translate3d(0, 20vh, 0); opacity: 0; }
-  20% { opacity: 0.6; }
+  20% { opacity: 0.55; }
   to { transform: translate3d(8px, -30vh, 0); opacity: 0; }
 }
 
@@ -91,12 +91,12 @@
   left: 8%;
   right: 8%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--octo-bio), transparent);
+  background: linear-gradient(90deg, transparent, var(--octo-champagne), transparent);
   box-shadow: var(--octo-glow);
 }
 
 .octo-mark-glow {
-  filter: drop-shadow(0 0 10px rgb(17 197 191 / 0.55));
+  filter: drop-shadow(0 0 10px rgb(168 101 58 / 0.45));
 }
 
 .octo-signature {
@@ -108,17 +108,17 @@
 
 .octo-signature path {
   fill: none;
-  stroke: var(--octo-cyan);
+  stroke: var(--octo-champagne);
   stroke-width: 1.1;
   stroke-linecap: round;
-  opacity: 0.55;
+  opacity: 0.5;
   animation: octoInk 8s var(--ease-octo) infinite;
 }
 
 @keyframes octoInk {
-  0% { stroke-dashoffset: 240; opacity: 0.15; }
-  40% { opacity: 0.7; }
-  100% { stroke-dashoffset: 0; opacity: 0.2; }
+  0% { stroke-dashoffset: 240; opacity: 0.12; }
+  40% { opacity: 0.65; }
+  100% { stroke-dashoffset: 0; opacity: 0.18; }
 }
 
 header.octo-header {
@@ -127,15 +127,21 @@ header.octo-header {
   color: var(--octo-pearl);
 }
 
+[data-atmosphere="porcelain"] header.octo-header {
+  background: rgb(11 8 6 / 0.94);
+  border-bottom-color: var(--octo-border);
+  color: var(--octo-pearl);
+}
+
 header.octo-header[data-scrolled="true"] {
   border-bottom-color: var(--octo-border);
-  background: rgb(2 7 11 / 0.72);
+  background: rgb(11 8 6 / 0.78);
   backdrop-filter: blur(14px);
-  box-shadow: inset 0 -1px 0 rgb(17 197 191 / 0.22);
+  box-shadow: inset 0 -1px 0 rgb(168 101 58 / 0.28);
 }
 
 .nav-signal[data-active="true"] {
-  box-shadow: inset 0 -2px 0 var(--octo-bio);
+  box-shadow: inset 0 -2px 0 var(--octo-bronze);
 }
 
 .octo-cta {
@@ -145,11 +151,20 @@ header.octo-header[data-scrolled="true"] {
   justify-content: center;
   padding: 0 1.15rem;
   border-radius: 999px;
-  background: var(--octo-coral);
-  color: var(--octo-abyss);
+  background: var(--octo-action);
+  color: var(--octo-action-text);
   font-weight: 700;
   letter-spacing: 0.04em;
-  box-shadow: 0 0 0 1px rgb(255 91 61 / 0.2), var(--octo-glow);
+  box-shadow: 0 0 0 1px rgb(216 183 122 / 0.28), inset 0 1px 0 rgb(241 236 227 / 0.22), var(--octo-glow);
+}
+
+.octo-cta:hover {
+  filter: brightness(1.06);
+}
+
+.octo-cta:focus-visible {
+  outline: 2px solid var(--octo-focus);
+  outline-offset: 3px;
 }
 
 .octo-cta-ghost {
@@ -159,9 +174,14 @@ header.octo-header[data-scrolled="true"] {
   justify-content: center;
   padding: 0 1.15rem;
   border-radius: 999px;
-  border: 1px solid rgb(95 251 241 / 0.45);
-  color: var(--octo-foam);
-  background: rgb(6 62 72 / 0.35);
+  border: 1px solid rgb(216 183 122 / 0.42);
+  color: var(--octo-pearl);
+  background: rgb(36 22 14 / 0.45);
+}
+
+.octo-cta-ghost:hover {
+  border-color: var(--octo-bronze);
+  color: var(--octo-champagne);
 }
 
 .octo-scroll-hint {
@@ -169,7 +189,7 @@ header.octo-header[data-scrolled="true"] {
   flex-direction: column;
   align-items: center;
   gap: 0.4rem;
-  color: var(--octo-silver);
+  color: var(--octo-smoke);
   font-family: var(--font-mono), monospace;
   font-size: 0.68rem;
   letter-spacing: 0.18em;
@@ -179,51 +199,64 @@ header.octo-header[data-scrolled="true"] {
 .octo-scroll-hint span {
   width: 1px;
   height: 2.2rem;
-  background: linear-gradient(180deg, var(--octo-cyan), transparent);
+  background: linear-gradient(180deg, var(--octo-champagne), transparent);
 }
 
 .store-bottom-nav {
-  background: rgb(2 7 11 / 0.88) !important;
-  border-top: 1px solid rgb(17 197 191 / 0.18) !important;
+  background: rgb(5 4 3 / 0.94) !important;
+  border-top: 1px solid rgb(216 183 122 / 0.18) !important;
   color: var(--octo-pearl) !important;
 }
 
+.store-bottom-nav [aria-current="page"],
+.store-bottom-nav a[data-active="true"] {
+  color: var(--octo-bronze) !important;
+}
+
 [data-storefront] {
-  background: var(--octo-navy) !important;
+  background: var(--octo-ivory) !important;
+  color: var(--octo-ink) !important;
+}
+
+[data-atmosphere="cinematic"],
+[data-atmosphere="cockpit"],
+[data-atmosphere="foundry"] {
+  background: var(--octo-void) !important;
   color: var(--octo-pearl) !important;
 }
 
 .store-page {
   background:
-    radial-gradient(80% 40% at 50% 0%, rgb(17 197 191 / 0.12), transparent 50%),
-    var(--octo-navy) !important;
-  color: var(--octo-pearl);
+    radial-gradient(80% 36% at 50% 0%, rgb(36 22 14 / 0.08), transparent 52%),
+    var(--octo-ivory) !important;
+  color: var(--octo-ink);
 }
 
 .store-masthead {
   background:
-    radial-gradient(70% 80% at 70% 0%, rgb(17 197 191 / 0.16), transparent 45%),
-    linear-gradient(180deg, #02070b, #06141d 80%) !important;
-  box-shadow: inset 0 -1px 0 rgb(17 197 191 / 0.35) !important;
+    radial-gradient(70% 80% at 72% 0%, rgb(168 101 58 / 0.18), transparent 46%),
+    linear-gradient(180deg, #050403, #12100d 80%) !important;
+  color: var(--octo-pearl) !important;
+  box-shadow: inset 0 -1px 0 rgb(216 183 122 / 0.28) !important;
 }
 
 .octo-store-card {
-  background: var(--octo-elevated) !important;
-  color: var(--octo-pearl) !important;
-  border: 1px solid rgb(200 255 244 / 0.12);
-  box-shadow: 0 16px 40px rgb(2 7 11 / 0.35);
+  background: #f6f1e8 !important;
+  color: var(--octo-ink) !important;
+  border: 1px solid rgb(36 22 14 / 0.08);
+  box-shadow: 0 14px 32px rgb(23 19 15 / 0.08);
   transition: transform var(--motion-med) var(--ease-octo), box-shadow var(--motion-med) var(--ease-octo);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .octo-store-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 0 0 1px rgb(17 197 191 / 0.45), var(--octo-glow);
+    transform: translateY(-3px);
+    box-shadow: 0 0 0 1px rgb(168 101 58 / 0.35), 0 18px 36px rgb(23 19 15 / 0.12);
   }
 }
 
 .store-masthead::after {
-  background: linear-gradient(180deg, rgb(6 20 29 / 0.9), var(--octo-navy)) !important;
+  background: linear-gradient(180deg, rgb(18 16 13 / 0.92), rgb(11 8 6 / 0.2)) !important;
 }
 
 .hi-hero-go-magnet,
@@ -272,27 +305,35 @@ header.octo-header[data-scrolled="true"] {
 }
 
 .hi-hero-rule {
-  background: var(--octo-bio) !important;
+  background: var(--octo-bronze) !important;
 }
 
-.hi-store-stage,
+.hi-store-stage {
+  background: var(--octo-ivory) !important;
+  color: var(--octo-ink) !important;
+}
+
+.hi-store-stage .hi-title,
+.hi-store-stage .hi-link {
+  color: var(--octo-ink) !important;
+}
+
 .hi-materials {
   background: transparent !important;
   color: var(--octo-pearl) !important;
 }
 
-.hi-store-stage .hi-title,
-.hi-materials .hi-title,
-.hi-store-stage .hi-link {
-  color: var(--octo-pearl) !important;
-}
-
 [data-store-studio] {
   background:
-    radial-gradient(50% 40% at 50% 0%, rgb(17 197 191 / 0.14), transparent 55%),
-    var(--octo-abyss);
+    radial-gradient(50% 40% at 50% 0%, rgb(168 101 58 / 0.14), transparent 55%),
+    var(--octo-void);
   color: var(--octo-pearl);
   min-height: 100dvh;
+}
+
+.octo-mobile-panel {
+  background: var(--octo-void) !important;
+  color: var(--octo-pearl);
 }
 
 @media (prefers-reduced-motion: reduce) {

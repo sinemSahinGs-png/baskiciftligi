@@ -4,7 +4,7 @@
   --ws-line: #e4dfd4;
   --ws-paper: #f6f3ec;
   --ws-card: #fffdf8;
-  --ws-accent: #ff6542;
+  --ws-accent: var(--octo-copper);
   min-height: 100dvh;
   overflow-x: clip;
   background: var(--ws-paper);
@@ -159,7 +159,7 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 0.55rem;
-  background: #ff6542;
+  background: var(--octo-copper);
 }
 
 .ws-notice {

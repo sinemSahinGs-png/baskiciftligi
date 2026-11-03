@@ -22,9 +22,9 @@ export function ShellAtmosphere({ children }: { children: ReactNode }) {
       data-storefront={atmosphere === "cinematic" ? undefined : ""}
       className={cn(
         "flex min-h-screen flex-col",
-        atmosphere === "cinematic" && "bg-[color:var(--octo-abyss)] text-light-text",
-        atmosphere === "porcelain" && "bg-[color:var(--octo-navy)] text-light-text",
-        atmosphere === "cockpit" && "bg-[color:var(--octo-abyss)] text-light-text",
+        atmosphere === "cinematic" && "bg-[color:var(--octo-void)] text-light-text",
+        atmosphere === "porcelain" && "bg-[color:var(--octo-ivory)] text-[color:var(--octo-ink)]",
+        atmosphere === "cockpit" && "bg-[color:var(--octo-void)] text-light-text",
         atmosphere === "foundry" && "atmosphere-foundry",
       )}
     >

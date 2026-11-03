@@ -21,35 +21,54 @@ export const metadata = createPageMetadata({
 export const dynamic = "force-dynamic";
 
 export default async function WholesaleCheckoutPage() {
-  const [store, viewer] = await Promise.all([
-    getWholesaleStore(),
-    getViewer(),
-  ]);
-  const settings = await store.getSettings();
-  const stub = isWholesalePaytrStubEnabled();
-  const readiness = buildWholesaleReadiness({
-    settings,
-    paytrCredentials: Boolean(getPaytrCredentials()) || stub,
-    paytrTestMode: isPaytrTestMode() || stub,
-    schemaAvailable: true,
-  });
-  const isAdmin = Boolean(
-    viewer && (viewer.role === "admin" || viewer.role === "owner" || viewer.isDemo),
-  );
+  const photos = getWholesalePhotoStates();
+  let viewer = null;
+  try {
+    viewer = await getViewer();
+  } catch {
+    viewer = null;
+  }
 
-  return (
-    <WholesaleCheckout
-      checkoutOpen={readiness.checkoutOpen}
-      shippingConfigured={readiness.shippingConfigured}
-      shippingGrossMinor={settings.shippingGrossMinor}
-      adminNote={
-        isAdmin && !readiness.checkoutOpen
-          ? "Yönetici: Vitrin kapalı. Kargo, firma bilgileri, ödeme bilgileri ve sözleşme maddeleri /admin/toptan-siparisler kontrol listesinde tamamlanmalıdır."
-          : null
-      }
-      photos={getWholesalePhotoStates()}
-      signedIn={Boolean(viewer && !viewer.isDemo)}
-      supportEmail={siteConfig.contact.email}
-    />
-  );
+  try {
+    const store = await getWholesaleStore();
+    const settings = await store.getSettings();
+    const stub = isWholesalePaytrStubEnabled();
+    const readiness = buildWholesaleReadiness({
+      settings,
+      paytrCredentials: Boolean(getPaytrCredentials()) || stub,
+      paytrTestMode: isPaytrTestMode() || stub,
+      schemaAvailable: true,
+    });
+    const isAdmin = Boolean(
+      viewer && (viewer.role === "admin" || viewer.role === "owner" || viewer.isDemo),
+    );
+
+    return (
+      <WholesaleCheckout
+        checkoutOpen={readiness.checkoutOpen}
+        shippingConfigured={readiness.shippingConfigured}
+        shippingGrossMinor={settings.shippingGrossMinor}
+        adminNote={
+          isAdmin && !readiness.checkoutOpen
+            ? "Yönetici: Vitrin kapalı. Kargo, firma bilgileri, ödeme bilgileri ve sözleşme maddeleri /admin/toptan-siparisler kontrol listesinde tamamlanmalıdır."
+            : null
+        }
+        photos={photos}
+        signedIn={Boolean(viewer && !viewer.isDemo)}
+        supportEmail={siteConfig.contact.email}
+      />
+    );
+  } catch {
+    return (
+      <WholesaleCheckout
+        checkoutOpen={false}
+        shippingConfigured={false}
+        shippingGrossMinor={null}
+        adminNote={null}
+        photos={photos}
+        signedIn={Boolean(viewer && !viewer.isDemo)}
+        supportEmail={siteConfig.contact.email}
+      />
+    );
+  }
 }

@@ -38,7 +38,7 @@ export function Logo({ className, compact = false, inverted = true }: LogoProps)
       >
         <span className="block text-[0.95rem] sm:inline sm:text-[1.15rem]">OCTO</span>
         <span className="hidden sm:inline"> </span>
-        <span className="block text-[0.95rem] text-[color:var(--octo-bio)] sm:inline sm:text-[1.15rem]">
+        <span className="block text-[0.95rem] text-[color:var(--octo-bronze)] sm:inline sm:text-[1.15rem]">
           STUDIO
         </span>
       </span>

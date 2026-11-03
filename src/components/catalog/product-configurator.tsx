@@ -240,7 +240,7 @@ export function ProductConfigurator({ product }: { product: Product }) {
           disabled={!canPurchase}
           aria-describedby="stock-note"
           onClick={addToCart}
-          className={`inline-flex h-13 flex-1 items-center justify-center gap-2 bg-[color:var(--store-orange,#ff5a0a)] px-6 text-sm font-semibold text-[color:var(--store-black,#080a0b)] transition-transform duration-200 hover:opacity-90 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45 ${layerComplete ? "layer-complete-in bg-lime text-midnight hover:bg-lime" : ""}`}
+          className={`inline-flex h-13 flex-1 items-center justify-center gap-2 bg-[color:var(--store-orange,var(--octo-copper))] px-6 text-sm font-semibold text-[color:var(--store-black,#080a0b)] transition-transform duration-200 hover:opacity-90 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-45 ${layerComplete ? "layer-complete-in bg-lime text-midnight hover:bg-lime" : ""}`}
         >
           {layerComplete ? (
             <FormSignal tone="dark" className="size-4" />
@@ -299,7 +299,7 @@ export function ProductConfigurator({ product }: { product: Product }) {
             type="button"
             disabled={!canPurchase}
             onClick={addToCart}
-            className="inline-flex min-h-12 flex-1 items-center justify-center bg-[color:var(--store-orange,#ff5a0a)] px-4 text-sm font-semibold text-[color:var(--store-black,#080a0b)] disabled:opacity-45"
+            className="inline-flex min-h-12 flex-1 items-center justify-center bg-[color:var(--store-orange,var(--octo-copper))] px-4 text-sm font-semibold text-[color:var(--store-black,#080a0b)] disabled:opacity-45"
           >
             {canPurchase ? t("commerce.addToCart") : t("commerce.outOfStock")}
           </button>

@@ -254,7 +254,9 @@ export function PreparationStudio() {
       originalDimensionsMm,
       DEFAULT_MANUFACTURING_TRANSFORM,
     );
-    if (next) applyTransform({ ...next, placeOnBed: true });
+    if (!next) return;
+    const placed = { ...next, placeOnBed: true as const };
+    queueMicrotask(() => applyTransform(placed));
   }, [applyTransform, file, originalDimensionsMm]);
 
   const handoffApplied = useRef(false);

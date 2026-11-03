@@ -34,7 +34,7 @@ export interface ModelCardData {
 
 const sourceStage: Record<ModelSource, string> = {
   owned: "from-[#2a3cff] to-[#1a1460]",
-  licensed: "from-[#ff6542] to-[#7a1f12]",
+  licensed: "from-[#A8653A] to-[#5A301D]",
   thingiverse: "from-[#e8e6e1] to-[#9aa0a6]",
 };
 
