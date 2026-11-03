@@ -4,6 +4,16 @@
 
 .hi-hero .hi-hero-inner {
   z-index: 4;
+  pointer-events: none;
+}
+
+.hi-hero .hi-hero-inner a,
+.hi-hero .hi-hero-inner button,
+.hi-hero .hi-hero-inner input,
+.hi-hero .hi-hero-inner textarea,
+.hi-hero .hi-hero-inner select,
+.hi-hero .hi-hero-inner form,
+.hi-hero .hi-hero-inner label {
   pointer-events: auto;
 }
 
@@ -102,7 +112,7 @@
   position: absolute;
   right: 1rem;
   bottom: calc(5.6rem + env(safe-area-inset-bottom, 0px));
-  z-index: 4;
+  z-index: 8;
   display: grid;
   width: 44px;
   height: 44px;

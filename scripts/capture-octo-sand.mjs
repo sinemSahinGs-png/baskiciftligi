@@ -42,7 +42,7 @@ async function capture(width, height, suffix, reduced = false) {
     await page.screenshot({ path: path.join(out, `octo-sand-hero-brush-${suffix}.png`), animations: "disabled" });
     const reset = page.getByRole("button", { name: "Kumu sıfırla" });
     if (await reset.count()) {
-      await reset.click();
+      await reset.click({ force: true });
       await page.waitForTimeout(1700);
       await page.screenshot({ path: path.join(out, `octo-sand-hero-reset-${suffix}.png`), animations: "disabled" });
     }
