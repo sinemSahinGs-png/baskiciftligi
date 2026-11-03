@@ -367,14 +367,6 @@ export function IdeaCommand() {
             </button>
           </MagneticAction>
         </form>
-
-        <Link
-          href={"/model-yukle" as Route}
-          onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
-          className="hi-hero-upload"
-        >
-          {t("home.heroOrUpload")}
-        </Link>
         </div>
         </div>
         <p className="octo-scroll-hint mt-6">

@@ -3,14 +3,14 @@ import { describe, expect, it } from "vitest";
 import { PRODUCTION_SITE_URL, siteConfig } from "@/config/site";
 
 describe("siteConfig brand", () => {
-  it("uses Baskı Çiftliği as the customer-facing name", () => {
-    expect(siteConfig.name).toBe("Baskı Çiftliği");
-    expect(siteConfig.shortName).toBe("Baskı Çiftliği");
+  it("uses OCTO STUDIO as the customer-facing name and keeps Baskı Çiftliği as legal entity", () => {
+    expect(siteConfig.name).toBe("OCTO STUDIO");
+    expect(siteConfig.shortName).toBe("OCTO");
     expect(siteConfig.legalName).toBe("Baskı Çiftliği");
-    expect(siteConfig.wordmark).toBe("Baskı Çiftliği");
+    expect(siteConfig.wordmark).toBe("OCTO STUDIO");
     expect(siteConfig.asciiId).toBe("baskiciftligi");
-    expect(siteConfig.collectionLabel).toBe("Baskı Çiftliği Koleksiyonu");
-    expect(siteConfig.bylineLabel).toBe("Baskı Çiftliği tarafından");
+    expect(siteConfig.collectionLabel).toBe("OCTO STUDIO Koleksiyonu");
+    expect(siteConfig.bylineLabel).toBe("OCTO STUDIO tarafından");
   });
 
   it("does not keep the temporary SOMUT brand in visible copy", () => {
@@ -34,10 +34,8 @@ describe("siteConfig brand", () => {
     ].join(" ");
 
     expect(visible).not.toMatch(/somut/i);
-    expect(siteConfig.tagline).toBe(
-      "Modelini seç, dosyanı yükle; biz üretelim.",
-    );
-    expect(siteConfig.hero.headline).toBe("Fikrini yükle. Biz üretelim.");
+    expect(siteConfig.tagline).toBe("Fikirden fiziksel ürüne.");
+    expect(siteConfig.hero.headline).toBe("FİKRİNİ DERİNLİKTEN ÇIKAR.");
   });
 
   it("canonical production URL is the apex Baskı Çiftliği domain", () => {

@@ -13,7 +13,7 @@ export const siteConfig = {
   shortName: "OCTO",
   legalName: "Baskı Çiftliği",
   wordmark: "OCTO STUDIO",
-  asciiId: "octostudio",
+  asciiId: "baskiciftligi",
   tagline: "Fikirden fiziksel ürüne.",
   description:
     "Hazır ürünleri keşfet, baskıya uygun modeller arasından seçim yap veya kendi 3D dosyanı yükleyerek üretim talebi oluştur.",

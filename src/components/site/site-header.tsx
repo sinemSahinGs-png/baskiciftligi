@@ -187,6 +187,7 @@ export function SiteHeader({
               type="button"
               aria-label={mobileOpen ? t("nav.closeMenu") : t("nav.openMenu")}
               aria-expanded={mobileOpen}
+              data-testid="octo-open-menu"
               onClick={() => setMobileOpen((open) => !open)}
               className="inline-flex size-11 items-center justify-center lg:hidden"
             >
