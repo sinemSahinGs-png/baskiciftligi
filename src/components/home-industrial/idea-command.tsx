@@ -16,6 +16,7 @@ import { ArrowUpRight } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 
 import { HeroVideo } from "@/components/home-industrial/hero-video";
+import { OctoInteractiveSandHero } from "@/components/home-industrial/octo-interactive-sand-hero";
 import { HeroTypewriter } from "@/components/home-industrial/hero-typewriter";
 import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
 import { SlotImage } from "@/components/home-industrial/slot-image";
@@ -270,6 +271,7 @@ export function IdeaCommand() {
       aria-labelledby="idea-command-heading"
     >
       <HeroVideo reducedMotion={reduceMotion} />
+      <OctoInteractiveSandHero />
       <TechnicalGrid className="hi-hero-grid" />
       <div className="hi-hero-vignette" aria-hidden="true" />
       <div className="hi-hero-copy-scrim" aria-hidden="true" />
