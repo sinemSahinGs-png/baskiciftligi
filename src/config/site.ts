@@ -9,20 +9,20 @@ const siteUrl =
     : "http://localhost:3000");
 
 export const siteConfig = {
-  name: "Baskı Çiftliği",
-  shortName: "Baskı Çiftliği",
+  name: "OCTO STUDIO",
+  shortName: "OCTO",
   legalName: "Baskı Çiftliği",
-  wordmark: "Baskı Çiftliği",
+  wordmark: "OCTO STUDIO",
   asciiId: "baskiciftligi",
-  tagline: "Modelini seç, dosyanı yükle; biz üretelim.",
+  tagline: "Fikirden fiziksel ürüne.",
   description:
     "Hazır ürünleri keşfet, baskıya uygun modeller arasından seçim yap veya kendi 3D dosyanı yükleyerek üretim talebi oluştur.",
-  collectionLabel: "Baskı Çiftliği Koleksiyonu",
-  bylineLabel: "Baskı Çiftliği tarafından",
-  studioLabel: "Baskı Çiftliği stüdyo",
-  footerHeading: "Modelini seç, dosyanı yükle; biz üretelim.",
+  collectionLabel: "OCTO STUDIO Koleksiyonu",
+  bylineLabel: "OCTO STUDIO tarafından",
+  studioLabel: "OCTO STUDIO",
+  footerHeading: "Fikrini yüzeye çıkar.",
   footerDescription:
-    "Hazır koleksiyonlar, kişiye özel ürünler ve kontrollü 3D baskı üretimi Baskı Çiftliği’nde.",
+    "3D tasarım, hazır ürün, özel üretim ve kurumsal promosyon — tek noktadan tasarım ve üretim.",
   url: siteUrl,
   domain: new URL(siteUrl).hostname,
   locale: "tr_TR",
@@ -30,16 +30,16 @@ export const siteConfig = {
   currency: "TRY" as const,
   city: "Ankara",
   logo: {
-    src: "/icon.png",
-    markLabel: "Marka işareti",
+    src: "/icon.svg",
+    markLabel: "OCTO STUDIO işareti",
   },
   hero: {
-    eyebrow: "Online 3D üretim platformu",
-    headline: "Fikrini yükle. Biz üretelim.",
+    eyebrow: "YARATICI ÜRETİM STÜDYOSU",
+    headline: "FİKRİNİ DERİNLİKTEN ÇIKAR.",
     description:
-      "Hazır ürünleri keşfet, baskıya uygun bir model seç veya kendi dosyanı yükleyerek üretimini başlat.",
-    primaryCtaLabel: "Mağazayı keşfet",
-    secondaryCtaLabel: "Model yükle",
+      "Modelini seç, dosyanı yükle veya fikrini anlat. Octo Studio onu gerçek bir ürüne dönüştürsün.",
+    primaryCtaLabel: "MODELLERİ KEŞFET",
+    secondaryCtaLabel: "MODELİNİ YÜKLE",
     videoUrl:
       publicEnv.NEXT_PUBLIC_HOME_HERO_VIDEO_URL ?? "/demo/hero/placeholder.mp4",
     webmUrl: publicEnv.NEXT_PUBLIC_HOME_HERO_WEBM_URL,

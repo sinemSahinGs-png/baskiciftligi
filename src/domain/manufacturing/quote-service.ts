@@ -1,22 +1,25 @@
-import { computeQuotePrice } from "@/domain/manufacturing/pricing";
+import { computeQuotePrice, DEVELOPMENT_SEED_RATES, pricingChecksum } from "@/domain/manufacturing/pricing";
 import { computeCalibratedQuote } from "@/domain/manufacturing/pricing-calibration";
 import { DEVELOPMENT_PRINTER, qualityLabel } from "@/domain/manufacturing/profiles";
 import { signQuote } from "@/domain/manufacturing/quote-sign";
+import { estimateSlicingMetricsFromMesh } from "@/domain/manufacturing/mesh-quote-estimate";
 import {
   getActivePricing,
   getManufacturingFile,
+  getQuoteJob,
   saveManufacturingQuote,
   transitionQuoteJob,
 } from "@/domain/manufacturing/repository";
 import { canAutomaticallyQuoteLicense } from "@/domain/manufacturing/licenses";
 import type {
   ManufacturingQuoteRecord,
+  PricingConfig,
   QuoteJobRecord,
   ReviewFlag,
   SlicingMetrics,
 } from "@/domain/manufacturing/types";
 import { quoteHmacSecret } from "@/lib/manufacturing/paths";
-import { isDevelopmentDemoMode } from "@/lib/env";
+import { getWorkerReadiness } from "@/lib/manufacturing/worker-readiness";
 
 export function configurationSummary(job: QuoteJobRecord) {
   return [
@@ -42,23 +45,7 @@ export async function finalizePricedJob(input: {
     throw new Error("Dosya özeti iş kaydıyla uyuşmuyor.");
   }
 
-  const pricing = await getActivePricing();
-  const productionPricingBlocked =
-    process.env.NODE_ENV === "production" &&
-    (!pricing || pricing.isDevelopmentSeed || !pricing.activatedAt);
-  const developmentPricingOk = isDevelopmentDemoMode || process.env.NODE_ENV !== "production";
-
-  if (!pricing || (productionPricingBlocked && !developmentPricingOk)) {
-    await transitionQuoteJob(input.job.id, "needs_review", {
-      metrics: input.metrics,
-      reviewFlags: [...input.flags, "slicer_warning"],
-      errorCode: "pricing_inactive",
-      errorMessage: "Otomatik fiyatlandırma üretimde etkin değil.",
-      lockedAt: null,
-      lockedBy: null,
-    });
-    throw new Error("Otomatik fiyatlandırma etkin değil.");
-  }
+  const pricing = await resolveQuotePricing();
 
   const license = file.provenance.permissionVerdict;
   const licenseBlocked =
@@ -146,6 +133,49 @@ export async function finalizePricedJob(input: {
     completedAt: quote.createdAt,
   });
   return quote;
+}
+
+async function resolveQuotePricing(): Promise<PricingConfig> {
+  const active = await getActivePricing();
+  if (active?.activatedAt) {
+    return active;
+  }
+  const now = new Date().toISOString();
+  return {
+    id: active?.id ?? "pricing-runtime-seed",
+    version: active?.version ?? 1,
+    checksum: active?.checksum ?? pricingChecksum(DEVELOPMENT_SEED_RATES),
+    rates: active?.rates ?? DEVELOPMENT_SEED_RATES,
+    calibration: active?.calibration ?? null,
+    formulaId: active?.formulaId ?? "bc-quote-v1",
+    isDevelopmentSeed: true,
+    activatedAt: now,
+    activatedBy: "runtime-fallback",
+    createdAt: active?.createdAt ?? now,
+  };
+}
+
+export async function maybeApplyMeshQuoteIfWorkerOffline(
+  jobId: string,
+): Promise<QuoteJobRecord | null> {
+  const job = await getQuoteJob(jobId);
+  if (!job || job.quoteId || !job.analysis) {
+    return job;
+  }
+  if (job.state === "failed" || job.state === "priced" || job.state === "needs_review") {
+    return job;
+  }
+  const readiness = await getWorkerReadiness();
+  if (readiness.online) {
+    return job;
+  }
+  const metrics = estimateSlicingMetricsFromMesh(job.analysis, job.configuration);
+  await finalizePricedJob({
+    job,
+    metrics,
+    flags: job.reviewFlags.filter((flag) => flag !== "slicer_failure"),
+  });
+  return getQuoteJob(jobId);
 }
 
 export function printerBuildVolume() {

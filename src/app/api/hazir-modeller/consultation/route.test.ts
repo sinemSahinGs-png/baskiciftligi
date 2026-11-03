@@ -47,6 +47,25 @@ describe("POST /api/hazir-modeller/consultation", () => {
     expect(body.message).toContain("Talebiniz alındı");
   });
 
+  it("creates a homepage special-order request", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/hazir-modeller/consultation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "homepage",
+          customerName: "Ayşe Yılmaz",
+          customerPhone: "+905551112233",
+          customerEmail: "ayse@example.com",
+          customerNote: "Özel vazo ölçüleri ve mat siyah PLA istiyorum.",
+        }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { ok?: boolean };
+    expect(body.ok).toBe(true);
+  });
+
   it("rejects invalid phone", async () => {
     const response = await POST(
       new Request("http://localhost/api/hazir-modeller/consultation", {

@@ -37,6 +37,59 @@ export function formatMoney(
   return tryFormatter.format(amountMinor / 100);
 }
 
+/**
+ * Parse a Turkish-lira admin input such as `100,00`, `100.00` or `1.750,50`
+ * into integer kuruş. Rejects floats by construction.
+ */
+export function parseTryToMinor(input: string): number | null {
+  const raw = input.trim().replace(/[₺\s]/g, "");
+  if (!raw) {
+    return null;
+  }
+
+  let wholePart: string;
+  let fractionPart = "00";
+
+  if (raw.includes(",") && raw.includes(".")) {
+    const [left, right] = raw.split(",");
+    wholePart = left.replace(/\./g, "");
+    fractionPart = right ?? "00";
+  } else if (raw.includes(",")) {
+    const [left, right] = raw.split(",");
+    wholePart = left;
+    fractionPart = right ?? "00";
+  } else if (/^\d+\.\d{1,2}$/.test(raw)) {
+    const [left, right] = raw.split(".");
+    wholePart = left;
+    fractionPart = right ?? "00";
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(raw)) {
+    wholePart = raw.replace(/\./g, "");
+  } else if (/^\d+$/.test(raw)) {
+    wholePart = raw;
+  } else {
+    return null;
+  }
+
+  if (!/^\d+$/.test(wholePart) || !/^\d{1,2}$/.test(fractionPart)) {
+    return null;
+  }
+
+  const whole = Number.parseInt(wholePart, 10);
+  const fraction = Number.parseInt(fractionPart.padEnd(2, "0").slice(0, 2), 10);
+  if (!Number.isSafeInteger(whole) || !Number.isSafeInteger(fraction) || whole < 0) {
+    return null;
+  }
+
+  return assertMinorUnits(whole * 100 + fraction);
+}
+
+export function formatMinorAsTryInput(amountMinor: number): string {
+  assertMinorUnits(amountMinor);
+  const whole = Math.trunc(amountMinor / 100);
+  const fraction = String(Math.abs(amountMinor % 100)).padStart(2, "0");
+  return `${whole},${fraction}`;
+}
+
 export function calculateDiscountPercentage(
   priceMinor: number,
   compareAtPriceMinor: number | null,

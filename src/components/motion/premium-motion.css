@@ -17,34 +17,26 @@
 
 .word-reveal [data-word] {
   display: inline-block;
-  will-change: transform, opacity, filter;
-}
-
-html.motion-ready:not([data-reduced-motion="true"])
-  [data-word-reveal]:not([data-inview="true"])
-  [data-word] {
-  opacity: 0;
-  transform: translateY(22px);
-  filter: blur(6px);
+  opacity: 1;
+  transform: none;
+  filter: none;
 }
 
 html.motion-ready:not([data-reduced-motion="true"])
   [data-word-reveal][data-inview="true"]
   [data-word] {
-  animation: word-in var(--motion-section) var(--ease-foundry) both;
-  animation-delay: calc(var(--word-i, 0) * 58ms);
+  animation: word-in var(--motion-section) var(--ease-foundry);
+  animation-delay: calc(var(--word-i, 0) * 40ms);
 }
 
 @keyframes word-in {
   from {
-    opacity: 0;
-    transform: translateY(22px);
-    filter: blur(6px);
+    opacity: 1;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-    filter: blur(0);
   }
 }
 
@@ -55,11 +47,11 @@ html.motion-ready:not([data-reduced-motion="true"])
 .section-reveal-index {
   display: block;
   margin-bottom: 0.45rem;
-  font-family: var(--font-bc-mono, ui-monospace, monospace);
+  font-family: var(--font-jakarta), sans-serif;
   font-size: 0.68rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #ff5a0a;
+  color: var(--octo-copper);
 }
 
 .section-reveal-line {
@@ -68,13 +60,18 @@ html.motion-ready:not([data-reduced-motion="true"])
   width: 100%;
   margin-bottom: 0.85rem;
   transform-origin: left center;
-  background: linear-gradient(90deg, #ff5a0a, rgb(241 240 235 / 0.18));
+  background: linear-gradient(90deg, var(--octo-copper), rgb(241 236 227 / 0.18));
+}
+
+.section-reveal {
+  opacity: 1;
+  transform: none;
 }
 
 html.motion-ready:not([data-reduced-motion="true"])
   .section-reveal:not([data-inview="true"]) {
-  opacity: 0.88;
-  transform: translateY(18px);
+  opacity: 1;
+  transform: none;
 }
 
 html.motion-ready:not([data-reduced-motion="true"])
@@ -137,7 +134,7 @@ html.motion-ready:not([data-reduced-motion="true"])
   display: block;
   height: 1px;
   background:
-    linear-gradient(90deg, transparent, rgb(0 228 228 / 0.55), #ff5a0a, transparent);
+    linear-gradient(90deg, transparent, rgb(185 132 77 / 0.55), var(--octo-copper), transparent);
   transform-origin: left center;
 }
 
@@ -151,7 +148,7 @@ html.motion-ready:not([data-reduced-motion="true"])
   height: 2px;
   transform: scaleX(var(--page-progress, 0));
   transform-origin: left center;
-  background: #ff5a0a;
+  background: var(--octo-copper);
 }
 
 @media (prefers-reduced-motion: reduce) {

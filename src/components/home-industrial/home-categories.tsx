@@ -10,9 +10,13 @@ import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-
 import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
 import { storefrontCategories, storefrontCategoryAsset } from "@/domain/catalog/storefront-taxonomy";
 import type { Product } from "@/domain/catalog/types";
+import { useTranslations } from "next-intl";
 
 export function HomeCategories({ products }: { products: Product[] }) {
   void products;
+  const t = useTranslations();
+  const catName = (slug: string) => t(`categories.${slug}.name`);
+  const catDesc = (slug: string) => t(`categories.${slug}.description`);
   const reduce = useReducedMotion() === true;
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -89,11 +93,11 @@ export function HomeCategories({ products }: { products: Product[] }) {
       <div className="hi-shell">
         <div className="hi-cats-head">
           <div>
-            <p className="hi-kicker">3D TASARIM DİZİNİ</p>
-            <WordReveal as="h2" id="home-cats-heading" className="hi-title" text="KATEGORİLER" />
+            <p className="hi-kicker">{t("home.catsKicker")}</p>
+            <WordReveal as="h2" id="home-cats-heading" className="hi-title" text={t("home.catsTitle")} />
           </div>
           <Link href={"/magaza" as Route} className="hi-link">
-            Tümünü gör →
+            {t("home.catsAll")}
           </Link>
         </div>
 
@@ -101,7 +105,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
           <div
             className="hi-cats-index"
             role="tablist"
-            aria-label="Kategori dizini"
+            aria-label={t("home.catsIndex")}
             onKeyDown={onIndexKey}
           >
             {storefrontCategories.map((category, index) => {
@@ -116,8 +120,8 @@ export function HomeCategories({ products }: { products: Product[] }) {
                   tabIndex={selected ? 0 : -1}
                   aria-label={
                     category.comingSoon
-                      ? `${category.name}, yakında`
-                      : category.name
+                      ? `${catName(category.slug)}, ${t("common.comingSoon")}`
+                      : catName(category.slug)
                   }
                   data-category-slug={category.slug}
                   data-active={selected ? "true" : "false"}
@@ -137,8 +141,8 @@ export function HomeCategories({ products }: { products: Product[] }) {
                   }}
                 >
                   <span className="hi-cats-index-num">{number}</span>
-                  <span className="hi-cats-index-name">{category.name}</span>
-                  {category.comingSoon ? <span className="hi-cat-badge">Hazırlanıyor</span> : null}
+                  <span className="hi-cats-index-name">{catName(category.slug)}</span>
+                  {category.comingSoon ? <span className="hi-cat-badge">{t("common.comingSoon")}</span> : null}
                 </button>
               );
             })}
@@ -169,7 +173,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
                       sizes="(max-width: 767px) 86vw, 58vw"
                     />
                     {category.comingSoon ? (
-                      <span className="hi-cats-slide-badge">Hazırlanıyor</span>
+                      <span className="hi-cats-slide-badge">{t("common.comingSoon")}</span>
                     ) : null}
                   </span>
                 ))}
@@ -180,7 +184,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
             <div className="hi-cats-pager">
               <button
                 type="button"
-                aria-label="Önceki kategori"
+                aria-label={t("home.prevCat")}
                 onClick={() => go(active - 1)}
               >
                 ‹
@@ -190,7 +194,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
               </p>
               <button
                 type="button"
-                aria-label="Sonraki kategori"
+                aria-label={t("home.nextCat")}
                 onClick={() => go(active + 1)}
               >
                 ›
@@ -202,15 +206,15 @@ export function HomeCategories({ products }: { products: Product[] }) {
                 <p className="hi-mono hi-cats-meta-count">
                   {String(active + 1).padStart(2, "0")} / 07
                 </p>
-                <p className="hi-cats-meta-title">{current.name}</p>
-                <p className="hi-cats-meta-desc">{current.description}</p>
+                <p className="hi-cats-meta-title">{catName(current.slug)}</p>
+                <p className="hi-cats-meta-desc">{catDesc(current.slug)}</p>
                 {current.comingSoon ? (
-                  <span className="hi-cats-soon" aria-label={`${current.name}, yakında`}>
-                    Hazırlanıyor
+                  <span className="hi-cats-soon" aria-label={`${catName(current.slug)}, ${t("common.comingSoon")}`}>
+                    {t("common.comingSoon")}
                   </span>
                 ) : (
                   <Link href={current.href} className="hi-cats-cta">
-                    Koleksiyona git
+                    {t("home.goCollection")}
                     <span className="hi-cat-arrow" aria-hidden="true">
                       →
                     </span>

@@ -65,7 +65,7 @@ test.describe("industrial homepage", () => {
     });
     await readyHome(page);
     await page.locator("#idea-command-input").fill("telefon standı");
-    await page.getByRole("button", { name: /MODEL ÖNERİLERİNİ BUL/i }).click();
+    await page.locator("form.hi-hero-form button[type='submit']").click();
     await expect(page.getByRole("link", { name: "Uygunluğu kontrol et" })).toBeVisible();
     expect(used).toBe(true);
   });

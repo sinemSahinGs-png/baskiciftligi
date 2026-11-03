@@ -9,13 +9,13 @@ export default function manifest(): MetadataRoute.Manifest {
     description: siteConfig.description,
     start_url: "/",
     display: "standalone",
-    background_color: "#070713",
-    theme_color: "#4054FF",
+    background_color: "#050403",
+    theme_color: "#A8653A",
     lang: "tr",
     categories: ["shopping", "business", "design"],
     icons: [
       {
-        src: "/icon.png",
+        src: "/icon.svg",
         sizes: "1254x1254",
         type: "image/png",
         purpose: "any",

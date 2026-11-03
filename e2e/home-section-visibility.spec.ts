@@ -18,7 +18,7 @@ const SECTION_IDS = [
 ] as const;
 
 const HEADINGS = [
-  /SEN TARİF ET/,
+  /FİKRİNİ DERİNLİKTEN ÇIKAR/,
   "Üç üretim yolu",
   "KATEGORİLER",
   /MODELİNİ YÜKLE/,

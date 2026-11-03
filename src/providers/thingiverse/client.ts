@@ -6,18 +6,30 @@ import { touchIntegration } from "@/domain/manufacturing/repository";
 import { assertSafeThingiverseUrl, SsrfError } from "@/lib/manufacturing/ssrf";
 import type { ThingiverseThing } from "@/providers/thingiverse/types";
 import {
+  parseThingiverseErrorPayload,
+  resolveThingiverseApiBase,
+  sanitizeThingiverseToken,
+} from "@/providers/thingiverse/auth";
+import {
+  hydrateThingiverseOauthToken,
+  peekThingiverseOauthToken,
+} from "@/providers/thingiverse/oauth-store";
+import {
   normalizeThingDetail,
   normalizeThingFiles,
   normalizeThingImages,
 } from "@/providers/thingiverse/normalize-detail";
 import { normalizeThingList as normalizeThingListShape } from "@/providers/thingiverse/normalize-list";
 
-const defaultBase = "https://api.thingiverse.com";
 const cacheTtlMs = 8 * 60 * 1000;
 const cache = new Map<string, { expiresAt: number; payload: unknown }>();
 const downloadTimeoutMs = 30_000;
 const jsonTimeoutMs = 15_000;
 const maxDownloadBytes = 100 * 1024 * 1024;
+const jsonHeaders = {
+  Accept: "application/json",
+  "User-Agent": "BaskiCiftligi/1.0 (+https://baskiciftligi.com)",
+};
 
 export class ThingiverseApiError extends Error {
   constructor(
@@ -30,15 +42,23 @@ export class ThingiverseApiError extends Error {
 }
 
 function apiBase() {
-  return serverEnv.THINGIVERSE_API_BASE_URL ?? defaultBase;
+  return resolveThingiverseApiBase(serverEnv.THINGIVERSE_API_BASE_URL);
 }
 
-function accessToken() {
-  return serverEnv.THINGIVERSE_ACCESS_TOKEN;
+function envAccessToken() {
+  return sanitizeThingiverseToken(serverEnv.THINGIVERSE_ACCESS_TOKEN);
+}
+
+async function accessToken() {
+  const oauth = await hydrateThingiverseOauthToken();
+  return oauth || envAccessToken();
 }
 
 export function canCallThingiverse() {
-  return Boolean(accessToken()) || thingiverseFixtureMode();
+  return (
+    Boolean(envAccessToken() || peekThingiverseOauthToken()) ||
+    thingiverseFixtureMode()
+  );
 }
 
 export function thingiverseFixtureMode() {
@@ -61,6 +81,104 @@ async function recordSuccess() {
   } catch {
     return;
   }
+}
+
+function thingiverseEdgeProxyUrl(path: string) {
+  const host =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    process.env.VERCEL_URL ||
+    "baskiciftligi.com";
+  const origin = host.startsWith("http") ? host : `https://${host}`;
+  const url = new URL("/api/internal/thingiverse-edge", origin);
+  url.searchParams.set("path", path.startsWith("/") ? path : `/${path}`);
+  return url;
+}
+
+async function requestViaEdgeProxy(path: string, token: string) {
+  const secret =
+    serverEnv.MANUFACTURING_QUOTE_HMAC_SECRET ||
+    serverEnv.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY;
+  if (!secret) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), jsonTimeoutMs);
+  try {
+    return await fetch(thingiverseEdgeProxyUrl(path), {
+      headers: {
+        "x-bc-tv-proxy": secret,
+        "x-bc-tv-token": token,
+        Accept: "application/json",
+      },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function requestThingiverseJson(path: string, token: string) {
+  const attempt = async (useQueryToken: boolean) => {
+    const url = new URL(path, apiBase());
+    if (useQueryToken) {
+      url.searchParams.set("access_token", token);
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), jsonTimeoutMs);
+    try {
+      return await fetch(url, {
+        headers: {
+          ...jsonHeaders,
+          ...(useQueryToken ? {} : { Authorization: `Bearer ${token}` }),
+        },
+        cache: "no-store",
+        signal: controller.signal,
+        redirect: "error",
+      });
+    } catch (error) {
+      await recordFailure(504, "Thingiverse zaman aşımı.");
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new ThingiverseApiError(504, "Thingiverse zaman aşımı.");
+      }
+      throw new ThingiverseApiError(503, "Thingiverse yanıt vermedi.");
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  let response = await attempt(false);
+  if (response.status !== 401 && response.status !== 403) {
+    return response;
+  }
+
+  const preview = await response.clone().text();
+  const parsed = parseThingiverseErrorPayload(
+    preview.trim().startsWith("{")
+      ? (() => {
+          try {
+            return JSON.parse(preview) as unknown;
+          } catch {
+            return preview;
+          }
+        })()
+      : preview,
+  );
+  if (parsed.html) {
+    const proxied = await requestViaEdgeProxy(
+      path.startsWith("/") ? path : `/${path}`,
+      token,
+    );
+    if (proxied) {
+      return proxied;
+    }
+    await recordFailure(503, "Thingiverse HTML yanıtı.");
+    throw new ThingiverseApiError(503, "Thingiverse yanıt vermedi.");
+  }
+  if (parsed.type === "NO_TOKEN_PROVIDED") {
+    response = await attempt(true);
+  }
+  return response;
 }
 
 async function recordFailure(status: number, message: string) {
@@ -99,7 +217,7 @@ async function thingiverseFetch<T>(path: string): Promise<T> {
     }
   }
 
-  const token = accessToken();
+  const token = await accessToken();
   if (!token) {
     throw new ThingiverseApiError(401, "Thingiverse jetonu yok.");
   }
@@ -109,29 +227,7 @@ async function thingiverseFetch<T>(path: string): Promise<T> {
     return cached.payload as T;
   }
 
-  const url = new URL(path, apiBase());
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), jsonTimeoutMs);
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-      cache: "no-store",
-      signal: controller.signal,
-      redirect: "error",
-    });
-  } catch (error) {
-    await recordFailure(504, "Thingiverse zaman aşımı.");
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new ThingiverseApiError(504, "Thingiverse zaman aşımı.");
-    }
-    throw new ThingiverseApiError(503, "Thingiverse yanıt vermedi.");
-  } finally {
-    clearTimeout(timer);
-  }
+  const response = await requestThingiverseJson(path, token);
 
   if (response.status === 401 || response.status === 403) {
     await recordFailure(response.status, "Thingiverse kimliği reddedildi.");
@@ -229,7 +325,7 @@ export async function downloadThingiverseFile(input: {
     return loadThingiverseFileFixture(input.downloadUrl);
   }
 
-  const token = accessToken();
+  const token = await accessToken();
   if (!token) {
     throw new ThingiverseApiError(401, "Thingiverse jetonu yok.");
   }
@@ -248,6 +344,7 @@ export async function downloadThingiverseFile(input: {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "*/*",
+          "User-Agent": jsonHeaders["User-Agent"],
         },
         redirect: "manual",
         cache: "no-store",

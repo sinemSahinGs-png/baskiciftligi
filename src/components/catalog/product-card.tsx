@@ -17,6 +17,7 @@ import { announceStatus } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
+import { useTranslations } from "next-intl";
 
 interface ProductCardProps {
   product: Product;
@@ -25,18 +26,18 @@ interface ProductCardProps {
   tone?: "default" | "store";
 }
 
-const badgeLabels: Record<Product["badges"][number], string> = {
-  new: "Yeni",
-  bestseller: "Öne çıkan",
-  limited: "Sınırlı",
-};
-
 export function ProductCard({
   product,
   priority = false,
   featured = false,
   tone = "default",
 }: ProductCardProps) {
+  const t = useTranslations();
+  const badgeLabels: Record<Product["badges"][number], string> = {
+    new: t("badges.new"),
+    bestseller: t("badges.bestseller"),
+    limited: t("badges.limited"),
+  };
   const availableVariants = useMemo(
     () => product.variants.filter((variant) => variant.isActive),
     [product.variants],
@@ -191,7 +192,7 @@ export function ProductCard({
             ) : (
               <Plus aria-hidden="true" className="size-4" />
             )}
-            {layerComplete ? "Katman tamam" : "Sepete ekle"}
+            {layerComplete ? t("commerce.layerDone") : t("commerce.addToCart")}
           </button>
         )
       : (
@@ -232,7 +233,7 @@ export function ProductCard({
       data-product-slug={product.slug}
       className={cn(
         isStore
-          ? "store-card"
+          ? "store-card octo-store-card"
           : "group/card flex h-full min-w-0 flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none max-md:transform-none md:hover:-translate-y-1.5",
       )}
     >

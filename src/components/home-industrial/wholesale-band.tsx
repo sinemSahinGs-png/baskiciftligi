@@ -1,9 +1,13 @@
+"use client";
+
 import type { Route } from "next";
+import { useTranslations } from "next-intl";
 
 import { HomeTrackLink } from "@/components/home/home-track-link";
 import { MagneticAction, WordReveal } from "@/components/motion/premium";
 
 export function WholesaleBand() {
+  const t = useTranslations();
   return (
     <section
       id="toptan-bayiler"
@@ -12,16 +16,15 @@ export function WholesaleBand() {
       aria-labelledby="wholesale-heading"
     >
       <div className="hi-shell hi-wholesale-layout">
-        <p className="hi-kicker">TOPTAN & BAYİLER</p>
+        <p className="hi-kicker">{t("home.wholesaleKicker")}</p>
         <WordReveal
           as="h2"
           id="wholesale-heading"
           className="hi-title max-w-[14ch]"
-          text="RAFINDA HIZLI SATILACAK ÜRÜNLER."
+          text={t("home.wholesaleTitle")}
         />
         <p className="hi-lede">
-          Hediyelik, konsept mağaza, etkinlik ve kurumsal alımlar için adet bazlı
-          teklif. Toptan bir kategori değildir; mevcut kurumsal brief hattı kullanılır.
+          {t("home.wholesaleLede")}
         </p>
         <div className="hi-wholesale-actions">
           <MagneticAction className="w-fit">
@@ -30,14 +33,14 @@ export function WholesaleBand() {
               href={"/toptan" as Route}
               className="hi-btn"
             >
-              TOPTAN TEKLİF AL
+              {t("home.wholesaleCta")}
             </HomeTrackLink>
           </MagneticAction>
           <HomeTrackLink
             href={"/toptan/katalog" as Route}
             className="hi-link"
           >
-            TOPTAN KATALOG →
+            {t("home.wholesaleCatalog")}
           </HomeTrackLink>
         </div>
       </div>

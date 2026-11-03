@@ -15,6 +15,8 @@ import { ScrollThemeProvider } from "@/components/home-industrial/scroll-theme-p
 import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
 import { TrustStrip } from "@/components/home-industrial/trust-strip";
 import { WholesaleBand } from "@/components/home-industrial/wholesale-band";
+import { OceanAtmosphere } from "@/components/brand/ocean-atmosphere";
+import { OceanDepthTracker } from "@/components/brand/ocean-depth-tracker";
 import type { ReadyModelCard } from "@/components/home/ready-models-section";
 import type { Material, Product } from "@/domain/catalog/types";
 
@@ -34,9 +36,11 @@ export function IndustrialHome({
   void readyModels;
 
   return (
-    <div className="hi-root">
+    <div className="hi-root octo-world">
       <IndustrialHeaderEffects />
       <ScrollThemeProvider />
+      <OceanDepthTracker />
+      <OceanAtmosphere />
       <TechnicalGrid />
       <IdeaCommand />
       <ProductionPaths />

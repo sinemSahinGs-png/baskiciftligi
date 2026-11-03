@@ -5,7 +5,7 @@ import { listConsultationRequests } from "@/domain/consultation/repository";
 import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
-  title: "Model danışma talepleri",
+  title: "Özel Sipariş ve Destek",
 };
 
 export const dynamic = "force-dynamic";

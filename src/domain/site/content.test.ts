@@ -10,6 +10,6 @@ describe("site content merge", () => {
     });
     expect(merged.hero.headline).toBe("Yeni başlık");
     expect(merged.tagline.length).toBeGreaterThan(8);
-    expect(merged.hero.primaryCtaLabel).toBe("Mağazayı keşfet");
+    expect(merged.hero.primaryCtaLabel).toBe("MODELLERİ KEŞFET");
   });
 });

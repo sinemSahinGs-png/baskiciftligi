@@ -4,6 +4,7 @@ import type { Route } from "next";
 import { useEffect, useState } from "react";
 
 import { HomeTrackLink } from "@/components/home/home-track-link";
+import { useTranslations } from "next-intl";
 
 function intersecting(node: Element | null, threshold: number) {
   if (!node) return false;
@@ -13,6 +14,7 @@ function intersecting(node: Element | null, threshold: number) {
 }
 
 export function MobileStickyCta() {
+  const t = useTranslations();
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export function MobileStickyCta() {
       data-hidden={hidden ? "true" : "false"}
       className="hi-sticky-cta hi-btn md:hidden"
     >
-      Modelini yükle →
+      {t("home.quoteCta")}
     </HomeTrackLink>
   );
 }

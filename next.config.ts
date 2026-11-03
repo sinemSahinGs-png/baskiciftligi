@@ -8,14 +8,15 @@ const appCommit =
 
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""} https://www.paytr.com`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.supabase.co https://cdn.thingiverse.com https://resize.thingiverse.com https://www.thingiverse.com",
+  "img-src 'self' data: blob: https://*.supabase.co https://cdn.thingiverse.com https://resize.thingiverse.com https://www.thingiverse.com https://www.paytr.com",
   "font-src 'self' data:",
   "media-src 'self' blob: https://*.supabase.co",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.paytr.com",
+  "frame-src 'self' https://www.paytr.com",
   "worker-src 'self' blob:",
-  "frame-ancestors 'none'",
+  isDevelopment ? "frame-ancestors 'self'" : "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
@@ -28,6 +29,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   typedRoutes: true,
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   images: {
     qualities: [70, 75, 80],
@@ -86,7 +88,10 @@ const nextConfig: NextConfig = {
           { key: "x-bc-commit", value: appCommit },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
+          {
+            key: "X-Frame-Options",
+            value: isDevelopment ? "SAMEORIGIN" : "DENY",
+          },
           { key: "X-DNS-Prefetch-Control", value: "on" },
           {
             key: "Permissions-Policy",

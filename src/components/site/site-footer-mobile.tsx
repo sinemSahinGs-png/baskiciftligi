@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Logo } from "@/components/site/logo";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type FooterGroup = {
   id: string;
@@ -15,46 +16,49 @@ type FooterGroup = {
   links: Array<{ href: string; label: string }>;
 };
 
-const footerGroups: FooterGroup[] = [
-  {
-    id: "magaza",
-    label: "Mağaza",
-    links: [
-      { href: "/magaza", label: "Tüm ürünler" },
-      { href: "/model-yukle", label: "Model yükle" },
-      { href: "/hazir-modeller", label: "Hazır modeller" },
-    ],
-  },
-  {
-    id: "yardim",
-    label: "Yardım",
-    links: [
-      { href: "/siparis-takip", label: "Sipariş takibi" },
-      { href: "/hesabim", label: "Hesabım" },
-      { href: "/iletisim", label: "İletişim" },
-    ],
-  },
-  {
-    id: "kurumsal",
-    label: "Kurumsal",
-    links: [
-      { href: "/toptan", label: "Toptan & Bayiler" },
-      { href: "/toptan/katalog", label: "Toptan katalog" },
-      { href: "/kurumsal-uretim", label: "Kurumsal üretim" },
-      { href: "/malzemeler", label: "Malzemeler" },
-    ],
-  },
-  {
-    id: "yasal",
-    label: "Yasal",
-    links: [
-      { href: "/yasal/kvkk", label: "KVKK" },
-      { href: "/yasal/gizlilik", label: "Gizlilik" },
-      { href: "/yasal/mesafeli-satis", label: "Mesafeli satış" },
-      { href: "/yasal/iade", label: "İade" },
-    ],
-  },
-];
+function useFooterGroups(): FooterGroup[] {
+  const t = useTranslations();
+  return [
+    {
+      id: "magaza",
+      label: t("footer.store"),
+      links: [
+        { href: "/magaza", label: t("common.allProducts") },
+        { href: "/model-yukle", label: t("common.upload") },
+        { href: "/hazir-modeller", label: t("common.readyModels") },
+      ],
+    },
+    {
+      id: "yardim",
+      label: t("common.help"),
+      links: [
+        { href: "/siparis-takip", label: t("common.track") },
+        { href: "/hesabim", label: t("common.account") },
+        { href: "/iletisim", label: t("common.contact") },
+      ],
+    },
+    {
+      id: "kurumsal",
+      label: t("common.corporate"),
+      links: [
+        { href: "/toptan", label: t("common.wholesale") },
+        { href: "/toptan/katalog", label: t("footer.wholesaleCatalog") },
+        { href: "/kurumsal-uretim", label: t("footer.corporateProduction") },
+        { href: "/malzemeler", label: t("common.materials") },
+      ],
+    },
+    {
+      id: "yasal",
+      label: t("common.legal"),
+      links: [
+        { href: "/yasal/kvkk", label: t("common.kvkk") },
+        { href: "/yasal/gizlilik", label: t("common.privacy") },
+        { href: "/yasal/mesafeli-satis", label: t("common.distance") },
+        { href: "/yasal/iade", label: t("common.returns") },
+      ],
+    },
+  ];
+}
 
 function FooterAccordion({
   group,
@@ -104,6 +108,7 @@ export function SiteFooterMobile({
 }: {
   description: string;
 }) {
+  const footerGroups = useFooterGroups();
   const [openId, setOpenId] = useState<string | null>(null);
   const hasContact = Boolean(siteConfig.contact.email || siteConfig.contact.phone);
 

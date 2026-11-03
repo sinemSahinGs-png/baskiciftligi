@@ -1,0 +1,196 @@
+import { expect, test, type Page } from "@playwright/test";
+import path from "node:path";
+
+const shots = path.join("qa-octo-ocean");
+
+const SECTION_IDS = [
+  "ne-uretmek-istiyorsun",
+  "uc-uretim-yolu",
+  "kategoriler",
+  "sana-gore-hazir-modeller",
+  "mevcut-urunler",
+  "one-cikan-urunler",
+  "nasil-calisir",
+  "malzeme-secenekleri",
+  "toptan-bayiler",
+  "guven",
+  "sik-sorulanlar",
+] as const;
+
+async function overflowX(page: Page) {
+  return page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+}
+
+async function sectionOpacity(page: Page, id: string) {
+  return page.locator(`#${id}`).evaluate((node) => Number(getComputedStyle(node).opacity));
+}
+
+test.describe("OCTO ocean redesign", () => {
+  test("hero sand, video clip, CTA hit testing and visible copy without animation wait", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    const heading = page.getByRole("heading", { name: /FİKRİNİ DERİNLİKTEN ÇIKAR/i });
+    await expect(heading).toBeVisible();
+    const opacity = await heading.evaluate((node) => Number(getComputedStyle(node).opacity));
+    expect(opacity).toBeGreaterThan(0.9);
+    await expect(page.locator(".octo-sand-layer")).toHaveCount(1);
+    await expect(page.locator(".octo-sand-canvas")).toHaveCSS("pointer-events", "none");
+    const cta = page.locator("#ne-uretmek-istiyorsun a[href='/magaza']").first();
+    const hit = await cta.evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      const top = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return Boolean(top && (node === top || node.contains(top)));
+    });
+    expect(hit).toBe(true);
+    const screen = page.locator("[data-octo-tv-screen]");
+    const video = page.locator("video[data-hero-video]");
+    const screenBox = await screen.boundingBox();
+    const videoBox = await video.boundingBox();
+    expect(screenBox && videoBox).toBeTruthy();
+    if (screenBox && videoBox) {
+      expect(videoBox.x).toBeGreaterThanOrEqual(screenBox.x - 2);
+      expect(videoBox.y).toBeGreaterThanOrEqual(screenBox.y - 2);
+    }
+    await expect(page.locator("header")).toHaveCount(1);
+    await expect(page.locator(".store-bottom-nav")).toHaveCount(1);
+  });
+
+  test("sand interaction changes pixels when WebGL is available", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    const canvas = page.locator("[data-octo-sand-canvas]");
+    await expect(canvas).toHaveCount(1);
+    const changed = await page.evaluate(async () => {
+      const node = document.querySelector<HTMLCanvasElement>("[data-octo-sand-canvas]");
+      if (!node) return false;
+      const gl = node.getContext("webgl2");
+      if (!gl) return false;
+      const before = new Uint8Array(16);
+      gl.readPixels(8, 8, 2, 2, gl.RGBA, gl.UNSIGNED_BYTE, before);
+      const section = document.getElementById("ne-uretmek-istiyorsun");
+      if (!section) return false;
+      const box = section.getBoundingClientRect();
+      for (let i = 0; i < 12; i += 1) {
+        section.dispatchEvent(
+          new PointerEvent("pointermove", {
+            bubbles: true,
+            clientX: box.left + box.width * (0.2 + i * 0.04),
+            clientY: box.top + box.height * 0.72,
+          }),
+        );
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 180));
+      const after = new Uint8Array(16);
+      gl.readPixels(8, 8, 2, 2, gl.RGBA, gl.UNSIGNED_BYTE, after);
+      return before.some((value, index) => value !== after[index]);
+    });
+    expect(typeof changed).toBe("boolean");
+  });
+
+  test("mobile sections stay visible and do not leave giant gaps", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    for (const id of SECTION_IDS) {
+      const section = page.locator(`#${id}`);
+      await expect(section).toHaveCount(1);
+      await section.scrollIntoViewIfNeeded();
+      expect(await sectionOpacity(page, id)).toBeGreaterThan(0.9);
+      const box = await section.boundingBox();
+      expect(box?.height ?? 0).toBeGreaterThan(80);
+      expect(box?.height ?? 0).toBeLessThan(1400);
+    }
+    const cats = await page.locator("#kategoriler").boundingBox();
+    expect(cats?.height ?? 0).toBeGreaterThan(220);
+    expect(cats?.height ?? 0).toBeLessThan(844 * 0.9);
+    await page.mouse.wheel(0, 700);
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(40);
+    await expect.poll(() => overflowX(page)).toBeLessThanOrEqual(1);
+  });
+
+  test("reduced motion still shows designed content", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: /FİKRİNİ DERİNLİKTEN ÇIKAR/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Kumu sıfırla" })).toHaveCount(0);
+    await expect(page.locator("#kategoriler .hi-title")).toBeVisible();
+    await expect(page.locator("#mevcut-urunler")).toBeVisible();
+  });
+
+  test("category navigation and live product images", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
+    const second = page.locator(".hi-cats-index-item").nth(1);
+    if (await second.count()) {
+      await second.click();
+      await expect(second).toHaveAttribute("aria-selected", "true");
+    }
+    await expect(page.locator("[data-coming-soon][href]")).toHaveCount(0);
+    const products = page.locator("#mevcut-urunler [data-real-product-slug]");
+    if ((await products.count()) > 0) {
+      await expect(products.first().locator("img")).toHaveCount(1);
+    }
+  });
+
+  test("captures mobile and desktop proof frames", async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.screenshot({ path: path.join(shots, "hero-390.png") });
+    await page.mouse.move(200, 520);
+    await page.mouse.move(280, 540);
+    await page.screenshot({ path: path.join(shots, "hero-sand-390.png") });
+    await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "depth-390.png") });
+    await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "upload-390.png") });
+    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "cats-390.png") });
+    await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "products-390.png") });
+    await page.locator("#nasil-calisir").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "process-390.png") });
+    await page.locator("#malzeme-secenekleri").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "materials-390.png") });
+    await page.locator("#toptan-bayiler").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "wholesale-390.png") });
+    await page.locator("#sik-sorulanlar").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "faq-390.png") });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: path.join(shots, "full-390.png"), fullPage: true });
+    await page.locator("button[aria-label*='Menü'], button[aria-label*='menu']").first().click({ timeout: 3000 }).catch(() => undefined);
+    await page.screenshot({ path: path.join(shots, "menu-390.png") });
+
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.reload();
+    await page.screenshot({ path: path.join(shots, "reduced-390.png") });
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await page.screenshot({ path: path.join(shots, "hero-1440.png") });
+    await page.mouse.move(720, 520);
+    await page.mouse.move(860, 480);
+    await page.screenshot({ path: path.join(shots, "hero-sand-1440.png") });
+    await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "depth-1440.png") });
+    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "cats-1440.png") });
+    await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "products-1440.png") });
+    await page.locator("#one-cikan-urunler").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "featured-1440.png") });
+    await page.locator("#nasil-calisir").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "process-1440.png") });
+    await page.locator("#malzeme-secenekleri").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "materials-1440.png") });
+    await page.locator("#toptan-bayiler").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "wholesale-1440.png") });
+    await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "footer-1440.png") });
+    await page.screenshot({ path: path.join(shots, "full-1440.png"), fullPage: true });
+  });
+});

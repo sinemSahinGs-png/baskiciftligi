@@ -21,6 +21,7 @@ import {
   thingiverseProvider,
 } from "@/providers/thingiverse/provider";
 import { ThingiverseApiError } from "@/providers/thingiverse/client";
+import { hydrateThingiverseOauthToken } from "@/providers/thingiverse/oauth-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -89,9 +90,10 @@ function matchCategory(label: string | null | undefined, category: string) {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = (searchParams.get("q") ?? "").trim().slice(0, 120);
-  const source = searchParams.get("source") ?? "all";
+  const source = searchParams.get("source") ?? "thingiverse";
   const category = (searchParams.get("category") ?? "").trim();
   const page = Math.max(1, Number(searchParams.get("page") ?? "1") || 1);
+  await hydrateThingiverseOauthToken();
   const tvStatus = getThingiverseConfigStatus();
   const thingiverseConnected = tvStatus === "connected";
   const categories = thingiverseConnected ? [...THINGIVERSE_CATEGORY_LABELS] : [];

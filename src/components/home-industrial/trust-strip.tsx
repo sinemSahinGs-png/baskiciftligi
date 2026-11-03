@@ -1,18 +1,22 @@
-import type { CSSProperties } from "react";
+"use client";
 
-const ITEMS = [
-  { title: "Güvenli ödeme", copy: "Ödeme altyapısı ve sipariş kaydı ayrı tutulur." },
-  { title: "Gerçek üretim verisi", copy: "Fiyat, dilimleme çıktısı olmadan vaat edilmez." },
-  { title: "Kontrollü üretim", copy: "Dosya, lisans ve geometri kontrol edilir." },
-  { title: "Şeffaf fiyatlandırma", copy: "KDV ayrıdır. 100 TL kargo sipariş başına bir kez." },
-] as const;
+import type { CSSProperties } from "react";
+import { useTranslations } from "next-intl";
 
 export function TrustStrip() {
+  const t = useTranslations();
+  const ITEMS = [
+    { title: t("home.trust1Title"), copy: t("home.trust1Copy") },
+    { title: t("home.trust2Title"), copy: t("home.trust2Copy") },
+    { title: t("home.trust3Title"), copy: t("home.trust3Copy") },
+    { title: t("home.trust4Title"), copy: t("home.trust4Copy") },
+  ];
+
   return (
     <section id="guven" data-home-theme="mono" className="hi-section" aria-labelledby="trust-heading">
       <div className="hi-shell">
-        <h2 id="trust-heading" className="sr-only">
-          Güven unsurları
+        <h2 id="trust-heading" className="hi-title mb-4">
+          {t("home.trustHeading")}
         </h2>
         <ul className="grid grid-cols-2 gap-px border border-[color:var(--bc-line)] md:grid-cols-4">
           {ITEMS.map((item, index) => (
