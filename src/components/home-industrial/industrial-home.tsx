@@ -1,20 +1,14 @@
-import { CompactFaq } from "@/components/home-industrial/compact-faq";
-import { CorporateProduction } from "@/components/home-industrial/corporate-production";
-import { FeaturedProduct } from "@/components/home-industrial/featured-product";
-import { FinalCta } from "@/components/home-industrial/final-cta";
+import { CompactClose } from "@/components/home-industrial/compact-close";
+import { CompactUpload } from "@/components/home-industrial/compact-upload";
+import { CuratedCollection } from "@/components/home-industrial/curated-collection";
 import { HomeCategories } from "@/components/home-industrial/home-categories";
 import { IdeaCommand } from "@/components/home-industrial/idea-command";
-import { SandAbyssHandoff } from "@/components/home-industrial/sand-abyss-handoff";
 import { IndustrialHeaderEffects } from "@/components/home-industrial/industrial-header";
-import { MaterialsStrip } from "@/components/home-industrial/materials-strip";
 import { MobileStickyCta } from "@/components/home-industrial/mobile-sticky-cta";
-import { AutoQuote } from "@/components/home-industrial/auto-quote";
-import { ProductionPaths } from "@/components/home-industrial/production-paths";
-import { ProductionProcess } from "@/components/home-industrial/production-process";
-import { RealProducts } from "@/components/home-industrial/real-products";
+import { ProductionJourney } from "@/components/home-industrial/production-journey";
 import { ScrollThemeProvider } from "@/components/home-industrial/scroll-theme-provider";
+import { StudioIntro } from "@/components/home-industrial/studio-intro";
 import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
-import { TrustStrip } from "@/components/home-industrial/trust-strip";
 import { WholesaleBand } from "@/components/home-industrial/wholesale-band";
 import { OceanAtmosphere } from "@/components/brand/ocean-atmosphere";
 import { OceanDepthTracker } from "@/components/brand/ocean-depth-tracker";
@@ -22,6 +16,7 @@ import type { ReadyModelCard } from "@/components/home/ready-models-section";
 import type { Material, Product } from "@/domain/catalog/types";
 
 import "./home-industrial.css";
+import "./home-story.css";
 
 export function IndustrialHome({
   products,
@@ -32,8 +27,7 @@ export function IndustrialHome({
   materials: Material[];
   readyModels: ReadyModelCard[];
 }) {
-  const featured =
-    products.find((product) => product.featured) ?? products[0] ?? null;
+  void materials;
   void readyModels;
 
   return (
@@ -44,19 +38,13 @@ export function IndustrialHome({
       <OceanAtmosphere />
       <TechnicalGrid />
       <IdeaCommand />
-      <SandAbyssHandoff />
-      <ProductionPaths />
+      <StudioIntro />
+      <ProductionJourney />
       <HomeCategories products={products} />
-      <AutoQuote />
-      <RealProducts products={products} />
-      <FeaturedProduct product={featured} />
-      <ProductionProcess />
-      <MaterialsStrip materials={materials} />
+      <CuratedCollection products={products} />
+      <CompactUpload />
       <WholesaleBand />
-      <CorporateProduction />
-      <TrustStrip />
-      <CompactFaq />
-      <FinalCta />
+      <CompactClose />
       <MobileStickyCta />
     </div>
   );

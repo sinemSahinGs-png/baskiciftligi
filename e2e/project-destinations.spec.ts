@@ -21,7 +21,7 @@ async function selectHomepageCategory(page: Page, slug: string) {
 }
 
 test.describe("project category destinations", () => {
-  test("homepage stage includes OCTO categories plus Orbia, Memoora and Cep Albüm", async ({
+  test("homepage stage includes OCTO categories plus Orbia, Memoora and LIL’ DISC", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -31,17 +31,19 @@ test.describe("project category destinations", () => {
     await expect(index).toHaveCount(10);
     await expect(page.locator('#kategoriler [data-category-slug="orbia"]')).toHaveCount(2);
     await expect(page.locator('#kategoriler [data-category-slug="memoora"]')).toHaveCount(2);
-    await expect(page.locator('#kategoriler [data-category-slug="cep-album"]')).toHaveCount(2);
+    await expect(page.locator('#kategoriler [data-category-slug="lil-disc"]')).toHaveCount(2);
     const header = page.getByRole("navigation", { name: "Ana menü" });
     await expect(header.getByRole("link", { name: "ORBIA" })).toHaveCount(0);
     await expect(header.getByRole("link", { name: "MEMOORA" })).toHaveCount(0);
-    await expect(header.getByRole("link", { name: "CEP ALBÜM" })).toHaveCount(0);
+    await expect(header.getByRole("link", { name: "LIL’ DISC" })).toHaveCount(0);
     await expect(page.locator("[data-site-footer]")).not.toContainText("ORBIA");
     await expect(page.locator("[data-site-footer]")).not.toContainText("MEMOORA");
-    await expect(page.locator("[data-site-footer]")).not.toContainText("CEP ALBÜM");
-    await expect(page.locator("#mevcut-urunler")).not.toContainText("ORBIA");
-    await expect(page.locator("#mevcut-urunler")).not.toContainText("MEMOORA");
-    await expect(page.locator("#mevcut-urunler")).not.toContainText("CEP ALBÜM");
+    await expect(page.locator("[data-site-footer]")).not.toContainText("LIL’ DISC");
+    await expect(page.locator("#mevcut-urunler")).toContainText("ORBIA");
+    await expect(page.locator("#mevcut-urunler")).toContainText("MEMOORA");
+    await expect(page.locator("#mevcut-urunler")).toContainText("LIL’ DISC");
+    await expect(page.locator("body")).not.toContainText("CEP ALBÜM");
+    await expect(page.locator("body")).not.toContainText("Cep Albüm");
     await expect(page.locator("body")).not.toContainText("2.000 TL üzeri ücretsiz kargo");
   });
 
@@ -49,13 +51,13 @@ test.describe("project category destinations", () => {
     test.setTimeout(90_000);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
-    for (const slug of ["orbia", "memoora", "cep-album"] as const) {
+    for (const slug of ["orbia", "memoora", "lil-disc"] as const) {
       await selectHomepageCategory(page, slug);
       await expect(page.locator(`#kategoriler [data-category-slug="${slug}"]`).first()).toHaveAttribute(
         "data-active",
         "true",
       );
-      const titles = { orbia: "ORBIA", memoora: "MEMOORA", "cep-album": "CEP ALBÜM" } as const;
+      const titles = { orbia: "ORBIA", memoora: "MEMOORA", "lil-disc": "LIL’ DISC" } as const;
       await expect(page.locator("#kategoriler .hi-cats-meta-title")).toHaveText(titles[slug]);
       await page.locator("#kategoriler").screenshot({
         path: path.join(shots, `home-cat-${slug}-1440.png`),
@@ -72,7 +74,7 @@ test.describe("project category destinations", () => {
     });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
-    for (const slug of ["orbia", "memoora", "cep-album"] as const) {
+    for (const slug of ["orbia", "memoora", "lil-disc"] as const) {
       const slide = page.locator(`#kategoriler .hi-cats-slide[data-category-slug="${slug}"]`);
       await slide.scrollIntoViewIfNeeded();
       await page.locator("#kategoriler").screenshot({
@@ -101,7 +103,7 @@ test.describe("project category destinations", () => {
     const destinations = [
       { slug: "orbia", title: "ORBIA", buy: false, video: "/categories/orbia/hero" },
       { slug: "memoora", title: "MEMOORA", buy: true, video: "/categories/memoora/hero.mp4" },
-      { slug: "cep-album", title: "CEP ALBÜM", buy: true, video: "/categories/cep-album/hero.mp4" },
+      { slug: "lil-disc", title: "LIL’ DISC", buy: true, video: "/categories/cep-album/hero.mp4" },
     ] as const;
 
     for (const item of destinations) {
@@ -140,7 +142,7 @@ test.describe("project category destinations", () => {
     }
   });
 
-  test("Orbia stays disabled and Memoora/Cep Albüm price from the server", async ({ page }) => {
+  test("Orbia stays disabled and Memoora/LIL’ DISC price from the server", async ({ page }) => {
     test.setTimeout(90_000);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/kategori/orbia");
@@ -180,17 +182,19 @@ test.describe("project category destinations", () => {
     });
 
     await page.goto("/kategori/cep-album");
+    await expect(page).toHaveURL(/\/kategori\/lil-disc/);
+    await expect(page.getByRole("heading", { name: "LIL’ DISC" })).toBeVisible();
     await expect(page.locator("[data-server-quote='ready']")).toBeVisible({ timeout: 15_000 });
-    await page.getByText("Beton Beat", { exact: true }).click();
+    await page.locator(".project-buy-choices label").filter({ hasText: "Beton Beat" }).click();
     await expect(page.locator("[data-server-unit]")).toContainText("200,00", { timeout: 15_000 });
     await page.screenshot({
-      path: path.join(shots, "cep-album-select-390.png"),
+      path: path.join(shots, "lil-disc-select-390.png"),
       animations: "disabled",
     });
     await page.locator("[data-project-sticky] button").click();
     await expect(page).toHaveURL(/\/odeme/, { timeout: 15_000 });
     await page.screenshot({
-      path: path.join(shots, "cep-album-checkout-390.png"),
+      path: path.join(shots, "lil-disc-checkout-390.png"),
       animations: "disabled",
     });
   });
@@ -266,11 +270,48 @@ test.describe("project category destinations", () => {
     });
   });
 
+  test("homepage story sections stay dense and include curated project cards", async ({ page }) => {
+    test.setTimeout(90_000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    const report = await page.evaluate(() => {
+      const ids = [
+        "ne-uretmek-istiyorsun",
+        "atolye",
+        "uc-uretim-yolu",
+        "kategoriler",
+        "mevcut-urunler",
+        "sana-gore-hazir-modeller",
+        "toptan-bayiler",
+        "guven",
+      ];
+      return ids.map((id) => {
+        const node = document.getElementById(id);
+        const box = node?.getBoundingClientRect();
+        return { id, height: box?.height ?? 0 };
+      });
+    });
+    for (const row of report) {
+      expect(row.height, row.id).toBeGreaterThan(80);
+      expect(row.height, row.id).toBeLessThan(1100);
+    }
+    await page.screenshot({ path: path.join(shots, "home-hero-390.png"), animations: "disabled" });
+    await page.locator("#atolye").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "home-studio-390.png"), animations: "disabled" });
+    await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "home-journey-390.png"), animations: "disabled" });
+    await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "home-curated-390.png"), animations: "disabled" });
+    await page.locator("#toptan-bayiler").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "home-wholesale-390.png"), animations: "disabled" });
+    expect(await overflowX(page)).toBeLessThanOrEqual(1);
+  });
+
   test("no horizontal overflow from 320 to 1440 on destination pages", async ({ page }) => {
     test.setTimeout(90_000);
     for (const width of [320, 390, 430, 768, 1440]) {
       await page.setViewportSize({ width, height: 844 });
-      for (const slug of ["orbia", "memoora", "cep-album"]) {
+      for (const slug of ["orbia", "memoora", "lil-disc"]) {
         await page.goto(`/kategori/${slug}`);
         expect(await overflowX(page), `${slug} @ ${width}`).toBeLessThanOrEqual(1);
       }

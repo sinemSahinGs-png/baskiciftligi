@@ -16,6 +16,7 @@ import { ArrowUpRight } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 
 import "./octo-sand-hero.css";
+import { OctopusTentacle } from "@/components/brand/octopus-tentacle";
 import { HeroVideo } from "@/components/home-industrial/hero-video";
 import { OctoInteractiveSandHero } from "@/components/home-industrial/octo-interactive-sand-hero";
 import { HeroTypewriter } from "@/components/home-industrial/hero-typewriter";
@@ -303,9 +304,6 @@ export function IdeaCommand() {
             text={t("home.heroTitle")}
           />
           <span className="hi-hero-rule" aria-hidden="true" />
-          <p className="hi-hero-lede">
-            {t("home.heroLede")}
-          </p>
           <div className="octo-hero-actions">
             <Link href={"/magaza" as Route} className="octo-cta">
               {t("home.heroPrimary")}
@@ -318,6 +316,9 @@ export function IdeaCommand() {
               {t("home.heroSecondary")}
             </Link>
           </div>
+          <p className="hi-hero-lede">
+            {t("home.heroLede")}
+          </p>
         </div>
 
         <div className="hi-hero-search">
@@ -392,6 +393,8 @@ export function IdeaCommand() {
           {t("home.heroScroll")}
           <span />
         </p>
+        <OctopusTentacle variant="hero-corner" className="octo-tv-tentacle octo-tv-tentacle-corner" />
+        <OctopusTentacle variant="hero-guide" className="octo-tv-tentacle octo-tv-tentacle-guide" />
       </div>
 
       <div className="octo-tv-below">

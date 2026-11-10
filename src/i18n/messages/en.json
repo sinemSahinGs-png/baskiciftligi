@@ -129,10 +129,26 @@
     "prevCat": "Previous category",
     "nextCat": "Next category",
     "writeIdea": "Write your idea →",
-    "productsShopTitle": "SHOP PRODUCTS",
+    "productsShopTitle": "CURATED SELECTION",
+    "curatedKicker": "SPECIAL DESIGN COLLECTION",
+    "studioTitle": "3D DESIGN, PRODUCTION AND CUSTOM STUDIO.",
+    "studioLede": "Buy a ready model, upload a file for pricing, or request custom production. OCTO STUDIO connects design, price and making.",
+    "journeyTitle": "PRODUCTION JOURNEY",
+    "journey1": "CHOOSE OR UPLOAD A MODEL",
+    "journey2": "CUSTOMIZE",
+    "journey3": "SEE THE PRICE",
+    "journey4": "PLACE THE ORDER",
+    "uploadInviteTitle": "IF THE MODEL IS READY, START PRODUCTION.",
+    "uploadInviteLede": "Upload STL or 3MF and see the server price.",
+    "wholesaleBannerTitle": "WHOLESALE & DEALERS",
+    "wholesaleBannerLede": "Custom 3D production for shops, architects and corporate work.",
+    "wholesaleReach": "CONTACT US",
+    "priceSoon": "PRICE SOON",
     "emptyCta": "UPLOAD YOUR MODEL",
     "exploreShop": "EXPLORE THE SHOP",
     "heroFind": "FIND MODEL SUGGESTIONS",
+    "heroPrimary": "EXPLORE MODELS",
+    "heroSecondary": "UPLOAD YOUR MODEL",
     "heroOrUpload": "OR UPLOAD YOUR STL / 3MF FILE",
     "heroPlaceholder": "e.g. White bedroom lamp",
     "heroClosest": "No exact match. These are the closest models to your idea.",
@@ -226,8 +242,8 @@
       "eyebrow": "Project",
       "description": "NFC magnet or keychain that opens a digital wedding memory tree."
     },
-    "cep-album": {
-      "name": "CEP ALBÜM",
+    "lil-disc": {
+      "name": "LIL’ DISC",
       "eyebrow": "Project",
       "description": "Mini album keychain. Single albums are 200 TL in the source project."
     }

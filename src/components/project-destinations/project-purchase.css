@@ -398,6 +398,96 @@
   }
 }
 
+.project-buy[data-project-theme="lil-disc"] {
+  background: #f7f3ea;
+  color: #16110c;
+  padding-bottom: calc(
+    var(--store-bottom-nav-h, 3.65rem) + 8.5rem + env(safe-area-inset-bottom, 0px)
+  );
+  --project-accent: #b56a28;
+  --project-accent-deep: #16110c;
+  --project-mist: rgb(22 17 12 / 0.16);
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-hero-fade {
+  background: linear-gradient(180deg, rgb(247 243 234 / 0), #f7f3ea);
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-kicker,
+.project-buy[data-project-theme="lil-disc"] .project-buy-lede,
+.project-buy[data-project-theme="lil-disc"] .project-buy-field span,
+.project-buy[data-project-theme="lil-disc"] .project-buy-field legend,
+.project-buy[data-project-theme="lil-disc"] .project-buy-faq,
+.project-buy[data-project-theme="lil-disc"] .project-buy-back a {
+  color: #3c3228;
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-intro h1 {
+  color: #16110c;
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-panel,
+.project-buy[data-project-theme="lil-disc"] .project-buy-media,
+.project-buy[data-project-theme="lil-disc"] .project-buy-choices label {
+  background: #fffdf8;
+  border-color: rgb(22 17 12 / 0.12);
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-field select,
+.project-buy[data-project-theme="lil-disc"] .project-buy-field input[type="number"] {
+  background: #fff;
+  color: #16110c;
+  border-color: rgb(22 17 12 / 0.18);
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-choices {
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-choices label {
+  min-height: 8.5rem;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0.45rem;
+  text-align: start;
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-choices img {
+  width: 100%;
+  height: 5.6rem;
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-choices em {
+  display: block;
+  margin-top: 0.2rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-cta,
+.project-buy[data-project-theme="lil-disc"] .project-buy-sticky button {
+  background: #16110c;
+  color: #f4efe4;
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-sticky {
+  background: #fffdf8;
+  border-top: 1px solid rgb(22 17 12 / 0.12);
+  color: #16110c;
+}
+
+@media (max-width: 767px) {
+  .project-buy[data-project-theme="lil-disc"] .project-buy-media {
+    order: 4;
+    min-height: 0;
+  }
+
+  .project-buy[data-project-theme="lil-disc"] .project-buy-media img {
+    max-height: 11rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .project-buy-hero video {
     display: none;

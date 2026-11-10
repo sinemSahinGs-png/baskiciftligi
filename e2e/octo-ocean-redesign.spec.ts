@@ -5,13 +5,11 @@ const shots = path.join("qa-octo-ocean");
 
 const SECTION_IDS = [
   "ne-uretmek-istiyorsun",
+  "atolye",
   "uc-uretim-yolu",
   "kategoriler",
-  "sana-gore-hazir-modeller",
   "mevcut-urunler",
-  "one-cikan-urunler",
-  "nasil-calisir",
-  "malzeme-secenekleri",
+  "sana-gore-hazir-modeller",
   "toptan-bayiler",
   "guven",
   "sik-sorulanlar",
@@ -131,7 +129,7 @@ test.describe("OCTO ocean redesign", () => {
     await expect(page.locator("#kategoriler .hi-cats-index-item")).toHaveCount(10);
     await expect(page.locator('#kategoriler [data-category-slug="orbia"]')).toHaveCount(2);
     await expect(page.locator('#kategoriler [data-category-slug="memoora"]')).toHaveCount(2);
-    await expect(page.locator('#kategoriler [data-category-slug="cep-album"]')).toHaveCount(2);
+    await expect(page.locator('#kategoriler [data-category-slug="lil-disc"]')).toHaveCount(2);
     await expect(page.locator("[data-coming-soon][href]")).toHaveCount(0);
     const products = page.locator("#mevcut-urunler [data-real-product-slug]");
     if ((await products.count()) > 0) {
@@ -139,84 +137,22 @@ test.describe("OCTO ocean redesign", () => {
     }
   });
 
-  test("sand-to-abyss handoff uses the 2400×900 still without a seam or layout jump", async ({
-    page,
-  }) => {
-    const response = await page.request.get("/images/atmosphere/octo-sand-to-abyss-handoff.webp");
-    expect(response.status()).toBe(200);
-    expect(response.headers()["content-type"] ?? "").toMatch(/image\/webp/i);
-
-    for (const width of [390, 1440] as const) {
-      await page.setViewportSize({
-        width,
-        height: width === 390 ? 844 : 900,
-      });
-      await page.goto("/");
-      const handoff = page.locator("[data-sand-abyss-handoff]");
-      await expect(handoff).toHaveCount(1);
-      const image = handoff.locator("img.octo-sand-abyss-image");
-      await expect(image).toBeVisible();
-      await expect
-        .poll(async () => image.evaluate((node) => (node as HTMLImageElement).naturalWidth))
-        .toBe(2400);
-      const metrics = await page.evaluate(() => {
-        const hero = document.getElementById("ne-uretmek-istiyorsun");
-        const band = document.querySelector<HTMLElement>("[data-sand-abyss-handoff]");
-        const img = band?.querySelector<HTMLImageElement>("img.octo-sand-abyss-image");
-        const paths = document.getElementById("uc-uretim-yolu");
-        if (!hero || !band || !img || !paths) return null;
-        const heroBox = hero.getBoundingClientRect();
-        const bandBox = band.getBoundingClientRect();
-        const pathsBox = paths.getBoundingClientRect();
-        const style = getComputedStyle(img);
-        return {
-          naturalWidth: img.naturalWidth,
-          naturalHeight: img.naturalHeight,
-          objectFit: style.objectFit,
-          overlapHero: heroBox.bottom - bandBox.top,
-          overlapPaths: bandBox.bottom - pathsBox.top,
-          gapHero: bandBox.top - heroBox.bottom,
-          gapPaths: pathsBox.top - bandBox.bottom,
-        };
-      });
-      expect(metrics).toBeTruthy();
-      expect(metrics?.naturalWidth).toBe(2400);
-      expect(metrics?.naturalHeight).toBe(900);
-      expect(metrics?.objectFit).toBe("cover");
-      expect(metrics?.overlapHero ?? 0).toBeGreaterThan(8);
-      expect(metrics?.overlapPaths ?? 0).toBeGreaterThan(8);
-      expect(metrics?.gapHero ?? 1).toBeLessThanOrEqual(0);
-      expect(metrics?.gapPaths ?? 1).toBeLessThanOrEqual(0);
-
-      const startY = await page.evaluate(() => {
-        const hero = document.getElementById("ne-uretmek-istiyorsun");
-        return Math.max(0, (hero?.offsetHeight ?? 0) - window.innerHeight * 0.62);
-      });
-      await page.evaluate((y) => window.scrollTo(0, y), startY);
-      for (let step = 0; step < 10; step += 1) {
-        const seam = await page.evaluate(() => {
-          const hero = document.getElementById("ne-uretmek-istiyorsun");
-          const band = document.querySelector("[data-sand-abyss-handoff]");
-          const paths = document.getElementById("uc-uretim-yolu");
-          if (!hero || !band || !paths) return { gapHero: 99, gapPaths: 99 };
-          const heroBox = hero.getBoundingClientRect();
-          const bandBox = band.getBoundingClientRect();
-          const pathsBox = paths.getBoundingClientRect();
-          return {
-            gapHero: bandBox.top - heroBox.bottom,
-            gapPaths: pathsBox.top - bandBox.bottom,
-          };
-        });
-        expect(seam.gapHero).toBeLessThanOrEqual(1);
-        expect(seam.gapPaths).toBeLessThanOrEqual(1);
-        await page.evaluate(() => window.scrollBy(0, 70));
-      }
-      await page.evaluate((y) => window.scrollTo(0, y), startY);
-      await page.screenshot({
-        path: path.join(shots, width === 390 ? "sand-abyss-390.png" : "sand-abyss-1440.png"),
-        animations: "disabled",
-      });
-    }
+  test("hero flows into the studio plate without a giant empty band", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await expect(page.locator("[data-sand-abyss-handoff]")).toHaveCount(0);
+    await expect(page.locator("[data-octo-tentacle]")).toHaveCount(4);
+    const gap = await page.evaluate(() => {
+      const hero = document.getElementById("ne-uretmek-istiyorsun");
+      const studio = document.getElementById("atolye");
+      if (!hero || !studio) return 99;
+      return studio.getBoundingClientRect().top - hero.getBoundingClientRect().bottom;
+    });
+    expect(gap).toBeGreaterThanOrEqual(0);
+    expect(gap).toBeLessThanOrEqual(24);
+    const tv = await page.locator(".octo-tv-frame").boundingBox();
+    expect(tv?.width ?? 0).toBeGreaterThan(390 * 0.8);
+    expect(tv?.width ?? 0).toBeLessThan(390 * 0.92);
   });
 
   test("captures mobile and desktop proof frames", async ({ page }) => {
@@ -227,7 +163,7 @@ test.describe("OCTO ocean redesign", () => {
     await page.mouse.move(200, 520);
     await page.mouse.move(280, 540);
     await page.screenshot({ path: path.join(shots, "hero-sand-390.png") });
-    await page.locator("[data-sand-abyss-handoff]").scrollIntoViewIfNeeded();
+    await page.locator("#atolye").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "depth-390.png") });
     await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
     await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
@@ -236,7 +172,7 @@ test.describe("OCTO ocean redesign", () => {
     await page.screenshot({ path: path.join(shots, "cats-390.png") });
     await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "products-390.png") });
-    await page.locator("#nasil-calisir").scrollIntoViewIfNeeded();
+    await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "process-390.png") });
     await page.locator("#malzeme-secenekleri").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "materials-390.png") });
@@ -260,16 +196,16 @@ test.describe("OCTO ocean redesign", () => {
     await page.mouse.move(720, 520);
     await page.mouse.move(860, 480);
     await page.screenshot({ path: path.join(shots, "hero-sand-1440.png") });
-    await page.locator("[data-sand-abyss-handoff]").scrollIntoViewIfNeeded();
+    await page.locator("#atolye").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "depth-1440.png") });
     await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
     await page.locator("#kategoriler").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "cats-1440.png") });
     await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "products-1440.png") });
-    await page.locator("#one-cikan-urunler").scrollIntoViewIfNeeded();
+    await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "featured-1440.png") });
-    await page.locator("#nasil-calisir").scrollIntoViewIfNeeded();
+    await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "process-1440.png") });
     await page.locator("#malzeme-secenekleri").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "materials-1440.png") });

@@ -129,7 +129,21 @@
     "prevCat": "Önceki kategori",
     "nextCat": "Sonraki kategori",
     "writeIdea": "Fikrini yaz →",
-    "productsShopTitle": "MAĞAZA ÜRÜNLERİ",
+    "productsShopTitle": "KÜRATÖR SEÇKİSİ",
+    "curatedKicker": "ÖZEL TASARIM KOLEKSİYONU",
+    "studioTitle": "3D TASARIM, ÜRETİM VE ÖZEL TASARIM ATÖLYESİ.",
+    "studioLede": "Hazır modelleri satın alabilir, dosyanı yükleyip fiyat alabilir veya özel üretim talebi oluşturabilirsin. OCTO STUDIO tasarımı, fiyatı ve üretimi aynı stüdyoda bağlar.",
+    "journeyTitle": "ÜRETİM YOLCULUĞU",
+    "journey1": "MODEL SEÇ VEYA YÜKLE",
+    "journey2": "ÖZELLEŞTİR",
+    "journey3": "FİYATI GÖR",
+    "journey4": "SİPARİŞ VER",
+    "uploadInviteTitle": "MODELİN HAZIRSA ÜRETİME GEÇ.",
+    "uploadInviteLede": "STL veya 3MF yükle, sunucu fiyatını gör.",
+    "wholesaleBannerTitle": "TOPTAN & BAYİLER",
+    "wholesaleBannerLede": "Mağazalar, mimarlar ve kurumsal işler için özel 3D üretim çözümleri.",
+    "wholesaleReach": "BİZE ERİŞİN",
+    "priceSoon": "FİYAT YAKINDA",
     "emptyCta": "MODELİNİ YÜKLE",
     "exploreShop": "MAĞAZAYI KEŞFET",
     "heroFind": "ARA",
@@ -229,8 +243,8 @@
       "eyebrow": "Proje",
       "description": "NFC magnet veya anahtarlıkla açılan dijital düğün hatıra ağacı."
     },
-    "cep-album": {
-      "name": "CEP ALBÜM",
+    "lil-disc": {
+      "name": "LIL’ DISC",
       "eyebrow": "Proje",
       "description": "Mini albüm anahtarlığı. Tekli albümler kaynak fiyatta 200 TL."
     }

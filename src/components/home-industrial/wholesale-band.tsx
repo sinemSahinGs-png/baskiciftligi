@@ -3,8 +3,8 @@
 import type { Route } from "next";
 import { useTranslations } from "next-intl";
 
+import { OctopusTentacle } from "@/components/brand/octopus-tentacle";
 import { HomeTrackLink } from "@/components/home/home-track-link";
-import { MagneticAction, WordReveal } from "@/components/motion/premium";
 
 export function WholesaleBand() {
   const t = useTranslations();
@@ -12,35 +12,24 @@ export function WholesaleBand() {
     <section
       id="toptan-bayiler"
       data-home-theme="mono"
-      className="hi-section hi-wholesale"
+      className="octo-story octo-wholesale"
       aria-labelledby="wholesale-heading"
     >
-      <div className="hi-shell hi-wholesale-layout">
-        <p className="hi-kicker">{t("home.wholesaleKicker")}</p>
-        <WordReveal
-          as="h2"
-          id="wholesale-heading"
-          className="hi-title max-w-[14ch]"
-          text={t("home.wholesaleTitle")}
-        />
-        <p className="hi-lede">
-          {t("home.wholesaleLede")}
+      <OctopusTentacle variant="wholesale" className="octo-wholesale-tentacle" />
+      <div className="hi-shell octo-wholesale-layout">
+        <h2 id="wholesale-heading" className="octo-serif octo-serif-on-dark">
+          {t("home.wholesaleBannerTitle")}
+        </h2>
+        <p className="hi-lede" style={{ color: "rgb(240 233 218 / 0.82)" }}>
+          {t("home.wholesaleBannerLede")}
         </p>
         <div className="hi-wholesale-actions">
-          <MagneticAction className="w-fit">
-            <HomeTrackLink
-              event="corporate_cta_clicked"
-              href={"/toptan" as Route}
-              className="hi-btn"
-            >
-              {t("home.wholesaleCta")}
-            </HomeTrackLink>
-          </MagneticAction>
           <HomeTrackLink
-            href={"/toptan/katalog" as Route}
-            className="hi-link"
+            event="corporate_cta_clicked"
+            href={"/toptan" as Route}
+            className="hi-btn"
           >
-            {t("home.wholesaleCatalog")}
+            {t("home.wholesaleReach")}
           </HomeTrackLink>
         </div>
       </div>

@@ -129,10 +129,26 @@
     "prevCat": "التصنيف السابق",
     "nextCat": "التصنيف التالي",
     "writeIdea": "اكتب فكرتك ←",
-    "productsShopTitle": "منتجات المتجر",
+    "productsShopTitle": "اختيار القيّم",
+    "curatedKicker": "مجموعة تصميم خاص",
+    "studioTitle": "استوديو تصميم وإنتاج ثلاثي الأبعاد حسب الطلب.",
+    "studioLede": "اشترِ نموذجاً جاهزاً، ارفع ملفاً للتسعير، أو اطلب إنتاجاً مخصصاً. OCTO STUDIO يربط التصميم والسعر والإنتاج.",
+    "journeyTitle": "رحلة الإنتاج",
+    "journey1": "اختر أو ارفع نموذجاً",
+    "journey2": "خصّص",
+    "journey3": "شاهد السعر",
+    "journey4": "اطلب",
+    "uploadInviteTitle": "إذا كان النموذج جاهزاً، ابدأ الإنتاج.",
+    "uploadInviteLede": "ارفع STL أو 3MF وشاهد سعر الخادم.",
+    "wholesaleBannerTitle": "الجملة والوكلاء",
+    "wholesaleBannerLede": "حلول إنتاج ثلاثي الأبعاد للمتاجر والمعماريين والأعمال المؤسسية.",
+    "wholesaleReach": "تواصل معنا",
+    "priceSoon": "السعر قريباً",
     "emptyCta": "ارفع نموذجك",
     "exploreShop": "استكشف المتجر",
     "heroFind": "اعثر على اقتراحات النماذج",
+    "heroPrimary": "استكشف النماذج",
+    "heroSecondary": "ارفع نموذجك",
     "heroOrUpload": "أو ارفع ملف STL / 3MF",
     "heroPlaceholder": "مثال: مصباح غرفة نوم أبيض",
     "heroClosest": "لا تطابق تام. هذه أقرب النماذج لفكرتك.",
@@ -226,8 +242,8 @@
       "eyebrow": "مشروع",
       "description": "مغناطيس أو ميدالية NFC تفتح شجرة ذكرى الزفاف الرقمية."
     },
-    "cep-album": {
-      "name": "CEP ALBÜM",
+    "lil-disc": {
+      "name": "LIL’ DISC",
       "eyebrow": "مشروع",
       "description": "ميدالية ألبوم مصغّر. الألبومات المفردة 200 ليرة في المشروع المصدر."
     }

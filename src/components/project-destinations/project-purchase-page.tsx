@@ -121,7 +121,12 @@ export function ProjectPurchasePage({
     : "unavailable";
 
   return (
-    <main id="ana-icerik" className="project-buy" data-project-source={destination.source}>
+    <main
+      id="ana-icerik"
+      className="project-buy"
+      data-project-source={destination.source}
+      data-project-theme={destination.slug}
+    >
       <div
         className="project-buy-hero"
         data-project-hero=""
@@ -186,7 +191,12 @@ export function ProjectPurchasePage({
                     {item.media[0]?.url ? (
                       <img src={item.media[0].url} alt="" width={56} height={56} />
                     ) : null}
-                    <span>{item.name}</span>
+                    <span>
+                      <b>{item.name}</b>
+                      {destination.slug === "lil-disc" ? (
+                        <em>{formatMoney(item.priceMinor)}</em>
+                      ) : null}
+                    </span>
                   </label>
                 ))}
               </div>

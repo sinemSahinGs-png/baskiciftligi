@@ -19,6 +19,7 @@ import {
   projectDestinations,
 } from "@/domain/project-destinations/catalog";
 import { ProjectPurchasePage } from "@/components/project-destinations/project-purchase-page";
+import { JsonLd } from "@/components/seo/json-ld";
 
 export function generateStaticParams() {
   return [
@@ -37,6 +38,12 @@ export async function generateMetadata(props: PageProps<"/kategori/[slug]">) {
       title: project.name,
       description: project.description,
       alternates: { canonical: project.href },
+      openGraph: {
+        title: `${project.name} | ${siteConfig.name}`,
+        description: project.description,
+        url: project.href,
+        siteName: siteConfig.name,
+      },
     };
   }
   const category = getStorefrontCategory(slug);
@@ -62,7 +69,21 @@ export default async function StorefrontCategoryPage(
   if (isProjectDestinationSlug(slug)) {
     const project = getProjectDestination(slug);
     if (!project) notFound();
-    return <ProjectPurchasePage destination={project} />;
+    return (
+      <>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: project.name,
+            description: project.description,
+            url: `${siteConfig.url}${project.href}`,
+            isPartOf: { "@type": "WebSite", name: siteConfig.name },
+          }}
+        />
+        <ProjectPurchasePage destination={project} />
+      </>
+    );
   }
   const category = getStorefrontCategory(slug);
   if (!category || category.comingSoon) notFound();

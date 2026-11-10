@@ -4,7 +4,7 @@ import type { Product, ProductVariant } from "@/domain/catalog/types";
 
 export type ProjectSource = "orbia" | "memoora" | "cep_album";
 
-export type ProjectDestinationSlug = "orbia" | "memoora" | "cep-album";
+export type ProjectDestinationSlug = "orbia" | "memoora" | "lil-disc";
 
 export interface ProjectDestination {
   slug: ProjectDestinationSlug;
@@ -160,13 +160,13 @@ export const projectDestinations: readonly ProjectDestination[] = [
     priceMissingNote: null,
   },
   {
-    slug: "cep-album",
+    slug: "lil-disc",
     source: "cep_album",
-    name: "CEP ALBÜM",
+    name: "LIL’ DISC",
     eyebrow: "Proje",
     description:
       "Mini albüm anahtarlığı. Tekli albümler 200 TL. Koleksiyon paketlerinin fiyatı kaynak projede yayınlanmamış.",
-    href: "/kategori/cep-album" as Route,
+    href: "/kategori/lil-disc" as Route,
     artwork: "/categories/cep-album/poster.webp",
     logo: "/categories/cep-album/product-hero.webp",
     heroVideoDesktop: "/categories/cep-album/hero.mp4",

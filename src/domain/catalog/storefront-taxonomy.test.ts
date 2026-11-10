@@ -65,7 +65,12 @@ describe("storefront taxonomy overlay", () => {
     expect(publicCategoryHref("magnet")).toBe("/kategori/anahtarlik-magnet");
     expect(publicCategoryHref("orbia")).toBe("/kategori/orbia");
     expect(publicCategoryHref("memoora")).toBe("/kategori/memoora");
-    expect(publicCategoryHref("cep-album")).toBe("/kategori/cep-album");
+    expect(publicCategoryHref("cep-album")).toBe("/kategori/lil-disc");
+    expect(publicCategoryHref("lil-disc")).toBe("/kategori/lil-disc");
+    expect(
+      STOREFRONT_CATEGORY_REDIRECTS.find((item) => item.source === "/kategori/cep-album")
+        ?.destination,
+    ).toBe("/kategori/lil-disc");
     expect(publicCategoryHref("kisiye-ozel")).toBe("/kategori/kisiye-ozel");
     expect(publicCategoryHref("kurumsal-promosyon")).toBe("/toptan");
     expect(publicCategoryName("magnet")).toBe("Anahtarlık & Magnet");

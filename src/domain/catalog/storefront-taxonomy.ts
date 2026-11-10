@@ -121,6 +121,7 @@ export const STOREFRONT_CATEGORY_REDIRECTS: ReadonlyArray<{
   ),
   { source: "/magaza/kurumsal-promosyon", destination: "/toptan" },
   { source: "/kategori/kurumsal-promosyon", destination: "/toptan" },
+  { source: "/kategori/cep-album", destination: "/kategori/lil-disc" },
 ];
 
 const bySlug = new Map(storefrontCategories.map((item) => [item.slug, item]));
@@ -178,8 +179,11 @@ export function countStorefrontProducts(
 }
 
 export function publicCategoryHref(slug: string): Route {
-  if (slug === "orbia" || slug === "memoora" || slug === "cep-album") {
+  if (slug === "orbia" || slug === "memoora" || slug === "lil-disc") {
     return `/kategori/${slug}` as Route;
+  }
+  if (slug === "cep-album") {
+    return "/kategori/lil-disc" as Route;
   }
   const direct = getStorefrontCategory(slug);
   if (direct) return direct.href;
