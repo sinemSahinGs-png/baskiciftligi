@@ -42,6 +42,27 @@ export function computeCartShippingMinor(subtotalMinor: number): number {
   return COMMERCE_SHIPPING_POLICY.standardShippingMinor;
 }
 
+/** True when copy claims a free-shipping threshold the server policy does not prove. */
+export function isUnverifiedFreeShippingMessage(message: string): boolean {
+  const normalized = message.toLocaleLowerCase("tr-TR").replaceAll("ı", "i");
+  const claimsFree =
+    normalized.includes("ucretsiz kargo") ||
+    normalized.includes("ücretsiz kargo") ||
+    normalized.includes("free shipping");
+  if (!claimsFree) return false;
+  return freeShippingThresholdDisabled(
+    COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor,
+  );
+}
+
+export function publicCatalogAnnouncements<T extends { message: string }>(
+  announcements: T[],
+): T[] {
+  return announcements.filter(
+    (item) => !isUnverifiedFreeShippingMessage(item.message),
+  );
+}
+
 /** Customer-safe shipping policy fields for public API responses. */
 export function publicShippingPolicyFields() {
   return {

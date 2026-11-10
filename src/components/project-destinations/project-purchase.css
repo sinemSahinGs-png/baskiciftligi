@@ -1,13 +1,15 @@
 .project-buy {
   background: #020507;
   color: #f0e9da;
-  padding-bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(
+    var(--store-bottom-nav-h, 3.65rem) + 5.75rem + env(safe-area-inset-bottom, 0px)
+  );
 }
 
 .project-buy-hero {
   position: relative;
   aspect-ratio: 16 / 10;
-  max-height: 42svh;
+  max-height: 28svh;
   overflow: hidden;
   background-color: #071014;
   background-position: center;
@@ -87,19 +89,40 @@
 
 .project-buy-choices label {
   display: flex;
-  min-height: 44px;
+  min-height: 52px;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
   border: 1px solid rgb(216 180 124 / 0.22);
-  padding: 0.45rem 0.7rem;
+  padding: 0.4rem 0.65rem;
+}
+
+.project-buy-choices img {
+  width: 2.6rem;
+  height: 2.6rem;
+  object-fit: cover;
+  background: #071014;
 }
 
 .project-buy-choices label[data-active="true"] {
   border-color: #a85f35;
 }
 
+.project-buy-price,
+.project-buy-cta-soon {
+  scroll-margin-bottom: calc(
+    var(--store-bottom-nav-h, 3.65rem) + 5.25rem + env(safe-area-inset-bottom, 0px)
+  );
+}
+
 .project-buy-price {
   margin-top: 1.1rem;
+  padding-bottom: 0.35rem;
+}
+
+@media (max-width: 767px) {
+  .project-buy-cta:not(.project-buy-cta-soon) {
+    display: none;
+  }
 }
 
 .project-buy-missing,
@@ -123,6 +146,29 @@
 .project-buy-cta:disabled,
 .project-buy-sticky button:disabled {
   opacity: 0.45;
+}
+
+.project-buy-cta-soon {
+  background: #14191c;
+  color: #d8b47c;
+  opacity: 1;
+}
+
+.project-buy-quote {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.project-buy-quote div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.92rem;
+}
+
+.project-buy-quote div:last-child {
+  margin-top: 0.2rem;
+  font-weight: 800;
 }
 
 .project-buy-details,

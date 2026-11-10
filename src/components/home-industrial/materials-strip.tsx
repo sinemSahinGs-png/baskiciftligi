@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useState, type KeyboardEvent } from "react";
 
 import { SlotImage } from "@/components/home-industrial/slot-image";
-import { industrialMaterialSrc } from "@/components/home-industrial/industrial-slots";
+import {
+  industrialMaterialSrc,
+  RESIN_SPECIMEN_SRC,
+} from "@/components/home-industrial/industrial-slots";
 import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
 import { homepageMaterialCopy, homepageMaterialCore } from "@/domain/home/homepage";
 import type { Material } from "@/domain/catalog/types";
@@ -133,6 +136,22 @@ export function MaterialsStrip({ materials }: { materials: Material[] }) {
             </div>
           </InteractiveMedia>
         ) : null}
+        <aside className="hi-material-info" data-material-info="resin">
+          <p className="hi-material-info-kicker">Bilgi</p>
+          <h3>Reçine örneği</h3>
+          <p>
+            Bu görüntü örnek bir reçine yüzeyidir. Otomatik üretim ve fiyat
+            hesaplarında Reçine seçeneği yoktur; ödeme tutarına eklenmez.
+          </p>
+          <div className="hi-material-info-frame">
+            <img
+              src={RESIN_SPECIMEN_SRC}
+              alt="Reçine yüzey örneği, bilgi amaçlı"
+              width={1600}
+              height={1200}
+            />
+          </div>
+        </aside>
       </div>
     </section>
   );

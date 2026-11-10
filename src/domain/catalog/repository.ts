@@ -16,6 +16,7 @@ import type {
   ProductVariant,
 } from "@/domain/catalog/types";
 import { productMatchesStorefrontCategory } from "@/domain/catalog/storefront-taxonomy";
+import { publicCatalogAnnouncements } from "@/domain/commerce/shipping-policy";
 import { productionVitrineSnapshot } from "@/lib/catalog/production-vitrine";
 import { PUBLIC_CATALOG_CACHE_TAGS } from "@/lib/catalog/cache-tags";
 import { resolveCategoryCoverUrl } from "@/lib/catalog/category-cover";
@@ -373,7 +374,7 @@ async function loadSupabaseCatalog(): Promise<CatalogSnapshot> {
     categories,
     collections,
     materials,
-    announcements,
+    announcements: publicCatalogAnnouncements(announcements),
     updatedAt: new Date().toISOString(),
   };
 }

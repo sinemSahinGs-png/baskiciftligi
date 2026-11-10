@@ -3,13 +3,14 @@ import Link from "next/link";
 import { Asterisk } from "lucide-react";
 
 import type { Announcement } from "@/domain/catalog/types";
+import { publicCatalogAnnouncements } from "@/domain/commerce/shipping-policy";
 
 interface AnnouncementBarProps {
   announcements: Announcement[];
 }
 
 export function AnnouncementBar({ announcements }: AnnouncementBarProps) {
-  const activeAnnouncements = announcements
+  const activeAnnouncements = publicCatalogAnnouncements(announcements)
     .filter((announcement) => announcement.isActive)
     .sort((a, b) => a.position - b.position);
 

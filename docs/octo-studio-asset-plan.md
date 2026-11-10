@@ -59,8 +59,8 @@ Live catalogue product photographs come from the published catalogue. Never AI-g
 10. Text absent
 11. Optional real-part reference if you have a resin print photo
 12. Center crop, leave sand margin
-13. Fallback: PETG texture with caption
-14. Not wired
+13. Live as informational homepage specimen only. Reçine is not a production/checkout material.
+14. Wired in `#malzeme-secenekleri` as `data-material-info="resin"` with `object-fit: contain`
 
 ---
 
@@ -141,7 +141,7 @@ Live catalogue product photographs come from the published catalogue. Never AI-g
 | Category artwork | Live |
 | Manufacturing stills | Live |
 | Sand-to-abyss handoff | Live |
-| Resin specimen | Missing — PETG fallback |
+| Resin specimen | Live, editorial only |
 | Upload chamber | Missing — existing upload still |
 | Footer silhouette | CSS fallback |
 | Product plinth | CSS fallback |
@@ -169,4 +169,4 @@ Cep Albüm uses `product-hero.webp` as the category wordmark until a dedicated l
 
 ## Ask next (one asset)
 
-Highest remaining visual: **resin material specimen** (`material-resin.png`) as specified in item 2 above. PETG texture is the current fallback.
+Paused. Do not request the next visual until the Orbia, Memoora and Cep Albüm integrations are visually approved.

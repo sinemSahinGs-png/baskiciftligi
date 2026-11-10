@@ -112,7 +112,7 @@ export const projectDestinations: readonly ProjectDestination[] = [
     description:
       "12 burca özel NFC anahtarlık. Telefonuna dokundurunca günlük gökyüzü deneyimi açılır.",
     href: "/kategori/orbia" as Route,
-    artwork: "/categories/orbia/poster.webp",
+    artwork: "/categories/orbia/product.webp",
     logo: "/categories/orbia/logo.svg",
     heroVideoDesktop: "/categories/orbia/hero-desktop.mp4",
     heroVideoMobile: "/categories/orbia/hero-mobile.mp4",
@@ -130,7 +130,7 @@ export const projectDestinations: readonly ProjectDestination[] = [
     ],
     purchasable: false,
     priceMissingNote:
-      "Orbia kaynak projesinde fiyat alanı henüz doldurulmamış. Satın alma bu yüzden kapalı.",
+      "Resmi satış fiyatı henüz girilmedi. Satış, fiyat yayınlandığında açılacak.",
   },
   {
     slug: "memoora",

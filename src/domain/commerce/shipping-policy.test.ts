@@ -6,6 +6,8 @@ import {
   COMMERCE_SHIPPING_POLICY,
   computeCartShippingMinor,
   freeShippingThresholdDisabled,
+  isUnverifiedFreeShippingMessage,
+  publicCatalogAnnouncements,
 } from "@/domain/commerce/shipping-policy";
 
 describe("commerce shipping policy", () => {
@@ -48,5 +50,18 @@ describe("commerce shipping policy", () => {
 
     expect(computeCartShippingMinor(subtotalMinor)).toBe(10_000);
     expect(computeCartShippingMinor(manufacturingGrossMinor)).toBe(10_000);
+  });
+
+  it("strips unverified free-shipping advertising while the threshold is disabled", () => {
+    expect(isUnverifiedFreeShippingMessage("2.000 TL üzeri ücretsiz kargo")).toBe(true);
+    expect(isUnverifiedFreeShippingMessage("Ankara’dan Türkiye’nin her yerine üretim")).toBe(
+      false,
+    );
+    expect(
+      publicCatalogAnnouncements([
+        { message: "2.000 TL üzeri ücretsiz kargo" },
+        { message: "Ankara’dan Türkiye’nin her yerine üretim" },
+      ]),
+    ).toEqual([{ message: "Ankara’dan Türkiye’nin her yerine üretim" }]);
   });
 });

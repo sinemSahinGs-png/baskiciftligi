@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { storefrontCategories } from "@/domain/catalog/storefront-taxonomy";
+import { MATERIAL_PROFILES } from "@/domain/manufacturing/profiles";
 import {
   findProjectCatalogProduct,
   listProjectCatalogProducts,
@@ -43,6 +44,10 @@ describe("project category destinations", () => {
     expect(
       listProjectDisplayProducts("cep-album").every((item) => item.priceMinor === 20_000),
     ).toBe(true);
+  });
+
+  it("does not add Resin to manufacturing checkout profiles", () => {
+    expect(MATERIAL_PROFILES.map((item) => item.id)).toEqual(["pla"]);
   });
 
   it("keeps project SKUs invisible to storefront search and featured rails", () => {

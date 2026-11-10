@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import Link from "next/link";
 
-import { PriceDisplay } from "@/components/commerce/price-display";
 import { formatMoney } from "@/lib/money";
 import { useCartStore } from "@/stores/cart-store";
 import {
@@ -13,6 +12,18 @@ import {
   type ProjectDestination,
 } from "@/domain/project-destinations/catalog";
 import "./project-purchase.css";
+
+type ServerQuote = {
+  lines: Array<{
+    productId: string;
+    unitPriceMinor: number;
+    lineTotalMinor: number;
+    isAvailable: boolean;
+  }>;
+  estimatedShippingMinor: number;
+  totalMinor: number;
+  subtotalMinor: number;
+};
 
 export function ProjectPurchasePage({
   destination,
@@ -28,10 +39,50 @@ export function ProjectPurchasePage({
   const [quantity, setQuantity] = useState(1);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quote, setQuote] = useState<ServerQuote | null>(null);
 
-  const unitMinor = selected?.priceMinor ?? 0;
-  const lineMinor = unitMinor * quantity;
-  const canBuy = destination.purchasable && unitMinor > 0 && Boolean(selected);
+  const canSelect = destination.purchasable && Boolean(selected);
+
+  useEffect(() => {
+    if (!canSelect || !selected) {
+      return;
+    }
+    const controller = new AbortController();
+    void fetch("/api/cart/price", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lines: [
+          {
+            productId: selected.id,
+            variantId: selected.variants.length ? variantId || selected.variants[0]?.id : null,
+            quantity,
+          },
+        ],
+      }),
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const payload = (await response.json()) as ServerQuote & { error?: string };
+        if (!response.ok) {
+          throw new Error(payload.error ?? "Fiyat alınamadı.");
+        }
+        setError(null);
+        setQuote(payload);
+      })
+      .catch((cause: unknown) => {
+        if (controller.signal.aborted) return;
+        setQuote(null);
+        setError(cause instanceof Error ? cause.message : "Fiyat alınamadı.");
+      });
+    return () => controller.abort();
+  }, [canSelect, selected, variantId, quantity]);
+
+  const pricedLine = quote?.lines[0];
+  const canBuy =
+    canSelect &&
+    Boolean(pricedLine?.isAvailable) &&
+    (pricedLine?.unitPriceMinor ?? 0) > 0;
 
   async function buy() {
     if (!selected || !canBuy) return;
@@ -66,7 +117,7 @@ export function ProjectPurchasePage({
       </div>
 
       <section className="project-buy-body" aria-labelledby="project-buy-title">
-        <p className="project-buy-kicker">OCTO STUDIO · {destination.eyebrow}</p>
+        <p className="project-buy-kicker">OCTO STUDIO</p>
         <div className="project-buy-brand">
           <img src={destination.logo} alt="" width={48} height={48} />
           <h1 id="project-buy-title">{destination.name}</h1>
@@ -88,6 +139,9 @@ export function ProjectPurchasePage({
                       setVariantId(item.variants[0]?.id ?? "");
                     }}
                   />
+                  {item.media[0]?.url ? (
+                    <img src={item.media[0].url} alt="" width={56} height={56} />
+                  ) : null}
                   <span>{item.name}</span>
                 </label>
               ))}
@@ -111,25 +165,47 @@ export function ProjectPurchasePage({
           </label>
         ) : null}
 
-        <label className="project-buy-field">
-          <span>Adet</span>
-          <input
-            type="number"
-            min={1}
-            max={99}
-            value={quantity}
-            onChange={(event) =>
-              setQuantity(Math.max(1, Math.min(99, Number(event.target.value) || 1)))
-            }
-          />
-        </label>
+        {destination.purchasable ? (
+          <label className="project-buy-field">
+            <span>Adet</span>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={quantity}
+              onChange={(event) =>
+                setQuantity(Math.max(1, Math.min(99, Number(event.target.value) || 1)))
+              }
+            />
+          </label>
+        ) : null}
 
-        <div className="project-buy-price">
-          {canBuy ? (
-            <>
-              <PriceDisplay priceMinor={unitMinor} className="project-buy-unit" />
-              <p>Ara toplam {formatMoney(lineMinor)}</p>
-            </>
+        <div className="project-buy-price" data-server-quote={quote ? "ready" : "idle"}>
+          {destination.purchasable ? (
+            pricedLine?.isAvailable ? (
+              <dl className="project-buy-quote">
+                <div>
+                  <dt>Birim</dt>
+                  <dd data-server-unit>{formatMoney(pricedLine.unitPriceMinor)}</dd>
+                </div>
+                <div>
+                  <dt>Ara toplam</dt>
+                  <dd data-server-subtotal>{formatMoney(quote?.subtotalMinor ?? 0)}</dd>
+                </div>
+                <div>
+                  <dt>Kargo</dt>
+                  <dd data-server-shipping>
+                    {formatMoney(quote?.estimatedShippingMinor ?? 0)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Toplam</dt>
+                  <dd data-server-total>{formatMoney(quote?.totalMinor ?? 0)}</dd>
+                </div>
+              </dl>
+            ) : (
+              <p className="project-buy-missing">{error ?? "Sunucu fiyatı bekleniyor."}</p>
+            )
           ) : (
             <p className="project-buy-missing">{destination.priceMissingNote}</p>
           )}
@@ -137,14 +213,20 @@ export function ProjectPurchasePage({
 
         <p className="project-buy-ship">{destination.delivery}</p>
 
-        <button
-          type="button"
-          className="project-buy-cta"
-          disabled={!canBuy || busy}
-          onClick={() => void buy()}
-        >
-          HEMEN SATIN AL
-        </button>
+        {destination.purchasable ? (
+          <button
+            type="button"
+            className="project-buy-cta"
+            disabled={!canBuy || busy}
+            onClick={() => void buy()}
+          >
+            HEMEN SATIN AL
+          </button>
+        ) : (
+          <button type="button" className="project-buy-cta project-buy-cta-soon" disabled>
+            FİYAT YAKINDA
+          </button>
+        )}
         {error ? <p className="project-buy-error">{error}</p> : null}
 
         <div className="project-buy-details">
@@ -171,8 +253,8 @@ export function ProjectPurchasePage({
       </section>
 
       {canBuy ? (
-        <div className="project-buy-sticky">
-          <span>{formatMoney(lineMinor)}</span>
+        <div className="project-buy-sticky" data-project-sticky="">
+          <span data-sticky-total>{formatMoney(quote?.totalMinor ?? 0)}</span>
           <button type="button" disabled={busy} onClick={() => void buy()}>
             HEMEN SATIN AL
           </button>

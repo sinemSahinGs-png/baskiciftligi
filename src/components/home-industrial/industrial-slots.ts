@@ -14,6 +14,8 @@ export const industrialAssets = {
   printerFarm: "/images/home-industrial/printer-farm.png",
 } as const;
 
+export const RESIN_SPECIMEN_SRC = "/images/home-industrial/material-resin.png";
+
 export type IndustrialAssetPath =
   (typeof industrialAssets)[keyof typeof industrialAssets];
 
