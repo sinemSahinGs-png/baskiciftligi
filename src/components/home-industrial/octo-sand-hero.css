@@ -3,7 +3,7 @@
 }
 
 .octo-tv-hero {
-  --octo-tv-sand: #8d5e3c;
+  --octo-tv-sand: #c8a56e;
   --octo-tv-screen-left: 30.8375%;
   --octo-tv-screen-top: 14.2202%;
   --octo-tv-screen-width: 37.7704%;
@@ -247,24 +247,32 @@
 }
 
 .octo-sand-static {
-  opacity: 0.42;
+  opacity: 0.28;
+  mix-blend-mode: soft-light;
   background:
-    radial-gradient(ellipse at 50% 80%, rgb(168 95 53 / 0.28), transparent 55%),
-    repeating-radial-gradient(circle at 20% 70%, rgb(75 43 24 / 0.18) 0 1px, transparent 1px 4px);
+    radial-gradient(ellipse at 82% 12%, rgb(236 210 150 / 0.42), transparent 48%),
+    radial-gradient(ellipse at 18% 86%, rgb(110 64 32 / 0.28), transparent 52%);
 }
 
-.octo-sand-layer[data-octo-sand-ready="true"][data-octo-sand-mode="interactive"] .octo-sand-static {
-  opacity: 0.12;
+.octo-sand-layer[data-octo-sand-ready="true"][data-octo-sand-mode="interactive"] .octo-sand-static,
+.octo-sand-layer[data-octo-sand-ready="true"][data-octo-sand-mode="interactive"] .octo-sand-grain {
+  opacity: 0;
 }
 
 .octo-sand-grain {
-  opacity: 0.22;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.16;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 .octo-sand-light {
-  background: radial-gradient(42% 24% at 50% 0%, rgb(216 183 122 / 0.06), transparent 70%);
+  background:
+    radial-gradient(58% 38% at 84% 6%, rgb(236 210 150 / 0.16), transparent 64%),
+    radial-gradient(42% 32% at 12% 90%, rgb(80 48 24 / 0.1), transparent 70%);
+}
+
+.octo-sand-layer[data-octo-sand-mode="interactive"] .octo-sand-light {
+  opacity: 0.4;
 }
 
 .octo-sand-loader {
@@ -354,6 +362,19 @@
     justify-content: center;
     flex-direction: column;
     padding: calc(env(safe-area-inset-top, 0px) + 3.4rem) 4% 1.1rem;
+    background-color: #c8a56e;
+  }
+
+  .octo-tv-stage::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: url("/images/hero/octo-tv-sand-shell-desktop.webp");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 100% 42%;
   }
 
   .octo-tv-hero {

@@ -68,6 +68,7 @@ export function OctoInteractiveSandHero() {
     if (!host) return;
     let cancelled = false;
     let observer: IntersectionObserver | null = null;
+    let unbindAlbedo: (() => void) | undefined;
     const timeout = window.setTimeout(() => {
       if (!cancelled && !engineRef.current) {
         setMode((current) => (current === "interactive" ? current : "static-sand"));
@@ -97,6 +98,14 @@ export function OctoInteractiveSandHero() {
         next.resize(host.clientWidth, host.clientHeight, dpr);
         const frame = canvas.closest(".octo-tv-frame") ?? host;
         next.setScreen(readTvScreenFromStyles(getComputedStyle(frame)));
+        const shell = frame.querySelector<HTMLImageElement>("img.octo-tv-shell");
+        const bindAlbedo = () => {
+          if (cancelled || !shell || !shell.complete || shell.naturalWidth < 1) return;
+          next.setAlbedo(shell);
+        };
+        bindAlbedo();
+        shell?.addEventListener("load", bindAlbedo);
+        unbindAlbedo = () => shell?.removeEventListener("load", bindAlbedo);
         engineRef.current = next;
         setMode("interactive");
         setReady(true);
@@ -119,6 +128,10 @@ export function OctoInteractiveSandHero() {
       );
       const frame = canvas.closest(".octo-tv-frame") ?? host;
       engineRef.current.setScreen(readTvScreenFromStyles(getComputedStyle(frame)));
+      const shell = frame.querySelector<HTMLImageElement>("img.octo-tv-shell");
+      if (shell && shell.complete && shell.naturalWidth > 0) {
+        engineRef.current.setAlbedo(shell);
+      }
     };
     if (typeof IntersectionObserver !== "undefined") {
       observer = new IntersectionObserver(
@@ -137,6 +150,7 @@ export function OctoInteractiveSandHero() {
 
     return () => {
       cancelled = true;
+      unbindAlbedo?.();
       window.clearTimeout(timeout);
       cancelAnimationFrame(frame);
       window.removeEventListener("resize", onResize);
