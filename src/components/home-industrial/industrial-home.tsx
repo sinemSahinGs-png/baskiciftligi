@@ -4,6 +4,7 @@ import { FeaturedProduct } from "@/components/home-industrial/featured-product";
 import { FinalCta } from "@/components/home-industrial/final-cta";
 import { HomeCategories } from "@/components/home-industrial/home-categories";
 import { IdeaCommand } from "@/components/home-industrial/idea-command";
+import { SandAbyssHandoff } from "@/components/home-industrial/sand-abyss-handoff";
 import { IndustrialHeaderEffects } from "@/components/home-industrial/industrial-header";
 import { MaterialsStrip } from "@/components/home-industrial/materials-strip";
 import { MobileStickyCta } from "@/components/home-industrial/mobile-sticky-cta";
@@ -43,6 +44,7 @@ export function IndustrialHome({
       <OceanAtmosphere />
       <TechnicalGrid />
       <IdeaCommand />
+      <SandAbyssHandoff />
       <ProductionPaths />
       <HomeCategories products={products} />
       <AutoQuote />

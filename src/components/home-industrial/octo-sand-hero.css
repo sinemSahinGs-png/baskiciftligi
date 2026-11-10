@@ -193,7 +193,11 @@
   position: relative;
   z-index: 4;
   width: min(68rem, calc(100% - 2rem));
-  margin: 0 auto 1.5rem;
+  margin: 0 auto;
+}
+
+.octo-tv-below:not(:has(*)) {
+  display: none;
 }
 
 .octo-tv-scroll {
@@ -395,6 +399,10 @@
   .octo-tv-scroll {
     bottom: calc(4.6rem + env(safe-area-inset-bottom, 0px));
   }
+
+  .octo-sand-abyss {
+    margin-top: -22rem;
+  }
 }
 
 @media (max-width: 359.98px) {
@@ -412,5 +420,47 @@
   .octo-sand-canvas {
     animation: none;
     transition: none;
+  }
+}
+
+.octo-sand-abyss {
+  pointer-events: none;
+  position: relative;
+  z-index: 2;
+  margin-top: -11.5rem;
+  margin-bottom: -2.25rem;
+  background: linear-gradient(180deg, transparent 0 18%, #020507 46%);
+}
+
+.octo-sand-abyss-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: transparent;
+  -webkit-mask-image: linear-gradient(180deg, #000 0 70%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0 70%, transparent 100%);
+}
+
+.octo-sand-abyss-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 0%;
+}
+
+@media (min-width: 768px) {
+  .octo-sand-abyss {
+    margin-top: -8.75rem;
+    margin-bottom: -2.5rem;
+  }
+
+  .octo-sand-abyss-frame {
+    aspect-ratio: 8 / 3;
+  }
+
+  .octo-sand-abyss-image {
+    object-position: 50% 50%;
   }
 }

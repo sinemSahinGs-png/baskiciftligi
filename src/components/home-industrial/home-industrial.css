@@ -3387,18 +3387,6 @@ html[data-home-industrial] footer {
   display: block;
 }
 
-.hi-hero::after {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  z-index: 6;
-  height: min(18vh, 7rem);
-  background:
-    radial-gradient(120% 90% at 50% 0%, transparent 40%, rgb(2 5 7 / 0.35) 72%, #020507 100%);
-}
 
 @media (min-width: 768px) {
   .hi-cats-slide:not([data-active="true"]) {

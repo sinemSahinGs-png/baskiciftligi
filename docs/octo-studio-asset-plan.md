@@ -42,8 +42,8 @@ Live catalogue product photographs come from the published catalogue. Never AI-g
 10. Text must be absent
 11. No product reference
 12. Desktop: full width horizon. Mobile: crop to keep sand in the top 40% and abyss below
-13. Current fallback: CSS espresso→graphite→abyss gradient plus ink veil on `.hi-hero::after`
-14. Integration: not wired until the file exists
+13. Fallback removed. Live still: `public/images/atmosphere/octo-sand-to-abyss-handoff.webp`
+14. Integration: wired between `#ne-uretmek-istiyorsun` and `#uc-uretim-yolu`. Desktop uses the 8:3 master. Mobile is a CSS `object-fit: cover` 3:4 crop of the same file (sand held at `object-position: 50% 18%`). No second generated artwork; a 1200×1600 export would upscale the 900 px master.
 
 ### 2. Resin material specimen
 
@@ -140,7 +140,7 @@ Live catalogue product photographs come from the published catalogue. Never AI-g
 | Television shell + videos | Live |
 | Category artwork | Live |
 | Manufacturing stills | Live |
-| Sand-to-abyss handoff | Missing — CSS fallback |
+| Sand-to-abyss handoff | Live |
 | Resin specimen | Missing — PETG fallback |
 | Upload chamber | Missing — existing upload still |
 | Footer silhouette | CSS fallback |
@@ -169,4 +169,4 @@ Cep Albüm uses `product-hero.webp` as the category wordmark until a dedicated l
 
 ## Ask next (one asset)
 
-Highest remaining visual: **sand-to-abyss handoff still** (`octo-sand-to-abyss-handoff.webp`) as specified in item 1 above. CSS gradient is the current fallback.
+Highest remaining visual: **resin material specimen** (`material-resin.png`) as specified in item 2 above. PETG texture is the current fallback.
