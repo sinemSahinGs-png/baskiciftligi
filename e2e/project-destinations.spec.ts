@@ -121,7 +121,7 @@ test.describe("project category destinations", () => {
       await expect(page.locator("main.project-buy")).toHaveCount(1);
       if (item.buy) {
         await expect(page.locator("[data-server-quote='ready']")).toBeVisible({ timeout: 15_000 });
-        await expect(page.getByRole("button", { name: "HEMEN SATIN AL" }).first()).toBeEnabled();
+        await expect(page.getByRole("button", { name: "SATIN AL" })).toBeEnabled();
       } else {
         await expect(page.getByRole("button", { name: "FİYAT YAKINDA" })).toBeDisabled();
         await expect(page.getByRole("button", { name: "HEMEN SATIN AL" })).toHaveCount(0);
@@ -170,7 +170,7 @@ test.describe("project category destinations", () => {
       path: path.join(shots, "memoora-price-390.png"),
       animations: "disabled",
     });
-    await page.getByRole("button", { name: "HEMEN SATIN AL" }).first().click();
+    await page.locator("[data-project-sticky] button").click();
     await expect(page).toHaveURL(/\/odeme/, { timeout: 15_000 });
     await expect(page.locator("body")).not.toContainText("2.000 TL üzeri ücretsiz kargo");
     await expect(page.getByRole("heading", { name: /ödeme/i })).toBeVisible();
@@ -187,10 +187,81 @@ test.describe("project category destinations", () => {
       path: path.join(shots, "cep-album-select-390.png"),
       animations: "disabled",
     });
-    await page.getByRole("button", { name: "HEMEN SATIN AL" }).first().click();
+    await page.locator("[data-project-sticky] button").click();
     await expect(page).toHaveURL(/\/odeme/, { timeout: 15_000 });
     await page.screenshot({
       path: path.join(shots, "cep-album-checkout-390.png"),
+      animations: "disabled",
+    });
+  });
+
+  test("desktop hero is full-bleed and purchase media fills the stage", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/kategori/orbia");
+    const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+    const hero = await page.locator("[data-project-hero]").boundingBox();
+    const video = await page.locator("video[data-project-hero-video='orbia']").boundingBox();
+    expect(hero?.width ?? 0).toBeGreaterThanOrEqual(clientWidth - 2);
+    expect(video?.width ?? 0).toBeGreaterThanOrEqual(clientWidth - 2);
+    const stage = await page.locator(".project-buy-stage").boundingBox();
+    const media = await page.locator("[data-purchase-media]").boundingBox();
+    expect(stage && media).toBeTruthy();
+    if (stage && media) {
+      const ratio = media.width / stage.width;
+      expect(ratio).toBeGreaterThanOrEqual(0.4);
+      expect(ratio).toBeLessThanOrEqual(0.5);
+    }
+    await page.screenshot({
+      path: path.join(shots, "orbia-hero-fullbleed-1440.png"),
+      animations: "disabled",
+    });
+  });
+
+  test("Memoora price loading keeps height then resolves from the server", async ({ page }) => {
+    test.setTimeout(90_000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.route("**/api/cart/price", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await route.continue();
+    });
+    await page.goto("/kategori/memoora");
+    const price = page.locator("[data-server-quote]");
+    await expect(price).toHaveAttribute("data-server-quote", "loading", { timeout: 8_000 });
+    const loadingBox = await price.boundingBox();
+    await page.screenshot({
+      path: path.join(shots, "memoora-price-loading-390.png"),
+      animations: "disabled",
+    });
+    await expect(price).toHaveAttribute("data-server-quote", "ready", { timeout: 15_000 });
+    const readyBox = await price.boundingBox();
+    expect(Math.abs((readyBox?.height ?? 0) - (loadingBox?.height ?? 0))).toBeLessThanOrEqual(8);
+    await expect(page.locator("[data-server-unit]")).toContainText("66,00");
+    await page.screenshot({
+      path: path.join(shots, "memoora-price-ready-390.png"),
+      animations: "disabled",
+    });
+  });
+
+  test("mobile sticky bar stays above the bottom nav and page end", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/kategori/memoora");
+    await expect(page.locator("[data-server-quote='ready']")).toBeVisible({ timeout: 15_000 });
+    const sticky = page.locator("[data-project-sticky]");
+    const nav = page.locator(".store-bottom-nav");
+    await expect(sticky).toBeVisible();
+    const stickyBox = await sticky.boundingBox();
+    const navBox = await nav.boundingBox();
+    expect(stickyBox && navBox).toBeTruthy();
+    if (stickyBox && navBox) {
+      expect(stickyBox.y + stickyBox.height).toBeLessThanOrEqual(navBox.y + 1);
+    }
+    await page.screenshot({
+      path: path.join(shots, "memoora-sticky-390.png"),
+      animations: "disabled",
+    });
+    await page.locator(".project-buy-faq").scrollIntoViewIfNeeded();
+    await page.screenshot({
+      path: path.join(shots, "memoora-page-end-390.png"),
       animations: "disabled",
     });
   });

@@ -38,13 +38,28 @@ export function ProjectPurchasePage({
   const [variantId, setVariantId] = useState(selected?.variants[0]?.id ?? "");
   const [quantity, setQuantity] = useState(1);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ key: string; message: string } | null>(null);
   const [quote, setQuote] = useState<ServerQuote | null>(null);
+  const [quoteKey, setQuoteKey] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
 
   const canSelect = destination.purchasable && Boolean(selected);
+  const requestKey =
+    canSelect && selected
+      ? `${selected.id}:${selected.variants.length ? variantId || selected.variants[0]?.id : "default"}:${quantity}`
+      : null;
+  const quoteLoading = Boolean(requestKey) && quoteKey !== requestKey && error?.key !== requestKey;
+  const quoteFailed = Boolean(requestKey) && error?.key === requestKey;
+  const pricedLine = quoteKey === requestKey ? quote?.lines[0] : undefined;
+  const canBuy =
+    canSelect &&
+    !quoteLoading &&
+    !quoteFailed &&
+    Boolean(pricedLine?.isAvailable) &&
+    (pricedLine?.unitPriceMinor ?? 0) > 0;
 
   useEffect(() => {
-    if (!canSelect || !selected) {
+    if (!canSelect || !selected || !requestKey) {
       return;
     }
     const controller = new AbortController();
@@ -69,20 +84,19 @@ export function ProjectPurchasePage({
         }
         setError(null);
         setQuote(payload);
+        setQuoteKey(requestKey);
       })
       .catch((cause: unknown) => {
         if (controller.signal.aborted) return;
         setQuote(null);
-        setError(cause instanceof Error ? cause.message : "Fiyat alınamadı.");
+        setQuoteKey(null);
+        setError({
+          key: requestKey,
+          message: cause instanceof Error ? cause.message : "Fiyat alınamadı.",
+        });
       });
     return () => controller.abort();
-  }, [canSelect, selected, variantId, quantity]);
-
-  const pricedLine = quote?.lines[0];
-  const canBuy =
-    canSelect &&
-    Boolean(pricedLine?.isAvailable) &&
-    (pricedLine?.unitPriceMinor ?? 0) > 0;
+  }, [canSelect, selected, variantId, quantity, requestKey, retry]);
 
   async function buy() {
     if (!selected || !canBuy) return;
@@ -96,10 +110,21 @@ export function ProjectPurchasePage({
     router.push("/odeme" as Route);
   }
 
+  const quoteState = destination.purchasable
+    ? quoteFailed
+      ? "error"
+      : quoteLoading
+        ? "loading"
+        : pricedLine?.isAvailable
+          ? "ready"
+          : "idle"
+    : "unavailable";
+
   return (
     <main id="ana-icerik" className="project-buy" data-project-source={destination.source}>
       <div
         className="project-buy-hero"
+        data-project-hero=""
         style={{ backgroundImage: `url(${destination.heroPoster})` }}
       >
         <video
@@ -114,149 +139,179 @@ export function ProjectPurchasePage({
           <source media="(max-width: 767px)" src={destination.heroVideoMobile} type="video/mp4" />
           <source src={destination.heroVideoDesktop} type="video/mp4" />
         </video>
+        <span className="project-buy-hero-fade" aria-hidden="true" />
       </div>
 
-      <section className="project-buy-body" aria-labelledby="project-buy-title">
-        <p className="project-buy-kicker">OCTO STUDIO</p>
-        <div className="project-buy-brand">
-          <img src={destination.logo} alt="" width={48} height={48} />
-          <h1 id="project-buy-title">{destination.name}</h1>
+      <section className="project-buy-stage" aria-labelledby="project-buy-title">
+        <div className="project-buy-intro">
+          <p className="project-buy-kicker">OCTO STUDIO</p>
+          <div className="project-buy-brand">
+            <img src={destination.logo} alt="" width={48} height={48} />
+            <h1 id="project-buy-title">{destination.name}</h1>
+          </div>
+          <p className="project-buy-lede">{destination.description}</p>
         </div>
-        <p className="project-buy-lede">{destination.description}</p>
 
-        {products.length > 1 ? (
-          <fieldset className="project-buy-field">
-            <legend>Ürün</legend>
-            <div className="project-buy-choices">
-              {products.map((item) => (
-                <label key={item.id} data-active={item.id === selected?.id ? "true" : "false"}>
-                  <input
-                    type="radio"
-                    name="project-product"
-                    checked={item.id === selected?.id}
-                    onChange={() => {
-                      setProductId(item.id);
-                      setVariantId(item.variants[0]?.id ?? "");
-                    }}
-                  />
-                  {item.media[0]?.url ? (
-                    <img src={item.media[0].url} alt="" width={56} height={56} />
-                  ) : null}
-                  <span>{item.name}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        ) : null}
-
-        {selected?.variants.length ? (
-          <label className="project-buy-field">
-            <span>Seçenek</span>
-            <select
-              value={variantId}
-              onChange={(event) => setVariantId(event.target.value)}
-            >
-              {selected.variants.map((variant) => (
-                <option key={variant.id} value={variant.id}>
-                  {variant.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-
-        {destination.purchasable ? (
-          <label className="project-buy-field">
-            <span>Adet</span>
-            <input
-              type="number"
-              min={1}
-              max={99}
-              value={quantity}
-              onChange={(event) =>
-                setQuantity(Math.max(1, Math.min(99, Number(event.target.value) || 1)))
-              }
+        <figure className="project-buy-media" data-purchase-media="">
+          {selected?.media[0]?.url ? (
+            <img
+              src={selected.media[0].url}
+              alt={selected.name}
+              width={960}
+              height={960}
             />
-          </label>
-        ) : null}
+          ) : null}
+          <figcaption>
+            <span>{selected?.name ?? destination.name}</span>
+            <p>{selected?.description ?? destination.description}</p>
+          </figcaption>
+        </figure>
 
-        <div className="project-buy-price" data-server-quote={quote ? "ready" : "idle"}>
+        <div className="project-buy-panel">
+          {products.length > 1 ? (
+            <fieldset className="project-buy-field">
+              <legend>Ürün</legend>
+              <div className="project-buy-choices">
+                {products.map((item) => (
+                  <label key={item.id} data-active={item.id === selected?.id ? "true" : "false"}>
+                    <input
+                      type="radio"
+                      name="project-product"
+                      checked={item.id === selected?.id}
+                      onChange={() => {
+                        setProductId(item.id);
+                        setVariantId(item.variants[0]?.id ?? "");
+                      }}
+                    />
+                    {item.media[0]?.url ? (
+                      <img src={item.media[0].url} alt="" width={56} height={56} />
+                    ) : null}
+                    <span>{item.name}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ) : null}
+
+          {selected?.variants.length ? (
+            <label className="project-buy-field">
+              <span>Seçenek</span>
+              <select
+                value={variantId}
+                onChange={(event) => setVariantId(event.target.value)}
+              >
+                {selected.variants.map((variant) => (
+                  <option key={variant.id} value={variant.id}>
+                    {variant.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
           {destination.purchasable ? (
-            pricedLine?.isAvailable ? (
-              <dl className="project-buy-quote">
-                <div>
-                  <dt>Birim</dt>
-                  <dd data-server-unit>{formatMoney(pricedLine.unitPriceMinor)}</dd>
+            <label className="project-buy-field">
+              <span>Adet</span>
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={quantity}
+                onChange={(event) =>
+                  setQuantity(Math.max(1, Math.min(99, Number(event.target.value) || 1)))
+                }
+              />
+            </label>
+          ) : null}
+
+          <div
+            className="project-buy-price"
+            data-server-quote={quoteState}
+            aria-busy={quoteLoading ? true : undefined}
+          >
+            {destination.purchasable ? (
+              quoteFailed ? (
+                <div className="project-buy-retry">
+                  <p className="project-buy-error">{error?.message ?? "Fiyat alınamadı."}</p>
+                  <button type="button" onClick={() => setRetry((value) => value + 1)}>
+                    Tekrar dene
+                  </button>
                 </div>
-                <div>
-                  <dt>Ara toplam</dt>
-                  <dd data-server-subtotal>{formatMoney(quote?.subtotalMinor ?? 0)}</dd>
-                </div>
-                <div>
-                  <dt>Kargo</dt>
-                  <dd data-server-shipping>
-                    {formatMoney(quote?.estimatedShippingMinor ?? 0)}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Toplam</dt>
-                  <dd data-server-total>{formatMoney(quote?.totalMinor ?? 0)}</dd>
-                </div>
-              </dl>
+              ) : quoteLoading || !pricedLine?.isAvailable ? (
+                <dl className="project-buy-quote" data-quote-skeleton="">
+                  <div>
+                    <dt>Birim</dt>
+                    <dd>Fiyat hazırlanıyor</dd>
+                  </div>
+                  <div>
+                    <dt>Kargo</dt>
+                    <dd aria-hidden="true">····</dd>
+                  </div>
+                  <div>
+                    <dt>Toplam</dt>
+                    <dd aria-hidden="true">····</dd>
+                  </div>
+                </dl>
+              ) : (
+                <dl className="project-buy-quote">
+                  <div>
+                    <dt>Birim</dt>
+                    <dd data-server-unit>{formatMoney(pricedLine.unitPriceMinor)}</dd>
+                  </div>
+                  <div>
+                    <dt>Kargo</dt>
+                    <dd data-server-shipping>
+                      {formatMoney(quote?.estimatedShippingMinor ?? 0)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Toplam</dt>
+                    <dd data-server-total>{formatMoney(quote?.totalMinor ?? 0)}</dd>
+                  </div>
+                </dl>
+              )
             ) : (
-              <p className="project-buy-missing">{error ?? "Sunucu fiyatı bekleniyor."}</p>
-            )
+              <p className="project-buy-missing">{destination.priceMissingNote}</p>
+            )}
+          </div>
+
+          {destination.purchasable ? (
+            <button
+              type="button"
+              className="project-buy-cta"
+              disabled={!canBuy || busy}
+              onClick={() => void buy()}
+            >
+              HEMEN SATIN AL
+            </button>
           ) : (
-            <p className="project-buy-missing">{destination.priceMissingNote}</p>
+            <button type="button" className="project-buy-cta project-buy-cta-soon" disabled>
+              FİYAT YAKINDA
+            </button>
           )}
         </div>
+      </section>
 
-        <p className="project-buy-ship">{destination.delivery}</p>
-
-        {destination.purchasable ? (
-          <button
-            type="button"
-            className="project-buy-cta"
-            disabled={!canBuy || busy}
-            onClick={() => void buy()}
-          >
-            HEMEN SATIN AL
-          </button>
-        ) : (
-          <button type="button" className="project-buy-cta project-buy-cta-soon" disabled>
-            FİYAT YAKINDA
-          </button>
-        )}
-        {error ? <p className="project-buy-error">{error}</p> : null}
-
-        <div className="project-buy-details">
-          <h2>Ürün detayı</h2>
-          {selected?.media[0]?.url ? (
-            <img src={selected.media[0].url} alt="" width={640} height={640} />
-          ) : null}
-          <p>{selected?.description ?? destination.description}</p>
-        </div>
-
-        <div className="project-buy-faq">
-          <h2>Sık sorulanlar</h2>
-          {destination.faq.map((item) => (
-            <details key={item.q}>
-              <summary>{item.q}</summary>
-              <p>{item.a}</p>
-            </details>
-          ))}
-        </div>
-
+      <section className="project-buy-faq" aria-labelledby="project-buy-faq-title">
+        <h2 id="project-buy-faq-title">Sık sorulanlar</h2>
+        {destination.faq.slice(0, 2).map((item) => (
+          <details key={item.q}>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
         <p className="project-buy-back">
           <Link href={"/" as Route}>Ana sayfaya dön</Link>
         </p>
       </section>
 
-      {canBuy ? (
+      {destination.purchasable ? (
         <div className="project-buy-sticky" data-project-sticky="">
-          <span data-sticky-total>{formatMoney(quote?.totalMinor ?? 0)}</span>
-          <button type="button" disabled={busy} onClick={() => void buy()}>
-            HEMEN SATIN AL
+          <span data-sticky-total>
+            {canBuy ? formatMoney(quote?.totalMinor ?? 0) : "Fiyat hazırlanıyor"}
+          </span>
+          <button type="button" disabled={!canBuy || busy} onClick={() => void buy()}>
+            SATIN AL
           </button>
         </div>
       ) : null}
