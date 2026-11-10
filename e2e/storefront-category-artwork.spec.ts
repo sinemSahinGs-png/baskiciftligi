@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import path from "node:path";
 
 import { storefrontCategories } from "../src/domain/catalog/storefront-taxonomy";
+import { homepageStageCategories } from "../src/domain/project-destinations/stage";
 import {
   assertMegaPaintedInViewport,
   openMegaByHover,
@@ -19,7 +20,11 @@ async function readyHome(page: Page) {
   );
 }
 
-async function decodeCategoryImages(page: Page, rootSelector: string) {
+async function decodeCategoryImages(
+  page: Page,
+  rootSelector: string,
+  expected = storefrontCategories.length,
+) {
   await expect
     .poll(
       async () =>
@@ -36,7 +41,7 @@ async function decodeCategoryImages(page: Page, rootSelector: string) {
         }),
       { timeout: 20_000 },
     )
-    .toBe(storefrontCategories.length);
+    .toBe(expected);
 }
 
 async function captureTransition(page: Page, fileName: string) {
@@ -89,7 +94,7 @@ test.describe("storefront category artwork", () => {
 
     const section = page.locator("#kategoriler");
     await section.scrollIntoViewIfNeeded();
-    await decodeCategoryImages(page, "#kategoriler");
+    await decodeCategoryImages(page, "#kategoriler", homepageStageCategories().length);
     await expect(section.locator("[data-model-image-placeholder]")).toHaveCount(0);
     await expect(section.locator(".hi-cat-badge")).toHaveCount(2);
     await expect(section.locator(".hi-cat-desc", { hasText: "Hazırlanıyor" })).toHaveCount(0);
@@ -111,7 +116,7 @@ test.describe("storefront category artwork", () => {
         overflow: document.documentElement.scrollWidth - window.innerWidth,
       };
     });
-    expect(geometry.slides).toBe(7);
+    expect(geometry.slides).toBe(homepageStageCategories().length);
     expect(geometry.minWidth).toBeGreaterThan(160);
     expect(geometry.minHeight).toBeGreaterThan(160);
     if (mobile) {
@@ -250,14 +255,15 @@ test.describe("storefront category artwork", () => {
     });
   });
 
-  test("keyboard reaches all seven homepage category cards", async ({ page }, testInfo) => {
+  test("keyboard reaches all homepage category cards", async ({ page }, testInfo) => {
     test.skip(testInfo.project.name.includes("mobile"), "desktop keyboard");
     await page.setViewportSize({ width: 1440, height: 900 });
     await readyHome(page);
     await page.locator("#kategoriler").scrollIntoViewIfNeeded();
     const cards = page.locator("#kategoriler .hi-cats-index-item");
-    await expect(cards).toHaveCount(7);
-    for (let index = 0; index < 7; index += 1) {
+    const total = homepageStageCategories().length;
+    await expect(cards).toHaveCount(total);
+    for (let index = 0; index < total; index += 1) {
       await cards.nth(index).focus();
       await expect(cards.nth(index)).toBeFocused();
     }

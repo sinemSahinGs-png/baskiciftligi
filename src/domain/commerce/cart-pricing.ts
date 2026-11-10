@@ -9,6 +9,11 @@ import {
 } from "@/domain/commerce/shipping-policy";
 import { isPubliclyVisibleProduct } from "@/lib/catalog/visibility";
 import type { Product, ProductKind } from "@/domain/catalog/types";
+import {
+  listProjectCatalogProducts,
+  projectSourceFromProduct,
+  type ProjectSource,
+} from "@/domain/project-destinations/catalog";
 import { assertMinorUnits } from "@/lib/money";
 
 export interface CartInputLine {
@@ -37,6 +42,7 @@ export interface PricedCartLine {
   kind: ProductKind | null;
   displayKind: CartLineDisplayKind;
   quoteId?: string;
+  projectSource?: ProjectSource | null;
   manufacturing?: {
     source: "upload" | "thingiverse";
     filename: string;
@@ -74,6 +80,10 @@ export const FREE_SHIPPING_THRESHOLD_MINOR =
   COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor ?? 0;
 export const STANDARD_SHIPPING_MINOR = COMMERCE_SHIPPING_POLICY.standardShippingMinor;
 
+export function catalogForCartPricing(catalog: Product[]): Product[] {
+  return [...catalog, ...listProjectCatalogProducts()];
+}
+
 export function priceCart(
   inputLines: CartInputLine[],
   products: Product[],
@@ -107,6 +117,7 @@ export function priceCart(
         isDemo: false,
         kind: null,
         displayKind: "store",
+        projectSource: null,
       };
     }
 
@@ -151,6 +162,7 @@ export function priceCart(
       isDemo: product.isDemo,
       kind: product.kind,
       displayKind: displayKindForProduct(product),
+      projectSource: projectSourceFromProduct(product),
     };
   });
 

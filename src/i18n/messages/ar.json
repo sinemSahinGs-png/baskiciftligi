@@ -215,6 +215,21 @@
       "name": "مخصص",
       "eyebrow": "خاص",
       "description": "إنتاج حسب الاسم أو المقاس أو الموجز."
+    },
+    "orbia": {
+      "name": "ORBIA",
+      "eyebrow": "مشروع",
+      "description": "ميدالية NFC للأبراج. قرّب هاتفك لفتح تجربة السماء اليومية."
+    },
+    "memoora": {
+      "name": "MEMOORA",
+      "eyebrow": "مشروع",
+      "description": "مغناطيس أو ميدالية NFC تفتح شجرة ذكرى الزفاف الرقمية."
+    },
+    "cep-album": {
+      "name": "CEP ALBÜM",
+      "eyebrow": "مشروع",
+      "description": "ميدالية ألبوم مصغّر. الألبومات المفردة 200 ليرة في المشروع المصدر."
     }
   },
   "commerce": {

@@ -1,7 +1,11 @@
 import { randomBytes } from "node:crypto";
 
 import { getCatalogSnapshot } from "@/domain/catalog/repository";
-import { priceCart, type CartInputLine } from "@/domain/commerce/cart-pricing";
+import {
+  catalogForCartPricing,
+  priceCart,
+  type CartInputLine,
+} from "@/domain/commerce/cart-pricing";
 import { computeCartShippingMinor } from "@/domain/commerce/shipping-policy";
 import { pricedManufacturingLine } from "@/domain/commerce/manufacturing-cart";
 import {
@@ -56,7 +60,10 @@ export async function priceStoreCart(lines: CartInputLine[]) {
   const catalogLines = lines.filter((line) => !line.quoteId);
   const quoteLines = lines.filter((line) => line.quoteId);
   const snapshot = await getCatalogSnapshot();
-  const catalogResult = priceCart(catalogLines, snapshot.products);
+  const catalogResult = priceCart(
+    catalogLines,
+    catalogForCartPricing(snapshot.products),
+  );
   const manufacturing = [];
   for (const line of quoteLines) {
     const quoteId = line.quoteId!;
@@ -157,6 +164,7 @@ export async function createStoreCheckout(input: {
     options_snapshot: {
       quoteId: line.quoteId ?? null,
       displayKind: line.displayKind,
+      projectSource: line.projectSource ?? null,
     },
     unit_price_minor: line.unitPriceMinor,
     quantity: line.quantity,

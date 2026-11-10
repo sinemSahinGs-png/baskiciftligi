@@ -128,6 +128,10 @@ test.describe("OCTO ocean redesign", () => {
       await second.click();
       await expect(second).toHaveAttribute("aria-selected", "true");
     }
+    await expect(page.locator("#kategoriler .hi-cats-index-item")).toHaveCount(10);
+    await expect(page.locator('#kategoriler [data-category-slug="orbia"]')).toHaveCount(2);
+    await expect(page.locator('#kategoriler [data-category-slug="memoora"]')).toHaveCount(2);
+    await expect(page.locator('#kategoriler [data-category-slug="cep-album"]')).toHaveCount(2);
     await expect(page.locator("[data-coming-soon][href]")).toHaveCount(0);
     const products = page.locator("#mevcut-urunler [data-real-product-slug]");
     if ((await products.count()) > 0) {

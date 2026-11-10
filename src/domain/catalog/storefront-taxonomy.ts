@@ -178,6 +178,9 @@ export function countStorefrontProducts(
 }
 
 export function publicCategoryHref(slug: string): Route {
+  if (slug === "orbia" || slug === "memoora" || slug === "cep-album") {
+    return `/kategori/${slug}` as Route;
+  }
   const direct = getStorefrontCategory(slug);
   if (direct) return direct.href;
   const mapped = storefrontSlugFromSource(slug);

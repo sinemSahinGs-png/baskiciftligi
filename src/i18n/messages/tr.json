@@ -218,6 +218,21 @@
       "name": "Kişiye Özel",
       "eyebrow": "Özel",
       "description": "İsme, ölçüye veya briefe göre üretim."
+    },
+    "orbia": {
+      "name": "ORBIA",
+      "eyebrow": "Proje",
+      "description": "12 burca özel NFC anahtarlık. Telefonuna dokundurunca günlük gökyüzü deneyimi açılır."
+    },
+    "memoora": {
+      "name": "MEMOORA",
+      "eyebrow": "Proje",
+      "description": "NFC magnet veya anahtarlıkla açılan dijital düğün hatıra ağacı."
+    },
+    "cep-album": {
+      "name": "CEP ALBÜM",
+      "eyebrow": "Proje",
+      "description": "Mini albüm anahtarlığı. Tekli albümler kaynak fiyatta 200 TL."
     }
   },
   "commerce": {

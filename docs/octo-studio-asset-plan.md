@@ -145,3 +145,28 @@ Live catalogue product photographs come from the published catalogue. Never AI-g
 | Upload chamber | Missing — existing upload still |
 | Footer silhouette | CSS fallback |
 | Product plinth | CSS fallback |
+
+---
+
+## Project category media (copied, not generated)
+
+Located and copied into `public/categories/{orbia,memoora,cep-album}/`. Do not regenerate these.
+
+| Project | Source folder | Copied files |
+| --- | --- | --- |
+| Orbia | `C:\Users\ATA\OneDrive\Masaüstü\siteler\websites\astra-key` | `hero-desktop.mp4`, `hero-mobile.mp4`, `poster.webp`, `logo.svg`, `product.webp` |
+| Memoora | `C:\Users\ATA\OneDrive\Masaüstü\memoora` | `hero.mp4`, `poster.png`, `logo.svg`, `magnet.png`, `keychain.png` |
+| Cep Albüm | `C:\Users\ATA\OneDrive\Masaüstü\siteler\websites\memory-card-mini-album` | `hero.mp4`, `poster.webp`, `product-hero.webp`, `preview-*.webp` |
+
+Data gaps (not image requests):
+
+- Orbia published price is empty in the source project (`[Fiyat eklenecek]`). Purchase stays disabled.
+- Cep Albüm collection packages are “fiyat için iletişime geç” in the source. Only 200 TL singles are sold.
+
+Cep Albüm uses `product-hero.webp` as the category wordmark until a dedicated logo exists. That is a fallback, not a new generation request.
+
+---
+
+## Ask next (one asset)
+
+Highest remaining visual: **sand-to-abyss handoff still** (`octo-sand-to-abyss-handoff.webp`) as specified in item 1 above. CSS gradient is the current fallback.

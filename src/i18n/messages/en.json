@@ -215,6 +215,21 @@
       "name": "Custom",
       "eyebrow": "Custom",
       "description": "Production by name, size or brief."
+    },
+    "orbia": {
+      "name": "ORBIA",
+      "eyebrow": "Project",
+      "description": "Zodiac NFC keychain. Tap your phone to open the daily sky experience."
+    },
+    "memoora": {
+      "name": "MEMOORA",
+      "eyebrow": "Project",
+      "description": "NFC magnet or keychain that opens a digital wedding memory tree."
+    },
+    "cep-album": {
+      "name": "CEP ALBÜM",
+      "eyebrow": "Project",
+      "description": "Mini album keychain. Single albums are 200 TL in the source project."
     }
   },
   "commerce": {

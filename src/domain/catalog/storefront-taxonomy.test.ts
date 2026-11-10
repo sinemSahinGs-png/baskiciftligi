@@ -63,6 +63,9 @@ describe("storefront taxonomy overlay", () => {
 
   it("resolves public hrefs from hosted or storefront slugs", () => {
     expect(publicCategoryHref("magnet")).toBe("/kategori/anahtarlik-magnet");
+    expect(publicCategoryHref("orbia")).toBe("/kategori/orbia");
+    expect(publicCategoryHref("memoora")).toBe("/kategori/memoora");
+    expect(publicCategoryHref("cep-album")).toBe("/kategori/cep-album");
     expect(publicCategoryHref("kisiye-ozel")).toBe("/kategori/kisiye-ozel");
     expect(publicCategoryHref("kurumsal-promosyon")).toBe("/toptan");
     expect(publicCategoryName("magnet")).toBe("Anahtarlık & Magnet");

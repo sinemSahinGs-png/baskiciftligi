@@ -8,9 +8,12 @@ import { useReducedMotion } from "motion/react";
 import { CategoryArtwork } from "@/components/catalog/category-artwork";
 import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
 import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
-import { storefrontCategories, storefrontCategoryAsset } from "@/domain/catalog/storefront-taxonomy";
+import type { StorefrontCategorySlug } from "@/domain/catalog/storefront-taxonomy";
 import type { Product } from "@/domain/catalog/types";
+import { homepageStageCategories } from "@/domain/project-destinations/stage";
 import { useTranslations } from "next-intl";
+
+const STAGE_CATEGORIES = homepageStageCategories();
 
 export function HomeCategories({ products }: { products: Product[] }) {
   void products;
@@ -23,10 +26,11 @@ export function HomeCategories({ products }: { products: Product[] }) {
   const pointerLock = useRef(false);
   const snapLock = useRef(false);
   const [active, setActive] = useState(0);
-  const current = storefrontCategories[active] ?? storefrontCategories[0];
+  const current = STAGE_CATEGORIES[active] ?? STAGE_CATEGORIES[0];
+  const totalLabel = String(STAGE_CATEGORIES.length).padStart(2, "0");
 
   const go = useCallback((index: number) => {
-    const bounded = (index + storefrontCategories.length) % storefrontCategories.length;
+    const bounded = (index + STAGE_CATEGORIES.length) % STAGE_CATEGORIES.length;
     snapLock.current = true;
     setActive(bounded);
   }, []);
@@ -65,7 +69,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
     if (event.key === "End") {
       event.preventDefault();
       pointerLock.current = true;
-      go(storefrontCategories.length - 1);
+      go(STAGE_CATEGORIES.length - 1);
     }
   }
 
@@ -108,7 +112,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
             aria-label={t("home.catsIndex")}
             onKeyDown={onIndexKey}
           >
-            {storefrontCategories.map((category, index) => {
+            {STAGE_CATEGORIES.map((category, index) => {
               const number = String(index + 1).padStart(2, "0");
               const selected = index === active;
               return (
@@ -124,6 +128,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
                       : catName(category.slug)
                   }
                   data-category-slug={category.slug}
+                  data-stage-kind={category.kind}
                   data-active={selected ? "true" : "false"}
                   data-coming-soon={category.comingSoon ? "true" : undefined}
                   className="hi-cats-index-item"
@@ -158,20 +163,28 @@ export function HomeCategories({ products }: { products: Product[] }) {
                 className="hi-cats-art-frame"
                 onScroll={onTrackScroll}
               >
-                {storefrontCategories.map((category, index) => (
+                {STAGE_CATEGORIES.map((category, index) => (
                   <span
                     key={category.slug}
                     className="hi-cats-slide"
                     data-active={index === active ? "true" : "false"}
                     data-index={index}
                     data-category-slug={category.slug}
+                    data-stage-kind={category.kind}
                     data-coming-soon={category.comingSoon ? "true" : undefined}
                   >
                     <CategoryArtwork
-                      src={storefrontCategoryAsset(category.slug)}
-                      objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+                      src={category.artwork}
+                      objectPosition={
+                        category.kind === "octo"
+                          ? CATEGORY_OBJECT_POSITION[category.slug as StorefrontCategorySlug]
+                          : "50% 42%"
+                      }
                       sizes="(max-width: 767px) 86vw, 58vw"
                     />
+                    {category.logo ? (
+                      <img className="hi-cats-slide-logo" src={category.logo} alt="" />
+                    ) : null}
                     {category.comingSoon ? (
                       <span className="hi-cats-slide-badge">{t("common.comingSoon")}</span>
                     ) : null}
@@ -190,7 +203,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
                 ‹
               </button>
               <p className="hi-cats-pager-count">
-                {String(active + 1).padStart(2, "0")} / 07
+                {String(active + 1).padStart(2, "0")} / {totalLabel}
               </p>
               <button
                 type="button"
@@ -204,7 +217,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
             {current ? (
               <div className="hi-cats-meta">
                 <p className="hi-mono hi-cats-meta-count">
-                  {String(active + 1).padStart(2, "0")} / 07
+                  {String(active + 1).padStart(2, "0")} / {totalLabel}
                 </p>
                 <p className="hi-cats-meta-title">{catName(current.slug)}</p>
                 <p className="hi-cats-meta-desc">{catDesc(current.slug)}</p>
@@ -213,7 +226,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
                     {t("common.comingSoon")}
                   </span>
                 ) : (
-                  <Link href={current.href} className="hi-cats-cta">
+                  <Link href={current.href} className="hi-cats-cta" data-stage-kind={current.kind}>
                     {t("home.goCollection")}
                     <span className="hi-cat-arrow" aria-hidden="true">
                       →
