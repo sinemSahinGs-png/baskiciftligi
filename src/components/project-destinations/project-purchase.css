@@ -402,7 +402,7 @@
   background: #f7f3ea;
   color: #16110c;
   padding-bottom: calc(
-    var(--store-bottom-nav-h, 3.65rem) + 8.5rem + env(safe-area-inset-bottom, 0px)
+    var(--store-bottom-nav-h, 3.65rem) + 5.35rem + env(safe-area-inset-bottom, 0px)
   );
   --project-accent: #b56a28;
   --project-accent-deep: #16110c;
@@ -420,6 +420,18 @@
 .project-buy[data-project-theme="lil-disc"] .project-buy-faq,
 .project-buy[data-project-theme="lil-disc"] .project-buy-back a {
   color: #3c3228;
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-faq {
+  scroll-margin-bottom: calc(
+    var(--store-bottom-nav-h, 3.65rem) + 5.1rem + env(safe-area-inset-bottom, 0px)
+  );
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-back {
+  scroll-margin-bottom: calc(
+    var(--store-bottom-nav-h, 3.65rem) + 5.1rem + env(safe-area-inset-bottom, 0px)
+  );
 }
 
 .project-buy[data-project-theme="lil-disc"] .project-buy-intro h1 {
@@ -485,6 +497,16 @@
 
   .project-buy[data-project-theme="lil-disc"] .project-buy-media img {
     max-height: 11rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .project-buy[data-project-theme="lil-disc"] {
+    padding-bottom: 5.5rem;
+  }
+
+  .project-buy[data-project-theme="lil-disc"] .project-buy-faq {
+    padding-bottom: 0.25rem;
   }
 }
 

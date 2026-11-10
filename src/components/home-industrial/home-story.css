@@ -117,21 +117,64 @@ html[data-home-industrial] {
   gap: 0.75rem;
 }
 
+.octo-curated-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.octo-curated-arrows {
+  display: none;
+  gap: 0.35rem;
+}
+
+.octo-curated-arrow {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid rgb(22 17 12 / 0.18);
+  background: #fffdf8;
+  color: #16110c;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.octo-curated-arrow:focus-visible,
+.octo-curated-card:focus-visible {
+  outline: 2px solid #c4844a;
+  outline-offset: 3px;
+}
+
+.octo-curated-arrow:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
 .octo-kicker-dark,
 .octo-link-dark {
   color: #6a4a2c;
 }
 
+.octo-curated {
+  overflow: hidden;
+}
+
 .octo-curated-rail {
+  --octo-rail-gap: 0.7rem;
+  --octo-rail-visible: 1.15;
   display: flex;
-  gap: 0.65rem;
+  flex-wrap: nowrap;
+  gap: var(--octo-rail-gap);
   margin: 1rem 0 0;
-  padding: 0 0 0.4rem;
+  padding: 0 0 0.45rem;
   list-style: none;
   overflow-x: auto;
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
+  cursor: grab;
 }
 
 .octo-curated-rail::-webkit-scrollbar {
@@ -139,13 +182,16 @@ html[data-home-industrial] {
 }
 
 .octo-curated-rail li {
-  flex: 0 0 46.5%;
+  flex: 0 0 calc((100% - (var(--octo-rail-visible) - 1) * var(--octo-rail-gap)) / var(--octo-rail-visible));
+  min-width: 0;
+  height: auto;
   scroll-snap-align: start;
 }
 
 .octo-curated-card {
   display: flex;
-  min-height: 17.5rem;
+  height: 100%;
+  min-height: 18.5rem;
   flex-direction: column;
   color: inherit;
   text-decoration: none;
@@ -349,14 +395,14 @@ html[data-home-industrial] {
     font-size: 0.95rem;
   }
 
-  .octo-curated-rail {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    overflow: visible;
+  .octo-curated-arrows {
+    display: flex;
   }
 
-  .octo-curated-rail li {
-    flex: none;
+  .octo-curated-rail {
+    --octo-rail-visible: 2.2;
+    display: flex;
+    overflow-x: auto;
   }
 
   .octo-curated-card:hover {
@@ -375,6 +421,12 @@ html[data-home-industrial] {
 
   .octo-tv-tentacle-corner {
     width: 16rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .octo-curated-rail {
+    --octo-rail-visible: 4.22;
   }
 }
 

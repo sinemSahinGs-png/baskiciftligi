@@ -307,6 +307,111 @@ test.describe("project category destinations", () => {
     expect(await overflowX(page)).toBeLessThanOrEqual(1);
   });
 
+  test("curated rail stays one row, peeks the next card, and never wraps", async ({ page }) => {
+    test.setTimeout(120_000);
+
+    async function railMetrics() {
+      const rail = page.locator("[data-curated-rail]");
+      await expect(rail).toBeVisible();
+      return rail.evaluate((node) => {
+        const items = [...node.querySelectorAll("li")];
+        const first = items[0]?.getBoundingClientRect();
+        const last = items[items.length - 1]?.getBoundingClientRect();
+        const box = node.getBoundingClientRect();
+        const rows = new Set(items.map((item) => Math.round(item.getBoundingClientRect().top)));
+        return {
+          count: items.length,
+          rows: rows.size,
+          visible: first ? box.width / first.width : 0,
+          wrap: last ? last.top - (first?.top ?? 0) > 24 : false,
+        };
+      });
+    }
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    expect(await overflowX(page)).toBeLessThanOrEqual(1);
+    const mobile = await railMetrics();
+    expect(mobile.count).toBeGreaterThanOrEqual(5);
+    expect(mobile.rows).toBe(1);
+    expect(mobile.wrap).toBe(false);
+    expect(mobile.visible).toBeGreaterThan(1.05);
+    expect(mobile.visible).toBeLessThan(1.4);
+    await page.locator("#mevcut-urunler").screenshot({
+      path: path.join(shots, "home-curated-start-390.png"),
+      animations: "disabled",
+    });
+    await page.locator("[data-curated-rail]").evaluate((node) => {
+      node.scrollBy({ left: node.clientWidth * 0.9, behavior: "auto" });
+    });
+    await page.locator("#mevcut-urunler").screenshot({
+      path: path.join(shots, "home-curated-next-390.png"),
+      animations: "disabled",
+    });
+    await page.screenshot({
+      path: path.join(shots, "home-full-390.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
+
+    await page.setViewportSize({ width: 768, height: 900 });
+    const tablet = await railMetrics();
+    expect(tablet.rows).toBe(1);
+    expect(tablet.wrap).toBe(false);
+    expect(tablet.visible).toBeGreaterThan(2.05);
+    expect(tablet.visible).toBeLessThan(2.5);
+    expect(await overflowX(page)).toBeLessThanOrEqual(1);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.locator("[data-curated-rail]").evaluate((node) => {
+      node.scrollTo({ left: 0 });
+    });
+    const desktop = await railMetrics();
+    expect(desktop.rows).toBe(1);
+    expect(desktop.wrap).toBe(false);
+    expect(desktop.visible).toBeGreaterThan(4.05);
+    expect(desktop.visible).toBeLessThan(4.5);
+    await expect(page.locator('[aria-label="Önceki ürünler"]')).toBeDisabled();
+    await expect(page.locator('[aria-label="Sonraki ürünler"]')).toBeEnabled();
+    await page.locator("#mevcut-urunler").screenshot({
+      path: path.join(shots, "home-curated-start-1440.png"),
+      animations: "disabled",
+    });
+    await page.locator('[aria-label="Sonraki ürünler"]').click();
+    await expect(page.locator('[aria-label="Önceki ürünler"]')).toBeEnabled({ timeout: 4_000 });
+    await page.locator("#mevcut-urunler").screenshot({
+      path: path.join(shots, "home-curated-next-1440.png"),
+      animations: "disabled",
+    });
+    await page.screenshot({
+      path: path.join(shots, "home-full-1440.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
+
+    for (const width of [320, 430]) {
+      await page.setViewportSize({ width, height: 844 });
+      expect(await overflowX(page), `home @ ${width}`).toBeLessThanOrEqual(1);
+      const metrics = await railMetrics();
+      expect(metrics.rows, `rows @ ${width}`).toBe(1);
+    }
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/kategori/lil-disc");
+    await expect(page.locator("[data-server-unit]")).toContainText("200,00", { timeout: 15_000 });
+    await page.locator(".project-buy-faq").scrollIntoViewIfNeeded();
+    await page.screenshot({
+      path: path.join(shots, "lil-disc-page-end-390.png"),
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.locator(".project-buy-faq").scrollIntoViewIfNeeded();
+    await page.screenshot({
+      path: path.join(shots, "lil-disc-page-end-1440.png"),
+      animations: "disabled",
+    });
+  });
+
   test("no horizontal overflow from 320 to 1440 on destination pages", async ({ page }) => {
     test.setTimeout(90_000);
     for (const width of [320, 390, 430, 768, 1440]) {
