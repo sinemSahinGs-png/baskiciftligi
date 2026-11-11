@@ -84,7 +84,9 @@ test.describe("OCTO ocean redesign", () => {
       gl.readPixels(8, 8, 2, 2, gl.RGBA, gl.UNSIGNED_BYTE, after);
       return before.some((value, index) => value !== after[index]);
     });
-    expect(typeof changed).toBe("boolean");
+    const live = await page.locator(".octo-sand-layer").getAttribute("data-octo-sand-live");
+    if (live === "true") expect(changed).toBe(true);
+    else expect(typeof changed).toBe("boolean");
   });
 
   test("mobile sections stay visible and do not leave giant gaps", async ({ page }) => {

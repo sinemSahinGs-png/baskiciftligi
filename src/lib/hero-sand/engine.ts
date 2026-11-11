@@ -53,6 +53,9 @@ uniform sampler2D uAlbedo;
 uniform float uHasAlbedo;
 uniform vec2 uRepeat;
 uniform vec2 uTexel;
+uniform vec2 uPointer;
+uniform float uBrush;
+uniform float uBrushRadius;
 uniform vec4 uScreen;
 uniform float uRadius;
 
@@ -89,12 +92,16 @@ void main() {
   vec3 normal = normalize(vec3((hL - hR) * 26.0, (hD - hU) * 26.0, 1.0));
   float ndl = clamp(dot(normal, normalize(vec3(0.72, 0.48, 0.48))), 0.0, 1.0);
 
-  vec2 warp = disp * 2.6;
+  vec2 warp = disp * 3.6;
   vec3 sand = texture(uAlbedo, vUv * uRepeat + warp).rgb;
-  sand *= mix(0.86, 1.12, ndl);
+  sand *= mix(0.78, 1.16, ndl);
 
-  float piles = smoothstep(0.001, 0.03, hC);
-  float cover = mix(0.07, 0.96, piles) * (1.0 - aperture);
+  float piles = smoothstep(0.0008, 0.028, hC);
+  float dist = distance(vUv, uPointer);
+  float scrape = exp(-dist * dist / max(uBrushRadius * uBrushRadius * 1.15, 0.0003)) * smoothstep(0.01, 0.12, uBrush);
+  float cover = mix(0.28, 1.0, piles);
+  cover = mix(cover, 0.03, scrape);
+  cover *= 1.0 - aperture;
   fragColor = vec4(sand * cover, cover);
 }`;
 
@@ -169,14 +176,42 @@ function makeFbo(gl: WebGL2RenderingContext, texture: WebGLTexture) {
 
 export type SandDiagnostics = {
   mode: "webgl2" | "fallback";
+  reason: "webgl" | "context_lost";
   grid: number;
   dpr: number;
   fps: number;
   frameMs: number;
+  frames: number;
   webgl: string;
   contextLost: boolean;
   resetting: boolean;
+  hasAlbedo: boolean;
+  live: boolean;
+  textureWidth: number;
+  textureHeight: number;
+  canvasWidth: number;
+  canvasHeight: number;
+  cssWidth: number;
+  cssHeight: number;
+  sampled: string;
 };
+
+export function acquireWebGl2(canvas: HTMLCanvasElement) {
+  const options: WebGLContextAttributes = {
+    alpha: true,
+    antialias: false,
+    depth: false,
+    stencil: false,
+    premultipliedAlpha: true,
+    preserveDrawingBuffer: true,
+    powerPreference: "default",
+    failIfMajorPerformanceCaveat: false,
+  };
+  return (
+    canvas.getContext("webgl2", options) ??
+    canvas.getContext("webgl2")
+  );
+}
 
 export class OctoSandEngine {
   private gl: WebGL2RenderingContext;
@@ -191,6 +226,9 @@ export class OctoSandEngine {
   private fboB: WebGLFramebuffer;
   private writeA = true;
   private hasAlbedo = 0;
+  private textureWidth = 0;
+  private textureHeight = 0;
+  private sampled = "";
   private raf = 0;
   private grid: number;
   private dpr: number;
@@ -202,6 +240,7 @@ export class OctoSandEngine {
   private fps = 0;
   private frameMs = 0;
   private pointer = { x: 0.5, y: 0.5, dx: 0, dy: 0, force: 0 };
+  private brush = 0;
   private screen = { left: 0.308375, top: 0.142202, width: 0.377704, height: 0.682339, radius: 0.062 };
   private onLost = () => {
     this.lost = true;
@@ -212,14 +251,7 @@ export class OctoSandEngine {
   };
 
   constructor(canvas: HTMLCanvasElement, grid: number, dpr: number) {
-    const gl = canvas.getContext("webgl2", {
-      alpha: true,
-      antialias: false,
-      depth: false,
-      stencil: false,
-      premultipliedAlpha: true,
-      powerPreference: "high-performance",
-    });
+    const gl = acquireWebGl2(canvas);
     if (!gl) throw new Error("webgl2");
     this.gl = gl;
     this.canvas = canvas;
@@ -255,6 +287,14 @@ export class OctoSandEngine {
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
     this.hasAlbedo = 1;
+    if (image instanceof HTMLImageElement) {
+      this.textureWidth = image.naturalWidth;
+      this.textureHeight = image.naturalHeight;
+    } else if (typeof ImageBitmap !== "undefined" && image instanceof ImageBitmap) {
+      this.textureWidth = image.width;
+      this.textureHeight = image.height;
+    }
+    this.sampled = "/images/hero/octo-sand-field.webp";
   }
 
   impulse(nx: number, ny: number, dx: number, dy: number, force: number) {
@@ -285,15 +325,27 @@ export class OctoSandEngine {
   }
 
   diagnostics(): SandDiagnostics {
+    const css = this.canvas.getBoundingClientRect();
     return {
       mode: "webgl2",
+      reason: this.lost ? "context_lost" : "webgl",
       grid: this.grid,
       dpr: this.dpr,
       fps: this.fps,
       frameMs: this.frameMs,
+      frames: this.frames,
       webgl: "WebGL2",
       contextLost: this.lost,
       resetting: this.resetUntil > performance.now(),
+      hasAlbedo: this.hasAlbedo === 1,
+      live: !this.lost && this.hasAlbedo === 1 && this.frames > 0,
+      textureWidth: this.textureWidth,
+      textureHeight: this.textureHeight,
+      canvasWidth: this.canvas.width,
+      canvasHeight: this.canvas.height,
+      cssWidth: Math.round(css.width),
+      cssHeight: Math.round(css.height),
+      sampled: this.sampled,
     };
   }
 
@@ -310,8 +362,6 @@ export class OctoSandEngine {
     gl.deleteFramebuffer(this.fboB);
     gl.deleteProgram(this.sim);
     gl.deleteProgram(this.draw);
-    const lose = gl.getExtension("WEBGL_lose_context");
-    lose?.loseContext();
   }
 
   private stop() {
@@ -331,7 +381,8 @@ export class OctoSandEngine {
     this.frameMs = dt * 1000;
     if (this.frames % 20 === 0) this.fps = this.frameMs > 0 ? Math.round(1000 / this.frameMs) : 0;
     this.step(now);
-    this.pointer.force *= 0.35;
+    this.brush = Math.max(this.pointer.force, this.brush * 0.82);
+    this.pointer.force *= 0.42;
   }
 
   private bindQuad(prog: WebGLProgram) {
@@ -356,7 +407,7 @@ export class OctoSandEngine {
     gl.uniform2f(gl.getUniformLocation(this.sim, "uPointer"), this.pointer.x, 1 - this.pointer.y);
     gl.uniform2f(gl.getUniformLocation(this.sim, "uDelta"), this.pointer.dx, -this.pointer.dy);
     gl.uniform1f(gl.getUniformLocation(this.sim, "uForce"), this.pointer.force);
-    gl.uniform1f(gl.getUniformLocation(this.sim, "uRadius"), this.grid <= 256 ? 0.12 : 0.09);
+    gl.uniform1f(gl.getUniformLocation(this.sim, "uRadius"), this.grid <= 256 ? 0.09 : 0.055);
     gl.uniform1f(gl.getUniformLocation(this.sim, "uReset"), reset);
     gl.uniform1f(gl.getUniformLocation(this.sim, "uSettle"), 1);
     this.bindQuad(this.sim);
@@ -377,6 +428,12 @@ export class OctoSandEngine {
     gl.bindTexture(gl.TEXTURE_2D, this.albedo);
     gl.uniform1i(gl.getUniformLocation(this.draw, "uAlbedo"), 1);
     gl.uniform1f(gl.getUniformLocation(this.draw, "uHasAlbedo"), this.hasAlbedo);
+    gl.uniform2f(gl.getUniformLocation(this.draw, "uPointer"), this.pointer.x, 1 - this.pointer.y);
+    gl.uniform1f(gl.getUniformLocation(this.draw, "uBrush"), this.brush);
+    gl.uniform1f(
+      gl.getUniformLocation(this.draw, "uBrushRadius"),
+      this.grid <= 256 ? 0.09 : 0.055,
+    );
     const tile = Math.max(1, 580 * this.dpr);
     gl.uniform2f(
       gl.getUniformLocation(this.draw, "uRepeat"),

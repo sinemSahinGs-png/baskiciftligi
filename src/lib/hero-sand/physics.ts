@@ -1,6 +1,27 @@
 export const SAND_RESET_MS = 1600;
 export const SAND_LOAD_TIMEOUT_MS = 5000;
 
+export type SandDebugReason =
+  | "webgl"
+  | "reduced_motion"
+  | "data_saver"
+  | "webgl2_unavailable"
+  | "texture_load_failed"
+  | "engine_init_failed"
+  | "context_lost"
+  | "init_timeout";
+
+export function chooseSandInitReason(input: {
+  reducedMotion: boolean;
+  saveData: boolean;
+  webgl2: boolean;
+}): Exclude<SandDebugReason, "webgl" | "texture_load_failed" | "engine_init_failed" | "context_lost" | "init_timeout"> | null {
+  if (input.reducedMotion) return "reduced_motion";
+  if (input.saveData) return "data_saver";
+  if (!input.webgl2) return "webgl2_unavailable";
+  return null;
+}
+
 export function chooseSandGrid({
   width,
   reducedMotion,
@@ -49,9 +70,9 @@ export function sandImpulseFromPointer({
   if (verticalScroll) {
     return { force: 0, nx: 0, ny: 0, scrolling: true };
   }
-  const capped = Math.min(dist, 56);
+  const capped = Math.min(dist, 40);
   return {
-    force: capped * 0.02,
+    force: capped * 0.026,
     nx: dx / dist,
     ny: dy / dist,
     scrolling: false,

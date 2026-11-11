@@ -273,6 +273,7 @@ export function IdeaCommand() {
       aria-labelledby="idea-command-heading"
     >
       <div className="octo-tv-stage">
+        <OctoInteractiveSandHero />
         <div className="octo-tv-frame">
           <picture className="octo-tv-shell-picture">
             <source media={OCTO_TV_MOBILE_MEDIA} srcSet={OCTO_TV_SHELL.mobile} type="image/webp" />
@@ -291,7 +292,6 @@ export function IdeaCommand() {
             <HeroVideo reducedMotion={reduceMotion} />
             <div className="octo-tv-glass" aria-hidden="true" />
           </div>
-          <OctoInteractiveSandHero />
           <div className="octo-tv-content">
       <div className="hi-hero-inner">
         <div className="hi-hero-cluster">

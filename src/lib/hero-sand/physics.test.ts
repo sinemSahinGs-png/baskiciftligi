@@ -4,6 +4,7 @@ import {
   allowHeroDebug,
   chooseSandDpr,
   chooseSandGrid,
+  chooseSandInitReason,
   isHeroChrome,
   sandImpulseFromPointer,
 } from "@/lib/hero-sand/physics";
@@ -49,6 +50,21 @@ describe("octo sand physics helpers", () => {
     expect(isHeroChrome(link)).toBe(true);
     expect(isHeroChrome(document.body)).toBe(false);
     link.remove();
+  });
+
+  it("names the exact skip reason before the engine starts", () => {
+    expect(
+      chooseSandInitReason({ reducedMotion: true, saveData: false, webgl2: true }),
+    ).toBe("reduced_motion");
+    expect(
+      chooseSandInitReason({ reducedMotion: false, saveData: true, webgl2: true }),
+    ).toBe("data_saver");
+    expect(
+      chooseSandInitReason({ reducedMotion: false, saveData: false, webgl2: false }),
+    ).toBe("webgl2_unavailable");
+    expect(
+      chooseSandInitReason({ reducedMotion: false, saveData: false, webgl2: true }),
+    ).toBeNull();
   });
 
   it("keeps production host free of the debug overlay by default", () => {
