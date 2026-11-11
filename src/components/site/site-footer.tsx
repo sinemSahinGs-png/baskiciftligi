@@ -5,22 +5,27 @@ import { AtSign, Mail, Phone, Play } from "lucide-react";
 import { Logo } from "@/components/site/logo";
 import { SiteFooterMobile } from "@/components/site/site-footer-mobile";
 import { siteConfig } from "@/config/site";
+import { getMessages, msg } from "@/i18n/get-messages";
+import { getRequestLocale } from "@/i18n/request-locale";
 
-export function SiteFooter({
+export async function SiteFooter({
   heading,
   description,
 }: {
   heading?: string;
   description?: string;
 } = {}) {
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
   const phoneHref = siteConfig.contact.phone
     ? `tel:${siteConfig.contact.phone.replace(/[^\d+]/g, "")}`
     : null;
-  const footerHeading = heading ?? siteConfig.footerHeading;
-  const footerDescription = description ?? siteConfig.footerDescription;
+  const footerHeading = heading && locale === "tr" ? heading : msg(messages, "footer.heading");
+  const footerDescription =
+    description && locale === "tr" ? description : msg(messages, "footer.description");
 
   return (
-    <footer data-site-footer className="site-footer-brand relative bg-deep-ink text-light-text">
+    <footer data-site-footer className="site-footer-brand octo-abyss-floor relative bg-deep-ink text-light-text">
       <SiteFooterMobile description={footerDescription} />
 
       <div className="shell relative hidden py-6 md:block">
@@ -50,67 +55,67 @@ export function SiteFooter({
             </div>
             ) : null}
           </div>
-          <nav aria-label="Mağaza">
-            <p className="text-sm font-semibold">Mağaza</p>
+          <nav aria-label={msg(messages, "footer.store")}>
+            <p className="text-sm font-semibold">{msg(messages, "footer.store")}</p>
             <ul className="mt-2 space-y-0.5 text-sm text-muted-light">
               <li>
                 <Link href={"/magaza" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Tüm ürünler
+                  {msg(messages, "common.allProducts")}
                 </Link>
               </li>
               <li>
                 <Link href={"/model-yukle" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Model yükle
+                  {msg(messages, "common.upload")}
                 </Link>
               </li>
               <li>
                 <Link href={"/hazir-modeller" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Hazır modeller
+                  {msg(messages, "common.readyModels")}
                 </Link>
               </li>
             </ul>
           </nav>
-          <nav aria-label="Yardım">
-            <p className="text-sm font-semibold">Yardım</p>
+          <nav aria-label={msg(messages, "common.help")}>
+            <p className="text-sm font-semibold">{msg(messages, "common.help")}</p>
             <ul className="mt-2 space-y-0.5 text-sm text-muted-light">
               <li>
                 <Link href={"/siparis-takip" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Sipariş takibi
+                  {msg(messages, "common.track")}
                 </Link>
               </li>
               <li>
                 <Link href={"/hesabim" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Hesabım
+                  {msg(messages, "common.account")}
                 </Link>
               </li>
               <li>
                 <Link href={"/iletisim" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  İletişim
+                  {msg(messages, "common.contact")}
                 </Link>
               </li>
             </ul>
           </nav>
-          <nav aria-label="Kurumsal">
-            <p className="text-sm font-semibold">Kurumsal</p>
+          <nav aria-label={msg(messages, "common.corporate")}>
+            <p className="text-sm font-semibold">{msg(messages, "common.corporate")}</p>
             <ul className="mt-2 space-y-0.5 text-sm text-muted-light">
               <li>
                 <Link href={"/toptan" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Toptan & Bayiler
+                  {msg(messages, "common.wholesale")}
                 </Link>
               </li>
               <li>
                 <Link href={"/toptan/katalog" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Toptan katalog
+                  {msg(messages, "footer.wholesaleCatalog")}
                 </Link>
               </li>
               <li>
                 <Link href={"/kurumsal-uretim" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Kurumsal üretim
+                  {msg(messages, "footer.corporateProduction")}
                 </Link>
               </li>
               <li>
                 <Link href={"/malzemeler" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  Malzemeler
+                  {msg(messages, "common.materials")}
                 </Link>
               </li>
             </ul>
@@ -119,20 +124,20 @@ export function SiteFooter({
 
         <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-4 text-xs text-muted-light sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {siteConfig.legalName}
+            © {new Date().getFullYear()} {siteConfig.name}
           </p>
-          <nav aria-label="Yasal" className="flex flex-wrap gap-x-3 gap-y-1">
+          <nav aria-label={msg(messages, "common.legal")} className="flex flex-wrap gap-x-3 gap-y-1">
             <Link href={"/yasal/kvkk" as Route} className="hover:text-light-text">
-              KVKK
+              {msg(messages, "common.kvkk")}
             </Link>
             <Link href={"/yasal/gizlilik" as Route} className="hover:text-light-text">
-              Gizlilik
+              {msg(messages, "common.privacy")}
             </Link>
             <Link href={"/yasal/mesafeli-satis" as Route} className="hover:text-light-text">
-              Mesafeli satış
+              {msg(messages, "common.distance")}
             </Link>
             <Link href={"/yasal/iade" as Route} className="hover:text-light-text">
-              İade
+              {msg(messages, "common.returns")}
             </Link>
           </nav>
           <div className="flex gap-1">

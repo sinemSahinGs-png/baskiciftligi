@@ -39,7 +39,7 @@ export function MaterialsSection({ materials }: { materials: Material[] }) {
             {visible.map((material) => {
               const extra =
                 homepageMaterialCopy[material.slug as keyof typeof homepageMaterialCopy];
-              const sample = material.colors[0]?.hex ?? "#30d5d2";
+              const sample = material.colors[0]?.hex ?? "#B9844D";
               return (
                 <Link
                   key={material.id}

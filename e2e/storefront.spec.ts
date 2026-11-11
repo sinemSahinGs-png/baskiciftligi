@@ -11,7 +11,7 @@ test.describe("storefront phase 1", () => {
     );
     await expect(page.locator("#ana-icerik")).toBeVisible();
     await expect(
-      page.getByRole("banner").getByRole("link", { name: "Baskı Çiftliği ana sayfa" }),
+      page.getByRole("banner").getByRole("link", { name: "OCTO STUDIO ana sayfa" }),
     ).toBeVisible();
 
     const header = page.getByRole("banner");

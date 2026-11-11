@@ -18,10 +18,14 @@ import { JOB_MAX_ATTEMPTS, type ManufacturingFileRecord, type PrintConfiguration
 import { ALLOWED_INFILL, QUALITY_IDS } from "@/domain/manufacturing/types";
 import { getQuoteJobByIdempotency, saveManufacturingFile, saveQuoteJob } from "@/domain/manufacturing/repository";
 import { reuseQuoteJobIfDuplicate } from "@/domain/manufacturing/quote-idempotency";
-import { printerBuildVolume } from "@/domain/manufacturing/quote-service";
+import {
+  maybeApplyMeshQuoteIfWorkerOffline,
+  printerBuildVolume,
+} from "@/domain/manufacturing/quote-service";
 import { clientKey, rateLimit } from "@/lib/manufacturing/rate-limit";
 import { getManufacturingActor } from "@/lib/manufacturing/session";
 import { manufacturingPersistenceReady, maxUploadBytes, writePrivateObject } from "@/lib/manufacturing/paths";
+import { wakeSlicerWorker } from "@/lib/manufacturing/worker-readiness";
 import { DEVELOPMENT_PRINTER } from "@/domain/manufacturing/profiles";
 
 export const runtime = "nodejs";
@@ -224,7 +228,15 @@ export async function POST(request: Request) {
     const existing = await getQuoteJobByIdempotency(idempotencyKey);
     const reused = reuseQuoteJobIfDuplicate(existing, file.id);
     if (reused) {
-      return NextResponse.json({ ...reused, analysis });
+      const woke = await wakeSlicerWorker();
+      const priced = woke
+        ? null
+        : await maybeApplyMeshQuoteIfWorkerOffline(reused.jobId);
+      return NextResponse.json({
+        ...reused,
+        quoteId: priced?.quoteId ?? null,
+        analysis,
+      });
     }
 
     const configuration: PrintConfiguration = {
@@ -258,9 +270,13 @@ export async function POST(request: Request) {
       completedAt: null,
     });
 
+    const woke = await wakeSlicerWorker();
+    const priced = woke ? null : await maybeApplyMeshQuoteIfWorkerOffline(jobId);
+
     return NextResponse.json({
       fileId: file.id,
       jobId,
+      quoteId: priced?.quoteId ?? null,
       analysis,
       previewDimensionsMm: previewBounds.dimensions,
     });

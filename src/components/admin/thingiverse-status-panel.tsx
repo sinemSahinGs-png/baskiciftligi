@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import type { ThingiverseIntegrationStatus } from "@/providers/thingiverse/status";
@@ -25,8 +26,8 @@ const SETUP_STEPS = [
   },
   {
     title: "4. Production callback URL",
-    body: "Yalnızca okuma (popular / search) için App Token yeterlidir. Thingiverse formunda Callback URL boş bırakılabilir.",
-    note: "İleride kullanıcı OAuth’u eklenecekse redirect URI olarak https://baskiciftligi.com/api/auth/thingiverse/callback planlanır ve Vercel’de THINGIVERSE_REDIRECT_URI ile eşlenir. Şu an OAuth callback route yok; production bağlantısı App Token ile kurulur.",
+    body: "Thingiverse uygulama formundaki Callback URL tam olarak şu olmalı:",
+    note: "https://baskiciftligi.com/api/auth/thingiverse/callback — kaydetmeden Topluluk sekmesi bağlanmaz. App Token tek başına bu sitede reddediliyor; owner OAuth gerekir.",
   },
   {
     title: "5. Gerekli credential",
@@ -80,6 +81,8 @@ export function ThingiverseStatusPanel({
     redirectUri: boolean;
   };
 }) {
+  const searchParams = useSearchParams();
+  const oauthNotice = searchParams.get("tv");
   const [status, setStatus] = useState(initialStatus);
   const [testing, setTesting] = useState(false);
   const [probe, setProbe] = useState<ProbeResult | null>(null);
@@ -154,18 +157,37 @@ export function ThingiverseStatusPanel({
         ))}
       </ul>
 
-      {!envFlags.accessToken ? (
+      {oauthNotice === "connected" ? (
+        <p className="rounded-xl border border-emerald-400/30 px-3 py-2 text-sm">
+          Thingiverse hesabı bağlandı. Hazır modeller Topluluk sekmesini yenileyin.
+        </p>
+      ) : null}
+      {oauthNotice && oauthNotice !== "connected" ? (
+        <p className="rounded-xl border border-coral/40 px-3 py-2 text-sm">
+          Thingiverse bağlantısı tamamlanamadı ({oauthNotice}). Callback URL’yi
+          uygulama kaydında kontrol edin.
+        </p>
+      ) : null}
+
+      {envFlags.clientId && envFlags.clientSecret ? (
+        <a
+          href="/api/admin/thingiverse/connect"
+          className="inline-flex min-h-11 items-center rounded-xl bg-cyan px-4 text-sm font-semibold text-ink"
+        >
+          Thingiverse hesabını bağla
+        </a>
+      ) : (
         <div className="rounded-2xl border border-amber-400/30 bg-amber-400/5 p-4 text-sm leading-6">
           <p className="font-semibold text-amber-100">
-            Awaiting owner credential
+            Client ID / Secret eksik
           </p>
           <p className="mt-2 text-muted-foreground">
-            Canlı Thingiverse sonuçları için Vercel Production’a{" "}
-            <code>THINGIVERSE_ACCESS_TOKEN</code> (App Token) eklenmeli. Token yokken
-            müşteri sayfasında sahte kart gösterilmez.
+            Vercel Production’a <code>THINGIVERSE_CLIENT_ID</code> ve{" "}
+            <code>THINGIVERSE_CLIENT_SECRET</code> ekleyin; ardından bu sayfadan
+            Thingiverse hesabını bağlayın. Jetonlar tarayıcıya yazılmaz.
           </p>
         </div>
-      ) : null}
+      )}
 
       <div className="space-y-4">
         <h3 className="font-heading text-lg font-semibold">Kurulum rehberi</h3>

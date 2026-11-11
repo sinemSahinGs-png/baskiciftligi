@@ -1,41 +1,44 @@
 import type { Metadata, Viewport } from "next";
 import {
   Barlow_Condensed,
-  Bricolage_Grotesque,
   IBM_Plex_Mono,
-  Plus_Jakarta_Sans,
+  Manrope,
+  Noto_Sans_Arabic,
 } from "next/font/google";
 
 import { Providers } from "@/components/providers";
 import { JsonLd } from "@/components/seo/json-ld";
 import { siteConfig } from "@/config/site";
+import { localeMeta } from "@/i18n/config";
+import { getMessages, msg } from "@/i18n/get-messages";
+import { getRequestLocale } from "@/i18n/request-locale";
 
 import "./globals.css";
 import "@/components/motion/premium-motion.css";
 
-const jakarta = Plus_Jakarta_Sans({
+const jakarta = Manrope({
   variable: "--font-jakarta",
   subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
-  subsets: ["latin", "latin-ext"],
-  display: "swap",
-});
-
-const industrialDisplay = Barlow_Condensed({
-  variable: "--font-bc-display",
+const display = Barlow_Condensed({
+  variable: "--font-display",
   subsets: ["latin", "latin-ext"],
   weight: ["500", "600", "700"],
   display: "swap",
 });
 
-const industrialMono = IBM_Plex_Mono({
-  variable: "--font-bc-mono",
+const mono = IBM_Plex_Mono({
+  variable: "--font-mono",
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500"],
+  display: "swap",
+});
+
+const arabic = Noto_Sans_Arabic({
+  variable: "--font-arabic",
+  subsets: ["arabic", "latin"],
   display: "swap",
 });
 
@@ -57,7 +60,7 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "/",
-    languages: { "tr-TR": "/" },
+    languages: { "tr-TR": "/", "en": "/en", "ar": "/ar" },
   },
   openGraph: {
     type: "website",
@@ -76,12 +79,12 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  icons: {
+    icons: {
     icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "48x48" },
-      { url: "/icon.png", type: "image/png" },
     ],
-    shortcut: "/favicon.ico",
+    shortcut: "/icon.svg",
     apple: "/apple-icon.png",
   },
 };
@@ -91,20 +94,24 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F7F5F0" },
-    { media: "(prefers-color-scheme: dark)", color: "#070713" },
+    { media: "(prefers-color-scheme: light)", color: "#F0E9DA" },
+    { media: "(prefers-color-scheme: dark)", color: "#020507" },
   ],
   colorScheme: "dark",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getRequestLocale();
+  const messages = getMessages(locale);
+  const meta = localeMeta[locale];
   return (
     <html
-      lang="tr"
+      lang={meta.html}
+      dir={meta.dir}
       data-bc-commit={
         process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.BC_GIT_COMMIT ?? "local"
       }
-      className={`${jakarta.variable} ${bricolage.variable} ${industrialDisplay.variable} ${industrialMono.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${display.variable} ${mono.variable} ${arabic.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
@@ -135,7 +142,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               "@type": "WebSite",
               name: siteConfig.name,
               url: siteConfig.url,
-              inLanguage: "tr-TR",
+              inLanguage: meta.html,
             },
           ]}
         />
@@ -143,9 +150,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           href="#ana-icerik"
           className="focus:bg-cobalt focus:text-light-text fixed top-3 left-3 z-[100] -translate-y-24 rounded-md px-4 py-2 text-sm font-semibold transition-transform focus:translate-y-0"
         >
-          Ana içeriğe geç
+          {msg(messages, "skip")}
         </a>
-        <Providers>{children}</Providers>
+        <Providers locale={locale} messages={messages}>
+          {children}
+        </Providers>
       </body>
     </html>
   );

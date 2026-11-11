@@ -12,21 +12,9 @@ import { MagneticAction, WordReveal } from "@/components/motion/premium";
 import { setPendingOwnedUpload } from "@/lib/home/pending-owned-upload";
 import { trackHomeEvent } from "@/lib/home/analytics";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
-const STEPS = [
-  {
-    id: "01",
-    title: "Dosyanı yükle",
-  },
-  {
-    id: "02",
-    title: "Üretim seçeneklerini belirle",
-  },
-  {
-    id: "03",
-    title: "Anlık fiyatını gör",
-  },
-] as const;
+const STEP_IDS = ["01", "02", "03"] as const;
 
 const ALLOWED = [".stl", ".3mf"];
 const MAX_BYTES = 100 * 1024 * 1024;
@@ -37,6 +25,12 @@ function isAllowed(file: File) {
 }
 
 export function AutoQuote() {
+  const t = useTranslations();
+  const STEPS = [
+    { id: STEP_IDS[0], title: t("home.quoteStep1") },
+    { id: STEP_IDS[1], title: t("home.quoteStep2") },
+    { id: STEP_IDS[2], title: t("home.quoteStep3") },
+  ];
   const router = useRouter();
   const reduce = useReducedMotion() === true;
   const sectionRef = useRef<HTMLElement>(null);
@@ -60,11 +54,11 @@ export function AutoQuote() {
     const file = files?.[0];
     if (!file) return;
     if (!isAllowed(file)) {
-      setError("Yalnızca STL veya 3MF kabul edilir.");
+      setError(t("home.quoteStlOnly"));
       return;
     }
     if (file.size > MAX_BYTES) {
-      setError("Dosya 100 MB sınırını aşıyor.");
+      setError(t("home.quoteTooBig"));
       return;
     }
     setError(null);
@@ -94,13 +88,13 @@ export function AutoQuote() {
       aria-labelledby="archive-heading"
     >
       <span id="modelin-hazir-mi" className="sr-only">
-        Model yükle
+        {t("home.uploadModel")}
       </span>
       <div className="hi-shell">
-        <p className="hi-kicker">ÜRETİM ANALİZ KONSOLU</p>
+        <p className="hi-kicker">{t("home.quoteKicker")}</p>
         <h2 id="archive-heading" className="hi-title">
-          <WordReveal as="span" className="hi-quote-title-line" text="MODELİNİ YÜKLE." />
-          <WordReveal as="span" className="hi-quote-title-line" text="FİYATINI ANINDA GÖR." />
+          <WordReveal as="span" className="hi-quote-title-line" text={t("home.quoteTitle1")} />
+          <WordReveal as="span" className="hi-quote-title-line" text={t("home.quoteTitle2")} />
         </h2>
         <ol className="hi-quote-stages">
           {STEPS.map((step) => (
@@ -139,10 +133,9 @@ export function AutoQuote() {
               onChange={onChange}
             />
             <span className="hi-quote-drop-kicker">STL · 3MF</span>
-            <span className="hi-quote-drop-title">MODELİNİ YÜKLE</span>
+            <span className="hi-quote-drop-title">{t("home.quoteDropTitle")}</span>
             <span className="hi-quote-drop-note">
-              Dosyayı seç veya bu alana sürükle. Malzeme, kalite ve teslimat seçenekleri yükleme
-              sayfasında açılır.
+              {t("home.quoteDropNote")}
             </span>
             {error ? (
               <span role="alert" className="hi-quote-drop-error">
@@ -155,7 +148,7 @@ export function AutoQuote() {
             className={cn("hi-quote-preview", inView && !reduce && "hi-quote-preview-live")}
             data-industrial-asset="archive-main"
           >
-            <span className="hi-quote-sample">Örnek görünüm</span>
+            <span className="hi-quote-sample">{t("home.quoteSample")}</span>
             <SlotImage
               src={industrialAssets.archiveMain}
               alt=""
@@ -175,9 +168,16 @@ export function AutoQuote() {
             <span className="sr-only" data-industrial-asset="archive-thumb-02" />
           </div>
         </div>
+        <a href={"/ozel-siparis" as Route} className="hi-quote-support">
+          <span className="hi-quote-drop-kicker">{t("home.quoteSupportKicker")}</span>
+          <span className="hi-quote-drop-title">{t("home.quoteSupportTitle")}</span>
+          <span className="hi-quote-drop-note">
+            {t("home.quoteSupportNote")}
+          </span>
+        </a>
 
         <p className="hi-lede hi-quote-console-note">
-          Ana sayfa yalnızca süreci gösterir. Gerçek fiyat, dosya yüklendikten sonra hesaplanır.
+          {t("home.quoteNote")}
         </p>
         <MagneticAction className="hi-quote-console-cta">
           <HomeTrackLink
@@ -186,7 +186,7 @@ export function AutoQuote() {
             data-quote-cta=""
             className="hi-btn"
           >
-            Modelini yükle →
+            {t("home.quoteCta")}
           </HomeTrackLink>
         </MagneticAction>
       </div>

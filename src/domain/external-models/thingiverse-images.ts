@@ -68,8 +68,31 @@ export function normalizeThingiverseImageUrl(raw: string | null | undefined): st
   if (parsed.username || parsed.password) return null;
   const host = parsed.hostname.toLocaleLowerCase();
   if (!ALLOWED_HOSTS.has(host)) return null;
+  if (host === "resize.thingiverse.com") {
+    const inner = parsed.searchParams.get("url");
+    if (inner) return normalizeThingiverseImageUrl(inner);
+  }
   if (isThingiversePlaceholderImageUrl(parsed.toString())) return null;
   return parsed.toString();
+}
+
+export const THINGIVERSE_MEDIA_PROXY_PATH = "/api/media/thingiverse";
+
+export function isAllowedThingiverseImageHost(hostname: string) {
+  return ALLOWED_HOSTS.has(hostname.toLocaleLowerCase());
+}
+
+export function publicThingiverseImageSrc(
+  src: string | null | undefined,
+): string | null {
+  if (!src?.trim()) return null;
+  const trimmed = src.trim();
+  if (trimmed.startsWith(`${THINGIVERSE_MEDIA_PROXY_PATH}?`)) {
+    return trimmed;
+  }
+  const normalized = normalizeThingiverseImageUrl(trimmed);
+  if (!normalized) return null;
+  return `${THINGIVERSE_MEDIA_PROXY_PATH}?u=${encodeURIComponent(normalized)}`;
 }
 
 /** Prefer smaller CDN variants when the URL encodes a known size token. */

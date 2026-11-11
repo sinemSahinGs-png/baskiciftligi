@@ -23,12 +23,12 @@ export function DiscoveryHero({
 
   return (
     <header className="mx-auto w-full max-w-[72rem] px-1 pt-4 text-center sm:pt-5 md:pt-6">
-      <p className="eyebrow text-xs sm:text-sm">Hazır modeller</p>
-      <h1 className="mt-2 font-heading text-[clamp(1.75rem,7vw,2.125rem)] font-bold leading-[1.15] tracking-[-0.03em] sm:text-4xl lg:text-[2.65rem]">
-        Ne üretmek istiyorsun?
+      <p className="eyebrow text-xs tracking-[0.16em] text-[#d8b47c] sm:text-sm">OCTO STUDIO · Hazır modeller</p>
+      <h1 className="mt-2 font-heading text-[clamp(1.75rem,7vw,2.125rem)] font-bold leading-[1.15] tracking-[-0.03em] text-[#f3ead8] sm:text-4xl lg:text-[2.65rem]">
+        Mağaradan seç, üret.
       </h1>
-      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[color:var(--store-muted-dark)] sm:text-base">
-        Binlerce model arasından seç, baskı seçeneklerini belirle, teklifini al.
+      <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[rgb(243_234_216_/_0.72)] sm:text-base">
+        Lisanslı ve stüdyo modelleri aynı atölyede. Seç, fiyatı al, üretime geç.
       </p>
 
       <form
@@ -58,7 +58,7 @@ export function DiscoveryHero({
               onBlur={() => setFocused(false)}
               placeholder={reducedMotion ? "Vazo, telefon standı, figür…" : " "}
               className={cn(
-                "h-[3.375rem] w-full border border-[color:var(--store-line-dark)] bg-white pr-[6.75rem] pl-11 text-base text-[color:var(--store-text-dark)] outline-none placeholder:text-[color:var(--store-muted-dark)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--store-orange)] sm:h-14 sm:pl-12 sm:pr-36",
+                "h-[3.375rem] w-full border border-[rgb(216_180_124_/_0.35)] bg-[#16110c] pr-[6.75rem] pl-11 text-base text-[#f3ead8] outline-none placeholder:text-[rgb(243_234_216_/_0.45)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#d8b47c] sm:h-14 sm:pl-12 sm:pr-36",
               )}
               autoComplete="off"
               enterKeyHint="search"

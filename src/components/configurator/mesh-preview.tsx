@@ -117,7 +117,7 @@ function FittedMesh({
   const material = useMemo(
     () =>
       new MeshStandardMaterial({
-        color: new Color("#30d5d2"),
+        color: new Color("#E4D6C2"),
         metalness: 0.12,
         roughness: 0.46,
         wireframe,
@@ -341,7 +341,7 @@ export function MeshPreview({
         cellSize={5}
         sectionSize={20}
         cellColor="#1c3d4a"
-        sectionColor="#30d5d2"
+        sectionColor="#B9844D"
       />
       <axesHelper args={[25]} />
       {geometry ? (

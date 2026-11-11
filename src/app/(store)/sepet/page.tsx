@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { CartView } from "@/components/cart/cart-view";
 import { PageMasthead } from "@/components/motion/page-masthead";
 import { siteConfig } from "@/config/site";
+import { getMessages, msg } from "@/i18n/get-messages";
+import { getRequestLocale } from "@/i18n/request-locale";
 
 export const metadata: Metadata = {
   title: "Sepet",
@@ -11,15 +13,16 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function CartPage() {
+export default async function CartPage() {
+  const messages = getMessages(await getRequestLocale());
   return (
     <main id="ana-icerik" className="store-page">
       <header className="store-masthead">
         <div className="shell py-10 sm:py-14">
           <PageMasthead
-            eyebrow="Sipariş özeti"
-            title="Sepet"
-            description="Fiyat, stok ve hazırlık süresi her değişiklikte sunucudan yeniden doğrulanır. Mağaza, kişiselleştirilmiş, yüklenen ve lisanslı satırlar ayrı işaretlenir."
+            eyebrow={msg(messages, "commerce.cartEyebrow")}
+            title={msg(messages, "commerce.cartTitle")}
+            description={msg(messages, "commerce.cartLede")}
             titleClassName="store-intro-title mt-4"
             descriptionClassName="store-intro-lede mt-4"
           />

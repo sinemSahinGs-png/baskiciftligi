@@ -640,24 +640,17 @@ export const demoMaterials: Material[] = [
 
 export const demoAnnouncements: Announcement[] = [
   {
-    id: "demo-announcement-shipping",
-    message: "2.000 TL üzeri ücretsiz kargo",
-    href: "/magaza",
-    isActive: true,
-    position: 1,
-  },
-  {
     id: "demo-announcement-ankara",
     message: "Ankara’dan Türkiye’nin her yerine üretim",
     isActive: true,
-    position: 2,
+    position: 1,
   },
   {
     id: "demo-announcement-bulk",
     message: "Toplu üretim için özel fiyat",
     href: "/kurumsal-teklif",
     isActive: true,
-    position: 3,
+    position: 2,
   },
 ];
 

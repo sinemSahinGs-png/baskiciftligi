@@ -58,7 +58,7 @@ export const CuratedCatalogCard = forwardRef<
         <ModelCardMedia
           src={model.previewImageUrl}
           alt={model.imageAlt || model.titleTr}
-          badge="Baskı Çiftliği"
+          badge="OCTO STUDIO"
         />
         <div className="flex min-w-0 flex-1 flex-col p-2.5 sm:p-3">
           <h3 className="line-clamp-2 font-heading text-sm font-semibold leading-snug sm:text-base">

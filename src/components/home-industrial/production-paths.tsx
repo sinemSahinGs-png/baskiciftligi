@@ -7,39 +7,40 @@ import { HomeTrackLink } from "@/components/home/home-track-link";
 import { industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
-
-const PATHS = [
-  {
-    id: "01",
-    title: "FİKRİNİ ANLAT",
-    copy: "Aklındaki nesneyi yaz; uygun modelleri ve üretim yolunu birlikte netleştirelim.",
-    image: industrialAssets.pathIdeaDragon,
-    asset: "path-idea-dragon",
-    action: "focus" as const,
-  },
-  {
-    id: "02",
-    title: "HAZIR MODEL SEÇ",
-    copy: "Lisansı ve dosyası doğrulanmış modeller arasından seç, fiyatı netleştir.",
-    image: industrialAssets.pathReadyModel,
-    asset: "path-ready-model",
-    href: "/hazir-modeller" as Route,
-    action: "link" as const,
-    event: "ready_model_cta_clicked" as const,
-  },
-  {
-    id: "03",
-    title: "DOSYANI YÜKLE",
-    copy: "STL veya 3MF dosyanla üretime başla; ölçü ve malzeme sonraki adımda.",
-    image: industrialAssets.pathUploadObject,
-    asset: "path-upload-object",
-    href: "/model-yukle" as Route,
-    action: "link" as const,
-    event: "upload_cta_clicked" as const,
-  },
-] as const;
+import { useTranslations } from "next-intl";
 
 export function ProductionPaths() {
+  const t = useTranslations();
+  const PATHS = [
+    {
+      id: "01",
+      title: t("home.path1Title"),
+      copy: t("home.path1Copy"),
+      image: industrialAssets.pathIdeaDragon,
+      asset: "path-idea-dragon",
+      action: "focus" as const,
+    },
+    {
+      id: "02",
+      title: t("home.path2Title"),
+      copy: t("home.path2Copy"),
+      image: industrialAssets.pathReadyModel,
+      asset: "path-ready-model",
+      href: "/hazir-modeller" as Route,
+      action: "link" as const,
+      event: "ready_model_cta_clicked" as const,
+    },
+    {
+      id: "03",
+      title: t("home.path3Title"),
+      copy: t("home.path3Copy"),
+      image: industrialAssets.pathUploadObject,
+      asset: "path-upload-object",
+      href: "/model-yukle" as Route,
+      action: "link" as const,
+      event: "upload_cta_clicked" as const,
+    },
+  ] as const;
   const [active, setActive] = useState(0);
   const pointerStart = useRef<number | null>(null);
   const fineRef = useRef(false);
@@ -74,7 +75,7 @@ export function ProductionPaths() {
     >
       <div className="hi-shell hi-paths-layout">
         <div className="hi-paths-rail">
-          <WordReveal as="h2" id="paths-heading" className="hi-paths-title" text="Üç üretim yolu" />
+          <WordReveal as="h2" id="paths-heading" className="hi-paths-title" text={t("home.pathsTitle")} />
           <p className="hi-paths-count hi-mono" aria-live="polite">
             {current.id} / 03
           </p>
@@ -112,7 +113,7 @@ export function ProductionPaths() {
               </HomeTrackLink>
             ) : (
               <button type="button" className="hi-btn hi-path-cta" onClick={focusIdea}>
-                Fikrini yaz →
+                {t("home.writeIdea")}
               </button>
             )}
           </div>

@@ -8,24 +8,64 @@ import { useReducedMotion } from "motion/react";
 import { CategoryArtwork } from "@/components/catalog/category-artwork";
 import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
 import { InteractiveMedia, WordReveal } from "@/components/motion/premium";
-import { storefrontCategories, storefrontCategoryAsset } from "@/domain/catalog/storefront-taxonomy";
+import type { StorefrontCategorySlug } from "@/domain/catalog/storefront-taxonomy";
 import type { Product } from "@/domain/catalog/types";
+import { homepageStageCategories } from "@/domain/project-destinations/stage";
+import { useTranslations } from "next-intl";
+
+const STAGE_CATEGORIES = homepageStageCategories();
 
 export function HomeCategories({ products }: { products: Product[] }) {
   void products;
+  const t = useTranslations();
+  const catName = (slug: string) => t(`categories.${slug}.name`);
+  const catDesc = (slug: string) => t(`categories.${slug}.description`);
   const reduce = useReducedMotion() === true;
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const pointerLock = useRef(false);
   const snapLock = useRef(false);
+  const clickLockY = useRef<number | null>(null);
   const [active, setActive] = useState(0);
-  const current = storefrontCategories[active] ?? storefrontCategories[0];
+  const current = STAGE_CATEGORIES[active] ?? STAGE_CATEGORIES[0];
+  const totalLabel = String(STAGE_CATEGORIES.length).padStart(2, "0");
 
   const go = useCallback((index: number) => {
-    const bounded = (index + storefrontCategories.length) % storefrontCategories.length;
+    const bounded = (index + STAGE_CATEGORIES.length) % STAGE_CATEGORIES.length;
     snapLock.current = true;
+    clickLockY.current = typeof window === "undefined" ? null : window.scrollY;
     setActive(bounded);
   }, []);
+
+  useEffect(() => {
+    if (reduce) return;
+    const section = sectionRef.current;
+    if (!section) return;
+    const syncFromPageScroll = () => {
+      if (clickLockY.current !== null && Math.abs(window.scrollY - clickLockY.current) < 72) {
+        return;
+      }
+      clickLockY.current = null;
+      const box = section.getBoundingClientRect();
+      const travel = Math.max(1, box.height - window.innerHeight * 0.72);
+      const progress = Math.min(1, Math.max(0, (window.innerHeight * 0.18 - box.top) / travel));
+      const projectCount = STAGE_CATEGORIES.filter((item) => item.kind === "project").length;
+      const rest = Math.max(1, STAGE_CATEGORIES.length - projectCount);
+      const raw =
+        progress < 0.38
+          ? Math.floor((progress / 0.38) * Math.max(projectCount, 1))
+          : projectCount + Math.floor(((progress - 0.38) / 0.62) * rest);
+      const index = Math.min(STAGE_CATEGORIES.length - 1, Math.max(0, raw));
+      setActive((current) => (current === index ? current : index));
+    };
+    syncFromPageScroll();
+    window.addEventListener("scroll", syncFromPageScroll, { passive: true });
+    window.addEventListener("resize", syncFromPageScroll);
+    return () => {
+      window.removeEventListener("scroll", syncFromPageScroll);
+      window.removeEventListener("resize", syncFromPageScroll);
+    };
+  }, [reduce]);
 
   useEffect(() => {
     const track = trackRef.current;
@@ -61,7 +101,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
     if (event.key === "End") {
       event.preventDefault();
       pointerLock.current = true;
-      go(storefrontCategories.length - 1);
+      go(STAGE_CATEGORIES.length - 1);
     }
   }
 
@@ -81,30 +121,43 @@ export function HomeCategories({ products }: { products: Product[] }) {
     <section
       ref={sectionRef}
       id="kategoriler"
-      data-home-theme="mono"
+      data-home-theme="abyss"
       data-cat-active={String(active).padStart(2, "0")}
-      className="hi-section hi-cats"
+      className="hi-section hi-cats atelier-panel atelier-cats"
       aria-labelledby="home-cats-heading"
     >
       <div className="hi-shell">
         <div className="hi-cats-head">
           <div>
-            <p className="hi-kicker">3D TASARIM DİZİNİ</p>
-            <WordReveal as="h2" id="home-cats-heading" className="hi-title" text="KATEGORİLER" />
+            <p className="atelier-kicker">{t("home.catsKicker")}</p>
+            <WordReveal as="h2" id="home-cats-heading" className="hi-title atelier-title" text={t("home.catsTitle")} />
           </div>
           <Link href={"/magaza" as Route} className="hi-link">
-            Tümünü gör →
+            {t("home.catsAll")}
           </Link>
+        </div>
+        <div className="hi-cats-projects" aria-label={t("home.catsTitle")}>
+          {STAGE_CATEGORIES.filter((item) => item.kind === "project").map((item) => (
+            <Link
+              key={item.slug}
+              href={item.href}
+              className="hi-cats-project"
+              data-project-pin={item.slug}
+            >
+              <img src={item.logo ?? item.artwork} alt="" width={36} height={36} />
+              <span>{catName(item.slug)}</span>
+            </Link>
+          ))}
         </div>
 
         <div className="hi-cats-stage mt-5">
           <div
             className="hi-cats-index"
             role="tablist"
-            aria-label="Kategori dizini"
+            aria-label={t("home.catsIndex")}
             onKeyDown={onIndexKey}
           >
-            {storefrontCategories.map((category, index) => {
+            {STAGE_CATEGORIES.map((category, index) => {
               const number = String(index + 1).padStart(2, "0");
               const selected = index === active;
               return (
@@ -116,10 +169,11 @@ export function HomeCategories({ products }: { products: Product[] }) {
                   tabIndex={selected ? 0 : -1}
                   aria-label={
                     category.comingSoon
-                      ? `${category.name}, yakında`
-                      : category.name
+                      ? `${catName(category.slug)}, ${t("common.comingSoon")}`
+                      : catName(category.slug)
                   }
                   data-category-slug={category.slug}
+                  data-stage-kind={category.kind}
                   data-active={selected ? "true" : "false"}
                   data-coming-soon={category.comingSoon ? "true" : undefined}
                   className="hi-cats-index-item"
@@ -137,8 +191,8 @@ export function HomeCategories({ products }: { products: Product[] }) {
                   }}
                 >
                   <span className="hi-cats-index-num">{number}</span>
-                  <span className="hi-cats-index-name">{category.name}</span>
-                  {category.comingSoon ? <span className="hi-cat-badge">Hazırlanıyor</span> : null}
+                  <span className="hi-cats-index-name">{catName(category.slug)}</span>
+                  {category.comingSoon ? <span className="hi-cat-badge">{t("common.comingSoon")}</span> : null}
                 </button>
               );
             })}
@@ -154,22 +208,30 @@ export function HomeCategories({ products }: { products: Product[] }) {
                 className="hi-cats-art-frame"
                 onScroll={onTrackScroll}
               >
-                {storefrontCategories.map((category, index) => (
+                {STAGE_CATEGORIES.map((category, index) => (
                   <span
                     key={category.slug}
                     className="hi-cats-slide"
                     data-active={index === active ? "true" : "false"}
                     data-index={index}
                     data-category-slug={category.slug}
+                    data-stage-kind={category.kind}
                     data-coming-soon={category.comingSoon ? "true" : undefined}
                   >
                     <CategoryArtwork
-                      src={storefrontCategoryAsset(category.slug)}
-                      objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+                      src={category.artwork}
+                      objectPosition={
+                        category.kind === "octo"
+                          ? CATEGORY_OBJECT_POSITION[category.slug as StorefrontCategorySlug]
+                          : "50% 42%"
+                      }
                       sizes="(max-width: 767px) 86vw, 58vw"
                     />
+                    {category.logo ? (
+                      <img className="hi-cats-slide-logo" src={category.logo} alt="" />
+                    ) : null}
                     {category.comingSoon ? (
-                      <span className="hi-cats-slide-badge">Hazırlanıyor</span>
+                      <span className="hi-cats-slide-badge">{t("common.comingSoon")}</span>
                     ) : null}
                   </span>
                 ))}
@@ -180,17 +242,17 @@ export function HomeCategories({ products }: { products: Product[] }) {
             <div className="hi-cats-pager">
               <button
                 type="button"
-                aria-label="Önceki kategori"
+                aria-label={t("home.prevCat")}
                 onClick={() => go(active - 1)}
               >
                 ‹
               </button>
               <p className="hi-cats-pager-count">
-                {String(active + 1).padStart(2, "0")} / 07
+                {String(active + 1).padStart(2, "0")} / {totalLabel}
               </p>
               <button
                 type="button"
-                aria-label="Sonraki kategori"
+                aria-label={t("home.nextCat")}
                 onClick={() => go(active + 1)}
               >
                 ›
@@ -200,17 +262,17 @@ export function HomeCategories({ products }: { products: Product[] }) {
             {current ? (
               <div className="hi-cats-meta">
                 <p className="hi-mono hi-cats-meta-count">
-                  {String(active + 1).padStart(2, "0")} / 07
+                  {String(active + 1).padStart(2, "0")} / {totalLabel}
                 </p>
-                <p className="hi-cats-meta-title">{current.name}</p>
-                <p className="hi-cats-meta-desc">{current.description}</p>
+                <p className="hi-cats-meta-title">{catName(current.slug)}</p>
+                <p className="hi-cats-meta-desc">{catDesc(current.slug)}</p>
                 {current.comingSoon ? (
-                  <span className="hi-cats-soon" aria-label={`${current.name}, yakında`}>
-                    Hazırlanıyor
+                  <span className="hi-cats-soon" aria-label={`${catName(current.slug)}, ${t("common.comingSoon")}`}>
+                    {t("common.comingSoon")}
                   </span>
                 ) : (
-                  <Link href={current.href} className="hi-cats-cta">
-                    Koleksiyona git
+                  <Link href={current.href} className="hi-cats-cta" data-stage-kind={current.kind}>
+                    {t("home.goCollection")}
                     <span className="hi-cat-arrow" aria-hidden="true">
                       →
                     </span>

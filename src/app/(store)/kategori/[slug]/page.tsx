@@ -13,15 +13,39 @@ import {
   storefrontCategories,
 } from "@/domain/catalog/storefront-taxonomy";
 import { listProducts } from "@/domain/catalog/repository";
+import {
+  getProjectDestination,
+  isProjectDestinationSlug,
+  projectDestinations,
+} from "@/domain/project-destinations/catalog";
+import { ProjectPurchasePage } from "@/components/project-destinations/project-purchase-page";
+import { JsonLd } from "@/components/seo/json-ld";
 
 export function generateStaticParams() {
-  return storefrontCategories
-    .filter((category) => !category.comingSoon)
-    .map((category) => ({ slug: category.slug }));
+  return [
+    ...storefrontCategories
+      .filter((category) => !category.comingSoon)
+      .map((category) => ({ slug: category.slug })),
+    ...projectDestinations.map((destination) => ({ slug: destination.slug })),
+  ];
 }
 
 export async function generateMetadata(props: PageProps<"/kategori/[slug]">) {
   const { slug } = await props.params;
+  const project = getProjectDestination(slug);
+  if (project) {
+    return {
+      title: project.name,
+      description: project.description,
+      alternates: { canonical: project.href },
+      openGraph: {
+        title: `${project.name} | ${siteConfig.name}`,
+        description: project.description,
+        url: project.href,
+        siteName: siteConfig.name,
+      },
+    };
+  }
   const category = getStorefrontCategory(slug);
   if (!category || category.comingSoon) {
     return { title: "Kategori bulunamadı", robots: { index: false, follow: false } };
@@ -42,6 +66,25 @@ export default async function StorefrontCategoryPage(
   props: PageProps<"/kategori/[slug]">,
 ) {
   const { slug } = await props.params;
+  if (isProjectDestinationSlug(slug)) {
+    const project = getProjectDestination(slug);
+    if (!project) notFound();
+    return (
+      <>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: project.name,
+            description: project.description,
+            url: `${siteConfig.url}${project.href}`,
+            isPartOf: { "@type": "WebSite", name: siteConfig.name },
+          }}
+        />
+        <ProjectPurchasePage destination={project} />
+      </>
+    );
+  }
   const category = getStorefrontCategory(slug);
   if (!category || category.comingSoon) notFound();
 

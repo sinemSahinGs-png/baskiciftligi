@@ -476,7 +476,7 @@ test.describe("manufacturing quotation", () => {
 
   test("Thingiverse tab is honest when unconfigured", async ({ page }) => {
     await page.goto("/hazir-modeller");
-    await expect(page.getByRole("heading", { name: "Ne üretmek istiyorsun?" })).toBeVisible({
+    await expect(page.getByRole("heading", { name: "Mağaradan seç, üret." })).toBeVisible({
       timeout: 15_000,
     });
     const community = page.getByRole("button", { name: "Topluluk" });

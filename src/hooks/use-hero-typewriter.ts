@@ -14,12 +14,14 @@ export function useHeroTypewriter({
   rng = Math.random,
   pauseRef,
   delayMs,
+  examples = HERO_IDEA_EXAMPLES,
 }: {
   enabled: boolean;
   reducedMotion: boolean;
   rng?: () => number;
   pauseRef?: { current: boolean };
   delayMs?: number;
+  examples?: readonly string[];
 }) {
   const [animatedText, setAnimatedText] = useState("");
   const [animatedComplete, setAnimatedComplete] = useState(false);
@@ -46,7 +48,7 @@ export function useHeroTypewriter({
 
     const tick = () => {
       if (cancelled) return;
-      const phrase = HERO_IDEA_EXAMPLES[phraseIndex.current] ?? HERO_IDEA_EXAMPLES[0];
+      const phrase = examples[phraseIndex.current] ?? examples[0] ?? "";
       if (!deleting.current) {
         const next = phrase.slice(0, charIndex.current);
         setAnimatedText(next);
@@ -69,7 +71,7 @@ export function useHeroTypewriter({
       setAnimatedComplete(false);
       if (charIndex.current === 0) {
         deleting.current = false;
-        phraseIndex.current = (phraseIndex.current + 1) % HERO_IDEA_EXAMPLES.length;
+        phraseIndex.current = (phraseIndex.current + 1) % Math.max(examples.length, 1);
         wait(vary(HERO_TYPEWRITER.pauseEmptyMin, HERO_TYPEWRITER.pauseEmptyMax, rng), tick);
         return;
       }
@@ -81,7 +83,7 @@ export function useHeroTypewriter({
     deleting.current = false;
     wait(delayMs ?? HERO_TYPEWRITER.initialDelay, () => {
       charIndex.current = 1;
-      setAnimatedText(HERO_IDEA_EXAMPLES[0].slice(0, 1));
+      setAnimatedText((examples[0] ?? "").slice(0, 1));
       setAnimatedComplete(false);
       wait(vary(HERO_TYPEWRITER.typeMin, HERO_TYPEWRITER.typeMax, rng), tick);
     });
@@ -90,10 +92,10 @@ export function useHeroTypewriter({
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [delayMs, enabled, pauseRef, reducedMotion, rng]);
+  }, [delayMs, enabled, examples, pauseRef, reducedMotion, rng]);
 
   return {
-    text: reducedMotion ? HERO_IDEA_EXAMPLES[0] : enabled ? animatedText : "",
+    text: reducedMotion ? (examples[0] ?? "") : enabled ? animatedText : "",
     complete: reducedMotion ? true : enabled ? animatedComplete : false,
     showOverlay: enabled,
   };

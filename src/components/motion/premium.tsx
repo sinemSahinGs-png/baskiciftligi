@@ -27,7 +27,7 @@ function useInView<T extends HTMLElement>() {
     }
     const box = node.getBoundingClientRect();
     const alreadyVisible =
-      box.bottom > 0 && box.top < window.innerHeight && box.height > 0;
+      box.bottom > 48 && box.top < window.innerHeight * 0.92 && box.height > 0;
     if (alreadyVisible) {
       show();
       return;
@@ -40,13 +40,11 @@ function useInView<T extends HTMLElement>() {
           observer.disconnect();
         }
       },
-      { threshold: 0, rootMargin: "80px 0px 80px 0px" },
+      { threshold: 0.18, rootMargin: "0px 0px -12% 0px" },
     );
     observer.observe(node);
-    const fallback = window.setTimeout(show, 900);
     return () => {
       observer.disconnect();
-      window.clearTimeout(fallback);
     };
   }, []);
 
@@ -103,6 +101,7 @@ export function WordReveal({
       id={id}
       className={className}
       data-word-reveal=""
+      data-inview="false"
     >
       <span className="word-reveal">
         {tokens.map((token) =>

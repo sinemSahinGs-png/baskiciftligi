@@ -1,3 +1,5 @@
+"use client";
+
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -7,14 +9,16 @@ import { InteractiveMedia, MagneticAction, WordReveal } from "@/components/motio
 import { storePremiumAssets } from "@/components/storefront/store-premium-assets";
 import { resolveProductVisual } from "@/domain/catalog/media";
 import type { Product } from "@/domain/catalog/types";
+import { useTranslations } from "next-intl";
 
 export function StoreEditorial({ product }: { product: Product }) {
+  const t = useTranslations();
   const image = resolveProductVisual(product).primary ?? product.media[0];
 
   return (
     <aside className="store-editorial" aria-labelledby="store-editorial-heading">
       <div className="store-editorial-copy">
-        <p className="store-editorial-kicker text-xs">Kampanya</p>
+        <p className="store-editorial-kicker text-xs">{t("commerce.campaign")}</p>
         <WordReveal
           as="h2"
           id="store-editorial-heading"
@@ -22,7 +26,7 @@ export function StoreEditorial({ product }: { product: Product }) {
           text={product.name}
         />
         <p className="max-w-md text-[0.98rem] leading-6 text-[color:var(--store-muted-light)]">
-          Stüdyo üretimi, net ölçü ve KDV dahil fiyat. Tek parça veya küçük seri.
+          {t("commerce.editorialLede")}
         </p>
         <PriceDisplay
           priceMinor={product.priceMinor}
@@ -31,7 +35,7 @@ export function StoreEditorial({ product }: { product: Product }) {
           className="text-[color:var(--store-text-light)]"
         />
         <Link href={`/urun/${product.slug}` as Route} className="store-editorial-cta">
-          Ürünü incele
+          {t("commerce.inspect")}
         </Link>
       </div>
       <InteractiveMedia className="store-editorial-media">
@@ -54,13 +58,14 @@ export function StoreEditorial({ product }: { product: Product }) {
 }
 
 export function StoreUploadBanner() {
+  const t = useTranslations();
   return (
     <aside className="store-upload-banner" aria-labelledby="store-upload-heading">
       <div className="store-upload-copy">
-        <WordReveal as="h2" id="store-upload-heading" text="DOSYAN HAZIR MI?" />
-        <p className="mt-2">STL veya 3MF dosyanı yükle, gerçek fiyatını gör.</p>
+        <WordReveal as="h2" id="store-upload-heading" text={t("commerce.fileReady")} />
+        <p className="mt-2">{t("commerce.fileReadyLede")}</p>
         <MagneticAction className="mt-4 w-fit">
-          <Link href={"/model-yukle" as Route}>MODELİNİ YÜKLE →</Link>
+          <Link href={"/model-yukle" as Route}>{t("commerce.uploadCta")}</Link>
         </MagneticAction>
       </div>
       <div className="store-upload-media" aria-hidden="true">
@@ -79,6 +84,7 @@ export function StoreUploadBanner() {
 }
 
 export function StoreEmptySearch() {
+  const t = useTranslations();
   return (
     <div className="store-empty-search">
       <div className="store-empty-search-media" aria-hidden="true">
@@ -91,12 +97,12 @@ export function StoreEmptySearch() {
           className="object-contain object-center"
         />
       </div>
-      <h3 className="mt-4 font-heading text-2xl font-bold">Eşleşen ürün yok</h3>
+      <h3 className="mt-4 font-heading text-2xl font-bold">{t("commerce.emptySearch")}</h3>
       <p className="mt-2 max-w-md text-sm text-[color:var(--store-muted-dark)]">
-        Filtreleri azaltmayı dene. Yeni ürünler eklendikçe burada görünür.
+        {t("commerce.emptySearchHint")}
       </p>
       <Link href="/magaza" className="store-btn-primary mt-6">
-        Tüm ürünleri göster
+        {t("commerce.showAll")}
       </Link>
     </div>
   );

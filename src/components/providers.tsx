@@ -1,19 +1,27 @@
 "use client";
 
 import { MotionConfig } from "motion/react";
-import { NextIntlClientProvider } from "next-intl";
+import { NextIntlClientProvider, type AbstractIntlMessages } from "next-intl";
 import { Toaster } from "sonner";
 
 import { StatusAnnouncer } from "@/components/motion/status-announcer";
 import { ScrollMotionProvider } from "@/components/motion/scroll-motion-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import trMessages from "@/i18n/messages/tr.json";
+import type { AppLocale } from "@/i18n/config";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  locale,
+  messages,
+}: {
+  children: React.ReactNode;
+  locale: AppLocale;
+  messages: AbstractIntlMessages;
+}) {
   return (
     <NextIntlClientProvider
-      locale="tr"
-      messages={trMessages}
+      locale={locale}
+      messages={messages}
       timeZone="Europe/Istanbul"
     >
       <MotionConfig reducedMotion="user">

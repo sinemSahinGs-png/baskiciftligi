@@ -15,11 +15,12 @@ import {
 import { ArrowUpRight } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 
+import "./octo-sand-hero.css";
 import { HeroVideo } from "@/components/home-industrial/hero-video";
+import { OctoInteractiveSandHero } from "@/components/home-industrial/octo-interactive-sand-hero";
 import { HeroTypewriter } from "@/components/home-industrial/hero-typewriter";
-import { TechnicalGrid } from "@/components/home-industrial/technical-grid";
 import { SlotImage } from "@/components/home-industrial/slot-image";
-import { HERO_IDEA_EXAMPLES } from "@/components/home-industrial/hero-media";
+import { OCTO_TV_SHELL, OCTO_TV_MOBILE_MEDIA } from "@/lib/hero-sand/tv-screen";
 import { MagneticAction, WordReveal, useHeroPointer } from "@/components/motion/premium";
 import { externalQuoteCtaLabel } from "@/domain/external-models/quote-action";
 import { trackHomeEvent } from "@/lib/home/analytics";
@@ -27,6 +28,7 @@ import { announceStatus } from "@/lib/motion";
 import type { IdeaSearchCard } from "@/lib/model-discovery/idea-search";
 import { IDEA_SEARCH_MOBILE_PAGE_SIZE } from "@/lib/model-discovery/idea-search";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type SearchUiStatus =
   | "idle"
@@ -49,11 +51,7 @@ interface IdeaSearchResponse {
   retryAfterSeconds?: number;
 }
 
-const PHASES = [
-  { at: 0, label: "Fikrin modele dönüştürülüyor" },
-  { at: 450, label: "Uygun modeller taranıyor" },
-  { at: 1400, label: "En yakın sonuçlar hazırlanıyor" },
-] as const;
+const PHASE_AT = [0, 450, 1400] as const;
 
 function resolveStatus(
   status: IdeaSearchResponse["status"],
@@ -68,22 +66,20 @@ function resolveStatus(
   return "ok";
 }
 
-function messageForStatus(status: SearchUiStatus, retryAfter?: number) {
-  if (status === "slow") {
-    return "Thingiverse şu an yavaş. Ana sayfanın geri kalanını kullanmaya devam edebilirsin.";
-  }
+function messageForStatus(
+  t: ReturnType<typeof useTranslations>,
+  status: SearchUiStatus,
+  retryAfter?: number,
+) {
+  if (status === "slow") return t("home.statusSlow");
   if (status === "rate_limited") {
     return retryAfter
-      ? `Arama sınırı. ${retryAfter} saniye sonra yeniden dene.`
-      : "Arama sınırı. Kısa süre sonra yeniden dene.";
+      ? t("home.statusRateWait", { n: retryAfter })
+      : t("home.statusRate");
   }
-  if (status === "unavailable") {
-    return "Bağlantı kurulamadı. Hazır modeller veya dosya yükleme ile devam edebilirsin.";
-  }
-  if (status === "blocked") {
-    return "Bu arama güvenlik politikası nedeniyle çalıştırılmadı.";
-  }
-  return "Tam eşleşme bulamadık. Sorguyu sadeleştirebilir, hazır model seçebilir veya dosyanı yükleyebilirsin.";
+  if (status === "unavailable") return t("checkout.connection");
+  if (status === "blocked") return t("home.heroFail");
+  return t("home.heroNoMatch");
 }
 
 function ideaQuoteAction(item: IdeaSearchCard) {
@@ -96,6 +92,12 @@ function emptySubscribe() {
 }
 
 export function IdeaCommand() {
+  const t = useTranslations();
+  const PHASES = [
+    { at: PHASE_AT[0], label: t("home.phase1") },
+    { at: PHASE_AT[1], label: t("home.phase2") },
+    { at: PHASE_AT[2], label: t("home.phase3") },
+  ];
   const inputId = "idea-command-input";
   const liveId = useId();
   const sectionRef = useRef<HTMLElement>(null);
@@ -109,7 +111,7 @@ export function IdeaCommand() {
   const [hadControl, setHadControl] = useState(false);
   const [inView, setInView] = useState(true);
   const [status, setStatus] = useState<SearchUiStatus>("idle");
-  const [phase, setPhase] = useState<(typeof PHASES)[number]["label"]>(PHASES[0].label);
+  const [phase, setPhase] = useState(t("home.phase1"));
   const [items, setItems] = useState<IdeaSearchCard[]>([]);
   const [closest, setClosest] = useState(false);
   const [visibleCount, setVisibleCount] = useState(IDEA_SEARCH_MOBILE_PAGE_SIZE);
@@ -145,7 +147,7 @@ export function IdeaCommand() {
       setClosest(Boolean(payload.closest));
       const nextStatus = resolveStatus(payload.status, httpStatus, payload.items?.length ?? 0);
       setStatus(nextStatus);
-      setErrorDetail(messageForStatus(nextStatus, payload.retryAfterSeconds));
+      setErrorDetail(messageForStatus(t, nextStatus, payload.retryAfterSeconds));
       if (nextStatus === "ok") {
         trackHomeEvent({
           name: "idea_search_succeeded",
@@ -153,19 +155,19 @@ export function IdeaCommand() {
           resultCount: payload.items?.length ?? 0,
           status: payload.closest ? "closest" : "ok",
         });
-        announceStatus(`${payload.items?.length ?? 0} model bulundu.`);
+        announceStatus(t("models.count", { n: payload.items?.length ?? 0 }));
       } else if (nextStatus === "empty") {
         trackHomeEvent({
           name: "idea_search_empty",
           category: payload.category,
           resultCount: 0,
         });
-        announceStatus("Eşleşen model bulunamadı.");
+        announceStatus(t("home.heroNoMatch"));
       } else {
-        announceStatus(messageForStatus(nextStatus, payload.retryAfterSeconds));
+        announceStatus(messageForStatus(t, nextStatus, payload.retryAfterSeconds));
       }
     },
-    [],
+    [t],
   );
 
   const runSearch = useCallback(
@@ -195,7 +197,7 @@ export function IdeaCommand() {
       const started = Date.now();
       phaseTimer.current = window.setInterval(() => {
         const elapsed = Date.now() - started;
-        let label: (typeof PHASES)[number]["label"] = PHASES[0].label;
+        let label = PHASES[0].label;
         for (const item of PHASES) {
           if (elapsed >= item.at) label = item.label;
         }
@@ -265,37 +267,67 @@ export function IdeaCommand() {
       ref={sectionRef}
       id="ne-uretmek-istiyorsun"
       data-home-theme="mono"
-      data-hero-first-example={HERO_IDEA_EXAMPLES[0]}
-      className="hi-hero"
+      data-hero-first-example={t("home.example1")}
+      className="hi-hero octo-tv-hero"
       aria-labelledby="idea-command-heading"
     >
-      <HeroVideo reducedMotion={reduceMotion} />
-      <TechnicalGrid className="hi-hero-grid" />
-      <div className="hi-hero-vignette" aria-hidden="true" />
-      <div className="hi-hero-copy-scrim" aria-hidden="true" />
-      <div className="hi-hero-search-scrim" aria-hidden="true" />
-      <div className="hi-hero-fade" aria-hidden="true" />
-      <div className="hi-hero-path" aria-hidden="true" />
+      <div className="octo-tv-stage">
+        <div className="octo-tv-frame">
+          <picture className="octo-tv-shell-picture">
+            <source media={OCTO_TV_MOBILE_MEDIA} srcSet={OCTO_TV_SHELL.mobile} type="image/webp" />
+            <source media="(min-width: 768px)" srcSet={OCTO_TV_SHELL.desktop} type="image/webp" />
+            <img
+              className="octo-tv-shell"
+              src={OCTO_TV_SHELL.desktop}
+              alt=""
+              width={OCTO_TV_SHELL.desktopWidth}
+              height={OCTO_TV_SHELL.desktopHeight}
+              decoding="async"
+              fetchPriority="high"
+            />
+          </picture>
+          <OctoInteractiveSandHero />
+          <div className="octo-tv-screen" data-octo-tv-screen="">
+            <HeroVideo reducedMotion={reduceMotion} />
+            <div className="octo-tv-glass" aria-hidden="true" />
+          </div>
+          <div className="octo-tv-content">
       <div className="hi-hero-inner">
         <div className="hi-hero-cluster">
         <div className="hi-hero-copy">
-          <p className="hi-kicker">ÖZEL ÜRETİM · TEK PARÇA</p>
+          <p className="hi-kicker">{t("home.heroKicker")}</p>
           <WordReveal
             as="h1"
             id="idea-command-heading"
             className="hi-hero-display"
-            text="SEN TARİF ET. BİZ ÜRETELİM."
+            text={t("home.heroTitle")}
           />
           <span className="hi-hero-rule" aria-hidden="true" />
+          <div className="octo-hero-actions">
+            <MagneticAction>
+              <Link href={"/magaza" as Route} className="octo-cta">
+                {t("home.heroPrimary")}
+              </Link>
+            </MagneticAction>
+            <MagneticAction>
+              <Link
+                href={"/model-yukle" as Route}
+                onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
+                className="octo-cta-ghost"
+              >
+                {t("home.heroSecondary")}
+              </Link>
+            </MagneticAction>
+          </div>
           <p className="hi-hero-lede">
-            Fikrini yaz, sana uygun modelleri bulalım ve gerçek üretim maliyetini hesaplayalım.
+            {t("home.heroLede")}
           </p>
         </div>
 
         <div className="hi-hero-search">
         <form onSubmit={onSubmit} className="hi-hero-form">
           <label htmlFor={inputId} className="sr-only">
-            Ne üretmek istediğinizi açıklayın
+            {t("home.heroLabel")}
           </label>
           <div
             className={cn("hi-hero-field", status === "searching" && "hi-hero-scan")}
@@ -341,7 +373,7 @@ export function IdeaCommand() {
                 if (!query) setHalted(false);
               }}
               onKeyDown={onKeyDown}
-              placeholder="Örneğin: Beyaz Yatak Odası Lambası"
+              placeholder={t("home.heroPlaceholder")}
             />
           </div>
           <MagneticAction className="hi-hero-go-magnet">
@@ -350,22 +382,23 @@ export function IdeaCommand() {
               disabled={!canSearch || status === "searching"}
               className="hi-hero-go"
             >
-              MODEL ÖNERİLERİNİ BUL
+              {t("home.heroFind")}
               <span aria-hidden="true"> →</span>
             </button>
           </MagneticAction>
         </form>
-
-        <Link
-          href={"/model-yukle" as Route}
-          onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
-          className="hi-hero-upload"
-        >
-          VEYA STL / 3MF DOSYANI YÜKLE
-        </Link>
         </div>
         </div>
+          </div>
+          </div>
+        </div>
+        <p className="octo-scroll-hint octo-tv-scroll">
+          {t("home.heroScroll")}
+          <span />
+        </p>
+      </div>
 
+      <div className="octo-tv-below">
         {status === "searching" ? (
           <p className="hi-hero-results mt-4 text-sm font-medium">{phase}</p>
         ) : null}
@@ -374,7 +407,7 @@ export function IdeaCommand() {
           <div className="hi-hero-results mt-5">
             {closest ? (
               <p className="mb-3 text-sm text-[color:var(--bc-muted)]">
-                Tam eşleşme yok. Bunlar fikrine en yakın modeller.
+                {t("home.heroClosest")}
               </p>
             ) : null}
             <ul className="grid gap-px border border-[color:var(--bc-line)] sm:grid-cols-2">
@@ -390,7 +423,7 @@ export function IdeaCommand() {
                 onClick={() => setVisibleCount((count) => count + IDEA_SEARCH_MOBILE_PAGE_SIZE)}
                 className="hi-link mt-3"
               >
-                Daha fazla göster
+                {t("home.heroMore")}
               </button>
             ) : null}
           </div>
@@ -404,17 +437,17 @@ export function IdeaCommand() {
           <div className="hi-hero-results mt-5 border border-[color:var(--bc-line)] p-4">
             <h3 className="font-medium">
               {status === "unavailable"
-                ? "Bağlantı hatası"
+                ? t("home.heroConn")
                 : status === "empty"
-                  ? "Tam eşleşme bulamadık"
+                  ? t("home.heroNoMatch")
                   : status === "slow"
-                    ? "Thingiverse yavaşladı"
+                    ? t("home.heroSlowTitle")
                     : status === "rate_limited"
-                      ? "Biraz bekleyelim"
-                      : "Arama yapılamadı"}
+                      ? t("home.heroWait")
+                      : t("home.heroFail")}
             </h3>
             <p className="mt-2 text-sm text-[color:var(--bc-muted)]">
-              {errorDetail ?? messageForStatus(status)}
+              {errorDetail ?? messageForStatus(t, status)}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Link href={"/hazir-modeller" as Route} className="hi-link">

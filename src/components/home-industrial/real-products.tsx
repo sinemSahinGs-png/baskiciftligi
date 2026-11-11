@@ -1,3 +1,5 @@
+"use client";
+
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -5,6 +7,7 @@ import { PriceDisplay } from "@/components/commerce/price-display";
 import { SafeImage } from "@/components/media/safe-image";
 import { ProductMediaReveal, WordReveal } from "@/components/motion/premium";
 import type { Product } from "@/domain/catalog/types";
+import { useTranslations } from "next-intl";
 
 export const HOME_EMPTY_CATALOG = {
   title: "Şu anda yayınlanan ürün bulunamadı.",
@@ -22,6 +25,7 @@ function mediaRank(product: Product) {
 }
 
 export function RealProducts({ products }: { products: Product[] }) {
+  const t = useTranslations();
   const visible = [...products]
     .sort((left, right) => mediaRank(right) - mediaRank(left))
     .slice(0, 4);
@@ -29,7 +33,7 @@ export function RealProducts({ products }: { products: Product[] }) {
   return (
     <section
       id="mevcut-urunler"
-      data-home-theme="ivory"
+      data-home-theme="mono"
       className="hi-section hi-store-stage"
       aria-labelledby="real-products-heading"
     >
@@ -39,23 +43,27 @@ export function RealProducts({ products }: { products: Product[] }) {
             as="h2"
             id="real-products-heading"
             className="hi-title"
-            text="MAĞAZA ÜRÜNLERİ"
+            text={t("home.productsShopTitle")}
           />
           <Link href={"/magaza" as Route} className="hi-link shrink-0">
-            Tüm ürünleri gör →
+            {t("home.allProductsLink")}
           </Link>
         </div>
         {visible.length === 0 ? (
           <div className="hi-empty-catalog" data-empty-catalog="">
-            <p className="hi-empty-catalog-title">{HOME_EMPTY_CATALOG.title}</p>
-            <p className="hi-empty-catalog-body">{HOME_EMPTY_CATALOG.body}</p>
+            <p className="hi-empty-catalog-title">{t("home.productsEmpty")}</p>
+            <p className="hi-empty-catalog-body">{t("home.productsEmptyBody")}</p>
             <Link href={"/model-yukle" as Route} className="hi-btn">
-              {HOME_EMPTY_CATALOG.cta}
+              {t("home.emptyCta")}
               <span aria-hidden="true"> →</span>
             </Link>
           </div>
         ) : (
-          <ul className="hi-product-grid mt-5">
+          <>
+          <p className="hi-mono mt-3 text-[0.72rem] tracking-[0.14em] text-[color:var(--octo-champagne)] md:hidden">
+            ← kaydır →
+          </p>
+          <ul className="octo-product-rail mt-5">
             {visible.map((product, index) => (
               <li
                 key={product.id}
@@ -88,12 +96,13 @@ export function RealProducts({ products }: { products: Product[] }) {
                       compareAtPriceMinor={product.compareAtPriceMinor}
                       className="hi-product-price"
                     />
-                    <span className="hi-product-action">İncele</span>
+                    <span className="hi-product-action">{t("home.inspect")}</span>
                   </span>
                 </Link>
               </li>
             ))}
           </ul>
+          </>
         )}
       </div>
     </section>

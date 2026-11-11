@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="ORBIA burç mührü">
+  <circle cx="32" cy="32" r="30" fill="#0A0712"/>
+  <circle cx="32" cy="32" r="26.5" stroke="#E8D5A8" stroke-width="1.6"/>
+  <line x1="32.00" y1="10.60" x2="32.00" y2="5.80" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="42.70" y1="13.47" x2="45.10" y2="9.31" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="50.53" y1="21.30" x2="54.69" y2="18.90" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="53.40" y1="32.00" x2="58.20" y2="32.00" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="50.53" y1="42.70" x2="54.69" y2="45.10" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="42.70" y1="50.53" x2="45.10" y2="54.69" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="32.00" y1="53.40" x2="32.00" y2="58.20" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="21.30" y1="50.53" x2="18.90" y2="54.69" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="13.47" y1="42.70" x2="9.31" y2="45.10" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="10.60" y1="32.00" x2="5.80" y2="32.00" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="13.47" y1="21.30" x2="9.31" y2="18.90" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/><line x1="21.30" y1="13.47" x2="18.90" y2="9.31" stroke="#E8D5A8" stroke-width="1.7" stroke-linecap="round"/>
+  <path fill="#F3E6C4" d="M38.4 20.2a12.4 12.4 0 1 0 .4 23.2 10.2 10.2 0 1 1-.4-23.2z"/>
+  <circle cx="43.2" cy="22.2" r="2.1" fill="#C9B6E8"/>
+</svg>

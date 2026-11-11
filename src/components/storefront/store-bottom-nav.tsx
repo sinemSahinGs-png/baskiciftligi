@@ -7,30 +7,31 @@ import { Heart, Home, ShoppingBag, Store, UserRound } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { selectCartCount, useCartStore } from "@/stores/cart-store";
+import { useTranslations } from "next-intl";
 
 const items = [
-  { href: "/", label: "Ana Sayfa", icon: Home, match: (path: string) => path === "/" },
+  { href: "/", labelKey: "common.home" as const, icon: Home, match: (path: string) => path === "/" },
   {
     href: "/magaza",
-    label: "Mağaza",
+    labelKey: "common.shop" as const,
     icon: Store,
     match: (path: string) => path.startsWith("/magaza") || path.startsWith("/urun"),
   },
   {
     href: "/favoriler",
-    label: "Favoriler",
+    labelKey: "common.favorites" as const,
     icon: Heart,
     match: (path: string) => path.startsWith("/favoriler"),
   },
   {
     href: "/sepet",
-    label: "Sepet",
+    labelKey: "common.cart" as const,
     icon: ShoppingBag,
     match: (path: string) => path.startsWith("/sepet"),
   },
   {
     href: "/hesabim",
-    label: "Hesabım",
+    labelKey: "common.account" as const,
     icon: UserRound,
     match: (path: string) => path.startsWith("/hesabim"),
   },
@@ -38,6 +39,7 @@ const items = [
 
 export function StoreBottomNav() {
   const pathname = usePathname();
+  const t = useTranslations();
   const cartCount = useCartStore(selectCartCount);
   const cartHydrated = useCartStore((state) => state.hasHydrated);
 
@@ -51,7 +53,7 @@ export function StoreBottomNav() {
   }
 
   return (
-    <nav aria-label="Mobil mağaza menüsü" className="store-bottom-nav md:hidden">
+    <nav aria-label={t("nav.bottom")} className="store-bottom-nav md:hidden">
       {items.map((item) => {
         const Icon = item.icon;
         const active = item.match(pathname);
@@ -63,7 +65,7 @@ export function StoreBottomNav() {
             className="relative"
           >
             <Icon aria-hidden="true" className="size-5" />
-            <span>{item.label}</span>
+            <span>{t(item.labelKey)}</span>
             {item.href === "/sepet" && cartHydrated && cartCount > 0 ? (
               <span className="store-nav-count">{cartCount > 99 ? "99+" : cartCount}</span>
             ) : null}

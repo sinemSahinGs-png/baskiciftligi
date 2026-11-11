@@ -44,7 +44,7 @@ export function EmptyCatalogState({
 
   return (
     <section data-empty-store="" className="store-empty">
-      <p className="store-intro-kicker">Baskı Çiftliği koleksiyonu</p>
+      <p className="store-intro-kicker">OCTO STUDIO koleksiyonu</p>
       <h2 className="mt-3 font-heading text-3xl font-bold tracking-[-0.04em]">
         {STORE_EMPTY_COPY.title}
       </h2>

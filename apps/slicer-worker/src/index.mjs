@@ -20,7 +20,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORKER_VERSION = "0.2.0";
 const PRUSA_PINNED = "2.8.1";
 const APP_BASE_URL = process.env.APP_BASE_URL ?? "http://127.0.0.1:3000";
-const SECRET = (process.env.SLICER_WORKER_SECRET ?? "").trim().replace(/^["']|["']$/g, "").trim();
+const ENV_SECRET = (process.env.SLICER_WORKER_SECRET ?? "").trim().replace(/^["']|["']$/g, "").trim();
+let runtimeSecret = ENV_SECRET;
+let runtimeAppBase = APP_BASE_URL;
 const WORKER_ID = process.env.SLICER_WORKER_ID ?? `slicer-${process.pid}`;
 const BIN =
   process.env.PRUSA_SLICER_BIN ??
@@ -35,7 +37,7 @@ const ALLOWED_SUPPORTS = new Set(["auto", "on", "off"]);
 
 function headers() {
   return {
-    Authorization: `Bearer ${SECRET}`,
+    Authorization: `Bearer ${runtimeSecret}`,
     "Content-Type": "application/json",
     "x-slicer-worker-id": WORKER_ID,
     "x-slicer-worker-version": WORKER_VERSION,
@@ -94,7 +96,7 @@ function runSlicer(args, cwd, timeoutMs) {
 
 function sanitizeLog(text) {
   return text
-    .replace(SECRET, "[redacted]")
+    .replace(runtimeSecret || "___", "[redacted]")
     .replace(/https?:\/\/[^\s]+/g, "[url]")
     .slice(0, 2000);
 }
@@ -274,12 +276,49 @@ function isUuid(value) {
   );
 }
 
+function startPolling() {
+  if (pollInterval || !runtimeSecret) {
+    return;
+  }
+  console.log(`slicer-worker ${WORKER_VERSION} polling`);
+  pollInterval = setInterval(() => {
+    tick().catch((error) =>
+      logTickFailure({
+        path: "/api/internal/slicer/claim",
+        phase: "unexpected",
+        ...describeFetchError(error),
+      }),
+    );
+  }, 2500);
+  tick().catch(() => undefined);
+}
+
+function bearerFrom(req) {
+  const header = String(req.headers.authorization ?? "");
+  return header.replace(/^Bearer\s+/i, "").trim();
+}
+
+function safeAppBase(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return null;
+  }
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      return null;
+    }
+    return parsed.origin;
+  } catch {
+    return null;
+  }
+}
+
 async function tick() {
-  if (!SECRET) {
+  if (!runtimeSecret) {
     console.error("SLICER_WORKER_SECRET missing");
     return;
   }
-  const claimUrl = new URL("/api/internal/slicer/claim", APP_BASE_URL);
+  const claimUrl = new URL("/api/internal/slicer/claim", runtimeAppBase);
   let response;
   try {
     response = await fetch(claimUrl, {
@@ -329,20 +368,66 @@ async function tick() {
   await processJob(job);
 }
 
+let pollInterval = null;
+
 function startHealthServer() {
   const port = Number(process.env.PORT ?? 8788);
   const server = createServer((req, res) => {
-    if (req.url === "/health") {
+    const url = req.url?.split("?")[0] ?? "";
+    if (url === "/health") {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
           ok: true,
           workerVersion: WORKER_VERSION,
           prusaSlicerPinned: PRUSA_PINNED,
-          authenticated: Boolean(SECRET),
-          secretConfigured: Boolean(SECRET),
+          authenticated: Boolean(runtimeSecret),
+          secretConfigured: Boolean(runtimeSecret),
+          polling: Boolean(pollInterval),
         }),
       );
+      return;
+    }
+    if ((url === "/run" || url === "/configure") && req.method === "POST") {
+      const token = bearerFrom(req);
+      if (!token || token.length < 16) {
+        res.writeHead(401);
+        res.end("unauthorized");
+        return;
+      }
+      if (ENV_SECRET && token !== ENV_SECRET) {
+        res.writeHead(401);
+        res.end("unauthorized");
+        return;
+      }
+      runtimeSecret = ENV_SECRET || token;
+      let body = "";
+      req.on("data", (chunk) => {
+        body += chunk.toString("utf8");
+        if (body.length > 4000) {
+          req.destroy();
+        }
+      });
+      req.on("end", () => {
+        try {
+          const json = JSON.parse(body || "{}");
+          const nextBase = safeAppBase(json.appBaseUrl);
+          if (nextBase) {
+            runtimeAppBase = nextBase;
+          }
+        } catch {
+          // keep existing base
+        }
+        startPolling();
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            ok: true,
+            authenticated: Boolean(runtimeSecret),
+            polling: Boolean(pollInterval),
+          }),
+        );
+      });
       return;
     }
     res.writeHead(404);
@@ -353,21 +438,10 @@ function startHealthServer() {
 }
 
 const server = startHealthServer();
-let pollInterval = null;
-if (!SECRET) {
-  console.error("SLICER_WORKER_SECRET missing; polling disabled");
+if (!runtimeSecret) {
+  console.error("SLICER_WORKER_SECRET missing; waiting for /configure");
 } else {
-  console.log(`slicer-worker ${WORKER_VERSION} polling`);
-  pollInterval = setInterval(() => {
-    tick().catch((error) =>
-      logTickFailure({
-        path: "/api/internal/slicer/claim",
-        phase: "unexpected",
-        ...describeFetchError(error),
-      }),
-    );
-  }, 2500);
-  tick().catch(() => undefined);
+  startPolling();
 }
 
 function shutdown(signal) {

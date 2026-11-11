@@ -184,7 +184,7 @@ export function HeroVideo({ reducedMotion }: { reducedMotion: boolean }) {
             width={960}
             height={1200}
             decoding="async"
-            fetchPriority="high"
+            fetchPriority="auto"
           />
           <video
             ref={videoRef}

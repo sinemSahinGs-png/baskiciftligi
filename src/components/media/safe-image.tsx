@@ -5,6 +5,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { imageIsReady } from "@/components/media/image-ready";
 import { ModelImagePlaceholder } from "@/components/media/model-image-placeholder";
+import {
+  publicThingiverseImageSrc,
+  THINGIVERSE_MEDIA_PROXY_PATH,
+} from "@/domain/external-models/thingiverse-images";
 import { cn } from "@/lib/utils";
 
 interface SafeImageProps extends Omit<ImageProps, "src" | "alt"> {
@@ -19,13 +23,19 @@ interface SafeImageProps extends Omit<ImageProps, "src" | "alt"> {
   showSkeleton?: boolean;
 }
 
+function resolveMediaSrc(src?: string | null) {
+  if (!src) return src;
+  return publicThingiverseImageSrc(src) ?? src;
+}
+
 function shouldUnoptimize(src: string) {
   if (src.startsWith("/catalog-media/") || src.startsWith("/images/")) return true;
+  if (src.startsWith(`${THINGIVERSE_MEDIA_PROXY_PATH}?`)) return true;
   return src.startsWith("/demo/") && /\.svg(?:\?|$)/i.test(src);
 }
 
 function SafeImageInner({
-  src,
+  src: rawSrc,
   alt,
   fallbackLabel = "3D model",
   className,
@@ -43,6 +53,7 @@ function SafeImageInner({
   onError,
   ...props
 }: SafeImageProps) {
+  const src = resolveMediaSrc(rawSrc);
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -142,6 +153,6 @@ function SafeImageInner({
 }
 
 export function SafeImage(props: SafeImageProps) {
-  const remountKey = `${props.src ?? ""}:${props.imageKey ?? ""}`;
+  const remountKey = `${resolveMediaSrc(props.src) ?? ""}:${props.imageKey ?? ""}`;
   return <SafeImageInner key={remountKey} {...props} />;
 }

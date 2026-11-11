@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCatalogSnapshot } from "@/domain/catalog/repository";
-import { priceCart, type PricedCartLine } from "@/domain/commerce/cart-pricing";
+import {
+  catalogForCartPricing,
+  priceCart,
+  type PricedCartLine,
+} from "@/domain/commerce/cart-pricing";
 import { computeCartShippingMinor } from "@/domain/commerce/shipping-policy";
 import { pricedManufacturingLine } from "@/domain/commerce/manufacturing-cart";
 import { getManufacturingQuote, getQuoteRevocation } from "@/domain/manufacturing/repository";
@@ -84,7 +88,10 @@ export async function POST(request: Request) {
   );
 
   const snapshot = await getCatalogSnapshot();
-  const catalogResult = priceCart(catalogLines, snapshot.products);
+  const catalogResult = priceCart(
+    catalogLines,
+    catalogForCartPricing(snapshot.products),
+  );
 
   const manufacturingPriced: PricedCartLine[] = [];
   for (const line of quoteLines) {

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { demoProducts } from "@/domain/catalog/demo-data";
 import {
   STANDARD_SHIPPING_MINOR,
+  catalogForCartPricing,
   priceCart,
 } from "@/domain/commerce/cart-pricing";
 
@@ -98,5 +99,29 @@ describe("server cart pricing", () => {
     expect(() =>
       priceCart([{ productId: demoProducts[0].id, quantity: 1.5 }], demoProducts),
     ).toThrow(RangeError);
+  });
+
+  it("prices Memoora from the project adapter, never from the browser", () => {
+    const catalog = catalogForCartPricing([]);
+    const magnet = catalog.find((item) => item.id === "proj-memoora-magnet");
+    expect(magnet).toBeTruthy();
+    const result = priceCart(
+      [{ productId: "proj-memoora-magnet", quantity: 2 }],
+      catalog,
+    );
+    expect(result.lines[0].unitPriceMinor).toBe(6_600);
+    expect(result.lines[0].lineTotalMinor).toBe(13_200);
+    expect(result.lines[0].projectSource).toBe("memoora");
+  });
+
+  it("prices Cep Albüm singles and keeps unpublished Orbia out of checkout catalog", () => {
+    const catalog = catalogForCartPricing([]);
+    expect(catalog.some((item) => item.id === "proj-orbia-keychain")).toBe(false);
+    const result = priceCart(
+      [{ productId: "proj-cep-album-gece-dansi", quantity: 1 }],
+      catalog,
+    );
+    expect(result.lines[0].unitPriceMinor).toBe(20_000);
+    expect(result.lines[0].projectSource).toBe("cep_album");
   });
 });

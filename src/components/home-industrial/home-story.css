@@ -1,0 +1,457 @@
+html[data-home-industrial] {
+  --font-editorial: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --octo-ivory-plate: #f4efe4;
+  --octo-ink: #16110c;
+}
+
+.octo-serif {
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  text-transform: none;
+  color: var(--octo-ink);
+  font-size: clamp(1.7rem, 7.2vw, 3.15rem);
+}
+
+.octo-serif-on-dark {
+  color: #f4efe4;
+}
+
+.octo-story {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  padding: 1.35rem 1rem 1.5rem;
+  border-bottom: 1px solid rgb(216 183 122 / 0.14);
+}
+
+.octo-story-ivory {
+  background: var(--octo-ivory-plate);
+  color: var(--octo-ink);
+}
+
+.octo-copper-rule {
+  display: block;
+  width: 4.5rem;
+  height: 2px;
+  margin-top: 1rem;
+  background: linear-gradient(90deg, #c4844a, #ecd9b0);
+}
+
+.octo-studio-lede {
+  margin: 0;
+  max-width: 38rem;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.octo-studio-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.octo-journey {
+  background:
+    radial-gradient(60% 80% at 10% 80%, rgb(168 95 53 / 0.18), transparent 55%),
+    #07080a;
+}
+
+.octo-journey-track {
+  position: relative;
+  margin-top: 1rem;
+}
+
+.octo-journey-tentacle {
+  pointer-events: none;
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 4.5rem;
+  opacity: 0.92;
+}
+
+.octo-journey-steps {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.octo-journey-step {
+  display: flex;
+  min-height: 5.4rem;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding: 0.55rem 0.4rem 2.4rem;
+  border: 1px solid rgb(216 183 122 / 0.22);
+  background: rgb(12 10 8 / 0.72);
+  color: #f4efe4;
+  text-decoration: none;
+}
+
+.octo-journey-step span {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  color: #d8b77a;
+}
+
+.octo-journey-step strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+.octo-curated-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.octo-curated-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.octo-curated-arrows {
+  display: none;
+  gap: 0.35rem;
+}
+
+.octo-curated-arrow {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid rgb(22 17 12 / 0.18);
+  background: #fffdf8;
+  color: #16110c;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.octo-curated-arrow:focus-visible,
+.octo-curated-card:focus-visible {
+  outline: 2px solid #c4844a;
+  outline-offset: 3px;
+}
+
+.octo-curated-arrow:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+.octo-kicker-dark,
+.octo-link-dark {
+  color: #6a4a2c;
+}
+
+.octo-curated {
+  overflow: hidden;
+}
+
+.octo-curated-rail {
+  --octo-rail-gap: 0.7rem;
+  --octo-rail-visible: 1.35;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--octo-rail-gap);
+  margin: 1rem 0 0;
+  padding: 0 0 0.45rem;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  cursor: grab;
+}
+
+.octo-curated-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.octo-curated-rail li {
+  flex: 0 0 calc((100% - (var(--octo-rail-visible) - 1) * var(--octo-rail-gap)) / var(--octo-rail-visible));
+  min-width: 0;
+  height: auto;
+  scroll-snap-align: start;
+}
+
+.octo-curated-card {
+  display: flex;
+  height: 100%;
+  min-height: 18.5rem;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+  background: #fffdf8;
+  border: 1px solid rgb(22 17 12 / 0.1);
+  box-shadow: 0 10px 28px rgb(22 17 12 / 0.08);
+}
+
+.octo-curated-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #1a140f;
+}
+
+.octo-curated-label {
+  margin: 0.55rem 0.7rem 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8d4e28;
+}
+
+.octo-curated-name {
+  display: -webkit-box;
+  margin: 0.2rem 0.7rem 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  min-height: 2.4em;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.octo-curated-price {
+  margin: auto 0.7rem 0.75rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.octo-upload {
+  background:
+    linear-gradient(180deg, #8d5e3c 0 18%, #1a120c 72%, #050403);
+  color: #f4efe4;
+}
+
+.octo-upload-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(5.5rem, 0.6fr);
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.octo-upload-row p {
+  margin: 0.45rem 0 0.85rem;
+  font-size: 0.95rem;
+}
+
+.octo-upload-visual {
+  position: relative;
+  width: 100%;
+  max-width: 7.5rem;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 0.4rem;
+}
+
+.octo-wholesale {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, #1a120c, #3a2418 55%, #0d0a08);
+}
+
+.octo-wholesale-layout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.55rem;
+  padding-block: 0.4rem;
+}
+
+.octo-wholesale-tentacle {
+  pointer-events: none;
+  position: absolute;
+  right: -8%;
+  top: -18%;
+  width: min(58vw, 22rem);
+  height: 120%;
+  opacity: 0.95;
+}
+
+.octo-close {
+  background: #050403;
+}
+
+.octo-trust-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+  margin: 0.85rem 0 1.1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.octo-trust-grid li {
+  padding: 0.75rem;
+  border: 1px solid rgb(216 183 122 / 0.16);
+  background: rgb(18 14 10 / 0.7);
+}
+
+.octo-trust-grid p:first-child {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.octo-trust-grid p + p {
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+  color: rgb(240 233 218 / 0.72);
+}
+
+.octo-resin-note {
+  margin-top: 0.4rem;
+}
+
+.octo-close-faq {
+  margin-top: 1.25rem;
+}
+
+.octo-faq-item {
+  border-bottom: 1px solid rgb(216 183 122 / 0.14);
+}
+
+.octo-faq-item summary {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.7rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.octo-faq-item p {
+  padding: 0 0 0.75rem 2.2rem;
+  font-size: 0.92rem;
+  color: rgb(240 233 218 / 0.72);
+}
+
+.octo-tv-tentacle {
+  pointer-events: none !important;
+  position: absolute;
+  z-index: 2;
+}
+
+.octo-tv-tentacle-corner {
+  left: -6%;
+  bottom: 4%;
+  width: min(42vw, 13rem);
+  height: auto;
+  filter: drop-shadow(0 8px 18px rgb(0 0 0 / 0.35));
+}
+
+.octo-tv-tentacle-guide {
+  right: -4%;
+  bottom: -6%;
+  width: min(36vw, 11rem);
+  height: auto;
+  opacity: 0.88;
+}
+
+@media (min-width: 768px) {
+  .octo-story {
+    padding: 2.4rem 1.5rem;
+  }
+
+  .octo-studio-grid {
+    grid-template-columns: 0.4fr 0.6fr;
+    align-items: end;
+    gap: 2rem;
+  }
+
+  .octo-journey-steps {
+    gap: 0.75rem;
+  }
+
+  .octo-journey-step {
+    min-height: 7.5rem;
+    padding-bottom: 2.8rem;
+  }
+
+  .octo-journey-step strong {
+    font-size: 0.95rem;
+  }
+
+  .octo-curated-arrows {
+    display: flex;
+  }
+
+  .octo-curated-rail {
+    --octo-rail-visible: 2.2;
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .octo-curated-card:hover {
+    box-shadow:
+      0 0 0 1px rgb(196 132 74 / 0.55),
+      0 16px 32px rgb(22 17 12 / 0.12);
+  }
+
+  .octo-upload-row {
+    grid-template-columns: 1fr 10rem;
+  }
+
+  .octo-trust-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .octo-tv-tentacle-corner {
+    width: 16rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .octo-curated-rail {
+    --octo-rail-visible: 4.22;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .octo-curated-card,
+  .octo-journey-tentacle,
+  .octo-tv-tentacle {
+    transition: none;
+    animation: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .hi-cats-handoff,
+  .octo-sand-abyss {
+    display: none;
+  }
+
+  .hi-cats-stage {
+    max-height: none;
+  }
+
+  .hi-cats-art,
+  .hi-cats-art-frame {
+    height: 14.5rem;
+    min-height: 14.5rem;
+  }
+}

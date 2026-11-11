@@ -100,7 +100,7 @@ test.describe("storefront category navigation", () => {
     }
   });
 
-  test("desktop Mağaza mega menu opens with keyboard and lists seven categories", async ({
+  test("desktop Mağaza mega menu opens with keyboard and lists studio plus project categories", async ({
     page,
   }, testInfo) => {
     test.skip(testInfo.project.name.includes("mobile"), "desktop mega menu");
@@ -111,6 +111,9 @@ test.describe("storefront category navigation", () => {
     await page.keyboard.press("ArrowDown");
     const menu = page.getByRole("menu");
     await expect(menu).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: /MEMOORA/ })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: /LIL/ })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: /ORBIA/ })).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: /Dekorasyon/ })).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: /Taraftara Özel/ })).toHaveCount(0);
     await expect(menu.locator('[data-coming-soon="true"]')).toHaveCount(2);
@@ -154,6 +157,8 @@ test.describe("storefront category navigation", () => {
     await expect(drawer.getByRole("link", { name: "Toptan & Bayiler" })).toBeVisible();
     await drawer.getByRole("button", { name: "Mağaza" }).click();
     await expect(drawer.getByRole("link", { name: "Tüm ürünleri gör", exact: true })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: /MEMOORA/ })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: /LIL/ })).toBeVisible();
     await expect(drawer.getByRole("link", { name: "Figür & Heykel" })).toBeVisible();
     await expect(drawer.getByRole("link", { name: "Toptan & Bayiler" })).toHaveCount(1);
     await expect(drawer.locator('[data-coming-soon="true"] a')).toHaveCount(0);

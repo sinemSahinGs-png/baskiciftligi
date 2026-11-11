@@ -9,8 +9,13 @@ import {
   storefrontCategories,
   storefrontSlugFromSource,
 } from "@/domain/catalog/storefront-taxonomy";
+import { homepageStageCategories } from "@/domain/project-destinations/stage";
+import { useTranslations } from "next-intl";
+
+const PROJECT_CHIPS = homepageStageCategories().filter((item) => item.kind === "project");
 
 export function StoreCategoryBar() {
+  const t = useTranslations();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const queryCategory = searchParams.get("category") ?? "";
@@ -30,27 +35,38 @@ export function StoreCategoryBar() {
   }, [active]);
 
   return (
-    <nav aria-label="Mağaza kategorileri" className="store-cats-wrap">
+    <nav aria-label={t("commerce.storeCats")} className="store-cats-wrap">
       <div ref={wrapRef} className="store-cats">
         <Link
           href={"/magaza" as Route}
           className="store-cat"
           data-active={!active ? "true" : undefined}
         >
-          Tümü
+          {t("models.all")}
         </Link>
+        {PROJECT_CHIPS.map((item) => (
+          <Link
+            key={item.slug}
+            href={item.href}
+            className="store-cat store-cat-project"
+            data-active={active === item.slug ? "true" : undefined}
+            data-category-slug={item.slug}
+          >
+            {t(`categories.${item.slug}.name`)}
+          </Link>
+        ))}
         {storefrontCategories.map((category) =>
           category.comingSoon ? (
             <span
               key={category.slug}
               className="store-cat store-cat-soon-item"
               aria-disabled="true"
-              aria-label={`${category.name}, yakında`}
+              aria-label={`${t(`categories.${category.slug}.name`)}, ${t("common.comingSoon")}`}
               data-category-slug={category.slug}
               data-coming-soon="true"
             >
-              <span>{category.name}</span>
-              <span className="store-cat-soon">Yakında</span>
+              <span>{t(`categories.${category.slug}.name`)}</span>
+              <span className="store-cat-soon">{t("common.comingSoon")}</span>
             </span>
           ) : (
             <Link
@@ -60,7 +76,7 @@ export function StoreCategoryBar() {
               data-active={active === category.slug ? "true" : undefined}
               data-category-slug={category.slug}
             >
-              {category.name}
+              {t(`categories.${category.slug}.name`)}
             </Link>
           ),
         )}

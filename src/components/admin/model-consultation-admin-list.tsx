@@ -34,8 +34,8 @@ export function ModelConsultationAdminList({
     <>
       <AdminPageHeader
         eyebrow="Operasyon"
-        title="Model danışma talepleri"
-        description="Topluluk modelleri için müşteri üretim talepleri."
+        title="Özel Sipariş ve Destek"
+        description="Ana sayfa özel istekleri ve topluluk modeli üretim talepleri."
       />
 
       <div className="overflow-x-auto rounded-2xl border border-white/10">

@@ -19,10 +19,41 @@ import { CategoryArtwork } from "@/components/catalog/category-artwork";
 import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
 import {
   storefrontCategories,
-  type StorefrontCategory,
   type StorefrontCategorySlug,
 } from "@/domain/catalog/storefront-taxonomy";
+import { homepageStageCategories } from "@/domain/project-destinations/stage";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+
+type MegaCategory = {
+  slug: string;
+  href: Route;
+  comingSoon: boolean;
+  artworkSrc: string | null;
+  objectPosition: string;
+};
+
+function megaCategories(
+  categoryArtwork: Record<StorefrontCategorySlug, string | null>,
+): MegaCategory[] {
+  const projects = homepageStageCategories()
+    .filter((item) => item.kind === "project")
+    .map((item) => ({
+      slug: item.slug,
+      href: item.href,
+      comingSoon: item.comingSoon,
+      artworkSrc: item.artwork,
+      objectPosition: "50% 50%",
+    }));
+  const octo = storefrontCategories.map((item) => ({
+    slug: item.slug,
+    href: item.href,
+    comingSoon: item.comingSoon,
+    artworkSrc: categoryArtwork[item.slug],
+    objectPosition: CATEGORY_OBJECT_POSITION[item.slug],
+  }));
+  return [...projects, ...octo];
+}
 
 const OPEN_DELAY = 80;
 const CLOSE_DELAY = 280;
@@ -48,10 +79,12 @@ export function StoreMegaMenu({
   inverted: boolean;
   categoryArtwork: Record<StorefrontCategorySlug, string | null>;
 }) {
+  const t = useTranslations();
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const liveCategories = storefrontCategories.filter((item) => !item.comingSoon);
+  const categories = megaCategories(categoryArtwork);
+  const liveCategories = categories.filter((item) => !item.comingSoon);
   const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const wholesaleRef = useRef<HTMLAnchorElement | null>(null);
   const openTimer = useRef(0);
@@ -270,19 +303,15 @@ export function StoreMegaMenu({
     >
       <div className="store-mega-panel">
         <ul className="store-mega-grid">
-          {storefrontCategories.map((category) => {
+          {categories.map((category) => {
             const liveIndex = liveCategories.findIndex((item) => item.slug === category.slug);
             return (
               <li key={category.slug}>
                 {category.comingSoon || liveIndex < 0 ? (
-                  <MegaSoonItem
-                    category={category}
-                    artworkSrc={categoryArtwork[category.slug]}
-                  />
+                  <MegaSoonItem category={category} />
                 ) : (
                   <MegaItem
                     category={category}
-                    artworkSrc={categoryArtwork[category.slug]}
                     active={active === liveIndex}
                     refFn={(node) => {
                       itemRefs.current[liveIndex] = node;
@@ -310,7 +339,7 @@ export function StoreMegaMenu({
             role="menuitem"
             onKeyDown={onWholesaleKey}
           >
-            Toptan & Bayiler
+            {t("common.wholesale")}
           </Link>
         </aside>
       </div>
@@ -346,7 +375,7 @@ export function StoreMegaMenu({
         }}
         onKeyDown={onTriggerKey}
       >
-        Mağaza
+        {t("nav.shopMega")}
         <span className="store-mega-underline" aria-hidden="true" />
       </Link>
       {isClient ? createPortal(panel, document.body) : null}
@@ -354,23 +383,30 @@ export function StoreMegaMenu({
   );
 }
 
+function useCategoryCopy(slug: string) {
+  const t = useTranslations("categories");
+  return {
+    name: t(`${slug}.name`),
+    description: t(`${slug}.description`),
+  };
+}
+
 function MegaItem({
   category,
-  artworkSrc,
   active,
   refFn,
   onFocus,
   onMouseEnter,
   onKeyDown,
 }: {
-  category: StorefrontCategory;
-  artworkSrc: string | null;
+  category: MegaCategory;
   active: boolean;
   refFn: (node: HTMLAnchorElement | null) => void;
   onFocus: () => void;
   onMouseEnter: () => void;
   onKeyDown: (event: KeyboardEvent<HTMLAnchorElement>) => void;
 }) {
+  const copy = useCategoryCopy(category.slug);
   return (
     <Link
       ref={refFn}
@@ -385,14 +421,14 @@ function MegaItem({
     >
       <span className="store-mega-art" aria-hidden="true">
         <CategoryArtwork
-          src={artworkSrc}
+          src={category.artworkSrc}
           sizes="80px"
-          objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+          objectPosition={category.objectPosition}
         />
       </span>
       <span className="min-w-0">
-        <span className="store-mega-name">{category.name}</span>
-        <span className="store-mega-copy">{category.description}</span>
+        <span className="store-mega-name">{copy.name}</span>
+        <span className="store-mega-copy">{copy.description}</span>
       </span>
     </Link>
   );
@@ -400,30 +436,30 @@ function MegaItem({
 
 function MegaSoonItem({
   category,
-  artworkSrc,
 }: {
-  category: StorefrontCategory;
-  artworkSrc: string | null;
+  category: MegaCategory;
 }) {
+  const t = useTranslations();
+  const copy = useCategoryCopy(category.slug);
   return (
     <div
       className="store-mega-item store-mega-item-soon"
       aria-disabled="true"
-      aria-label={`${category.name}, yakında`}
+      aria-label={`${copy.name}, ${t("common.comingSoon")}`}
       data-category-slug={category.slug}
       data-coming-soon="true"
     >
       <span className="store-mega-art" aria-hidden="true">
         <CategoryArtwork
-          src={artworkSrc}
+          src={category.artworkSrc}
           sizes="80px"
-          objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+          objectPosition={category.objectPosition}
         />
       </span>
       <span className="min-w-0">
-        <span className="store-mega-name">{category.name}</span>
-        <span className="store-mega-soon">Yakında</span>
-        <span className="store-mega-copy">{category.description}</span>
+        <span className="store-mega-name">{copy.name}</span>
+        <span className="store-mega-soon">{t("common.comingSoon")}</span>
+        <span className="store-mega-copy">{copy.description}</span>
       </span>
     </div>
   );
@@ -436,8 +472,10 @@ export function MobileStoreNav({
   onNavigate: () => void;
   categoryArtwork: Record<StorefrontCategorySlug, string | null>;
 }) {
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const categories = megaCategories(categoryArtwork);
 
   return (
     <li className="border-b border-hairline">
@@ -448,7 +486,7 @@ export function MobileStoreNav({
         aria-controls={panelId}
         onClick={() => setOpen((current) => !current)}
       >
-        Mağaza
+        {t("nav.shopMega")}
         <span aria-hidden="true">{open ? "–" : "+"}</span>
       </button>
       {open ? (
@@ -458,29 +496,29 @@ export function MobileStoreNav({
             className="flex min-h-11 items-center text-sm font-semibold"
             onClick={onNavigate}
           >
-            Tüm ürünleri gör
+            {t("common.allProducts")}
           </Link>
           <ul className="store-mobile-cat-grid">
-            {storefrontCategories.map((category) => (
+            {categories.map((category) => (
               <li key={category.slug}>
                 {category.comingSoon ? (
                   <div
                     className="store-mobile-cat store-mobile-cat-soon"
                     aria-disabled="true"
-                    aria-label={`${category.name}, yakında`}
+                    aria-label={`${t(`categories.${category.slug}.name`)}, ${t("common.comingSoon")}`}
                     data-category-slug={category.slug}
                     data-coming-soon="true"
                   >
                     <span className="store-mobile-cat-art" aria-hidden="true">
                       <CategoryArtwork
-                        src={categoryArtwork[category.slug]}
+                        src={category.artworkSrc}
                         sizes="72px"
-                        objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+                        objectPosition={category.objectPosition}
                       />
                     </span>
                     <span className="store-mobile-cat-copy">
-                      <span className="store-mobile-cat-name">{category.name}</span>
-                      <span className="store-mega-soon">Yakında</span>
+                      <span className="store-mobile-cat-name">{t(`categories.${category.slug}.name`)}</span>
+                      <span className="store-mega-soon">{t("common.comingSoon")}</span>
                     </span>
                   </div>
                 ) : (
@@ -492,13 +530,13 @@ export function MobileStoreNav({
                   >
                     <span className="store-mobile-cat-art" aria-hidden="true">
                       <CategoryArtwork
-                        src={categoryArtwork[category.slug]}
+                        src={category.artworkSrc}
                         sizes="72px"
-                        objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+                        objectPosition={category.objectPosition}
                       />
                     </span>
                     <span className="store-mobile-cat-copy">
-                      <span className="store-mobile-cat-name">{category.name}</span>
+                      <span className="store-mobile-cat-name">{t(`categories.${category.slug}.name`)}</span>
                     </span>
                     <span className="store-mobile-cat-arrow" aria-hidden="true">
                       →

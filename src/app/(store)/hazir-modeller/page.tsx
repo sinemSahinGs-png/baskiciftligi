@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 
 import { ModelLibrary } from "@/components/models/model-library";
 import { createPageMetadata } from "@/components/content/metadata";
-import { listPublishedCuratedModels } from "@/domain/curated-models/repository";
 import { siteConfig } from "@/config/site";
+import { hydrateThingiverseOauthToken } from "@/providers/thingiverse/oauth-store";
 import { getThingiverseConfigStatus } from "@/providers/thingiverse/provider";
 
 export const dynamic = "force-dynamic";
@@ -17,15 +17,14 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default async function ReadyModelsPage() {
-  const [curatedModels, thingiverseStatus] = await Promise.all([
-    listPublishedCuratedModels(48),
-    Promise.resolve(getThingiverseConfigStatus()),
-  ]);
+  const thingiverseStatus = await hydrateThingiverseOauthToken().then(() =>
+    getThingiverseConfigStatus(),
+  );
   return (
     <main id="ana-icerik">
       <Suspense fallback={null}>
         <ModelLibrary
-          curatedModels={curatedModels}
+          curatedModels={[]}
           thingiverseEnabled={thingiverseStatus === "connected"}
         />
       </Suspense>

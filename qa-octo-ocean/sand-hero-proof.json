@@ -1,0 +1,70 @@
+{
+  "gpu": {
+    "reason": "webgl",
+    "mode": "interactive",
+    "live": "true",
+    "ready": "true",
+    "canvasCss": {
+      "width": 1440,
+      "height": 900
+    },
+    "canvasBuffer": {
+      "width": 1440,
+      "height": 900
+    },
+    "canvasOpacity": "1",
+    "pointerEvents": "none",
+    "overflowX": 0,
+    "ctaHit": true,
+    "inputHit": true,
+    "headerHit": true,
+    "debug": "{\n  \"mode\": \"interactive\",\n  \"reason\": \"webgl\",\n  \"ready\": true,\n  \"live\": true,\n  \"reducedMotion\": false,\n  \"saveData\": false,\n  \"sampled\": \"/images/hero/octo-sand-field.webp\",\n  \"textureWidth\": 2048,\n  \"textureHeight\": 2048,\n  \"canvasWidth\": 1440,\n  \"canvasHeight\": 900,\n  \"cssWidth\": 1440,\n  \"cssHeight\": 900,\n  \"frames\": 13,\n  \"fps\": 0,\n  \"hasAlbedo\": true,\n  \"contextLost\": false,\n  \"webgl\": \"WebGL2\"\n}",
+    "errors": []
+  },
+  "brushChanged": true,
+  "mobile": {
+    "reason": "webgl",
+    "mode": "interactive",
+    "live": "true",
+    "ready": "true",
+    "canvasCss": {
+      "width": 390,
+      "height": 793
+    },
+    "canvasBuffer": {
+      "width": 390,
+      "height": 793
+    },
+    "canvasOpacity": "1",
+    "pointerEvents": "none",
+    "overflowX": 0,
+    "ctaHit": true,
+    "inputHit": false,
+    "headerHit": true,
+    "debug": "{\n  \"mode\": \"interactive\",\n  \"reason\": \"webgl\",\n  \"ready\": true,\n  \"live\": true,\n  \"reducedMotion\": false,\n  \"saveData\": false,\n  \"sampled\": \"/images/hero/octo-sand-field.webp\",\n  \"textureWidth\": 2048,\n  \"textureHeight\": 2048,\n  \"canvasWidth\": 390,\n  \"canvasHeight\": 793,\n  \"cssWidth\": 390,\n  \"cssHeight\": 793,\n  \"frames\": 51,\n  \"fps\": 30,\n  \"hasAlbedo\": true,\n  \"contextLost\": false,\n  \"webgl\": \"WebGL2\"\n}",
+    "errors": []
+  },
+  "reduced": {
+    "reason": "reduced_motion",
+    "mode": "static-sand",
+    "live": "false",
+    "ready": "true",
+    "canvasCss": {
+      "width": 390,
+      "height": 793
+    },
+    "canvasBuffer": {
+      "width": 300,
+      "height": 150
+    },
+    "canvasOpacity": "0",
+    "pointerEvents": "none",
+    "overflowX": 0,
+    "ctaHit": true,
+    "inputHit": false,
+    "headerHit": true,
+    "debug": "{\n  \"mode\": \"static-sand\",\n  \"reason\": \"reduced_motion\",\n  \"ready\": true,\n  \"live\": false,\n  \"reducedMotion\": true,\n  \"saveData\": false,\n  \"sampled\": \"\",\n  \"textureWidth\": 0,\n  \"textureHeight\": 0,\n  \"canvasWidth\": 0,\n  \"canvasHeight\": 0,\n  \"cssWidth\": 0,\n  \"cssHeight\": 0,\n  \"frames\": 0,\n  \"fps\": 0,\n  \"hasAlbedo\": false,\n  \"contextLost\": false,\n  \"webgl\": \"none\"\n}",
+    "errors": []
+  },
+  "errors": []
+}

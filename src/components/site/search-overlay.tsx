@@ -265,7 +265,7 @@ export function SearchOverlay({
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#4054ff_0%,transparent_48%,#10101a_100%)] opacity-45"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#5a301d_0%,transparent_48%,#050403_100%)] opacity-45"
           />
           <button
             type="button"

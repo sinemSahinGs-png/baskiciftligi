@@ -23,6 +23,7 @@ import type { CartLineDisplayKind } from "@/domain/catalog/presentation";
 import { formatMoney } from "@/lib/money";
 import { useCartStore } from "@/stores/cart-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
+import { useTranslations } from "next-intl";
 
 type PriceStatus = "idle" | "loading" | "success" | "error";
 
@@ -39,17 +40,20 @@ function getResponseError(payload: unknown): string | null {
   return null;
 }
 
-function lineTypeLabel(kind: CartLineDisplayKind) {
+function lineTypeLabel(
+  kind: CartLineDisplayKind,
+  t: ReturnType<typeof useTranslations>,
+) {
   if (kind === "personalized") {
-    return "Kişiselleştirilmiş ürün";
+    return t("commerce.personalized");
   }
   if (kind === "uploaded") {
-    return "Yüklenen model";
+    return t("commerce.uploaded");
   }
   if (kind === "licensed") {
-    return "Lisanslı model";
+    return t("commerce.licensed");
   }
-  return "Mağaza ürünü";
+  return t("commerce.storeItem");
 }
 
 function lineKindColor(kind: CartLineDisplayKind) {
@@ -101,6 +105,7 @@ function lineSettings(
 }
 
 export function CartView() {
+  const t = useTranslations();
   const lines = useCartStore((state) => state.lines);
   const hasHydrated = useCartStore((state) => state.hasHydrated);
   const setQuantity = useCartStore((state) => state.setQuantity);
@@ -256,21 +261,20 @@ export function CartView() {
       <section aria-labelledby="cart-lines-heading" className="min-w-0">
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 id="cart-lines-heading" className="font-heading text-2xl font-bold">
-            Ürünler
+            {t("commerce.products")}
           </h2>
           <button
             type="button"
             onClick={clear}
             className="text-sm text-ink-secondary underline-offset-4 hover:underline"
           >
-            Sepeti temizle
+            {t("commerce.clearCart")}
           </button>
         </div>
 
         {mixedLead ? (
           <p className="mb-4 rounded-md bg-violet/10 px-4 py-3 text-sm leading-6">
-            Sepetteki ürünlerin üretim süreleri farklı. Teslimat, en uzun hazırlık
-            süresine göre planlanır.
+            {t("commerce.mixedLead")}
           </p>
         ) : null}
 
@@ -317,7 +321,7 @@ export function CartView() {
                       ["--kind" as string]: lineKindColor(line.displayKind),
                     }}
                   >
-                    {lineTypeLabel(line.displayKind)}
+                    {lineTypeLabel(line.displayKind, t)}
                   </p>
                   <div className="mt-1 flex flex-wrap items-start gap-2">
                     {line.slug ? (
@@ -480,7 +484,7 @@ export function CartView() {
         className="store-summary p-5 lg:sticky lg:top-24"
       >
         <h2 id="cart-summary-heading" className="font-heading text-2xl font-bold">
-          Sipariş özeti
+          {t("checkout.summary")}
         </h2>
 
         {result.freeShippingThresholdMinor > 0 ? (
@@ -519,24 +523,24 @@ export function CartView() {
 
         <dl className="mt-5 space-y-3 text-sm">
           <div className="flex items-center justify-between gap-4">
-            <dt className="text-ink-secondary">Ara toplam</dt>
+            <dt className="text-ink-secondary">{t("commerce.subtotal")}</dt>
             <dd className="tabular font-medium">
               {formatMoney(result.subtotalMinor, result.currency)}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <dt className="text-ink-secondary">Tahmini kargo</dt>
+            <dt className="text-ink-secondary">{t("commerce.estimatedShipping")}</dt>
             <dd className="tabular font-medium">
               {formatMoney(result.estimatedShippingMinor, result.currency)}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <dt className="text-ink-secondary">KDV</dt>
-            <dd className="text-ink-muted">Fiyatlara dahildir</dd>
+            <dt className="text-ink-secondary">{t("commerce.vat")}</dt>
+            <dd className="text-ink-muted">{t("commerce.vatIncluded")}</dd>
           </div>
           <div className="rule my-4" />
           <div className="flex items-baseline justify-between gap-4">
-            <dt className="font-semibold">Toplam</dt>
+            <dt className="font-semibold">{t("commerce.total")}</dt>
             <dd className="type-price text-2xl">
               {formatMoney(result.totalMinor, result.currency)}
             </dd>
@@ -544,10 +548,10 @@ export function CartView() {
         </dl>
 
         <label className="mt-5 block text-sm font-semibold">
-          Kupon
+          {t("commerce.coupon")}
           <input
             disabled
-            placeholder="Kod altyapısı henüz açık değil"
+            placeholder={t("commerce.couponOff")}
             className="mt-2 h-11 w-full rounded-md border border-hairline bg-muted px-3 font-normal"
           />
         </label>
@@ -563,7 +567,7 @@ export function CartView() {
               disabled
               className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-md bg-brand px-5 text-sm font-semibold text-paper opacity-45"
             >
-              Ödeme adımına geç
+              {t("commerce.goPay")}
             </button>
           </>
         ) : (
@@ -571,14 +575,13 @@ export function CartView() {
             href={"/odeme" as Route}
             className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[color:var(--store-orange)] px-5 py-3 text-center text-sm font-semibold text-[color:var(--store-black)] hover:opacity-90"
           >
-            Ödeme adımına geç
+            {t("commerce.goPay")}
             <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
         )}
 
         <p className="mt-3 text-center text-xs leading-5 text-ink-muted">
-          Ödeme entegrasyonu henüz kullanıma açık değil. Güncel fiyat bu sayfada
-          sunucudan doğrulanır.
+          {t("commerce.guestPayNote")}
         </p>
       </aside>
     </div>

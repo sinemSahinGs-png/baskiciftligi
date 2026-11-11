@@ -5,6 +5,7 @@ import {
   hasUsableThingiverseThumbnail,
   isThingiversePlaceholderImageUrl,
   normalizeThingiverseImageUrl,
+  publicThingiverseImageSrc,
   selectThingiverseDisplayUrl,
   thingiverseImageIdentity,
 } from "@/domain/external-models/thingiverse-images";
@@ -31,6 +32,22 @@ describe("thingiverse-images", () => {
     ).toBe("https://cdn.thingiverse.com/assets/ab/cd/file/display_large.jpg");
     expect(normalizeThingiverseImageUrl("https://evil.example/x.jpg")).toBeNull();
     expect(normalizeThingiverseImageUrl("")).toBeNull();
+  });
+
+  it("unwraps resize.thingiverse.com to the inner CDN asset", () => {
+    expect(
+      normalizeThingiverseImageUrl(
+        "https://resize.thingiverse.com/?url=https://cdn.thingiverse.com/assets/ee/dc/9a/fb/74/benchy.JPG&w=1024",
+      ),
+    ).toBe("https://cdn.thingiverse.com/assets/ee/dc/9a/fb/74/benchy.JPG");
+  });
+
+  it("builds a same-origin media proxy URL for cards", () => {
+    const proxied = publicThingiverseImageSrc(
+      "https://cdn.thingiverse.com/assets/x/display_large.jpg",
+    );
+    expect(proxied).toMatch(/^\/api\/media\/thingiverse\?u=/);
+    expect(proxied).toContain(encodeURIComponent("https://cdn.thingiverse.com/assets/x/display_large.jpg"));
   });
 
   it("collapses duplicate resize variants into one gallery image", () => {

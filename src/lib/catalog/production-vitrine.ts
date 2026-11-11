@@ -5,6 +5,7 @@ import {
 } from "@/domain/catalog/demo-data";
 import type { CatalogSnapshot } from "@/domain/catalog/types";
 import { resolveCategoryCoverUrl } from "@/lib/catalog/category-cover";
+import { publicCatalogAnnouncements } from "@/domain/commerce/shipping-policy";
 
 export function productionVitrineSnapshot(
   updatedAt = new Date().toISOString(),
@@ -17,7 +18,7 @@ export function productionVitrineSnapshot(
     })),
     collections: [],
     materials: demoMaterials,
-    announcements: demoAnnouncements,
+    announcements: publicCatalogAnnouncements(demoAnnouncements),
     updatedAt,
     unavailable: false,
   };

@@ -1,89 +1,55 @@
-import { CreditCard, DatabaseZap, Webhook } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
 
-import {
-  ContentCard,
-  ContentPage,
-  NumberedSteps,
-  StatusNotice,
-} from "@/components/content/content-layout";
+import { StoreCheckout } from "@/components/checkout/store-checkout";
 import { createPageMetadata } from "@/components/content/metadata";
-import { siteConfig } from "@/config/site";
+import { getViewer } from "@/lib/auth/session";
+import { getMessages, msg } from "@/i18n/get-messages";
+import { getRequestLocale } from "@/i18n/request-locale";
 
-export const metadata = createPageMetadata({
-  title: "Ödeme Durumu",
-  description: `${siteConfig.name} PayTR ödeme akışının yapılandırma ve aktivasyon durumunu görüntüleyin.`,
-  path: "/odeme",
-  noIndex: true,
-});
+export async function generateMetadata() {
+  const messages = getMessages(await getRequestLocale());
+  return createPageMetadata({
+    title: msg(messages, "checkout.title"),
+    description: msg(messages, "checkout.lede"),
+    path: "/odeme",
+    noIndex: true,
+  });
+}
 
-export default function CheckoutPage() {
+export default async function CheckoutPage() {
+  const viewer = await getViewer();
+  const guest = !viewer || viewer.isDemo;
+  const messages = getMessages(await getRequestLocale());
+
   return (
-    <ContentPage
-      eyebrow="Ödeme"
-      title="PayTR checkout henüz kullanıma açık değil."
-      description="Ödeme alma, sipariş oluşturma ve stok rezervasyonu Phase 2 kapsamındadır. Merchant onayı, server-side imza doğrulaması ve uçtan uca testler tamamlanmadan bu sayfa kart bilgisi istemez."
-      status={{ label: "Phase 2 · PayTR yapılandırılmadı", tone: "warning" }}
-      actions={[
-        { href: "/sepet", label: "Sepete dönün", variant: "outline" },
-        { href: "/sss", label: "Kapsamı okuyun", variant: "outline" },
-      ]}
-    >
-      <StatusNotice title="Ödeme başlatılamıyor" tone="warning">
-        <p>
-          PayTR merchant credential’ları, callback route’u ve doğrulanmış order
-          transaction’ı aktif değildir. Bu route kart numarası, CVV veya ödeme
-          token’ı toplamaz; sepeti siparişe dönüştürmez ve “ödendi” durumu
-          yazmaz.
-        </p>
-      </StatusNotice>
-
-      <section className="section-space" aria-label="Aktivasyon gereksinimleri">
-        <div className="grid gap-4 md:grid-cols-3">
-          <ContentCard
-            title="Merchant ve domain onayı"
-            description="PayTR hesabı, KYC, satış domain’i ve test/live ortam ayrımı tamamlanmalıdır."
-          >
-            <CreditCard aria-hidden="true" className="size-6 text-cyan" />
-          </ContentCard>
-          <ContentCard
-            title="Server-side doğrulama"
-            description="Token ve imza yalnız server’da üretilmeli; callback sabit zamanlı doğrulama ve tutar kontrolünden geçmelidir."
-          >
-            <Webhook aria-hidden="true" className="size-6 text-cyan" />
-          </ContentCard>
-          <ContentCard
-            title="Atomik sipariş kaydı"
-            description="Ödeme olayı, sipariş durumu ve stok etkisi idempotent transaction sınırında işlenmelidir."
-          >
-            <DatabaseZap aria-hidden="true" className="size-6 text-cyan" />
-          </ContentCard>
-        </div>
-      </section>
-
-      <section aria-labelledby="planlanan-odeme-baslik">
-        <h2 id="planlanan-odeme-baslik" className="sr-only">
-          Planlanan ödeme akışı
-        </h2>
-        <NumberedSteps
-          steps={[
-            {
-              title: "Server yeniden fiyatlar",
-              description:
-                "Ürün, stok, indirim ve kargo kuralları güncel kaynaktan doğrulanır; browser tutarı otorite kabul edilmez.",
-            },
-            {
-              title: "PayTR akışı açılır",
-              description:
-                "Benzersiz payment attempt oluşturulur ve güvenli PayTR yüzeyi yalnız server token’ıyla başlatılır.",
-            },
-            {
-              title: "Callback sonucu belirler",
-              description:
-                "Başarı sayfası değil, doğrulanmış server-to-server callback ödeme durumunun kaynağı olur.",
-            },
-          ]}
+    <main id="ana-icerik" className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
+      <p className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+        {msg(messages, "checkout.kicker")}
+      </p>
+      <h1 className="mt-3 font-heading text-3xl font-semibold">{msg(messages, "checkout.title")}</h1>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+        {msg(messages, "checkout.lede")}
+      </p>
+      <p className="mt-4 max-w-2xl text-sm">
+        {guest ? (
+          <>
+            Misafir olarak ödeyebilirsin. Üyeysen{" "}
+            <Link href={"/giris?next=/odeme" as Route} className="underline">
+              giriş yap
+            </Link>
+            , bilgilerin otomatik dolar.
+          </>
+        ) : (
+          "Üye hesabınla ödüyorsun; adres ve e-posta dolduruldu."
+        )}
+      </p>
+      <div className="mt-8">
+        <StoreCheckout
+          email={!guest && viewer ? viewer.email : ""}
+          displayName={!guest && viewer ? viewer.displayName : ""}
         />
-      </section>
-    </ContentPage>
+      </div>
+    </main>
   );
 }

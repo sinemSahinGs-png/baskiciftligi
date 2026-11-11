@@ -45,8 +45,9 @@ const navigationGroups = [
     label: "Operasyon",
     items: [
       { href: "/admin/siparisler", label: "Siparişler", icon: Package },
+      { href: "/admin/toptan-siparisler", label: "Toptan siparişler", icon: Package },
       { href: "/admin/teklifler", label: "Teklifler", icon: FileText },
-      { href: "/admin/model-danisma", label: "Model danışma", icon: ClipboardList },
+      { href: "/admin/model-danisma", label: "Özel Sipariş ve Destek", icon: ClipboardList },
       { href: "/admin/yazicilar", label: "Yazıcılar", icon: Boxes },
       { href: "/admin/yuklemeler", label: "Yüklemeler", icon: FileBox },
       { href: "/admin/musteriler", label: "Müşteriler", icon: Users },

@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { siteConfig } from "@/config/site";
 import { storefrontCategories } from "@/domain/catalog/storefront-taxonomy";
+import { projectDestinations } from "@/domain/project-destinations/catalog";
 import {
   listMaterials,
   listProducts,
@@ -60,6 +61,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.75,
+    })),
+    ...projectDestinations.map((destination) => ({
+      url: new URL(destination.href, siteConfig.url).toString(),
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
     })),
     ...materials.map((material) => ({
       url: new URL(`/malzemeler/${material.slug}`, siteConfig.url).toString(),
