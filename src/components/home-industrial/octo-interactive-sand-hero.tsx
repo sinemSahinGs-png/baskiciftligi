@@ -15,7 +15,7 @@ import {
   isHeroChrome,
   sandImpulseFromPointer,
 } from "@/lib/hero-sand/physics";
-import { readTvScreenFromStyles } from "@/lib/hero-sand/tv-screen";
+import { OCTO_SAND_FIELD, readTvScreenFromStyles } from "@/lib/hero-sand/tv-screen";
 
 type FallbackMode = "interactive" | "static-sand" | "poster" | "obsidian";
 
@@ -97,16 +97,18 @@ export function OctoInteractiveSandHero() {
         const next = new OctoSandEngine(canvas, grid, dpr);
         next.resize(host.clientWidth, host.clientHeight, dpr);
         const frame = canvas.closest(".octo-tv-frame") ?? host;
-        next.setScreen(readTvScreenFromStyles(getComputedStyle(frame)));
+        const hero = canvas.closest(".octo-tv-hero") ?? frame;
+        next.setScreen(readTvScreenFromStyles(getComputedStyle(hero)));
         const field = new Image();
         field.decoding = "async";
-        field.src = "/images/hero/octo-sand-field.webp";
         const bindField = () => {
           if (cancelled || field.naturalWidth < 1) return;
           next.setAlbedo(field);
         };
         field.addEventListener("load", bindField);
         unbindAlbedo = () => field.removeEventListener("load", bindField);
+        field.src = OCTO_SAND_FIELD;
+        if (field.complete) bindField();
         engineRef.current = next;
         setMode("interactive");
         setReady(true);
@@ -128,7 +130,8 @@ export function OctoInteractiveSandHero() {
         chooseSandDpr(window.devicePixelRatio, host.clientWidth),
       );
       const frame = canvas.closest(".octo-tv-frame") ?? host;
-      engineRef.current.setScreen(readTvScreenFromStyles(getComputedStyle(frame)));
+      const hero = canvas.closest(".octo-tv-hero") ?? frame;
+      engineRef.current.setScreen(readTvScreenFromStyles(getComputedStyle(hero)));
     };
     if (typeof IntersectionObserver !== "undefined") {
       observer = new IntersectionObserver(

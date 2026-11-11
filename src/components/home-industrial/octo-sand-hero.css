@@ -247,11 +247,15 @@
 }
 
 .octo-sand-static {
-  opacity: 0.28;
-  mix-blend-mode: soft-light;
-  background:
-    radial-gradient(ellipse at 82% 12%, rgb(236 210 150 / 0.42), transparent 48%),
-    radial-gradient(ellipse at 18% 86%, rgb(110 64 32 / 0.28), transparent 52%);
+  opacity: 0;
+  background-image: url("/images/hero/octo-sand-field.webp");
+  background-repeat: repeat;
+  background-size: 22rem 22rem;
+}
+
+.octo-sand-layer[data-octo-sand-mode="static-sand"] .octo-sand-static,
+.octo-sand-layer[data-octo-sand-mode="poster"] .octo-sand-static {
+  opacity: 0.38;
 }
 
 .octo-sand-layer[data-octo-sand-ready="true"][data-octo-sand-mode="interactive"] .octo-sand-static,

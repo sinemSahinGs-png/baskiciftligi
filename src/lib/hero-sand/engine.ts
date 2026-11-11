@@ -51,37 +51,13 @@ out vec4 fragColor;
 uniform sampler2D uState;
 uniform sampler2D uAlbedo;
 uniform float uHasAlbedo;
-uniform vec2 uResolution;
+uniform vec2 uRepeat;
 uniform vec2 uTexel;
 uniform vec4 uScreen;
 uniform float uRadius;
 
 vec2 decode(vec2 packed) {
   return (packed - 0.5) * 0.46;
-}
-
-float hash(vec2 p) {
-  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-
-float noise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  float a = hash(i);
-  float b = hash(i + vec2(1.0, 0.0));
-  float c = hash(i + vec2(0.0, 1.0));
-  float d = hash(i + vec2(1.0, 1.0));
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
-}
-
-float fbm(vec2 p) {
-  float v = 0.0;
-  v += noise(p) * 0.52;
-  v += noise(p * 2.13) * 0.26;
-  v += noise(p * 4.27) * 0.14;
-  v += noise(p * 8.71) * 0.08;
-  return v;
 }
 
 float sdRoundBox(vec2 p, vec2 b, float r) {
@@ -93,31 +69,13 @@ float screenWindow(vec2 cssUv) {
   vec2 center = uScreen.xy + uScreen.zw * 0.5;
   vec2 halfSize = uScreen.zw * 0.5;
   float d = sdRoundBox(cssUv - center, halfSize, uRadius * min(uScreen.z, uScreen.w));
-  return 1.0 - smoothstep(-0.008, 0.016, d);
-}
-
-vec3 mineralSand(vec2 uv, float aspect) {
-  vec2 p = uv * vec2(aspect, 1.0);
-  float n = fbm(p * 38.0);
-  float dune = fbm(p * 7.5 + 4.2);
-  float fine = noise(p * 190.0);
-  float silica = pow(noise(p * 430.0 + dune), 11.0);
-  float mica = pow(noise(p * 780.0), 16.0);
-  vec3 umber = vec3(0.48, 0.29, 0.15);
-  vec3 ochre = vec3(0.76, 0.55, 0.31);
-  vec3 honey = vec3(0.91, 0.74, 0.47);
-  vec3 sun = vec3(0.97, 0.88, 0.68);
-  vec3 color = mix(umber, ochre, smoothstep(0.18, 0.62, n));
-  color = mix(color, honey, smoothstep(0.48, 0.86, dune) * 0.72);
-  color = mix(color, sun, silica * 0.38 + mica * 0.22);
-  color *= 0.9 + fine * 0.18;
-  return color;
+  return 1.0 - smoothstep(-0.004, 0.01, d);
 }
 
 void main() {
   vec2 cssUv = vec2(vUv.x, 1.0 - vUv.y);
   float aperture = screenWindow(cssUv);
-  if (aperture > 0.985) {
+  if (aperture > 0.82 || uHasAlbedo < 0.5) {
     fragColor = vec4(0.0);
     return;
   }
@@ -128,26 +86,15 @@ void main() {
   float hL = length(decode(texture(uState, vUv - vec2(uTexel.x, 0.0)).xy));
   float hU = length(decode(texture(uState, vUv + vec2(0.0, uTexel.y)).xy));
   float hD = length(decode(texture(uState, vUv - vec2(0.0, uTexel.y)).xy));
-  vec3 normal = normalize(vec3((hL - hR) * 28.0, (hD - hU) * 28.0, 1.0));
-  vec3 light = normalize(vec3(0.72, 0.48, 0.48));
-  float ndl = clamp(dot(normal, light), 0.0, 1.0);
+  vec3 normal = normalize(vec3((hL - hR) * 26.0, (hD - hU) * 26.0, 1.0));
+  float ndl = clamp(dot(normal, normalize(vec3(0.72, 0.48, 0.48))), 0.0, 1.0);
 
-  vec2 warp = disp * 2.55;
-  vec2 sampleUv = clamp(vUv + warp, 0.0, 1.0);
-  vec3 photo = texture(uAlbedo, sampleUv).rgb;
-  float aspect = uResolution.x / max(uResolution.y, 1.0);
-  vec3 procedural = mineralSand(cssUv + vec2(warp.x, -warp.y) * 0.55, aspect);
-  vec3 sand = mix(procedural, photo, uHasAlbedo * 0.88);
+  vec2 warp = disp * 2.6;
+  vec3 sand = texture(uAlbedo, vUv * uRepeat + warp).rgb;
+  sand *= mix(0.86, 1.12, ndl);
 
-  float lit = mix(0.7, 1.22, ndl);
-  sand *= lit;
-  sand += vec3(0.98, 0.86, 0.58) * pow(ndl, 6.0) * max(hC, 0.08) * 2.1;
-  sand -= vec3(0.24, 0.15, 0.07) * (1.0 - ndl) * max(hC, 0.05) * 1.8;
-
-  float piles = smoothstep(0.0008, 0.03, hC);
-  float dust = 0.2 + fbm(cssUv * 90.0) * 0.12;
-  float cover = mix(dust, 0.97, piles);
-  cover *= 1.0 - aperture;
+  float piles = smoothstep(0.001, 0.03, hC);
+  float cover = mix(0.07, 0.96, piles) * (1.0 - aperture);
   fragColor = vec4(sand * cover, cover);
 }`;
 
@@ -300,11 +247,12 @@ export class OctoSandEngine {
     const { gl } = this;
     gl.bindTexture(gl.TEXTURE_2D, this.albedo);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.generateMipmap(gl.TEXTURE_2D);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
     this.hasAlbedo = 1;
   }
@@ -429,10 +377,11 @@ export class OctoSandEngine {
     gl.bindTexture(gl.TEXTURE_2D, this.albedo);
     gl.uniform1i(gl.getUniformLocation(this.draw, "uAlbedo"), 1);
     gl.uniform1f(gl.getUniformLocation(this.draw, "uHasAlbedo"), this.hasAlbedo);
+    const tile = Math.max(1, 580 * this.dpr);
     gl.uniform2f(
-      gl.getUniformLocation(this.draw, "uResolution"),
-      this.canvas.width,
-      this.canvas.height,
+      gl.getUniformLocation(this.draw, "uRepeat"),
+      this.canvas.width / tile,
+      this.canvas.height / tile,
     );
     gl.uniform2f(gl.getUniformLocation(this.draw, "uTexel"), 1 / this.grid, 1 / this.grid);
     gl.uniform4f(

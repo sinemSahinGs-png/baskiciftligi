@@ -9,6 +9,8 @@ export const OCTO_TV_SHELL = {
   mobile: "/images/hero/octo-tv-sand-shell-mobile.webp",
 } as const;
 
+export const OCTO_SAND_FIELD = "/images/hero/octo-sand-field.webp";
+
 /** Inner CRT glass after a 14px inset from the measured black walk. */
 export const OCTO_TV_SCREEN_PX = {
   left: 556,
