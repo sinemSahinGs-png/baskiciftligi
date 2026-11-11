@@ -44,13 +44,19 @@ test.describe("OCTO ocean redesign", () => {
     expect(hit).toBe(true);
     const screen = page.locator("[data-octo-tv-screen]");
     const video = page.locator("video[data-hero-video]");
-    const screenBox = await screen.boundingBox();
-    const videoBox = await video.boundingBox();
-    expect(screenBox && videoBox).toBeTruthy();
-    if (screenBox && videoBox) {
-      expect(videoBox.x).toBeGreaterThanOrEqual(screenBox.x - 2);
-      expect(videoBox.y).toBeGreaterThanOrEqual(screenBox.y - 2);
-    }
+    await expect(screen).toHaveCSS("overflow", "hidden");
+    const clipped = await page.evaluate(() => {
+      const frame = document.querySelector("[data-octo-tv-screen]");
+      const clip = document.querySelector("video[data-hero-video]");
+      if (!frame || !clip) return 0;
+      const screenBox = frame.getBoundingClientRect();
+      const videoBox = clip.getBoundingClientRect();
+      const visible =
+        Math.max(0, Math.min(screenBox.bottom, videoBox.bottom) - Math.max(screenBox.top, videoBox.top)) *
+        Math.max(0, Math.min(screenBox.right, videoBox.right) - Math.max(screenBox.left, videoBox.left));
+      return visible / Math.max(1, screenBox.width * screenBox.height);
+    });
+    expect(clipped).toBeGreaterThan(0.9);
     await expect(page.locator("header")).toHaveCount(1);
     await expect(page.locator(".store-bottom-nav")).toHaveCount(1);
   });
@@ -216,5 +222,25 @@ test.describe("OCTO ocean redesign", () => {
     await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "footer-1440.png") });
     await page.screenshot({ path: path.join(shots, "full-1440.png"), fullPage: true });
+  });
+
+  test("shared cave atmosphere covers atelier panels without becoming a product card", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    const plate = page.locator(".atelier-cave-plate");
+    await expect(plate).toHaveCount(1);
+    await expect(plate).toHaveCSS("background-size", "cover");
+    const imageUrl = await plate.evaluate((node) => getComputedStyle(node).backgroundImage);
+    expect(imageUrl).toContain("cave-sand-bg.webp");
+    await expect(page.locator(".octo-curated-card img[src*='cave-sand-bg']")).toHaveCount(0);
+    await expect(page.locator(".atelier-start-media img[src*='cave-sand-bg']")).toHaveCount(0);
+    await page.locator("#atolye").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "atelier-cave-390.png") });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.locator("#atolye").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "atelier-cave-1440.png") });
+    await expect(plate).toHaveCSS("background-size", "cover");
   });
 });

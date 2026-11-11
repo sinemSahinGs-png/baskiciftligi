@@ -3,17 +3,60 @@
   color: #f3ead8;
 }
 
+.atelier-cave {
+  position: relative;
+  z-index: 2;
+  isolation: isolate;
+  background: #100b08;
+}
+
+.atelier-cave-plate {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  height: 100svh;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: #100b08;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.atelier-cave-copy {
+  position: relative;
+  z-index: 1;
+  margin-top: -100svh;
+}
+
+.atelier-world .hi-section::before {
+  content: none;
+}
+
 .atelier-panel {
   position: relative;
   z-index: 1;
   overflow: hidden;
-  padding: 1.6rem 1rem 1.85rem;
-  background:
-    radial-gradient(90% 55% at 50% 108%, rgb(92 52 22 / 0.42), transparent 58%),
-    radial-gradient(40% 30% at 88% 0%, rgb(216 160 90 / 0.12), transparent 50%),
-    #120c08;
+  padding: 1.6rem 1rem 18vh;
+  background: transparent;
   color: #f3ead8;
-  border-bottom: 1px solid rgb(216 183 122 / 0.1);
+  border-bottom: 0;
+}
+
+.atelier-panel + .atelier-panel::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2.75rem;
+  z-index: 0;
+  background: linear-gradient(180deg, rgb(8 5 3 / 0.2), transparent);
+}
+
+.atelier-shell,
+.atelier-panel > .hi-shell {
+  position: relative;
+  z-index: 1;
 }
 
 .atelier-shell {
@@ -199,9 +242,8 @@
 }
 
 .atelier-cats.hi-cats {
-  background:
-    radial-gradient(90% 55% at 50% 108%, rgb(92 52 22 / 0.42), transparent 58%),
-    #120c08;
+  background: transparent;
+  padding-bottom: 18vh;
 }
 
 .atelier-cats .hi-cats-handoff {
@@ -348,6 +390,7 @@
   padding: 0.7rem 0.8rem;
   border: 1px solid rgb(216 183 122 / 0.14);
   border-radius: 0.85rem;
+  background: rgb(14 10 7 / 0.55);
 }
 
 .atelier-trust p:first-child {
@@ -396,8 +439,9 @@
 }
 
 @media (min-width: 768px) {
-  .atelier-panel {
-    padding: 2.4rem 1.25rem 2.6rem;
+  .atelier-panel,
+  .atelier-cats.hi-cats {
+    padding: 2.4rem 1.25rem 22vh;
   }
 
   .atelier-start-list {

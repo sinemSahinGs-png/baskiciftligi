@@ -1,3 +1,4 @@
+import { AtelierCave } from "@/components/home-industrial/atelier-cave";
 import { CompactClose } from "@/components/home-industrial/compact-close";
 import { CompactUpload } from "@/components/home-industrial/compact-upload";
 import { CuratedCollection } from "@/components/home-industrial/curated-collection";
@@ -39,13 +40,15 @@ export function IndustrialHome({
       <OceanAtmosphere />
       <TechnicalGrid />
       <IdeaCommand />
-      <StudioIntro />
-      <ProductionJourney />
-      <HomeCategories products={products} />
-      <CuratedCollection products={products} />
-      <CompactUpload />
-      <WholesaleBand />
-      <CompactClose />
+      <AtelierCave>
+        <StudioIntro />
+        <ProductionJourney />
+        <HomeCategories products={products} />
+        <CuratedCollection products={products} />
+        <CompactUpload />
+        <WholesaleBand />
+        <CompactClose />
+      </AtelierCave>
       <MobileStickyCta />
     </div>
   );

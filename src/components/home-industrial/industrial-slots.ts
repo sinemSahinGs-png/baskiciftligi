@@ -27,6 +27,9 @@ export const industrialMaterialSrc = {
   tpu: industrialAssets.materialTpu,
 } as const;
 
+/** Shared 1920×1080 cave atmosphere behind atelier panels. Not a product card. */
+export const ATELIER_CAVE_BG = "/images/home-atelier/cave-sand-bg.webp";
+
 /** Temporary stand-ins until GPT stills land in /images/home-atelier/. */
 export const atelierMedia = {
   startUpload: industrialAssets.heroWireframeVase,
