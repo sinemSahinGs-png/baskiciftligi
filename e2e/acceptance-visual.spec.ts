@@ -42,10 +42,10 @@ test.describe("acceptance visual inspection", () => {
     await expect(
       page
         .getByRole("banner")
-        .getByRole("link", { name: "Baskı Çiftliği ana sayfa" }),
+        .getByRole("link", { name: "OCTO STUDIO ana sayfa" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("contentinfo").getByText("© 2026 Baskı Çiftliği"),
+      page.getByRole("contentinfo").getByText("© 2026 OCTO STUDIO"),
     ).toBeVisible();
     await page
       .getByRole("heading", { name: "Kategoriler" })

@@ -39,7 +39,8 @@ void main() {
   vel += (uDelta * 0.72 + grainPush * 0.08) * falloff * uForce * (0.28 + grain * 1.15);
   vel *= 0.84;
   disp += vel;
-  disp += vec2(0.0, 0.012) * length(disp) * uSettle;
+  disp += vec2((grain - 0.5) * 0.00035, 0.0016 + grain * 0.0009) * uSettle;
+  disp += vec2(0.0, 0.01) * length(disp) * uSettle;
   disp *= 0.992;
   disp = mix(disp, vec2(0.0), uReset);
   vel = mix(vel, vec2(0.0), uReset);
@@ -80,7 +81,7 @@ float screenWindow(vec2 cssUv) {
 void main() {
   vec2 cssUv = vec2(vUv.x, 1.0 - vUv.y);
   float aperture = screenWindow(cssUv);
-  if (aperture > 0.42 || uHasAlbedo < 0.5) {
+  if (uHasAlbedo < 0.5) {
     fragColor = vec4(0.0);
     return;
   }
@@ -98,12 +99,25 @@ void main() {
   vec3 sand = texture(uAlbedo, vUv * uRepeat + warp).rgb;
   sand *= mix(0.88, 1.08, ndl);
 
+  vec2 cell = floor(cssUv * vec2(980.0, 680.0) + disp * 18.0);
+  float n = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
+  float speck = step(0.984, n) * (0.18 + 0.22 * fract(n * 13.7));
+  speck *= mix(0.42, 1.0, clamp(cssUv.y * 1.15, 0.0, 1.0));
+  speck *= 1.0 - smoothstep(0.0, 0.012, hC) * 0.35;
+
+  if (aperture > 0.52) {
+    float dust = speck * 0.62;
+    fragColor = vec4(sand * dust, dust);
+    return;
+  }
+
   float piles = smoothstep(0.0014, 0.022, hC);
   float dist = distance(vUv, uPointer);
   float scrape = exp(-dist * dist / max(uBrushRadius * uBrushRadius * 2.2, 0.0002)) * smoothstep(0.04, 0.18, uBrush);
   float cover = mix(0.09, 0.52, piles);
   cover = mix(cover, 0.05, scrape * 0.55);
-  cover *= 1.0 - smoothstep(0.08, 0.48, aperture);
+  cover *= 1.0 - smoothstep(0.08, 0.52, aperture);
+  cover = max(cover, speck * 0.28 * (1.0 - aperture));
   fragColor = vec4(sand * cover, cover);
 }`;
 

@@ -56,7 +56,7 @@ test.describe("wholesale lighter checkout", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
     }
     await page.goto("/toptan", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { name: /Tezgahın hazır/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Atölyeden tezgaha/i })).toBeVisible();
     await expect(page.getByText("SKU")).toHaveCount(0);
     await expect(page.getByText("payment_pending")).toHaveCount(0);
     await page.screenshot({ path: shotName(page, "toptan"), fullPage: true });
@@ -88,7 +88,7 @@ test.describe("wholesale lighter checkout", () => {
       );
       await page.setViewportSize(viewport);
       await page.goto("/toptan", { waitUntil: "domcontentloaded" });
-      await expect(page.getByRole("heading", { name: /Tezgahın hazır/i })).toBeVisible();
+      await expect(page.getByRole("heading", { name: /Atölyeden tezgaha/i })).toBeVisible();
       await assertNoHorizontalOverflow(page);
       await page.screenshot({
         path: shotName(page, `overflow-toptan`),
@@ -116,7 +116,7 @@ test.describe("wholesale lighter checkout", () => {
     await page.screenshot({ path: shotName(page, "admin-order-list"), fullPage: true });
 
     await page.goto("/toptan");
-    await expect(page.getByRole("heading", { name: /Tezgahın hazır/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Atölyeden tezgaha/i })).toBeVisible();
     await expect(page.getByText("Toptan siparişler kısa süre içinde açılacaktır.")).toHaveCount(0);
     await page.screenshot({ path: shotName(page, "toptan"), fullPage: true });
 

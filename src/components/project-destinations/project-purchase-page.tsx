@@ -98,16 +98,28 @@ export function ProjectPurchasePage({
     return () => controller.abort();
   }, [canSelect, selected, variantId, quantity, requestKey, retry]);
 
-  async function buy() {
-    if (!selected || !canBuy) return;
-    setBusy(true);
-    setError(null);
+  function addSelected() {
+    if (!selected || !canBuy) return false;
     addLine({
       productId: selected.id,
       variantId: selected.variants.length ? variantId || selected.variants[0]?.id : null,
       quantity,
     });
+    return true;
+  }
+
+  async function buyGuest() {
+    if (!addSelected()) return;
+    setBusy(true);
+    setError(null);
     router.push("/odeme" as Route);
+  }
+
+  async function buyMember() {
+    if (!addSelected()) return;
+    setBusy(true);
+    setError(null);
+    router.push("/giris?next=/odeme" as Route);
   }
 
   const quoteState = destination.purchasable
@@ -286,14 +298,26 @@ export function ProjectPurchasePage({
           </div>
 
           {destination.purchasable ? (
-            <button
-              type="button"
-              className="project-buy-cta"
-              disabled={!canBuy || busy}
-              onClick={() => void buy()}
-            >
-              HEMEN SATIN AL
-            </button>
+            <div className="project-buy-actions">
+              <button
+                type="button"
+                className="project-buy-cta"
+                data-buy-guest=""
+                disabled={!canBuy || busy}
+                onClick={() => void buyGuest()}
+              >
+                Üye olmadan satın al
+              </button>
+              <button
+                type="button"
+                className="project-buy-cta-ghost"
+                data-buy-member=""
+                disabled={!canBuy || busy}
+                onClick={() => void buyMember()}
+              >
+                Üye girişi ile al
+              </button>
+            </div>
           ) : (
             <button type="button" className="project-buy-cta project-buy-cta-soon" disabled>
               FİYAT YAKINDA
@@ -315,12 +339,12 @@ export function ProjectPurchasePage({
         </p>
       </section>
 
-      {destination.purchasable ? (
+      {destination.purchasable && destination.slug !== "lil-disc" ? (
         <div className="project-buy-sticky" data-project-sticky="">
           <span data-sticky-total>
             {canBuy ? formatMoney(quote?.totalMinor ?? 0) : "Fiyat hazırlanıyor"}
           </span>
-          <button type="button" disabled={!canBuy || busy} onClick={() => void buy()}>
+          <button type="button" disabled={!canBuy || busy} onClick={() => void buyGuest()}>
             SATIN AL
           </button>
         </div>

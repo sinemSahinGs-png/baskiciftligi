@@ -149,7 +149,7 @@ export function SiteFooterMobile({
 
         <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-xs text-muted-light">
           <p>
-            © {new Date().getFullYear()} {siteConfig.legalName}
+            © {new Date().getFullYear()} {siteConfig.name}
           </p>
           {siteConfig.social.youtube ? (
             <a href={siteConfig.social.youtube} aria-label="YouTube" className="inline-flex size-11 items-center justify-center">

@@ -80,7 +80,7 @@ export function platformLabel(platform: CuratedPlatform) {
     case "myminifactory":
       return "MyMiniFactory";
     case "studio":
-      return "Baskı Çiftliği";
+      return "OCTO STUDIO";
     default:
       return "Diğer";
   }

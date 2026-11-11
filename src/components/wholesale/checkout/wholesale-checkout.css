@@ -1,13 +1,15 @@
 .ws-page {
-  --ws-ink: #1b1c1a;
-  --ws-muted: #5c5a55;
-  --ws-line: #e4dfd4;
-  --ws-paper: #f6f3ec;
-  --ws-card: #fffdf8;
+  --ws-ink: #f3ead8;
+  --ws-muted: rgb(243 234 216 / 0.68);
+  --ws-line: rgb(216 180 124 / 0.28);
+  --ws-paper: #100b08;
+  --ws-card: rgb(22 17 12 / 0.88);
   --ws-accent: var(--octo-copper);
   min-height: 100dvh;
   overflow-x: clip;
-  background: var(--ws-paper);
+  background:
+    linear-gradient(180deg, rgb(16 11 8 / 0.55), rgb(16 11 8 / 0.82)),
+    #100b08;
   color: var(--ws-ink);
 }
 
@@ -34,7 +36,7 @@
   min-height: 11rem;
   border: 1px solid var(--ws-line);
   background: var(--ws-card);
-  border-radius: 1.1rem;
+  border-radius: 0.2rem;
   padding: 1.15rem 1.2rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -75,8 +77,9 @@
   min-height: 44px;
   width: 100%;
   border: 1px solid var(--ws-line);
-  background: white;
-  border-radius: 0.7rem;
+  background: #16110c;
+  color: var(--ws-ink);
+  border-radius: 0.2rem;
   padding: 0.55rem 0.8rem;
   font-size: 1rem;
 }

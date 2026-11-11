@@ -517,7 +517,7 @@ export function ModelLibrary({
 
   return (
     <div
-      className="store-page relative overflow-x-hidden"
+      className="store-page relative overflow-x-hidden bg-[#100b08] text-[#f3ead8]"
       data-model-library-root
       data-store-library=""
       data-community-enabled={communityEnabled ? "true" : "false"}

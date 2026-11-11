@@ -143,7 +143,7 @@ export function UnifiedModelDiscovery({ query }: { query: string }) {
         compact
         icon={<Search aria-hidden="true" className="size-5" />}
         title="Türkçe model araması"
-        description="Vazo, telefon tutucu veya masaüstü düzenleyici gibi bir terim yazın. Sonuçlar Baskı Çiftliği içinde açılır; harici siteye yönlendirilmezsiniz."
+        description="Vazo, telefon tutucu veya masaüstü düzenleyici gibi bir terim yazın. Sonuçlar Octo Studio içinde açılır; harici siteye yönlendirilmezsiniz."
       />
     );
   }
@@ -237,7 +237,7 @@ export function UnifiedModelDiscovery({ query }: { query: string }) {
         ))}
       </StaggerGrid>
       <p className="text-sm text-muted-light">
-        Harici modeller Baskı Çiftliği tarafından tasarlanmış değildir. Detay sayfasında
+        Harici modeller Octo Studio tarafından tasarlanmış değildir. Detay sayfasında
         model bilgileri ve lisans yer alır.
       </p>
       {unconfigured.length > 0 ? (

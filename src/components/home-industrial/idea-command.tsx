@@ -16,7 +16,6 @@ import { ArrowUpRight } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 
 import "./octo-sand-hero.css";
-import { OctopusTentacle } from "@/components/brand/octopus-tentacle";
 import { HeroVideo } from "@/components/home-industrial/hero-video";
 import { OctoInteractiveSandHero } from "@/components/home-industrial/octo-interactive-sand-hero";
 import { HeroTypewriter } from "@/components/home-industrial/hero-typewriter";
@@ -393,8 +392,6 @@ export function IdeaCommand() {
           {t("home.heroScroll")}
           <span />
         </p>
-        <OctopusTentacle variant="hero-corner" className="octo-tv-tentacle octo-tv-tentacle-corner" />
-        <OctopusTentacle variant="hero-guide" className="octo-tv-tentacle octo-tv-tentacle-guide" />
       </div>
 
       <div className="octo-tv-below">

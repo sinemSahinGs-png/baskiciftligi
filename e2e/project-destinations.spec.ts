@@ -92,6 +92,8 @@ test.describe("project category destinations", () => {
   test("project products stay out of /magaza", async ({ page }) => {
     await page.goto("/magaza");
     await expect(page.locator("main.store-page")).toBeVisible();
+    await expect(page.locator('[data-category-slug="lil-disc"]')).toBeVisible();
+    await expect(page.locator('[data-store-project="lil-disc"]')).toBeVisible();
     await expect(page.locator("main")).not.toContainText("Kişiye Özel Magnet");
     await expect(page.locator("main")).not.toContainText("Gece Dansı");
     await expect(page.locator("main")).not.toContainText("ORBIA Burç");
@@ -191,7 +193,7 @@ test.describe("project category destinations", () => {
       path: path.join(shots, "lil-disc-select-390.png"),
       animations: "disabled",
     });
-    await page.locator("[data-project-sticky] button").click();
+    await page.locator("[data-buy-guest]").click();
     await expect(page).toHaveURL(/\/odeme/, { timeout: 15_000 });
     await page.screenshot({
       path: path.join(shots, "lil-disc-checkout-390.png"),

@@ -47,12 +47,15 @@ export function HomeCategories({ products }: { products: Product[] }) {
       }
       clickLockY.current = null;
       const box = section.getBoundingClientRect();
-      const travel = Math.max(1, box.height - window.innerHeight * 0.62);
-      const progress = Math.min(1, Math.max(0, (window.innerHeight * 0.22 - box.top) / travel));
-      const index = Math.min(
-        STAGE_CATEGORIES.length - 1,
-        Math.floor(progress * STAGE_CATEGORIES.length),
-      );
+      const travel = Math.max(1, box.height - window.innerHeight * 0.72);
+      const progress = Math.min(1, Math.max(0, (window.innerHeight * 0.18 - box.top) / travel));
+      const projectCount = STAGE_CATEGORIES.filter((item) => item.kind === "project").length;
+      const rest = Math.max(1, STAGE_CATEGORIES.length - projectCount);
+      const raw =
+        progress < 0.38
+          ? Math.floor((progress / 0.38) * Math.max(projectCount, 1))
+          : projectCount + Math.floor(((progress - 0.38) / 0.62) * rest);
+      const index = Math.min(STAGE_CATEGORIES.length - 1, Math.max(0, raw));
       setActive((current) => (current === index ? current : index));
     };
     syncFromPageScroll();
@@ -132,6 +135,19 @@ export function HomeCategories({ products }: { products: Product[] }) {
           <Link href={"/magaza" as Route} className="hi-link">
             {t("home.catsAll")}
           </Link>
+        </div>
+        <div className="hi-cats-projects" aria-label={t("home.catsTitle")}>
+          {STAGE_CATEGORIES.filter((item) => item.kind === "project").map((item) => (
+            <Link
+              key={item.slug}
+              href={item.href}
+              className="hi-cats-project"
+              data-project-pin={item.slug}
+            >
+              <img src={item.logo ?? item.artwork} alt="" width={36} height={36} />
+              <span>{catName(item.slug)}</span>
+            </Link>
+          ))}
         </div>
 
         <div className="hi-cats-stage mt-5">

@@ -9,7 +9,10 @@ import {
   storefrontCategories,
   storefrontSlugFromSource,
 } from "@/domain/catalog/storefront-taxonomy";
+import { homepageStageCategories } from "@/domain/project-destinations/stage";
 import { useTranslations } from "next-intl";
+
+const PROJECT_CHIPS = homepageStageCategories().filter((item) => item.kind === "project");
 
 export function StoreCategoryBar() {
   const t = useTranslations();
@@ -41,6 +44,17 @@ export function StoreCategoryBar() {
         >
           {t("models.all")}
         </Link>
+        {PROJECT_CHIPS.map((item) => (
+          <Link
+            key={item.slug}
+            href={item.href}
+            className="store-cat store-cat-project"
+            data-active={active === item.slug ? "true" : undefined}
+            data-category-slug={item.slug}
+          >
+            {t(`categories.${item.slug}.name`)}
+          </Link>
+        ))}
         {storefrontCategories.map((category) =>
           category.comingSoon ? (
             <span

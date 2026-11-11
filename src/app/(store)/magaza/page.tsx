@@ -7,6 +7,7 @@ import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { CatalogSearch } from "@/components/catalog/catalog-search";
 import { RecentlyViewed } from "@/components/catalog/recently-viewed";
 import { StoreCategoryBar } from "@/components/storefront/store-category-bar";
+import { StoreProjectRail } from "@/components/storefront/store-project-rail";
 import {
   StoreEditorial,
   StoreEmptySearch,
@@ -123,6 +124,7 @@ export default async function StorePage(props: PageProps<"/magaza">) {
           </Suspense>
         </div>
       </header>
+      <StoreProjectRail />
 
       {catalogUnavailable ? (
         <section className="shell pt-6" data-visual-landmark data-catalog-results data-catalog-error="">

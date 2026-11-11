@@ -23,20 +23,27 @@
 }
 
 html.motion-ready:not([data-reduced-motion="true"])
+  [data-word-reveal]:not([data-inview="true"])
+  [data-word] {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+}
+
+html.motion-ready:not([data-reduced-motion="true"])
   [data-word-reveal][data-inview="true"]
   [data-word] {
-  animation: word-in var(--motion-section) var(--ease-foundry);
-  animation-delay: calc(var(--word-i, 0) * 40ms);
+  animation: word-in var(--motion-section) var(--ease-foundry) both;
+  animation-delay: calc(var(--word-i, 0) * 48ms);
 }
 
 @keyframes word-in {
   from {
-    opacity: 1;
-    transform: translateY(8px);
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
@@ -70,8 +77,8 @@ html.motion-ready:not([data-reduced-motion="true"])
 
 html.motion-ready:not([data-reduced-motion="true"])
   .section-reveal:not([data-inview="true"]) {
-  opacity: 1;
-  transform: none;
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
 }
 
 html.motion-ready:not([data-reduced-motion="true"])

@@ -13,7 +13,7 @@ test.describe("deployed smoke", () => {
     baseURL: deployedBase,
   });
 
-  test("core routes render Baskı Çiftliği without a stuck loader", async ({
+  test("core routes render OCTO STUDIO without a stuck loader", async ({
     page,
   }) => {
     test.setTimeout(90_000);
@@ -26,7 +26,7 @@ test.describe("deployed smoke", () => {
     for (const route of ["/", "/magaza", "/hazir-modeller", "/model-yukle"]) {
       await page.goto(route, { waitUntil: "domcontentloaded" });
       await expect(page.locator("body")).not.toHaveText(/Something went wrong/i);
-      await expect(page.getByText(/Baskı Çiftliği/).first()).toBeVisible();
+      await expect(page.getByText(/OCTO STUDIO/).first()).toBeVisible();
       await expect(page.locator("#ana-icerik")).toBeVisible();
     }
 

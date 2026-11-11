@@ -124,7 +124,7 @@ export async function SiteFooter({
 
         <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-4 text-xs text-muted-light sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {siteConfig.legalName}
+            © {new Date().getFullYear()} {siteConfig.name}
           </p>
           <nav aria-label={msg(messages, "common.legal")} className="flex flex-wrap gap-x-3 gap-y-1">
             <Link href={"/yasal/kvkk" as Route} className="hover:text-light-text">

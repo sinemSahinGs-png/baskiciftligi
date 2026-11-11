@@ -200,9 +200,9 @@ export function WholesaleCheckout({
   return (
     <div className="ws-page">
       <div className="ws-shell py-6 sm:py-10">
-        <p className="ws-eyebrow">Toptan satış</p>
+        <p className="ws-eyebrow">OCTO STUDIO · Toptan</p>
         <h1 className="mt-3 max-w-xl font-heading text-[1.7rem] leading-[0.95] font-semibold tracking-[-0.04em] uppercase sm:text-5xl">
-          Tezgahın hazır. Ürünlerin hazır.
+          Atölyeden tezgaha.
         </h1>
         <p className="mt-4 max-w-xl text-[0.95rem] leading-6 text-[color:var(--ws-muted)]">
           Karışık model çakmak paketini seç, bilgilerini gir ve güvenli ödeme ile
@@ -219,13 +219,13 @@ export function WholesaleCheckout({
         </div>
 
         <ul className="mt-4 flex flex-wrap gap-2 text-[0.68rem] font-extrabold tracking-[0.12em] text-[color:var(--ws-muted)] uppercase">
-          <li className="rounded-full border border-[color:var(--ws-line)] bg-white px-3 py-2">
+          <li className="rounded-full border border-[color:var(--ws-line)] px-3 py-2">
             KDV dahil
           </li>
-          <li className="rounded-full border border-[color:var(--ws-line)] bg-white px-3 py-2">
+          <li className="rounded-full border border-[color:var(--ws-line)] px-3 py-2">
             1 stant hediye
           </li>
-          <li className="rounded-full border border-[color:var(--ws-line)] bg-white px-3 py-2">
+          <li className="rounded-full border border-[color:var(--ws-line)] px-3 py-2">
             Güvenli ödeme
           </li>
         </ul>
@@ -278,7 +278,7 @@ export function WholesaleCheckout({
         </div>
 
         <aside
-          className="mt-6 rounded-2xl border border-[color:var(--ws-line)] bg-white p-4"
+          className="mt-6 rounded-2xl border border-[color:var(--ws-line)] bg-[color:var(--ws-card)] p-4"
           aria-live="polite"
         >
           <p className="text-xs font-extrabold tracking-[0.14em] uppercase">

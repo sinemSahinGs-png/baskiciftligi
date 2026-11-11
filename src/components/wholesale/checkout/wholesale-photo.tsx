@@ -46,7 +46,7 @@ export function WholesalePhotoFrame({
       ) : (
         <span className="ws-photo-fallback">
           <span className="ws-photo-mark" aria-hidden="true" />
-          <span>Baskı Çiftliği</span>
+          <span>OCTO STUDIO</span>
         </span>
       )}
     </button>

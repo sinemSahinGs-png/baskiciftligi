@@ -1,3 +1,6 @@
+import type { Route } from "next";
+import Link from "next/link";
+
 import { StoreCheckout } from "@/components/checkout/store-checkout";
 import { createPageMetadata } from "@/components/content/metadata";
 import { getViewer } from "@/lib/auth/session";
@@ -27,6 +30,18 @@ export default async function CheckoutPage() {
       <h1 className="mt-3 font-heading text-3xl font-semibold">{msg(messages, "checkout.title")}</h1>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
         {msg(messages, "checkout.lede")}
+      </p>
+      <p className="mt-4 max-w-2xl text-sm">
+        {guest ? (
+          <>
+            Üye olmadan devam ediyorsun.{" "}
+            <Link href={"/giris?next=/odeme" as Route} className="underline">
+              Üye girişi
+            </Link>
+          </>
+        ) : (
+          "Üye olarak ödüyorsun."
+        )}
       </p>
       <div className="mt-8">
         <StoreCheckout
