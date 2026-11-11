@@ -15,13 +15,14 @@ describe("octo tv screen geometry", () => {
     expect(OCTO_TV_SCREEN_PX.top).toBeGreaterThan(80);
     expect(OCTO_TV_SCREEN_PX.bottom).toBeLessThan(OCTO_TV_SOURCE.height - 80);
     expect(OCTO_TV_SCREEN_DESKTOP.left + OCTO_TV_SCREEN_DESKTOP.width).toBeLessThan(0.72);
-    expect(OCTO_TV_SCREEN_DESKTOP.top + OCTO_TV_SCREEN_DESKTOP.height).toBeLessThan(0.86);
+    expect(OCTO_TV_SCREEN_DESKTOP.top + OCTO_TV_SCREEN_DESKTOP.height).toBeLessThan(0.88);
   });
 
-  it("keeps the mobile screen larger than half the cropped width", () => {
-    expect(OCTO_TV_SCREEN_MOBILE.width).toBeGreaterThan(0.7);
-    expect(OCTO_TV_SCREEN_MOBILE.height).toBeGreaterThan(0.6);
-    expect(OCTO_TV_SCREEN_MOBILE.left + OCTO_TV_SCREEN_MOBILE.width).toBeLessThan(0.92);
+  it("keeps the portrait mobile CRT inside the 1080×1920 still", () => {
+    expect(OCTO_TV_SCREEN_MOBILE.width).toBeGreaterThan(0.8);
+    expect(OCTO_TV_SCREEN_MOBILE.height).toBeGreaterThan(0.35);
+    expect(OCTO_TV_SCREEN_MOBILE.height).toBeLessThan(0.5);
+    expect(OCTO_TV_SCREEN_MOBILE.left + OCTO_TV_SCREEN_MOBILE.width).toBeLessThan(0.95);
   });
 
   it("reads CSS custom properties as unit UV coordinates", () => {

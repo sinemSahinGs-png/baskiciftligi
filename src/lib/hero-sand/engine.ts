@@ -36,7 +36,7 @@ void main() {
   float falloff = exp(-dist * dist / max(uRadius * uRadius * 1.8, 0.0002));
   float grain = fract(sin(dot(vUv * 38.0, vec2(12.9898, 78.233))) * 43758.5453);
   vec2 grainPush = vec2(grain - 0.5, fract(grain * 7.13) - 0.5);
-  vel += (uDelta * 0.72 + grainPush * 0.08) * falloff * uForce * (0.28 + grain * 1.15);
+  vel += (uDelta * 0.92 + grainPush * 0.1) * falloff * uForce * (0.38 + grain * 1.2);
   vel *= 0.84;
   disp += vel;
   disp += vec2((grain - 0.5) * 0.00035, 0.0016 + grain * 0.0009) * uSettle;
@@ -53,7 +53,9 @@ in vec2 vUv;
 out vec4 fragColor;
 uniform sampler2D uState;
 uniform sampler2D uAlbedo;
+uniform sampler2D uPhoto;
 uniform float uHasAlbedo;
+uniform float uHasPhoto;
 uniform vec2 uRepeat;
 uniform vec2 uTexel;
 uniform vec2 uPointer;
@@ -78,10 +80,36 @@ float screenWindow(vec2 cssUv) {
   return 1.0 - smoothstep(-0.004, 0.01, d);
 }
 
+float sandField(vec3 photo) {
+  float luma = dot(photo, vec3(0.299, 0.587, 0.114));
+  float warm = photo.r * 0.52 + photo.g * 0.48 - photo.b;
+  float redBias = photo.r - photo.g;
+  float even = 1.0 - clamp(abs(photo.r - photo.g) * 3.4, 0.0, 1.0);
+  float dune = smoothstep(0.50, 0.66, luma) * smoothstep(0.16, 0.30, warm);
+  float notClay = 1.0 - smoothstep(0.04, 0.11, redBias);
+  float notMetal = 1.0 - smoothstep(0.22, 0.38, abs(photo.r - photo.b) * (1.0 - luma));
+  return dune * even * notClay * notMetal;
+}
+
+float objectHole(vec2 cssUv) {
+  vec2 pad = vec2(0.12, 0.09);
+  vec2 center = uScreen.xy + uScreen.zw * 0.5;
+  vec2 halfSize = uScreen.zw * 0.5 + pad;
+  float d = sdRoundBox(cssUv - center, halfSize, uRadius * min(uScreen.z, uScreen.w) + 0.05);
+  return 1.0 - smoothstep(-0.012, 0.02, d);
+}
+
 void main() {
   vec2 cssUv = vec2(vUv.x, 1.0 - vUv.y);
-  float aperture = screenWindow(cssUv);
-  if (uHasAlbedo < 0.5) {
+  float aperture = max(screenWindow(cssUv), objectHole(cssUv));
+  if (uHasAlbedo < 0.5 || uHasPhoto < 0.5 || aperture > 0.12) {
+    fragColor = vec4(0.0);
+    return;
+  }
+
+  vec3 photo = texture(uPhoto, cssUv).rgb;
+  float mask = sandField(photo);
+  if (mask < 0.28) {
     fragColor = vec4(0.0);
     return;
   }
@@ -95,29 +123,20 @@ void main() {
   vec3 normal = normalize(vec3((hL - hR) * 18.0, (hD - hU) * 18.0, 1.0));
   float ndl = clamp(dot(normal, normalize(vec3(0.72, 0.48, 0.48))), 0.0, 1.0);
 
-  vec2 warp = disp * 2.1;
+  vec2 warp = disp * 1.4;
   vec3 sand = texture(uAlbedo, vUv * uRepeat + warp).rgb;
-  sand *= mix(0.88, 1.08, ndl);
+  sand *= mix(0.9, 1.06, ndl);
 
-  vec2 cell = floor(cssUv * vec2(980.0, 680.0) + disp * 18.0);
-  float n = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
-  float speck = step(0.984, n) * (0.18 + 0.22 * fract(n * 13.7));
-  speck *= mix(0.42, 1.0, clamp(cssUv.y * 1.15, 0.0, 1.0));
-  speck *= 1.0 - smoothstep(0.0, 0.012, hC) * 0.35;
-
-  if (aperture > 0.52) {
-    float dust = speck * 0.62;
-    fragColor = vec4(sand * dust, dust);
+  float piles = smoothstep(0.003, 0.028, hC);
+  float dist = distance(vUv, uPointer);
+  float scrape = exp(-dist * dist / max(uBrushRadius * uBrushRadius * 2.2, 0.0002)) * smoothstep(0.05, 0.2, uBrush);
+  float cover = mix(0.0, 0.62, piles);
+  cover = mix(cover, 0.04, scrape * 0.7);
+  cover *= mask;
+  if (cover < 0.02) {
+    fragColor = vec4(0.0);
     return;
   }
-
-  float piles = smoothstep(0.0014, 0.022, hC);
-  float dist = distance(vUv, uPointer);
-  float scrape = exp(-dist * dist / max(uBrushRadius * uBrushRadius * 2.2, 0.0002)) * smoothstep(0.04, 0.18, uBrush);
-  float cover = mix(0.09, 0.52, piles);
-  cover = mix(cover, 0.05, scrape * 0.55);
-  cover *= 1.0 - smoothstep(0.08, 0.52, aperture);
-  cover = max(cover, speck * 0.28 * (1.0 - aperture));
   fragColor = vec4(sand * cover, cover);
 }`;
 
@@ -238,6 +257,8 @@ export class OctoSandEngine {
   private texA: WebGLTexture;
   private texB: WebGLTexture;
   private albedo: WebGLTexture;
+  private photo: WebGLTexture;
+  private hasPhoto = 0;
   private fboA: WebGLFramebuffer;
   private fboB: WebGLFramebuffer;
   private writeA = true;
@@ -257,7 +278,7 @@ export class OctoSandEngine {
   private frameMs = 0;
   private pointer = { x: 0.5, y: 0.5, dx: 0, dy: 0, force: 0 };
   private brush = 0;
-  private screen = { left: 0.308375, top: 0.142202, width: 0.377704, height: 0.682339, radius: 0.062 };
+  private screen = { left: 0.296175, top: 0.091743, width: 0.412568, height: 0.775229, radius: 0.055 };
   private onLost = () => {
     this.lost = true;
     this.stop();
@@ -279,6 +300,7 @@ export class OctoSandEngine {
     this.texA = makeTexture(gl, grid, mid);
     this.texB = makeTexture(gl, grid);
     this.albedo = makeTexture(gl, 1, new Uint8Array([200, 154, 90, 255]), gl.LINEAR);
+    this.photo = makeTexture(gl, 1, new Uint8Array([0, 0, 0, 0]), gl.LINEAR);
     this.fboA = makeFbo(gl, this.texA);
     this.fboB = makeFbo(gl, this.texB);
     this.quad = gl.createBuffer()!;
@@ -311,6 +333,19 @@ export class OctoSandEngine {
       this.textureHeight = image.height;
     }
     this.sampled = "/images/hero/octo-sand-field.webp";
+  }
+
+  setPhoto(image: TexImageSource) {
+    if (this.lost) return;
+    const { gl } = this;
+    gl.bindTexture(gl.TEXTURE_2D, this.photo);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    this.hasPhoto = 1;
   }
 
   impulse(nx: number, ny: number, dx: number, dy: number, force: number) {
@@ -374,6 +409,7 @@ export class OctoSandEngine {
     gl.deleteTexture(this.texA);
     gl.deleteTexture(this.texB);
     gl.deleteTexture(this.albedo);
+    gl.deleteTexture(this.photo);
     gl.deleteFramebuffer(this.fboA);
     gl.deleteFramebuffer(this.fboB);
     gl.deleteProgram(this.sim);
@@ -443,7 +479,11 @@ export class OctoSandEngine {
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, this.albedo);
     gl.uniform1i(gl.getUniformLocation(this.draw, "uAlbedo"), 1);
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, this.photo);
+    gl.uniform1i(gl.getUniformLocation(this.draw, "uPhoto"), 2);
     gl.uniform1f(gl.getUniformLocation(this.draw, "uHasAlbedo"), this.hasAlbedo);
+    gl.uniform1f(gl.getUniformLocation(this.draw, "uHasPhoto"), this.hasPhoto);
     gl.uniform2f(gl.getUniformLocation(this.draw, "uPointer"), this.pointer.x, 1 - this.pointer.y);
     gl.uniform1f(gl.getUniformLocation(this.draw, "uBrush"), this.brush);
     gl.uniform1f(

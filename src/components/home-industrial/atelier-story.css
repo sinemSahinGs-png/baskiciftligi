@@ -530,43 +530,71 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .atelier-start-card,
-  .atelier-step-list li,
-  .atelier-detail-cards li,
-  .atelier-split-card,
-  .atelier-trust li,
-  .atelier-curated .octo-curated-card,
-  .atelier-faq-item,
-  .hi-cats-project {
-    animation: atelier-rise 820ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  .atelier-wait {
+    opacity: 0;
+    transform: translate3d(0, 36px, 0);
   }
-}
 
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .atelier-start-card,
-    .atelier-step-list li,
-    .atelier-detail-cards li,
-    .atelier-split-card,
-    .atelier-trust li,
-    .atelier-curated .octo-curated-card,
-    .atelier-faq-item,
-    .hi-cats-project {
-      animation: atelier-rise 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 38%;
+  .atelier-in {
+    animation: atelier-pop 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--rise-delay, 0ms);
+  }
+
+  @keyframes atelier-pop {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 36px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
     }
   }
-}
 
-@keyframes atelier-rise {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 28px, 0);
+  .atelier-start-card,
+  .atelier-split-card,
+  .atelier-detail-cards li,
+  .atelier-trust li,
+  .atelier-faq-item,
+  .hi-cats-project,
+  .octo-curated-card,
+  .atelier-cta,
+  .atelier-cta-ghost,
+  .hi-cats-index-item,
+  .atelier-step-list li {
+    transition:
+      transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 280ms ease,
+      box-shadow 280ms ease,
+      filter 280ms ease;
   }
-  to {
-    opacity: 1;
-    transform: none;
+
+  .atelier-start-card:hover,
+  .atelier-split-card:hover,
+  .atelier-detail-cards li:hover,
+  .octo-curated-card:hover,
+  .hi-cats-project:hover,
+  .atelier-step-list li:hover {
+    transform: translate3d(0, -6px, 0) scale(1.015);
+    border-color: rgb(216 183 122 / 0.42);
+    box-shadow: 0 16px 32px rgb(5 3 2 / 0.35);
+  }
+
+  .atelier-cta:hover,
+  .atelier-cta-ghost:hover,
+  .octo-tv-content .octo-cta:hover,
+  .octo-tv-content .octo-cta-ghost:hover {
+    transform: translate3d(0, -3px, 0) scale(1.03);
+    filter: brightness(1.08);
+  }
+
+  .atelier-cta:active,
+  .atelier-cta-ghost:active,
+  .octo-tv-content .octo-cta:active,
+  .octo-tv-content .octo-cta-ghost:active,
+  .atelier-start-card:active,
+  .octo-curated-card:active {
+    transform: translate3d(0, 1px, 0) scale(0.98);
   }
 }
 
@@ -611,6 +639,21 @@
 
   .atelier-curated .octo-curated-arrows {
     display: flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atelier-wait,
+  .atelier-in,
+  .atelier-start-card,
+  .atelier-split-card,
+  .atelier-cta,
+  .atelier-cta-ghost {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
   }
 }
 

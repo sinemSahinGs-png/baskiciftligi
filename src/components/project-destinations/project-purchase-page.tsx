@@ -306,17 +306,24 @@ export function ProjectPurchasePage({
                 disabled={!canBuy || busy}
                 onClick={() => void buyGuest()}
               >
-                Üye olmadan satın al
+                Satın Al
               </button>
-              <button
-                type="button"
-                className="project-buy-cta-ghost"
-                data-buy-member=""
-                disabled={!canBuy || busy}
-                onClick={() => void buyMember()}
-              >
-                Üye girişi ile al
-              </button>
+              {destination.slug === "lil-disc" ? (
+                <p className="project-buy-member-hint">
+                  Üye girişi ödeme ekranında.{" "}
+                  <Link href={"/giris?next=/odeme" as Route}>Giriş yap</Link>
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  className="project-buy-cta-ghost"
+                  data-buy-member=""
+                  disabled={!canBuy || busy}
+                  onClick={() => void buyMember()}
+                >
+                  Üye girişi ile al
+                </button>
+              )}
             </div>
           ) : (
             <button type="button" className="project-buy-cta project-buy-cta-soon" disabled>

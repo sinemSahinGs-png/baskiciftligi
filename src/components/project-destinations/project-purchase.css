@@ -509,6 +509,29 @@
   border-color: rgb(22 17 12 / 0.22);
 }
 
+.project-buy-member-hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.project-buy-member-hint a {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-choices img {
+  height: 7.2rem;
+  object-fit: cover;
+}
+
+.project-buy[data-project-theme="lil-disc"] .project-buy-cta {
+  min-height: 3rem;
+  width: 100%;
+  font-size: 0.92rem;
+  letter-spacing: 0.08em;
+}
+
 .project-buy[data-project-theme="lil-disc"] .project-buy-sticky {
   display: none;
 }

@@ -34,13 +34,14 @@ export default async function CheckoutPage() {
       <p className="mt-4 max-w-2xl text-sm">
         {guest ? (
           <>
-            Üye olmadan devam ediyorsun.{" "}
+            Misafir olarak ödeyebilirsin. Üyeysen{" "}
             <Link href={"/giris?next=/odeme" as Route} className="underline">
-              Üye girişi
+              giriş yap
             </Link>
+            , bilgilerin otomatik dolar.
           </>
         ) : (
-          "Üye olarak ödüyorsun."
+          "Üye hesabınla ödüyorsun; adres ve e-posta dolduruldu."
         )}
       </p>
       <div className="mt-8">

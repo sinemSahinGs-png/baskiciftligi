@@ -1,4 +1,5 @@
 import { AtelierCave } from "@/components/home-industrial/atelier-cave";
+import { AtelierScrollMotion } from "@/components/home-industrial/atelier-scroll";
 import { CompactClose } from "@/components/home-industrial/compact-close";
 import { CompactUpload } from "@/components/home-industrial/compact-upload";
 import { CuratedCollection } from "@/components/home-industrial/curated-collection";
@@ -36,6 +37,7 @@ export function IndustrialHome({
     <div className="hi-root octo-world atelier-world">
       <IndustrialHeaderEffects />
       <ScrollThemeProvider />
+      <AtelierScrollMotion />
       <OceanDepthTracker />
       <OceanAtmosphere />
       <TechnicalGrid />

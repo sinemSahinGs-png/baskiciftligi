@@ -19,11 +19,41 @@ import { CategoryArtwork } from "@/components/catalog/category-artwork";
 import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
 import {
   storefrontCategories,
-  type StorefrontCategory,
   type StorefrontCategorySlug,
 } from "@/domain/catalog/storefront-taxonomy";
+import { homepageStageCategories } from "@/domain/project-destinations/stage";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+
+type MegaCategory = {
+  slug: string;
+  href: Route;
+  comingSoon: boolean;
+  artworkSrc: string | null;
+  objectPosition: string;
+};
+
+function megaCategories(
+  categoryArtwork: Record<StorefrontCategorySlug, string | null>,
+): MegaCategory[] {
+  const projects = homepageStageCategories()
+    .filter((item) => item.kind === "project")
+    .map((item) => ({
+      slug: item.slug,
+      href: item.href,
+      comingSoon: item.comingSoon,
+      artworkSrc: item.artwork,
+      objectPosition: "50% 50%",
+    }));
+  const octo = storefrontCategories.map((item) => ({
+    slug: item.slug,
+    href: item.href,
+    comingSoon: item.comingSoon,
+    artworkSrc: categoryArtwork[item.slug],
+    objectPosition: CATEGORY_OBJECT_POSITION[item.slug],
+  }));
+  return [...projects, ...octo];
+}
 
 const OPEN_DELAY = 80;
 const CLOSE_DELAY = 280;
@@ -53,7 +83,8 @@ export function StoreMegaMenu({
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const liveCategories = storefrontCategories.filter((item) => !item.comingSoon);
+  const categories = megaCategories(categoryArtwork);
+  const liveCategories = categories.filter((item) => !item.comingSoon);
   const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const wholesaleRef = useRef<HTMLAnchorElement | null>(null);
   const openTimer = useRef(0);
@@ -272,19 +303,15 @@ export function StoreMegaMenu({
     >
       <div className="store-mega-panel">
         <ul className="store-mega-grid">
-          {storefrontCategories.map((category) => {
+          {categories.map((category) => {
             const liveIndex = liveCategories.findIndex((item) => item.slug === category.slug);
             return (
               <li key={category.slug}>
                 {category.comingSoon || liveIndex < 0 ? (
-                  <MegaSoonItem
-                    category={category}
-                    artworkSrc={categoryArtwork[category.slug]}
-                  />
+                  <MegaSoonItem category={category} />
                 ) : (
                   <MegaItem
                     category={category}
-                    artworkSrc={categoryArtwork[category.slug]}
                     active={active === liveIndex}
                     refFn={(node) => {
                       itemRefs.current[liveIndex] = node;
@@ -356,7 +383,7 @@ export function StoreMegaMenu({
   );
 }
 
-function useCategoryCopy(slug: StorefrontCategorySlug) {
+function useCategoryCopy(slug: string) {
   const t = useTranslations("categories");
   return {
     name: t(`${slug}.name`),
@@ -366,15 +393,13 @@ function useCategoryCopy(slug: StorefrontCategorySlug) {
 
 function MegaItem({
   category,
-  artworkSrc,
   active,
   refFn,
   onFocus,
   onMouseEnter,
   onKeyDown,
 }: {
-  category: StorefrontCategory;
-  artworkSrc: string | null;
+  category: MegaCategory;
   active: boolean;
   refFn: (node: HTMLAnchorElement | null) => void;
   onFocus: () => void;
@@ -396,9 +421,9 @@ function MegaItem({
     >
       <span className="store-mega-art" aria-hidden="true">
         <CategoryArtwork
-          src={artworkSrc}
+          src={category.artworkSrc}
           sizes="80px"
-          objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+          objectPosition={category.objectPosition}
         />
       </span>
       <span className="min-w-0">
@@ -411,10 +436,8 @@ function MegaItem({
 
 function MegaSoonItem({
   category,
-  artworkSrc,
 }: {
-  category: StorefrontCategory;
-  artworkSrc: string | null;
+  category: MegaCategory;
 }) {
   const t = useTranslations();
   const copy = useCategoryCopy(category.slug);
@@ -428,9 +451,9 @@ function MegaSoonItem({
     >
       <span className="store-mega-art" aria-hidden="true">
         <CategoryArtwork
-          src={artworkSrc}
+          src={category.artworkSrc}
           sizes="80px"
-          objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+          objectPosition={category.objectPosition}
         />
       </span>
       <span className="min-w-0">
@@ -452,6 +475,7 @@ export function MobileStoreNav({
   const t = useTranslations();
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  const categories = megaCategories(categoryArtwork);
 
   return (
     <li className="border-b border-hairline">
@@ -475,7 +499,7 @@ export function MobileStoreNav({
             {t("common.allProducts")}
           </Link>
           <ul className="store-mobile-cat-grid">
-            {storefrontCategories.map((category) => (
+            {categories.map((category) => (
               <li key={category.slug}>
                 {category.comingSoon ? (
                   <div
@@ -487,9 +511,9 @@ export function MobileStoreNav({
                   >
                     <span className="store-mobile-cat-art" aria-hidden="true">
                       <CategoryArtwork
-                        src={categoryArtwork[category.slug]}
+                        src={category.artworkSrc}
                         sizes="72px"
-                        objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+                        objectPosition={category.objectPosition}
                       />
                     </span>
                     <span className="store-mobile-cat-copy">
@@ -506,9 +530,9 @@ export function MobileStoreNav({
                   >
                     <span className="store-mobile-cat-art" aria-hidden="true">
                       <CategoryArtwork
-                        src={categoryArtwork[category.slug]}
+                        src={category.artworkSrc}
                         sizes="72px"
-                        objectPosition={CATEGORY_OBJECT_POSITION[category.slug]}
+                        objectPosition={category.objectPosition}
                       />
                     </span>
                     <span className="store-mobile-cat-copy">

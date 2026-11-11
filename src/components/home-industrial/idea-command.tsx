@@ -272,7 +272,6 @@ export function IdeaCommand() {
       aria-labelledby="idea-command-heading"
     >
       <div className="octo-tv-stage">
-        <OctoInteractiveSandHero />
         <div className="octo-tv-frame">
           <picture className="octo-tv-shell-picture">
             <source media={OCTO_TV_MOBILE_MEDIA} srcSet={OCTO_TV_SHELL.mobile} type="image/webp" />
@@ -281,12 +280,13 @@ export function IdeaCommand() {
               className="octo-tv-shell"
               src={OCTO_TV_SHELL.desktop}
               alt=""
-              width={1803}
-              height={872}
+              width={OCTO_TV_SHELL.desktopWidth}
+              height={OCTO_TV_SHELL.desktopHeight}
               decoding="async"
               fetchPriority="high"
             />
           </picture>
+          <OctoInteractiveSandHero />
           <div className="octo-tv-screen" data-octo-tv-screen="">
             <HeroVideo reducedMotion={reduceMotion} />
             <div className="octo-tv-glass" aria-hidden="true" />
@@ -304,16 +304,20 @@ export function IdeaCommand() {
           />
           <span className="hi-hero-rule" aria-hidden="true" />
           <div className="octo-hero-actions">
-            <Link href={"/magaza" as Route} className="octo-cta">
-              {t("home.heroPrimary")}
-            </Link>
-            <Link
-              href={"/model-yukle" as Route}
-              onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
-              className="octo-cta-ghost"
-            >
-              {t("home.heroSecondary")}
-            </Link>
+            <MagneticAction>
+              <Link href={"/magaza" as Route} className="octo-cta">
+                {t("home.heroPrimary")}
+              </Link>
+            </MagneticAction>
+            <MagneticAction>
+              <Link
+                href={"/model-yukle" as Route}
+                onClick={() => trackHomeEvent({ name: "upload_cta_clicked" })}
+                className="octo-cta-ghost"
+              >
+                {t("home.heroSecondary")}
+              </Link>
+            </MagneticAction>
           </div>
           <p className="hi-hero-lede">
             {t("home.heroLede")}

@@ -173,9 +173,19 @@ export function OctoInteractiveSandHero() {
           next.destroy();
           engineRef.current = null;
         });
-        unbindAlbedo = () => field.removeEventListener("load", bindField);
+        const shell = host.closest(".octo-tv-frame")?.querySelector<HTMLImageElement>("img.octo-tv-shell");
+        const bindShell = () => {
+          if (cancelled || !shell || shell.naturalWidth < 1) return;
+          next.setPhoto(shell);
+        };
+        shell?.addEventListener("load", bindShell);
+        unbindAlbedo = () => {
+          field.removeEventListener("load", bindField);
+          shell?.removeEventListener("load", bindShell);
+        };
         field.src = OCTO_SAND_FIELD;
         if (field.complete) bindField();
+        if (shell?.complete) bindShell();
         engineRef.current = next;
         settled = true;
         window.clearTimeout(timeout);

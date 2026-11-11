@@ -23,7 +23,7 @@ async function readyHome(page: Page) {
 async function decodeCategoryImages(
   page: Page,
   rootSelector: string,
-  expected = storefrontCategories.length,
+  expected = homepageStageCategories().length,
 ) {
   await expect
     .poll(

@@ -2,7 +2,7 @@
 
 import type { Route } from "next";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { formatMoney } from "@/lib/money";
 import { useCartStore } from "@/stores/cart-store";
@@ -51,6 +51,24 @@ export function StoreCheckout({
     setTotals(json);
     return json;
   }
+
+  useEffect(() => {
+    if (payloadLines.length === 0) return;
+    let cancelled = false;
+    void fetch("/api/cart/price", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lines: payloadLines }),
+    })
+      .then((response) => response.json() as Promise<PricePayload>)
+      .then((json) => {
+        if (!cancelled) setTotals(json);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [payloadLines]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
