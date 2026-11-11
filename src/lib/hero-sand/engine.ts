@@ -1,4 +1,4 @@
-import { SAND_RESET_MS } from "@/lib/hero-sand/physics";
+import { SAND_RESET_MS, type SandDebugReason } from "@/lib/hero-sand/physics";
 
 const SIM_VS = `#version 300 es
 in vec2 aPos;
@@ -176,7 +176,7 @@ function makeFbo(gl: WebGL2RenderingContext, texture: WebGLTexture) {
 
 export type SandDiagnostics = {
   mode: "webgl2" | "fallback";
-  reason: "webgl" | "context_lost";
+  reason: SandDebugReason;
   grid: number;
   dpr: number;
   fps: number;
