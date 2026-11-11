@@ -25,6 +25,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const pointerLock = useRef(false);
   const snapLock = useRef(false);
+  const clickLockY = useRef<number | null>(null);
   const [active, setActive] = useState(0);
   const current = STAGE_CATEGORIES[active] ?? STAGE_CATEGORIES[0];
   const totalLabel = String(STAGE_CATEGORIES.length).padStart(2, "0");
@@ -32,8 +33,36 @@ export function HomeCategories({ products }: { products: Product[] }) {
   const go = useCallback((index: number) => {
     const bounded = (index + STAGE_CATEGORIES.length) % STAGE_CATEGORIES.length;
     snapLock.current = true;
+    clickLockY.current = typeof window === "undefined" ? null : window.scrollY;
     setActive(bounded);
   }, []);
+
+  useEffect(() => {
+    if (reduce) return;
+    const section = sectionRef.current;
+    if (!section) return;
+    const syncFromPageScroll = () => {
+      if (clickLockY.current !== null && Math.abs(window.scrollY - clickLockY.current) < 72) {
+        return;
+      }
+      clickLockY.current = null;
+      const box = section.getBoundingClientRect();
+      const travel = Math.max(1, box.height - window.innerHeight * 0.62);
+      const progress = Math.min(1, Math.max(0, (window.innerHeight * 0.22 - box.top) / travel));
+      const index = Math.min(
+        STAGE_CATEGORIES.length - 1,
+        Math.floor(progress * STAGE_CATEGORIES.length),
+      );
+      setActive((current) => (current === index ? current : index));
+    };
+    syncFromPageScroll();
+    window.addEventListener("scroll", syncFromPageScroll, { passive: true });
+    window.addEventListener("resize", syncFromPageScroll);
+    return () => {
+      window.removeEventListener("scroll", syncFromPageScroll);
+      window.removeEventListener("resize", syncFromPageScroll);
+    };
+  }, [reduce]);
 
   useEffect(() => {
     const track = trackRef.current;

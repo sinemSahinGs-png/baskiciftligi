@@ -243,7 +243,57 @@
 
 .atelier-cats.hi-cats {
   background: transparent;
-  padding-bottom: 18vh;
+  min-height: 240vh;
+  padding-bottom: 8vh;
+}
+
+.atelier-cats > .hi-shell {
+  position: sticky;
+  top: calc(var(--hi-header-offset, 4.5rem) + 0.3rem);
+}
+
+.atelier-cats .hi-cats-index {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  scrollbar-width: none;
+}
+
+.atelier-cats .hi-cats-index::-webkit-scrollbar {
+  display: none;
+}
+
+.atelier-cats .hi-cats-index-item {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.75rem;
+  border: 1px solid rgb(216 183 122 / 0.22);
+  border-radius: 999px;
+  background: rgb(14 10 7 / 0.58);
+  color: #f3ead8;
+  white-space: nowrap;
+}
+
+.atelier-cats .hi-cats-index-item[data-active="true"] {
+  border-color: #e0b56a;
+  background: rgb(224 181 106 / 0.18);
+}
+
+.atelier-cats .hi-cats-index-num {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  color: #d8b77a;
+}
+
+.atelier-cats .hi-cats-index-name {
+  font-size: 0.74rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .atelier-cats .hi-cats-handoff {
@@ -438,10 +488,55 @@
   max-height: 1100px;
 }
 
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .atelier-start-card,
+    .atelier-step-list li,
+    .atelier-detail-cards li,
+    .atelier-split-card,
+    .atelier-trust li,
+    .atelier-curated .octo-curated-card,
+    .atelier-faq-item {
+      animation: atelier-rise 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 32%;
+    }
+  }
+}
+
+@keyframes atelier-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (min-width: 768px) {
-  .atelier-panel,
-  .atelier-cats.hi-cats {
+  .atelier-panel {
     padding: 2.4rem 1.25rem 22vh;
+  }
+
+  .atelier-cats.hi-cats {
+    min-height: 260vh;
+    padding: 2.4rem 1.25rem 10vh;
+  }
+
+  .atelier-cats .hi-cats-index {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .atelier-cats .hi-cats-index-item {
+    display: grid;
+    width: 100%;
+    border-radius: 0;
+    padding: 0 0.55rem;
   }
 
   .atelier-start-list {

@@ -33,12 +33,14 @@ void main() {
   vec2 disp = decode(state.xy);
   vec2 vel = decode(state.zw);
   float dist = distance(vUv, uPointer);
-  float falloff = exp(-dist * dist / max(uRadius * uRadius, 0.0004));
-  float grain = fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453);
-  vel += uDelta * falloff * uForce * (0.85 + grain * 0.55);
-  vel *= 0.9;
+  float falloff = exp(-dist * dist / max(uRadius * uRadius * 1.8, 0.0002));
+  float grain = fract(sin(dot(vUv * 38.0, vec2(12.9898, 78.233))) * 43758.5453);
+  vec2 grainPush = vec2(grain - 0.5, fract(grain * 7.13) - 0.5);
+  vel += (uDelta * 0.72 + grainPush * 0.08) * falloff * uForce * (0.28 + grain * 1.15);
+  vel *= 0.84;
   disp += vel;
-  disp += (vUv - vec2(0.5)) * length(disp) * 0.002 * uSettle;
+  disp += vec2(0.0, 0.012) * length(disp) * uSettle;
+  disp *= 0.992;
   disp = mix(disp, vec2(0.0), uReset);
   vel = mix(vel, vec2(0.0), uReset);
   fragColor = vec4(encode(disp), encode(vel));
@@ -78,7 +80,7 @@ float screenWindow(vec2 cssUv) {
 void main() {
   vec2 cssUv = vec2(vUv.x, 1.0 - vUv.y);
   float aperture = screenWindow(cssUv);
-  if (aperture > 0.82 || uHasAlbedo < 0.5) {
+  if (aperture > 0.42 || uHasAlbedo < 0.5) {
     fragColor = vec4(0.0);
     return;
   }
@@ -89,19 +91,19 @@ void main() {
   float hL = length(decode(texture(uState, vUv - vec2(uTexel.x, 0.0)).xy));
   float hU = length(decode(texture(uState, vUv + vec2(0.0, uTexel.y)).xy));
   float hD = length(decode(texture(uState, vUv - vec2(0.0, uTexel.y)).xy));
-  vec3 normal = normalize(vec3((hL - hR) * 26.0, (hD - hU) * 26.0, 1.0));
+  vec3 normal = normalize(vec3((hL - hR) * 18.0, (hD - hU) * 18.0, 1.0));
   float ndl = clamp(dot(normal, normalize(vec3(0.72, 0.48, 0.48))), 0.0, 1.0);
 
-  vec2 warp = disp * 3.6;
+  vec2 warp = disp * 2.1;
   vec3 sand = texture(uAlbedo, vUv * uRepeat + warp).rgb;
-  sand *= mix(0.78, 1.16, ndl);
+  sand *= mix(0.88, 1.08, ndl);
 
-  float piles = smoothstep(0.0008, 0.028, hC);
+  float piles = smoothstep(0.0014, 0.022, hC);
   float dist = distance(vUv, uPointer);
-  float scrape = exp(-dist * dist / max(uBrushRadius * uBrushRadius * 1.15, 0.0003)) * smoothstep(0.01, 0.12, uBrush);
-  float cover = mix(0.28, 1.0, piles);
-  cover = mix(cover, 0.03, scrape);
-  cover *= 1.0 - aperture;
+  float scrape = exp(-dist * dist / max(uBrushRadius * uBrushRadius * 2.2, 0.0002)) * smoothstep(0.04, 0.18, uBrush);
+  float cover = mix(0.09, 0.52, piles);
+  cover = mix(cover, 0.05, scrape * 0.55);
+  cover *= 1.0 - smoothstep(0.08, 0.48, aperture);
   fragColor = vec4(sand * cover, cover);
 }`;
 
@@ -381,8 +383,8 @@ export class OctoSandEngine {
     this.frameMs = dt * 1000;
     if (this.frames % 20 === 0) this.fps = this.frameMs > 0 ? Math.round(1000 / this.frameMs) : 0;
     this.step(now);
-    this.brush = Math.max(this.pointer.force, this.brush * 0.82);
-    this.pointer.force *= 0.42;
+    this.brush = Math.max(this.pointer.force, this.brush * 0.62);
+    this.pointer.force *= 0.28;
   }
 
   private bindQuad(prog: WebGLProgram) {
@@ -407,7 +409,7 @@ export class OctoSandEngine {
     gl.uniform2f(gl.getUniformLocation(this.sim, "uPointer"), this.pointer.x, 1 - this.pointer.y);
     gl.uniform2f(gl.getUniformLocation(this.sim, "uDelta"), this.pointer.dx, -this.pointer.dy);
     gl.uniform1f(gl.getUniformLocation(this.sim, "uForce"), this.pointer.force);
-    gl.uniform1f(gl.getUniformLocation(this.sim, "uRadius"), this.grid <= 256 ? 0.09 : 0.055);
+    gl.uniform1f(gl.getUniformLocation(this.sim, "uRadius"), this.grid <= 256 ? 0.038 : 0.026);
     gl.uniform1f(gl.getUniformLocation(this.sim, "uReset"), reset);
     gl.uniform1f(gl.getUniformLocation(this.sim, "uSettle"), 1);
     this.bindQuad(this.sim);
@@ -432,7 +434,7 @@ export class OctoSandEngine {
     gl.uniform1f(gl.getUniformLocation(this.draw, "uBrush"), this.brush);
     gl.uniform1f(
       gl.getUniformLocation(this.draw, "uBrushRadius"),
-      this.grid <= 256 ? 0.09 : 0.055,
+      this.grid <= 256 ? 0.038 : 0.026,
     );
     const tile = Math.max(1, 580 * this.dpr);
     gl.uniform2f(

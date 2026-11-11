@@ -21,21 +21,14 @@ export type HomepageStageEntry = {
   kind: "octo" | "project";
 };
 
+const HOMEPAGE_PROJECT_ORDER = ["memoora", "lil-disc", "orbia"] as const;
+
 export function homepageStageCategories(): HomepageStageEntry[] {
-  return [
-    ...storefrontCategories.map(
-      (category: StorefrontCategory): HomepageStageEntry => ({
-        slug: category.slug,
-        name: category.name,
-        description: category.description,
-        href: category.href,
-        artwork: storefrontCategoryAsset(category.slug),
-        comingSoon: category.comingSoon,
-        kind: "octo",
-      }),
-    ),
-    ...projectDestinations.map(
-      (destination: ProjectDestination): HomepageStageEntry => ({
+  const projects = HOMEPAGE_PROJECT_ORDER.flatMap((slug) => {
+    const destination = projectDestinations.find((item) => item.slug === slug);
+    if (!destination) return [];
+    return [
+      {
         slug: destination.slug,
         name: destination.name,
         description: destination.description,
@@ -43,8 +36,20 @@ export function homepageStageCategories(): HomepageStageEntry[] {
         artwork: destination.artwork,
         logo: destination.logo,
         comingSoon: false,
-        kind: "project",
-      }),
-    ),
-  ];
+        kind: "project" as const,
+      },
+    ];
+  });
+  const octo = storefrontCategories.map(
+    (category: StorefrontCategory): HomepageStageEntry => ({
+      slug: category.slug,
+      name: category.name,
+      description: category.description,
+      href: category.href,
+      artwork: storefrontCategoryAsset(category.slug),
+      comingSoon: category.comingSoon,
+      kind: "octo",
+    }),
+  );
+  return [...projects, ...octo];
 }

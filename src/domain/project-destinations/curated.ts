@@ -25,17 +25,6 @@ function projectCards(): HomepageCuratedCard[] {
   const discProducts = listProjectDisplayProducts("lil-disc").slice(0, 2);
 
   const cards: HomepageCuratedCard[] = [];
-  if (orbia && orbiaProduct) {
-    cards.push({
-      id: orbiaProduct.id,
-      name: orbiaProduct.name,
-      image: orbiaProduct.media[0]?.url ?? orbia.artwork,
-      href: orbia.href,
-      label: orbia.name,
-      priceMinor: null,
-      priceSoon: true,
-    });
-  }
   for (const product of memooraProducts) {
     if (!memoora) continue;
     cards.push({
@@ -58,6 +47,17 @@ function projectCards(): HomepageCuratedCard[] {
       label: disc.name,
       priceMinor: product.priceMinor,
       priceSoon: false,
+    });
+  }
+  if (orbia && orbiaProduct) {
+    cards.push({
+      id: orbiaProduct.id,
+      name: orbiaProduct.name,
+      image: orbiaProduct.media[0]?.url ?? orbia.artwork,
+      href: orbia.href,
+      label: orbia.name,
+      priceMinor: null,
+      priceSoon: true,
     });
   }
   return cards;

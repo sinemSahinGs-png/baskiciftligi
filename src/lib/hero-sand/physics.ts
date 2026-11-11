@@ -48,7 +48,7 @@ export function isHeroChrome(target: EventTarget | null) {
   if (!(target instanceof Element)) return false;
   return Boolean(
     target.closest(
-      "a, button, input, textarea, select, label, [role='button'], [data-octo-sand-ui], header, .store-bottom-nav",
+      "a, button, input, textarea, select, label, [role='button'], [data-octo-sand-ui], header, .store-bottom-nav, .octo-tv-screen, .octo-tv-content",
     ),
   );
 }
@@ -70,9 +70,9 @@ export function sandImpulseFromPointer({
   if (verticalScroll) {
     return { force: 0, nx: 0, ny: 0, scrolling: true };
   }
-  const capped = Math.min(dist, 40);
+  const capped = Math.min(dist, 22);
   return {
-    force: capped * 0.026,
+    force: capped * 0.012,
     nx: dx / dist,
     ny: dy / dist,
     scrolling: false,

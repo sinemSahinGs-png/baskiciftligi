@@ -56,12 +56,14 @@ function readScreenAgainstHost(host: HTMLElement) {
     const hero = host.closest(".octo-tv-hero") ?? host;
     return readTvScreenFromStyles(getComputedStyle(hero));
   }
+  const padX = screenBox.width * 0.2;
+  const padY = screenBox.height * 0.14;
   return {
-    left: (screenBox.left - hostBox.left) / hostBox.width,
-    top: (screenBox.top - hostBox.top) / hostBox.height,
-    width: screenBox.width / hostBox.width,
-    height: screenBox.height / hostBox.height,
-    radius: 0.06,
+    left: (screenBox.left - padX - hostBox.left) / hostBox.width,
+    top: (screenBox.top - padY - hostBox.top) / hostBox.height,
+    width: (screenBox.width + padX * 2) / hostBox.width,
+    height: (screenBox.height + padY * 2) / hostBox.height,
+    radius: 0.08,
   };
 }
 
@@ -283,9 +285,9 @@ export function OctoInteractiveSandHero() {
       engineRef.current?.impulse(
         (event.clientX - rect.left) / Math.max(rect.width, 1),
         (event.clientY - rect.top) / Math.max(rect.height, 1),
-        0.18,
-        -0.12,
-        0.22,
+        0.12,
+        -0.08,
+        0.07,
       );
     };
     section.addEventListener("pointermove", onMove, { passive: true });

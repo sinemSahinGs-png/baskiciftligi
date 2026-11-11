@@ -105,11 +105,10 @@ test.describe("OCTO ocean redesign", () => {
       expect(await sectionOpacity(page, id)).toBeGreaterThan(0.9);
       const box = await section.boundingBox();
       expect(box?.height ?? 0).toBeGreaterThan(80);
-      expect(box?.height ?? 0).toBeLessThan(1400);
+      expect(box?.height ?? 0).toBeLessThan(id === "kategoriler" ? 2800 : 1400);
     }
     const cats = await page.locator("#kategoriler").boundingBox();
     expect(cats?.height ?? 0).toBeGreaterThan(220);
-    expect(cats?.height ?? 0).toBeLessThan(844 * 0.9);
     await page.mouse.wheel(0, 700);
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(40);
     await expect.poll(() => overflowX(page)).toBeLessThanOrEqual(1);
@@ -135,6 +134,14 @@ test.describe("OCTO ocean redesign", () => {
       await expect(second).toHaveAttribute("aria-selected", "true");
     }
     await expect(page.locator("#kategoriler .hi-cats-index-item")).toHaveCount(10);
+    await expect(page.locator("#kategoriler .hi-cats-index-item").first()).toHaveAttribute(
+      "data-category-slug",
+      "memoora",
+    );
+    await expect(page.locator("#kategoriler .hi-cats-index-item").nth(1)).toHaveAttribute(
+      "data-category-slug",
+      "lil-disc",
+    );
     await expect(page.locator('#kategoriler [data-category-slug="orbia"]')).toHaveCount(2);
     await expect(page.locator('#kategoriler [data-category-slug="memoora"]')).toHaveCount(2);
     await expect(page.locator('#kategoriler [data-category-slug="lil-disc"]')).toHaveCount(2);

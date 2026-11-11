@@ -22,10 +22,15 @@ describe("project category destinations", () => {
     const stage = homepageStageCategories();
     expect(stage).toHaveLength(10);
     expect(stage.filter((item) => item.kind === "octo")).toHaveLength(7);
+    expect(stage.slice(0, 3).map((item) => item.slug)).toEqual([
+      "memoora",
+      "lil-disc",
+      "orbia",
+    ]);
     expect(stage.filter((item) => item.kind === "project").map((item) => item.href)).toEqual([
-      "/kategori/orbia",
       "/kategori/memoora",
       "/kategori/lil-disc",
+      "/kategori/orbia",
     ]);
     expect(projectDestinations.find((item) => item.slug === "lil-disc")?.name).toBe("LIL’ DISC");
   });
@@ -54,6 +59,8 @@ describe("project category destinations", () => {
 
   it("feeds homepage curated cards from the project source without empty fallback", () => {
     const cards = listHomepageCuratedCards([]);
+    expect(cards[0]?.label).toBe("MEMOORA");
+    expect(cards.some((item) => item.label === "LIL’ DISC")).toBe(true);
     expect(cards.some((item) => item.label === "ORBIA" && item.priceSoon)).toBe(true);
     expect(cards.filter((item) => item.label === "MEMOORA")).toHaveLength(2);
     expect(cards.filter((item) => item.label === "LIL’ DISC")).toHaveLength(2);

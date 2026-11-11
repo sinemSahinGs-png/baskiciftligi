@@ -162,7 +162,7 @@ html[data-home-industrial] {
 
 .octo-curated-rail {
   --octo-rail-gap: 0.7rem;
-  --octo-rail-visible: 1.15;
+  --octo-rail-visible: 1.35;
   display: flex;
   flex-wrap: nowrap;
   gap: var(--octo-rail-gap);
