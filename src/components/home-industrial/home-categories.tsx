@@ -89,16 +89,16 @@ export function HomeCategories({ products }: { products: Product[] }) {
     <section
       ref={sectionRef}
       id="kategoriler"
-      data-home-theme="mono"
+      data-home-theme="abyss"
       data-cat-active={String(active).padStart(2, "0")}
-      className="hi-section hi-cats"
+      className="hi-section hi-cats atelier-panel atelier-cats"
       aria-labelledby="home-cats-heading"
     >
       <div className="hi-shell">
         <div className="hi-cats-head">
           <div>
-            <p className="hi-kicker">{t("home.catsKicker")}</p>
-            <WordReveal as="h2" id="home-cats-heading" className="hi-title" text={t("home.catsTitle")} />
+            <p className="atelier-kicker">{t("home.catsKicker")}</p>
+            <WordReveal as="h2" id="home-cats-heading" className="hi-title atelier-title" text={t("home.catsTitle")} />
           </div>
           <Link href={"/magaza" as Route} className="hi-link">
             {t("home.catsAll")}

@@ -17,14 +17,14 @@ export function CompactClose() {
     <section
       id="guven"
       data-home-theme="abyss"
-      className="octo-story octo-close"
+      className="atelier-panel atelier-close"
       aria-labelledby="trust-heading"
     >
-      <div className="hi-shell">
-        <h2 id="trust-heading" className="octo-serif octo-serif-on-dark">
+      <div className="hi-shell atelier-shell">
+        <h2 id="trust-heading" className="atelier-title atelier-title-sm">
           {t("home.trustHeading")}
         </h2>
-        <ul className="octo-trust-grid">
+        <ul className="atelier-trust">
           {trust.map((item) => (
             <li key={item.title}>
               <p>{item.title}</p>
@@ -35,7 +35,7 @@ export function CompactClose() {
 
         <aside
           id="malzeme-secenekleri"
-          className="hi-material-info octo-resin-note"
+          className="hi-material-info octo-resin-note atelier-resin"
           data-material-info="resin"
         >
           <p className="hi-material-info-kicker">Bilgi</p>
@@ -54,12 +54,12 @@ export function CompactClose() {
           </div>
         </aside>
 
-        <div id="sik-sorulanlar" className="octo-close-faq">
-          <h2 id="faq-heading" className="octo-serif octo-serif-on-dark">
+        <div id="sik-sorulanlar" className="atelier-faq">
+          <h2 id="faq-heading" className="atelier-title atelier-title-sm">
             {t("home.faqTitle")}
           </h2>
           {faqs.map((item, index) => (
-            <details key={item.id} className="octo-faq-item">
+            <details key={item.id} className="atelier-faq-item">
               <summary>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 {t(`faq.${item.id}.q`)}

@@ -98,14 +98,15 @@ export function OctoInteractiveSandHero() {
         next.resize(host.clientWidth, host.clientHeight, dpr);
         const frame = canvas.closest(".octo-tv-frame") ?? host;
         next.setScreen(readTvScreenFromStyles(getComputedStyle(frame)));
-        const shell = frame.querySelector<HTMLImageElement>("img.octo-tv-shell");
-        const bindAlbedo = () => {
-          if (cancelled || !shell || !shell.complete || shell.naturalWidth < 1) return;
-          next.setAlbedo(shell);
+        const field = new Image();
+        field.decoding = "async";
+        field.src = "/images/hero/octo-sand-field.webp";
+        const bindField = () => {
+          if (cancelled || field.naturalWidth < 1) return;
+          next.setAlbedo(field);
         };
-        bindAlbedo();
-        shell?.addEventListener("load", bindAlbedo);
-        unbindAlbedo = () => shell?.removeEventListener("load", bindAlbedo);
+        field.addEventListener("load", bindField);
+        unbindAlbedo = () => field.removeEventListener("load", bindField);
         engineRef.current = next;
         setMode("interactive");
         setReady(true);
@@ -128,10 +129,6 @@ export function OctoInteractiveSandHero() {
       );
       const frame = canvas.closest(".octo-tv-frame") ?? host;
       engineRef.current.setScreen(readTvScreenFromStyles(getComputedStyle(frame)));
-      const shell = frame.querySelector<HTMLImageElement>("img.octo-tv-shell");
-      if (shell && shell.complete && shell.naturalWidth > 0) {
-        engineRef.current.setAlbedo(shell);
-      }
     };
     if (typeof IntersectionObserver !== "undefined") {
       observer = new IntersectionObserver(
@@ -189,6 +186,18 @@ export function OctoInteractiveSandHero() {
     };
     const onDown = (event: PointerEvent) => {
       lastPointer.current = { x: event.clientX, y: event.clientY };
+      if (mode !== "interactive" || reducedMotion) return;
+      if (isHeroChrome(event.target)) return;
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      engineRef.current?.impulse(
+        (event.clientX - rect.left) / rect.width,
+        (event.clientY - rect.top) / rect.height,
+        0.12,
+        -0.08,
+        0.35,
+      );
     };
     section.addEventListener("pointermove", onMove, { passive: true });
     section.addEventListener("pointerdown", onDown, { passive: true });

@@ -141,7 +141,7 @@ test.describe("OCTO ocean redesign", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     await expect(page.locator("[data-sand-abyss-handoff]")).toHaveCount(0);
-    await expect(page.locator("[data-octo-tentacle]")).toHaveCount(4);
+    await expect(page.locator("[data-octo-tentacle]")).toHaveCount(2);
     const gap = await page.evaluate(() => {
       const hero = document.getElementById("ne-uretmek-istiyorsun");
       const studio = document.getElementById("atolye");

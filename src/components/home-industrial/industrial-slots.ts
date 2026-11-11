@@ -26,3 +26,35 @@ export const industrialMaterialSrc = {
   petg: industrialAssets.materialPetg,
   tpu: industrialAssets.materialTpu,
 } as const;
+
+/** Temporary stand-ins until GPT stills land in /images/home-atelier/. */
+export const atelierMedia = {
+  startUpload: industrialAssets.heroWireframeVase,
+  startReady: industrialAssets.pathReadyModel,
+  startShop: industrialAssets.featuredProduct,
+  startWholesale: industrialAssets.pathUploadObject,
+  stepHero: industrialAssets.featuredProduct,
+  stepPrinter: industrialAssets.printerFarm,
+  packBox: industrialAssets.pathUploadObject,
+  detailFilament: industrialAssets.materialPla,
+  detailNozzle: industrialAssets.productionTunnel,
+  personal: industrialAssets.featuredProduct,
+  corporate: industrialAssets.archiveMain,
+} as const;
+
+export const ATELIER_GPT_FILES = [
+  "public/images/hero/octo-sand-field.webp",
+  "public/images/home-atelier/cave-sand-bg.webp",
+  "public/images/home-atelier/start-upload.webp",
+  "public/images/home-atelier/start-ready.webp",
+  "public/images/home-atelier/start-shop.webp",
+  "public/images/home-atelier/start-wholesale.webp",
+  "public/images/home-atelier/step-hero.webp",
+  "public/images/home-atelier/step-printer.webp",
+  "public/images/home-atelier/step-pack.webp",
+  "public/images/home-atelier/select-hero.webp",
+  "public/images/home-atelier/detail-filament.webp",
+  "public/images/home-atelier/detail-nozzle.webp",
+  "public/images/home-atelier/split-personal.webp",
+  "public/images/home-atelier/split-corporate.webp",
+] as const;

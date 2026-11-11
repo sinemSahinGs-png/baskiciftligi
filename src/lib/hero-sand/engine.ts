@@ -21,11 +21,11 @@ uniform float uReset;
 uniform float uSettle;
 
 vec2 decode(vec2 packed) {
-  return (packed - 0.5) * 0.28;
+  return (packed - 0.5) * 0.46;
 }
 
 vec2 encode(vec2 value) {
-  return clamp(value / 0.28 + 0.5, 0.0, 1.0);
+  return clamp(value / 0.46 + 0.5, 0.0, 1.0);
 }
 
 void main() {
@@ -35,8 +35,8 @@ void main() {
   float dist = distance(vUv, uPointer);
   float falloff = exp(-dist * dist / max(uRadius * uRadius, 0.0004));
   float grain = fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453);
-  vel += uDelta * falloff * uForce * (0.8 + grain * 0.4);
-  vel *= 0.88;
+  vel += uDelta * falloff * uForce * (0.85 + grain * 0.55);
+  vel *= 0.9;
   disp += vel;
   disp += (vUv - vec2(0.5)) * length(disp) * 0.002 * uSettle;
   disp = mix(disp, vec2(0.0), uReset);
@@ -57,7 +57,7 @@ uniform vec4 uScreen;
 uniform float uRadius;
 
 vec2 decode(vec2 packed) {
-  return (packed - 0.5) * 0.28;
+  return (packed - 0.5) * 0.46;
 }
 
 float hash(vec2 p) {
@@ -128,26 +128,25 @@ void main() {
   float hL = length(decode(texture(uState, vUv - vec2(uTexel.x, 0.0)).xy));
   float hU = length(decode(texture(uState, vUv + vec2(0.0, uTexel.y)).xy));
   float hD = length(decode(texture(uState, vUv - vec2(0.0, uTexel.y)).xy));
-  vec3 normal = normalize(vec3((hL - hR) * 22.0, (hD - hU) * 22.0, 1.0));
-  vec3 light = normalize(vec3(0.68, 0.52, 0.52));
+  vec3 normal = normalize(vec3((hL - hR) * 28.0, (hD - hU) * 28.0, 1.0));
+  vec3 light = normalize(vec3(0.72, 0.48, 0.48));
   float ndl = clamp(dot(normal, light), 0.0, 1.0);
 
-  vec2 warp = disp * 1.45;
+  vec2 warp = disp * 2.55;
   vec2 sampleUv = clamp(vUv + warp, 0.0, 1.0);
   vec3 photo = texture(uAlbedo, sampleUv).rgb;
-  vec3 rest = texture(uAlbedo, vUv).rgb;
   float aspect = uResolution.x / max(uResolution.y, 1.0);
-  vec3 procedural = mineralSand(cssUv + vec2(warp.x, -warp.y) * 0.35, aspect);
-  vec3 sand = mix(rest, photo, smoothstep(0.0, 0.02, hC));
-  sand = mix(procedural, sand, uHasAlbedo);
+  vec3 procedural = mineralSand(cssUv + vec2(warp.x, -warp.y) * 0.55, aspect);
+  vec3 sand = mix(procedural, photo, uHasAlbedo * 0.88);
 
-  float lit = mix(0.78, 1.16, ndl);
+  float lit = mix(0.7, 1.22, ndl);
   sand *= lit;
-  sand += vec3(0.98, 0.86, 0.58) * pow(ndl, 7.0) * hC * 1.8;
-  sand -= vec3(0.22, 0.14, 0.07) * (1.0 - ndl) * hC * 1.55;
+  sand += vec3(0.98, 0.86, 0.58) * pow(ndl, 6.0) * max(hC, 0.08) * 2.1;
+  sand -= vec3(0.24, 0.15, 0.07) * (1.0 - ndl) * max(hC, 0.05) * 1.8;
 
-  float cover = mix(0.0, 0.94, smoothstep(0.001, 0.026, hC));
-  cover = max(cover, (1.0 - uHasAlbedo) * 0.08);
+  float piles = smoothstep(0.0008, 0.03, hC);
+  float dust = 0.2 + fbm(cssUv * 90.0) * 0.12;
+  float cover = mix(dust, 0.97, piles);
   cover *= 1.0 - aperture;
   fragColor = vec4(sand * cover, cover);
 }`;
@@ -409,7 +408,7 @@ export class OctoSandEngine {
     gl.uniform2f(gl.getUniformLocation(this.sim, "uPointer"), this.pointer.x, 1 - this.pointer.y);
     gl.uniform2f(gl.getUniformLocation(this.sim, "uDelta"), this.pointer.dx, -this.pointer.dy);
     gl.uniform1f(gl.getUniformLocation(this.sim, "uForce"), this.pointer.force);
-    gl.uniform1f(gl.getUniformLocation(this.sim, "uRadius"), this.grid <= 256 ? 0.07 : 0.055);
+    gl.uniform1f(gl.getUniformLocation(this.sim, "uRadius"), this.grid <= 256 ? 0.12 : 0.09);
     gl.uniform1f(gl.getUniformLocation(this.sim, "uReset"), reset);
     gl.uniform1f(gl.getUniformLocation(this.sim, "uSettle"), 1);
     this.bindQuad(this.sim);

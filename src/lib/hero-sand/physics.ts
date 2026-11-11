@@ -49,9 +49,9 @@ export function sandImpulseFromPointer({
   if (verticalScroll) {
     return { force: 0, nx: 0, ny: 0, scrolling: true };
   }
-  const capped = Math.min(dist, 42);
+  const capped = Math.min(dist, 56);
   return {
-    force: capped * 0.0064,
+    force: capped * 0.02,
     nx: dx / dist,
     ny: dy / dist,
     scrolling: false,

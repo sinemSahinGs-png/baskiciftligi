@@ -17,6 +17,7 @@ import type { Material, Product } from "@/domain/catalog/types";
 
 import "./home-industrial.css";
 import "./home-story.css";
+import "./atelier-story.css";
 
 export function IndustrialHome({
   products,
@@ -31,7 +32,7 @@ export function IndustrialHome({
   void readyModels;
 
   return (
-    <div className="hi-root octo-world">
+    <div className="hi-root octo-world atelier-world">
       <IndustrialHeaderEffects />
       <ScrollThemeProvider />
       <OceanDepthTracker />

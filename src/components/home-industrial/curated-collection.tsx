@@ -95,14 +95,15 @@ export function CuratedCollection({ products }: { products: Product[] }) {
   return (
     <section
       id="mevcut-urunler"
-      data-home-theme="ivory"
-      className="octo-story octo-story-ivory octo-curated"
+      data-home-theme="abyss"
+      className="atelier-panel octo-curated atelier-curated"
       aria-labelledby="curated-heading"
     >
       <div className="hi-shell">
-        <p className="hi-kicker octo-kicker-dark">{t("home.curatedKicker")}</p>
+        <p className="atelier-num">03</p>
+        <p className="atelier-kicker">{t("home.curatedKicker")}</p>
         <div className="octo-curated-head">
-          <h2 id="curated-heading" className="octo-serif">
+          <h2 id="curated-heading" className="atelier-title">
             {t("home.productsShopTitle")}
           </h2>
           <div className="octo-curated-tools">
