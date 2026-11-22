@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { POST } from "@/app/api/hazir-modeller/consultation/route";
+import { createConsultationRequest } from "@/domain/consultation/repository";
 
 vi.mock("@/domain/consultation/repository", () => ({
   createConsultationRequest: vi.fn(async (input: Record<string, unknown>) => ({
@@ -64,6 +65,33 @@ describe("POST /api/hazir-modeller/consultation", () => {
     expect(response.status).toBe(200);
     const body = (await response.json()) as { ok?: boolean };
     expect(body.ok).toBe(true);
+  });
+
+  it("creates a LIL’ DISC album request", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/hazir-modeller/consultation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "lil_disc",
+          artist: "Sezen Aksu",
+          albumName: "Gülümse",
+          customerEmail: "sezen@example.com",
+        }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { ok?: boolean; message?: string };
+    expect(body.ok).toBe(true);
+    expect(body.message).toBe("Albüm isteğini aldık.");
+    expect(createConsultationRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: "lil_disc",
+        modelTitle: "Gülümse",
+        creatorName: "Sezen Aksu",
+        customerEmail: "sezen@example.com",
+      }),
+    );
   });
 
   it("rejects invalid phone", async () => {

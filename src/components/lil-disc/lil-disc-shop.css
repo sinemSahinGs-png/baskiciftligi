@@ -1,0 +1,261 @@
+.lil-shop {
+  --lil-paper: #f4f1ea;
+  --lil-ink: #161412;
+  --lil-mute: #5c574f;
+  --lil-line: #ddd6cb;
+  --lil-card: #fbfaf6;
+  min-height: 100svh;
+  background: var(--lil-paper);
+  color: var(--lil-ink);
+  font-family: var(--font-jakarta), "Segoe UI", system-ui, sans-serif;
+}
+
+.lil-shop a {
+  color: inherit;
+}
+
+.lil-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--lil-line);
+  background: rgb(244 241 234 / 0.94);
+  padding: 0.55rem 1.1rem;
+  backdrop-filter: blur(10px);
+}
+
+.lil-nav-brand {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+}
+
+.lil-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.lil-nav-links a {
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.55rem;
+  font-size: 0.86rem;
+  text-decoration: none;
+}
+
+.lil-nav-cart {
+  position: relative;
+}
+
+.lil-nav-count {
+  margin-left: 0.35rem;
+  min-width: 1.15rem;
+  border: 1px solid var(--lil-ink);
+  padding: 0 0.28rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+  text-align: center;
+}
+
+.lil-hero,
+.lil-albums,
+.lil-request,
+.lil-foot {
+  width: min(1120px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.lil-hero {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.6rem 0 3rem;
+}
+
+.lil-hero-media {
+  position: relative;
+  overflow: hidden;
+  background: #ebe6dc;
+  aspect-ratio: 16 / 10;
+}
+
+.lil-hero-media video,
+.lil-hero-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lil-hero-pause {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  min-height: 2.5rem;
+  border: 1px solid rgb(255 255 255 / 0.7);
+  background: rgb(22 20 18 / 0.55);
+  color: #fff;
+  padding: 0 0.85rem;
+  font-size: 0.8rem;
+}
+
+.lil-hero-copy h1 {
+  margin: 0;
+  max-width: 18ch;
+  font-size: clamp(1.7rem, 4vw, 2.7rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+}
+
+.lil-hero-copy p {
+  margin: 0.85rem 0 1.25rem;
+  max-width: 34ch;
+  color: var(--lil-mute);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.lil-hero-copy a,
+.lil-card button,
+.lil-request button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--lil-ink);
+  background: var(--lil-ink);
+  color: var(--lil-paper);
+  padding: 0 1.1rem;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.lil-albums {
+  padding: 0 0 3.5rem;
+}
+
+.lil-albums h2,
+.lil-request h2 {
+  margin: 0 0 1.25rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.lil-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem 0.85rem;
+}
+
+.lil-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  background: var(--lil-card);
+}
+
+.lil-card img {
+  aspect-ratio: 1;
+  width: 100%;
+  object-fit: cover;
+  background: #ebe6dc;
+}
+
+.lil-card h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.lil-card p {
+  margin: 0.15rem 0 0;
+  font-size: 0.9rem;
+}
+
+.lil-card button {
+  width: 100%;
+  background: transparent;
+  color: var(--lil-ink);
+}
+
+.lil-card button[data-added="true"] {
+  background: var(--lil-ink);
+  color: var(--lil-paper);
+}
+
+.lil-request {
+  border-top: 1px solid var(--lil-line);
+  padding: 2.6rem 0 3.4rem;
+}
+
+.lil-request form {
+  display: grid;
+  gap: 0.9rem;
+  max-width: 28rem;
+}
+
+.lil-request label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.86rem;
+}
+
+.lil-request input {
+  min-height: 2.75rem;
+  border: 1px solid var(--lil-line);
+  background: var(--lil-card);
+  padding: 0 0.75rem;
+  color: var(--lil-ink);
+}
+
+.lil-request [role="status"] {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.lil-foot {
+  border-top: 1px solid var(--lil-line);
+  padding: 1.2rem 0 2rem;
+  color: var(--lil-mute);
+  font-size: 0.82rem;
+}
+
+.lil-foot:empty {
+  display: none;
+}
+
+.lil-foot a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (min-width: 900px) {
+  .lil-nav {
+    padding-inline: 1.6rem;
+  }
+
+  .lil-hero {
+    grid-template-columns: 1.35fr 0.9fr;
+    align-items: end;
+    gap: 2.4rem;
+    padding: 2.2rem 0 4.2rem;
+  }
+
+  .lil-hero-media {
+    aspect-ratio: 16 / 9;
+  }
+
+  .lil-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.6rem 1.1rem;
+  }
+}

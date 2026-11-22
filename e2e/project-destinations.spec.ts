@@ -105,7 +105,6 @@ test.describe("project category destinations", () => {
     const destinations = [
       { slug: "orbia", title: "ORBIA", buy: false, video: "/categories/orbia/hero" },
       { slug: "memoora", title: "MEMOORA", buy: true, video: "/categories/memoora/hero.mp4" },
-      { slug: "lil-disc", title: "LIL’ DISC", buy: true, video: "/categories/cep-album/hero.mp4" },
     ] as const;
 
     for (const item of destinations) {
@@ -185,15 +184,11 @@ test.describe("project category destinations", () => {
 
     await page.goto("/kategori/cep-album");
     await expect(page).toHaveURL(/\/kategori\/lil-disc/);
-    await expect(page.getByRole("heading", { name: "LIL’ DISC" })).toBeVisible();
-    await expect(page.locator("[data-server-quote='ready']")).toBeVisible({ timeout: 15_000 });
-    await page.locator(".project-buy-choices label").filter({ hasText: "Beton Beat" }).click();
-    await expect(page.locator("[data-server-unit]")).toContainText("200,00", { timeout: 15_000 });
-    await page.screenshot({
-      path: path.join(shots, "lil-disc-select-390.png"),
-      animations: "disabled",
-    });
-    await page.locator("[data-buy-guest]").click();
+    await expect(page.getByRole("heading", { name: "NFC özellikli mini CD anahtarlık" })).toBeVisible();
+    await page.locator(".lil-card", { hasText: "Karma" }).getByRole("button", { name: "Sepete ekle" }).click();
+    await page.getByRole("navigation", { name: "LIL’DISC" }).getByRole("link", { name: /Sepet/ }).click();
+    await expect(page.getByText("Karma")).toBeVisible({ timeout: 15_000 });
+    await page.getByRole("link", { name: "Ödeme adımına geç" }).click();
     await expect(page).toHaveURL(/\/odeme/, { timeout: 15_000 });
     await page.screenshot({
       path: path.join(shots, "lil-disc-checkout-390.png"),
@@ -400,14 +395,14 @@ test.describe("project category destinations", () => {
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/kategori/lil-disc");
-    await expect(page.locator("[data-server-unit]")).toContainText("200,00", { timeout: 15_000 });
-    await page.locator(".project-buy-faq").scrollIntoViewIfNeeded();
+    await expect(page.locator("#albumler")).toContainText("200 TL");
+    await page.locator("#album-iste").scrollIntoViewIfNeeded();
     await page.screenshot({
       path: path.join(shots, "lil-disc-page-end-390.png"),
       animations: "disabled",
     });
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.locator(".project-buy-faq").scrollIntoViewIfNeeded();
+    await page.locator("#album-iste").scrollIntoViewIfNeeded();
     await page.screenshot({
       path: path.join(shots, "lil-disc-page-end-1440.png"),
       animations: "disabled",

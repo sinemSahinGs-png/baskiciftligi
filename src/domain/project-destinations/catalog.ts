@@ -164,8 +164,7 @@ export const projectDestinations: readonly ProjectDestination[] = [
     source: "cep_album",
     name: "LIL’ DISC",
     eyebrow: "Proje",
-    description:
-      "Mini albüm anahtarlığı. Tekli albümler 200 TL. Koleksiyon paketlerinin fiyatı kaynak projede yayınlanmamış.",
+    description: "NFC özellikli mini CD anahtarlık. Telefonuna yaklaştır, albümü dinle.",
     href: "/kategori/lil-disc" as Route,
     artwork: "/categories/cep-album/poster.webp",
     logo: "/categories/cep-album/product-hero.webp",
@@ -191,29 +190,58 @@ export const projectDestinations: readonly ProjectDestination[] = [
 const CEP_SINGLES = [
   {
     id: "gece-dansi",
-    name: "Gece Dansı",
-    description: "Kaset hissi ve unutulmayan nakaratlar. 90’lar pop gecesi.",
+    name: "Manifesto",
+    description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/cep-album/preview-90lar.webp",
   },
   {
     id: "beton-beat",
-    name: "Beton Beat",
-    description: "Asfalt, bass, karanlık stüdyo. Türkçe rap enerjisi.",
+    name: "Karma",
+    description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/cep-album/preview-rap.webp",
   },
   {
     id: "deri-ceket",
-    name: "Deri Ceket",
-    description: "Krom yansıma ve sahne arkası. Klasik rock ruhu.",
+    name: "Dünya Yalan Söylüyor",
+    description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/cep-album/preview-rock.webp",
   },
   {
     id: "gecelerin-sarkisi",
-    name: "Gecelerin Şarkısı",
-    description: "Dumanlı gece ve derin duygu. Arabesk / fantezi atmosferi.",
+    name: "Kadın",
+    description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/cep-album/preview-arabesk.webp",
   },
+  {
+    id: "yok",
+    name: "Y.O.K.",
+    description: "NFC özellikli mini CD anahtarlık.",
+    image: "/categories/cep-album/product-hero.webp",
+  },
+  {
+    id: "fallen",
+    name: "Fallen",
+    description: "NFC özellikli mini CD anahtarlık.",
+    image: "/categories/cep-album/poster.webp",
+  },
+  {
+    id: "master-of-puppets",
+    name: "Master of Puppets",
+    description: "NFC özellikli mini CD anahtarlık.",
+    image: "/categories/cep-album/product-hero.webp",
+  },
+  {
+    id: "nevermind",
+    name: "Nevermind",
+    description: "NFC özellikli mini CD anahtarlık.",
+    image: "/categories/cep-album/poster.webp",
+  },
 ] as const;
+
+export const LIL_DISC_HERO_VIDEO = "/categories/lil-disc/hero.mp4";
+export const LIL_DISC_HERO_VIDEO_FALLBACK = "/categories/cep-album/hero.mp4";
+export const LIL_DISC_HERO_POSTER = "/categories/cep-album/poster.webp";
+export const LIL_DISC_INSTAGRAM_URL = "";
 
 function memooraProducts(): Product[] {
   return [
