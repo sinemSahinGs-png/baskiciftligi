@@ -121,6 +121,7 @@ describe("server cart pricing", () => {
       [{ productId: "proj-cep-album-gece-dansi", quantity: 1 }],
       catalog,
     );
+    expect(result.lines[0].name).toBe("Manifesto");
     expect(result.lines[0].unitPriceMinor).toBe(20_000);
     expect(result.lines[0].projectSource).toBe("cep_album");
   });

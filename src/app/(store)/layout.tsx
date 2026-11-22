@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { AnnouncementBar } from "@/components/site/announcement-bar";
+import { HideOnLilDisc } from "@/components/site/hide-on-lil-disc";
 import { ShellAtmosphere } from "@/components/site/shell-atmosphere";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -40,19 +41,23 @@ export default async function StoreLayout({
 
   return (
     <ShellAtmosphere>
-      <AnnouncementBar announcements={catalog.announcements} />
-      <SiteHeader
-        categories={presentedCategories}
-        products={products}
-        categoryArtwork={resolveAllStorefrontCategoryImages()}
-      />
-      <ScrollProgress />
+      <HideOnLilDisc>
+        <AnnouncementBar announcements={catalog.announcements} />
+        <SiteHeader
+          categories={presentedCategories}
+          products={products}
+          categoryArtwork={resolveAllStorefrontCategoryImages()}
+        />
+        <ScrollProgress />
+      </HideOnLilDisc>
       <div className="min-h-0 grow-0">{children}</div>
-      <SiteFooter
-        heading={content.footerHeading}
-        description={content.footerDescription}
-      />
-      <StoreBottomNav />
+      <HideOnLilDisc>
+        <SiteFooter
+          heading={content.footerHeading}
+          description={content.footerDescription}
+        />
+        <StoreBottomNav />
+      </HideOnLilDisc>
     </ShellAtmosphere>
   );
 }

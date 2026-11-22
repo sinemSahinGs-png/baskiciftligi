@@ -40,7 +40,18 @@ const homepageSchema = z.object({
   customerNote: z.string().min(8).max(800),
 });
 
-const bodySchema = z.discriminatedUnion("source", [thingiverseSchema, homepageSchema]);
+const lilDiscSchema = z.object({
+  source: z.literal("lil_disc"),
+  artist: z.string().min(2).max(120),
+  albumName: z.string().min(1).max(200),
+  customerEmail: z.string().email().max(160),
+});
+
+const bodySchema = z.discriminatedUnion("source", [
+  thingiverseSchema,
+  homepageSchema,
+  lilDiscSchema,
+]);
 
 function cleanText(value: string | null | undefined) {
   return (value ?? "").replace(/[<>\u0000-\u001F]/g, "").trim();
@@ -97,6 +108,30 @@ export async function POST(request: Request) {
         });
       }
 
+      if (input.source === "lil_disc") {
+        const artist = cleanText(input.artist);
+        const albumName = cleanText(input.albumName);
+        return createConsultationRequest({
+          source: "lil_disc",
+          externalId: "lil-disc-album",
+          modelTitle: albumName,
+          creatorName: artist,
+          sourceUrl: "https://baskiciftligi.com/kategori/lil-disc",
+          licenseEvaluation: "manual_review",
+          customerName: artist,
+          customerPhone: "belirtilmedi",
+          customerEmail: cleanText(input.customerEmail),
+          material: "belirsiz",
+          color: "belirsiz",
+          sizeLabel: PRINT_SIZE_PRESETS.orta.label,
+          quantity: 1,
+          customerNote: `LIL’ DISC özel albüm isteği. Sanatçı: ${artist}. Albüm: ${albumName}.`,
+          estimatedGrossMinor: null,
+          pricingState: "unanalysed",
+          productionOptions: { channel: "lil_disc" },
+        });
+      }
+
       const sizeLabel = PRINT_SIZE_PRESETS[input.sizePreset].label;
       const estimate = estimateProductionPrice({
         sizePreset: input.sizePreset,
@@ -139,7 +174,9 @@ export async function POST(request: Request) {
       ok: true,
       id: record.id,
       message:
-        "Talebiniz alındı. İncelendikten sonra kesin fiyat ve üretim bilgisi paylaşılacaktır.",
+        input.source === "lil_disc"
+          ? "Albüm isteğini aldık."
+          : "Talebiniz alındı. İncelendikten sonra kesin fiyat ve üretim bilgisi paylaşılacaktır.",
     });
   } catch {
     return NextResponse.json(

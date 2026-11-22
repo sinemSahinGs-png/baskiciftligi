@@ -27,23 +27,23 @@ export default async function CheckoutPage() {
       <p className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
         {msg(messages, "checkout.kicker")}
       </p>
-      <h1 className="mt-3 font-heading text-3xl font-semibold">{msg(messages, "checkout.title")}</h1>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-        {msg(messages, "checkout.lede")}
-      </p>
-      <p className="mt-4 max-w-2xl text-sm">
-        {guest ? (
-          <>
-            Misafir olarak ödeyebilirsin. Üyeysen{" "}
-            <Link href={"/giris?next=/odeme" as Route} className="underline">
-              giriş yap
-            </Link>
-            , bilgilerin otomatik dolar.
-          </>
-        ) : (
-          "Üye hesabınla ödüyorsun; adres ve e-posta dolduruldu."
-        )}
-      </p>
+      <h1 className="mt-3 font-heading text-3xl font-semibold">Güvenli ödeme</h1>
+      <div className="mt-4 max-w-2xl space-y-3 text-sm leading-6">
+        <p>Üyelik zorunlu değil. Kart bilgilerin sitemizde tutulmaz. Ödeme PayTR sayfasında yapılır. Siparişin, PayTR’den gelen ödeme bildirimi doğrulandığında ödendi olarak işaretlenir.</p>
+        <p>
+          {guest ? (
+            <>
+              Misafir olarak ödeyebilirsin. Üyeysen{" "}
+              <Link href={"/giris?next=/odeme" as Route} className="underline">
+                giriş yap
+              </Link>
+              , bilgilerin otomatik dolar.
+            </>
+          ) : (
+            "Üye hesabınla ödüyorsun; adres ve e-posta dolduruldu."
+          )}
+        </p>
+      </div>
       <div className="mt-8">
         <StoreCheckout
           email={!guest && viewer ? viewer.email : ""}

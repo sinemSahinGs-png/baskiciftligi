@@ -13,6 +13,11 @@ type PricePayload = {
   subtotalMinor?: number;
   estimatedShippingMinor?: number;
   hasUnavailableItems?: boolean;
+  lines?: Array<{
+    name: string;
+    quantity: number;
+    lineTotalMinor: number;
+  }>;
 };
 
 export function StoreCheckout({
@@ -227,6 +232,19 @@ export function StoreCheckout({
       </form>
       <aside className="space-y-3 rounded-2xl border border-white/10 p-4 text-sm">
         <p className="font-semibold">{t("checkout.summary")}</p>
+        {totals?.lines?.length ? (
+          <ul className="space-y-1 text-muted-foreground">
+            {totals.lines.map((line) => (
+              <li key={`${line.name}-${line.quantity}`} className="flex justify-between gap-3">
+                <span>
+                  {line.name}
+                  {line.quantity > 1 ? ` × ${line.quantity}` : ""}
+                </span>
+                <span>{formatMoney(line.lineTotalMinor)}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
         {totals ? (
           <dl className="space-y-1 text-muted-foreground">
             <div className="flex justify-between">

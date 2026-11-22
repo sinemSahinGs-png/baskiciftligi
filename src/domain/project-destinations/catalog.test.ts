@@ -47,10 +47,22 @@ describe("project category destinations", () => {
   it("reuses Memoora and LIL’ DISC source prices only", () => {
     expect(findProjectCatalogProduct("proj-memoora-magnet")?.priceMinor).toBe(6_600);
     expect(findProjectCatalogProduct("proj-memoora-keychain")?.priceMinor).toBe(5_400);
-    expect(listProjectDisplayProducts("lil-disc")).toHaveLength(4);
-    expect(
-      listProjectDisplayProducts("lil-disc").every((item) => item.priceMinor === 20_000),
-    ).toBe(true);
+    const discs = listProjectDisplayProducts("lil-disc");
+    expect(discs.map((item) => item.name)).toEqual([
+      "Manifesto",
+      "Karma",
+      "Dünya Yalan Söylüyor",
+      "Kadın",
+      "Y.O.K.",
+      "Fallen",
+      "Master of Puppets",
+      "Nevermind",
+    ]);
+    expect(discs[0]?.id).toBe("proj-cep-album-gece-dansi");
+    expect(discs[1]?.id).toBe("proj-cep-album-beton-beat");
+    expect(discs[2]?.id).toBe("proj-cep-album-deri-ceket");
+    expect(discs[3]?.id).toBe("proj-cep-album-gecelerin-sarkisi");
+    expect(discs.every((item) => item.priceMinor === 20_000)).toBe(true);
   });
 
   it("does not add Resin to manufacturing checkout profiles", () => {

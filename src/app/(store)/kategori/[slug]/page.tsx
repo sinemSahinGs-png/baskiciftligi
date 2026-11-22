@@ -18,6 +18,7 @@ import {
   isProjectDestinationSlug,
   projectDestinations,
 } from "@/domain/project-destinations/catalog";
+import { LilDiscShop } from "@/components/lil-disc/lil-disc-shop";
 import { ProjectPurchasePage } from "@/components/project-destinations/project-purchase-page";
 import { JsonLd } from "@/components/seo/json-ld";
 
@@ -81,7 +82,11 @@ export default async function StorefrontCategoryPage(
             isPartOf: { "@type": "WebSite", name: siteConfig.name },
           }}
         />
-        <ProjectPurchasePage destination={project} />
+        {project.slug === "lil-disc" ? (
+          <LilDiscShop destination={project} />
+        ) : (
+          <ProjectPurchasePage destination={project} />
+        )}
       </>
     );
   }
