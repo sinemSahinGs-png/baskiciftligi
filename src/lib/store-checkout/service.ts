@@ -5,6 +5,7 @@ import { getCatalogSnapshot } from "@/domain/catalog/repository";
 import {
   catalogForCartPricing,
   priceCart,
+  splitLineForPayment,
   type CartInputLine,
 } from "@/domain/commerce/cart-pricing";
 import { computeCartShippingMinor } from "@/domain/commerce/shipping-policy";
@@ -89,6 +90,7 @@ export async function priceStoreCart(lines: CartInputLine[]) {
   return {
     lines: pricedLines,
     subtotalMinor,
+    campaignDiscountMinor: catalogResult.campaignDiscountMinor,
     shippingMinor,
     totalMinor: assertMinorUnits(subtotalMinor + shippingMinor),
   };
@@ -169,7 +171,9 @@ export async function createStoreCheckout(input: {
     },
     unit_price_minor: line.unitPriceMinor,
     quantity: line.quantity,
-    discount_minor: 0,
+    discount_minor: assertMinorUnits(
+      line.unitPriceMinor * line.quantity - line.lineTotalMinor,
+    ),
     tax_minor: 0,
     line_total_minor: line.lineTotalMinor,
   }));
@@ -211,11 +215,13 @@ export async function createStoreCheckout(input: {
 
   const basket = Buffer.from(
     JSON.stringify(
-      priced.lines.map((line) => [
-        line.name.slice(0, 80),
-        kurusToPaytrPrice(line.unitPriceMinor),
-        line.quantity,
-      ]),
+      priced.lines.flatMap((line) =>
+        splitLineForPayment(line).map((entry) => [
+          entry.name.slice(0, 80),
+          kurusToPaytrPrice(entry.unitPriceMinor),
+          entry.quantity,
+        ]),
+      ),
     ),
     "utf8",
   ).toString("base64");

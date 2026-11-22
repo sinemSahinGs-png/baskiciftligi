@@ -123,6 +123,47 @@ describe("server cart pricing", () => {
     );
     expect(result.lines[0].name).toBe("Manifesto");
     expect(result.lines[0].unitPriceMinor).toBe(20_000);
+    expect(result.lines[0].lineTotalMinor).toBe(20_000);
+    expect(result.campaignDiscountMinor).toBe(0);
     expect(result.lines[0].projectSource).toBe("cep_album");
+  });
+
+  it("halves every second Cep Albüm unit and leaves Memoora full price", () => {
+    const catalog = catalogForCartPricing([]);
+    const twoOfOne = priceCart(
+      [{ productId: "proj-cep-album-gece-dansi", quantity: 2 }],
+      catalog,
+    );
+    expect(twoOfOne.lines[0].lineTotalMinor).toBe(30_000);
+    expect(twoOfOne.campaignDiscountMinor).toBe(10_000);
+    expect(twoOfOne.campaignLabel).toBe("2. ürün %50 indirimli");
+
+    const threeUnits = priceCart(
+      [{ productId: "proj-cep-album-gece-dansi", quantity: 3 }],
+      catalog,
+    );
+    expect(threeUnits.lines[0].lineTotalMinor).toBe(50_000);
+
+    const mixedAlbums = priceCart(
+      [
+        { productId: "proj-cep-album-gece-dansi", quantity: 1 },
+        { productId: "proj-cep-album-nevermind", quantity: 1 },
+      ],
+      catalog,
+    );
+    expect(mixedAlbums.lines[0].lineTotalMinor).toBe(20_000);
+    expect(mixedAlbums.lines[1].lineTotalMinor).toBe(10_000);
+    expect(mixedAlbums.subtotalMinor).toBe(30_000);
+
+    const withMemoora = priceCart(
+      [
+        { productId: "proj-memoora-magnet", quantity: 2 },
+        { productId: "proj-cep-album-gece-dansi", quantity: 2 },
+      ],
+      catalog,
+    );
+    expect(withMemoora.lines[0].lineTotalMinor).toBe(13_200);
+    expect(withMemoora.lines[1].lineTotalMinor).toBe(30_000);
+    expect(withMemoora.campaignDiscountMinor).toBe(10_000);
   });
 });

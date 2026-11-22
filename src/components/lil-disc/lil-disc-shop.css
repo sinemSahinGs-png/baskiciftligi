@@ -117,11 +117,18 @@
 }
 
 .lil-hero-copy p {
-  margin: 0.85rem 0 1.25rem;
+  margin: 0.85rem 0 0;
   max-width: 34ch;
   color: var(--lil-mute);
   font-size: 1.05rem;
   line-height: 1.5;
+}
+
+.lil-hero-copy .lil-deal {
+  margin: 0.45rem 0 1.25rem;
+  color: var(--lil-ink);
+  font-size: 0.98rem;
+  font-weight: 700;
 }
 
 .lil-hero-copy a,
@@ -181,6 +188,12 @@
 .lil-card p {
   margin: 0.15rem 0 0;
   font-size: 0.9rem;
+}
+
+.lil-card .lil-card-deal {
+  color: var(--lil-mute);
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .lil-card button {

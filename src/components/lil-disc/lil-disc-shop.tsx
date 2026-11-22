@@ -58,6 +58,7 @@ export function LilDiscShop({ destination }: { destination: ProjectDestination }
           <div className="lil-hero-copy">
             <h1 id="lil-hero-title">NFC özellikli mini CD anahtarlık</h1>
             <p>Telefonuna yaklaştır, albümü dinle.</p>
+            <p className="lil-deal">2. ürün %50 indirimli</p>
             <a href="#albumler">Albümleri keşfet</a>
           </div>
         </section>
@@ -73,6 +74,7 @@ export function LilDiscShop({ destination }: { destination: ProjectDestination }
                 <div>
                   <h3>{album.name}</h3>
                   <p>{priceLabel(album.priceMinor)}</p>
+                  <p className="lil-card-deal">2. ürün %50 indirimli</p>
                 </div>
                 <button
                   type="button"
