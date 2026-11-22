@@ -27,7 +27,7 @@ const SETUP_STEPS = [
   {
     title: "4. Production callback URL",
     body: "Thingiverse uygulama formundaki Callback URL tam olarak şu olmalı:",
-    note: "https://baskiciftligi.com/api/auth/thingiverse/callback — kaydetmeden Topluluk sekmesi bağlanmaz. App Token tek başına bu sitede reddediliyor; owner OAuth gerekir.",
+    note: "https://octostudio.com.tr/api/auth/thingiverse/callback — kaydetmeden Topluluk sekmesi bağlanmaz. App Token tek başına bu sitede reddediliyor; owner OAuth gerekir.",
   },
   {
     title: "5. Gerekli credential",
@@ -35,7 +35,7 @@ const SETUP_STEPS = [
   },
   {
     title: "6. Vercel environment variables",
-    body: "Vercel → baskiciftligi projesi → Settings → Environment Variables → Production’a ekleyin:",
+    body: "Vercel → octostudio projesi → Settings → Environment Variables → Production’a ekleyin:",
     env: [
       "THINGIVERSE_CLIENT_ID",
       "THINGIVERSE_CLIENT_SECRET",

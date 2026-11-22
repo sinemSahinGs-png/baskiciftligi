@@ -9,7 +9,7 @@ test.describe("wholesale web catalog", () => {
     await expect(
       page.getByRole("heading", { name: "Rafına alacağın ürünler." }),
     ).toBeVisible();
-    await expect(page.getByText("https://baskiciftligi.com/katalog").first()).toBeVisible();
+    await expect(page.getByText("https://octostudio.com.tr/katalog").first()).toBeVisible();
     await expect(page.getByRole("img", { name: /Kartvizit QR/ })).toBeVisible();
   });
 });

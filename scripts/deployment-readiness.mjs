@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 const productionMode = process.argv.includes("--production");
-const productionSiteUrl = "https://baskiciftligi.com";
+const productionSiteUrl = "https://octostudio.com.tr";
 
 const mandatory = ["NEXT_PUBLIC_SITE_URL"];
 const optional = [
@@ -53,7 +53,7 @@ if (
   siteUrl &&
   siteUrl !== productionSiteUrl
 ) {
-  missingMandatory.push("NEXT_PUBLIC_SITE_URL (must be https://baskiciftligi.com)");
+  missingMandatory.push("NEXT_PUBLIC_SITE_URL (must be https://octostudio.com.tr)");
 }
 
 const missingOptional = optional.filter((name) => !present(name));

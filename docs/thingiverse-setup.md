@@ -31,7 +31,7 @@ Thingiverse developer application oluşturma (güncel):
 4. MakerBot API şartlarını kabul et → **Create & Get App Key**
 5. Ekrandaki **Client ID**, **Client Secret**, **App Token** değerlerini kopyala
 6. Production OAuth kullanıyorsan (şimdilik gerekli değil — App Token yeter):
-   `https://baskiciftligi.com/api/auth/thingiverse/callback`
+   `https://octostudio.com.tr/api/auth/thingiverse/callback`
 7. Vercel → project → Settings → Environment Variables → **Production**:
 
 ```dotenv
@@ -41,7 +41,7 @@ THINGIVERSE_ACCESS_TOKEN=
 THINGIVERSE_API_BASE_URL=https://api.thingiverse.com
 THINGIVERSE_FIXTURE_MODE=false
 # Opsiyonel (OAuth):
-# THINGIVERSE_REDIRECT_URI=https://baskiciftligi.com/api/auth/thingiverse/callback
+# THINGIVERSE_REDIRECT_URI=https://octostudio.com.tr/api/auth/thingiverse/callback
 ```
 
 Güvenli secret vault yok: token’ı Supabase/DB’ye yazmayın. Yalnızca Vercel

@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     const upstream = await fetch(current.toString(), {
       headers: {
         Accept: "image/*,*/*;q=0.8",
-        "User-Agent": "BaskiCiftligi/1.0 (+https://baskiciftligi.com)",
+        "User-Agent": "OctoStudio/1.0 (+https://octostudio.com.tr)",
       },
       redirect: "manual",
       cache: "force-cache",

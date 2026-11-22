@@ -8,7 +8,7 @@ describe("siteConfig brand", () => {
     expect(siteConfig.shortName).toBe("OCTO");
     expect(siteConfig.legalName).toBe("Baskı Çiftliği");
     expect(siteConfig.wordmark).toBe("OCTO STUDIO");
-    expect(siteConfig.asciiId).toBe("baskiciftligi");
+    expect(siteConfig.asciiId).toBe("octostudio");
     expect(siteConfig.collectionLabel).toBe("OCTO STUDIO Koleksiyonu");
     expect(siteConfig.bylineLabel).toBe("OCTO STUDIO tarafından");
   });
@@ -38,9 +38,9 @@ describe("siteConfig brand", () => {
     expect(siteConfig.hero.headline).toBe("FİKRİNİ DERİNLİKTEN ÇIKAR.");
   });
 
-  it("canonical production URL is the apex Baskı Çiftliği domain", () => {
-    expect(PRODUCTION_SITE_URL).toBe("https://baskiciftligi.com");
-    expect(new URL(PRODUCTION_SITE_URL).hostname).toBe("baskiciftligi.com");
-    expect(PRODUCTION_SITE_URL).not.toMatch(/localhost|vercel\.app|octostudio|somut/i);
+  it("canonical production URL is the apex OCTO STUDIO domain", () => {
+    expect(PRODUCTION_SITE_URL).toBe("https://octostudio.com.tr");
+    expect(new URL(PRODUCTION_SITE_URL).hostname).toBe("octostudio.com.tr");
+    expect(PRODUCTION_SITE_URL).not.toMatch(/localhost|vercel\.app|baskiciftligi|somut/i);
   });
 });

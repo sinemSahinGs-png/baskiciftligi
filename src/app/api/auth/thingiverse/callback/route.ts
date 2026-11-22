@@ -17,7 +17,7 @@ import {
 export const runtime = "nodejs";
 
 const STATE_COOKIE = "bc_tv_oauth_state";
-const ADMIN = "https://baskiciftligi.com/admin/entegrasyonlar";
+const ADMIN = "https://octostudio.com.tr/admin/entegrasyonlar";
 
 function redirectWith(status: string) {
   return NextResponse.redirect(new URL(`${ADMIN}?tv=${status}`));
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       headers: {
         Accept: "application/json, text/plain",
         "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "BaskiCiftligi/1.0 (+https://baskiciftligi.com)",
+        "User-Agent": "OctoStudio/1.0 (+https://octostudio.com.tr)",
       },
       body: new URLSearchParams({
         client_id: clientId,
@@ -78,7 +78,7 @@ export async function GET(request: Request) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/json",
-        "User-Agent": "BaskiCiftligi/1.0 (+https://baskiciftligi.com)",
+        "User-Agent": "OctoStudio/1.0 (+https://octostudio.com.tr)",
       },
       cache: "no-store",
     });

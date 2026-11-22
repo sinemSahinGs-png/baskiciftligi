@@ -10,7 +10,7 @@ import { canAccessLaunchCenter } from "@/lib/catalog/authorization";
 function probes(overrides: Partial<LaunchProbes> = {}): LaunchProbes {
   return {
     generatedAt: "2026-08-18T12:00:00.000Z",
-    siteUrl: "https://baskiciftligi.com",
+    siteUrl: "https://octostudio.com.tr",
     deploymentId: "dpl_test",
     vercelEnvironment: "production",
     nodeEnv: "production",
@@ -47,7 +47,7 @@ function probes(overrides: Partial<LaunchProbes> = {}): LaunchProbes {
     pricingActivated: null,
     lastSuccessfulSlice: null,
     paytrConfigured: false,
-    paytrCallbackUrl: "https://baskiciftligi.com/api/payments/paytr/callback",
+    paytrCallbackUrl: "https://octostudio.com.tr/api/payments/paytr/callback",
     emailProvider: false,
     emailFrom: false,
     contactEmail: false,
@@ -125,7 +125,7 @@ describe("live smoke action", () => {
       workerReachable: null,
       storageConfigured: false,
       paymentConfigured: false,
-      canonical: "https://baskiciftligi.com",
+      canonical: "https://octostudio.com.tr",
     });
     expect(result.ok).toBe(true);
     const serialized = JSON.stringify(result);

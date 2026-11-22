@@ -166,11 +166,11 @@ export const projectDestinations: readonly ProjectDestination[] = [
     eyebrow: "Proje",
     description: "NFC özellikli mini CD anahtarlık. Telefonuna yaklaştır, albümü dinle.",
     href: "/kategori/lil-disc" as Route,
-    artwork: "/categories/cep-album/poster.webp",
-    logo: "/categories/cep-album/product-hero.webp",
-    heroVideoDesktop: "/categories/cep-album/hero.mp4",
-    heroVideoMobile: "/categories/cep-album/hero.mp4",
-    heroPoster: "/categories/cep-album/poster.webp",
+    artwork: "/categories/lil-disc/poster.webp",
+    logo: "/categories/lil-disc/manifesto.webp",
+    heroVideoDesktop: "/categories/lil-disc/hero.mp4",
+    heroVideoMobile: "/categories/lil-disc/hero.mp4",
+    heroPoster: "/categories/lil-disc/poster.webp",
     delivery: "Kargo tutarı ödeme adımında sunucuda hesaplanır.",
     faq: [
       {
@@ -192,55 +192,49 @@ const CEP_SINGLES = [
     id: "gece-dansi",
     name: "Manifesto",
     description: "NFC özellikli mini CD anahtarlık.",
-    image: "/categories/cep-album/preview-90lar.webp",
-  },
-  {
-    id: "beton-beat",
-    name: "Karma",
-    description: "NFC özellikli mini CD anahtarlık.",
-    image: "/categories/cep-album/preview-rap.webp",
-  },
-  {
-    id: "deri-ceket",
-    name: "Dünya Yalan Söylüyor",
-    description: "NFC özellikli mini CD anahtarlık.",
-    image: "/categories/cep-album/preview-rock.webp",
-  },
-  {
-    id: "gecelerin-sarkisi",
-    name: "Kadın",
-    description: "NFC özellikli mini CD anahtarlık.",
-    image: "/categories/cep-album/preview-arabesk.webp",
-  },
-  {
-    id: "yok",
-    name: "Y.O.K.",
-    description: "NFC özellikli mini CD anahtarlık.",
-    image: "/categories/cep-album/product-hero.webp",
-  },
-  {
-    id: "fallen",
-    name: "Fallen",
-    description: "NFC özellikli mini CD anahtarlık.",
-    image: "/categories/cep-album/poster.webp",
-  },
-  {
-    id: "master-of-puppets",
-    name: "Master of Puppets",
-    description: "NFC özellikli mini CD anahtarlık.",
-    image: "/categories/cep-album/product-hero.webp",
+    image: "/categories/lil-disc/manifesto.webp",
   },
   {
     id: "nevermind",
     name: "Nevermind",
     description: "NFC özellikli mini CD anahtarlık.",
-    image: "/categories/cep-album/poster.webp",
+    image: "/categories/lil-disc/nevermind.webp",
+  },
+  {
+    id: "master-of-puppets",
+    name: "Master of Puppets",
+    description: "NFC özellikli mini CD anahtarlık.",
+    image: "/categories/lil-disc/master-of-puppets.webp",
+  },
+  {
+    id: "gecelerin-sarkisi",
+    name: "Kadın",
+    description: "NFC özellikli mini CD anahtarlık.",
+    image: "/categories/lil-disc/kadin.webp",
+  },
+  {
+    id: "fallen",
+    name: "Fallen",
+    description: "NFC özellikli mini CD anahtarlık.",
+    image: "/categories/lil-disc/fallen.webp",
+  },
+  {
+    id: "beton-beat",
+    name: "17",
+    description: "NFC özellikli mini CD anahtarlık.",
+    image: "/categories/lil-disc/17.webp",
+  },
+  {
+    id: "deri-ceket",
+    name: "Şehrimin Tadı",
+    description: "NFC özellikli mini CD anahtarlık.",
+    image: "/categories/lil-disc/sehrimin-tadi.webp",
   },
 ] as const;
 
 export const LIL_DISC_HERO_VIDEO = "/categories/lil-disc/hero.mp4";
 export const LIL_DISC_HERO_VIDEO_FALLBACK = "/categories/cep-album/hero.mp4";
-export const LIL_DISC_HERO_POSTER = "/categories/cep-album/poster.webp";
+export const LIL_DISC_HERO_POSTER = "/categories/lil-disc/poster.webp";
 export const LIL_DISC_INSTAGRAM_URL = "";
 
 function memooraProducts(): Product[] {

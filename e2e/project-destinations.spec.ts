@@ -185,9 +185,9 @@ test.describe("project category destinations", () => {
     await page.goto("/kategori/cep-album");
     await expect(page).toHaveURL(/\/kategori\/lil-disc/);
     await expect(page.getByRole("heading", { name: "NFC özellikli mini CD anahtarlık" })).toBeVisible();
-    await page.locator(".lil-card", { hasText: "Karma" }).getByRole("button", { name: "Sepete ekle" }).click();
+    await page.locator(".lil-card", { hasText: "Nevermind" }).getByRole("button", { name: "Sepete ekle" }).click();
     await page.getByRole("navigation", { name: "LIL’DISC" }).getByRole("link", { name: /Sepet/ }).click();
-    await expect(page.getByText("Karma")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("Nevermind")).toBeVisible({ timeout: 15_000 });
     await page.getByRole("link", { name: "Ödeme adımına geç" }).click();
     await expect(page).toHaveURL(/\/odeme/, { timeout: 15_000 });
     await page.screenshot({

@@ -1,6 +1,6 @@
 import { publicEnv } from "@/lib/env";
 
-export const PRODUCTION_SITE_URL = "https://baskiciftligi.com";
+export const PRODUCTION_SITE_URL = "https://octostudio.com.tr";
 
 const siteUrl =
   publicEnv.NEXT_PUBLIC_SITE_URL ??
@@ -13,7 +13,7 @@ export const siteConfig = {
   shortName: "OCTO",
   legalName: "Baskı Çiftliği",
   wordmark: "OCTO STUDIO",
-  asciiId: "baskiciftligi",
+  asciiId: "octostudio",
   tagline: "Fikirden fiziksel ürüne.",
   description:
     "Hazır ürünleri keşfet, baskıya uygun modeller arasından seçim yap veya kendi 3D dosyanı yükleyerek üretim talebi oluştur.",

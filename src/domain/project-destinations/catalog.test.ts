@@ -50,17 +50,16 @@ describe("project category destinations", () => {
     const discs = listProjectDisplayProducts("lil-disc");
     expect(discs.map((item) => item.name)).toEqual([
       "Manifesto",
-      "Karma",
-      "Dünya Yalan Söylüyor",
-      "Kadın",
-      "Y.O.K.",
-      "Fallen",
-      "Master of Puppets",
       "Nevermind",
+      "Master of Puppets",
+      "Kadın",
+      "Fallen",
+      "17",
+      "Şehrimin Tadı",
     ]);
     expect(discs[0]?.id).toBe("proj-cep-album-gece-dansi");
-    expect(discs[1]?.id).toBe("proj-cep-album-beton-beat");
-    expect(discs[2]?.id).toBe("proj-cep-album-deri-ceket");
+    expect(discs[1]?.id).toBe("proj-cep-album-nevermind");
+    expect(discs[2]?.id).toBe("proj-cep-album-master-of-puppets");
     expect(discs[3]?.id).toBe("proj-cep-album-gecelerin-sarkisi");
     expect(discs.every((item) => item.priceMinor === 20_000)).toBe(true);
   });

@@ -1,3 +1,5 @@
+import { PRODUCTION_SITE_URL } from "@/config/site";
+
 export interface LaunchSmokeResult {
   at: string;
   ok: boolean;
@@ -84,7 +86,7 @@ export function evaluateSmokeChecks(input: {
     },
     {
       name: "Canonical",
-      ok: input.canonical === "https://baskiciftligi.com",
+      ok: input.canonical === PRODUCTION_SITE_URL,
       detail: input.canonical,
     },
   ];

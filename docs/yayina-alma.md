@@ -7,7 +7,7 @@ Canlı izleme: `/admin/yayina-alma` (yalnız `owner` / `admin`).
 
 ## 1. Üretim sırası
 
-1. Alan adı ve HTTPS (`https://baskiciftligi.com`)
+1. Alan adı ve HTTPS (`https://octostudio.com.tr`)
 2. Supabase proje ve ortam değişkenleri
 3. Göçler (`npx supabase db push`) — bilinmeyen projeye otomatik uygulanmaz
 4. Sahip hesabı ([admin-setup.md](./admin-setup.md))
@@ -27,13 +27,13 @@ Canlı izleme: `/admin/yayina-alma` (yalnız `owner` / `admin`).
 Ayrı production projesi kullanın. `NEXT_PUBLIC_SUPABASE_URL` ve
 `NEXT_PUBLIC_SUPABASE_ANON_KEY` Vercel Production’a eklenir.
 `SUPABASE_SERVICE_ROLE_KEY` yalnız sunucuda kalır; `NEXT_PUBLIC_` öneki almaz.
-Auth Site URL: `https://baskiciftligi.com`.
+Auth Site URL: `https://octostudio.com.tr`.
 
 İzinli redirect URL’ler (wildcard yok):
 
 - `http://localhost:3000/auth/callback`
-- `https://baskiciftligi.com/auth/callback`
-- `https://www.baskiciftligi.com/auth/callback`
+- `https://octostudio.com.tr/auth/callback`
+- `https://www.octostudio.com.tr/auth/callback`
 
 Şifre kurtarma PKCE akışı: `resetPasswordForEmail` → `/auth/callback?next=/sifre-yenile` → `/sifre-yenile`. Implicit `access_token` hash kabul edilmez.
 
@@ -41,7 +41,7 @@ Auth Site URL: `https://baskiciftligi.com`.
 
 Zorunlu üretim:
 
-- `NEXT_PUBLIC_SITE_URL=https://baskiciftligi.com`
+- `NEXT_PUBLIC_SITE_URL=https://octostudio.com.tr`
 
 Güvenlik (üretimde literal `false`):
 
@@ -129,7 +129,7 @@ Geliştirme tohum fiyatı üretim teklifi vermez. Yönetim → Fiyatlandırma.
 ## 13. PayTR (gelecek)
 
 Değişken adları ve callback:
-`https://baskiciftligi.com/api/payments/paytr/callback`
+`https://octostudio.com.tr/api/payments/paytr/callback`
 Bu fazda tahsilat açılmaz. Ayrıntı: [paytr-setup.md](./paytr-setup.md).
 
 ## 14. Son duman testi

@@ -26,7 +26,7 @@ const requestSchema = z.object({
 });
 
 function requestOrigin(): string {
-  return "https://baskiciftligi.com";
+  return "https://octostudio.com.tr";
 }
 
 async function resolveResetOrigin(): Promise<string> {
@@ -40,7 +40,7 @@ async function resolveResetOrigin(): Promise<string> {
   if (host === "localhost:3000" || host === "127.0.0.1:3000") {
     return "http://localhost:3000";
   }
-  if (host === "baskiciftligi.com" || host === "www.baskiciftligi.com") {
+  if (host === "octostudio.com.tr" || host === "www.octostudio.com.tr") {
     return `${proto === "http" ? "http" : "https"}://${host}`;
   }
   return requestOrigin();

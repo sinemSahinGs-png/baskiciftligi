@@ -15,14 +15,14 @@ describe("password recovery request", () => {
     expect(recoveryRedirectTo("http://localhost:3000")).toBe(
       "http://localhost:3000/auth/callback?next=/sifre-yenile",
     );
-    expect(recoveryRedirectTo("https://baskiciftligi.com")).toBe(
-      "https://baskiciftligi.com/auth/callback?next=/sifre-yenile",
+    expect(recoveryRedirectTo("https://octostudio.com.tr")).toBe(
+      "https://octostudio.com.tr/auth/callback?next=/sifre-yenile",
     );
   });
 
   it("does not honor unknown origins in redirectTo", () => {
     expect(recoveryRedirectTo("https://evil.example")).toBe(
-      "https://baskiciftligi.com/auth/callback?next=/sifre-yenile",
+      "https://octostudio.com.tr/auth/callback?next=/sifre-yenile",
     );
   });
 });

@@ -88,7 +88,7 @@ export function assembleLaunchReadiness(
         canonicalOk ? "Hazır" : "İşlem gerekiyor",
         canonicalOk
           ? PRODUCTION_SITE_URL
-          : "Beklenen adres https://baskiciftligi.com",
+          : `Beklenen adres ${PRODUCTION_SITE_URL}`,
       ),
       deploymentId: item(
         "deploymentId",

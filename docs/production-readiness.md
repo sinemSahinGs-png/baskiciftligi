@@ -44,6 +44,6 @@ Ayrıntı: `docs/pricing-model.md`.
 6. PayTR mağaza / webhook (ayrı faz)
 7. Sahip hesabı (yerel demo `admin` kalibrasyon operatörüdür; üretimde `owner`)
 8. Yazıcı/malzeme doğrulaması üretim profiliyle
-9. `NEXT_PUBLIC_SITE_URL=https://baskiciftligi.com`
+9. `NEXT_PUBLIC_SITE_URL=https://octostudio.com.tr`
 
 Kontrol: `npm run deploy:check:production` (yalnızca ortam; fiyat onayı değildir).

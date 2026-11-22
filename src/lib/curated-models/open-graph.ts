@@ -36,7 +36,7 @@ export async function peekOpenGraphMetadata(input: {
       signal: controller.signal,
       headers: {
         Accept: "text/html",
-        "User-Agent": "BaskiCiftligiCuratedCatalog/1.0 (+https://baskiciftligi.com)",
+        "User-Agent": "OctoStudioCuratedCatalog/1.0 (+https://octostudio.com.tr)",
       },
     });
     if (!response.ok) {

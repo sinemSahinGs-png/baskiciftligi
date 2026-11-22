@@ -41,7 +41,7 @@ build'iyle doğrulanıp project setting'de sabitlenmelidir.
 Production environment:
 
 ```dotenv
-NEXT_PUBLIC_SITE_URL=https://baskiciftligi.com
+NEXT_PUBLIC_SITE_URL=https://octostudio.com.tr
 NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<public-anon-key>
 ALLOW_DEMO_ADMIN_MUTATIONS=false
@@ -49,11 +49,11 @@ ALLOW_DEMO_ADMIN_MUTATIONS=false
 
 Supabase Auth (when configured):
 
-- Site URL: `https://baskiciftligi.com`
+- Site URL: `https://octostudio.com.tr`
 - Redirect allow-list (no wildcards):
   - `http://localhost:3000/auth/callback`
-  - `https://baskiciftligi.com/auth/callback`
-  - `https://www.baskiciftligi.com/auth/callback`
+  - `https://octostudio.com.tr/auth/callback`
+  - `https://www.octostudio.com.tr/auth/callback`
 - Password recovery uses PKCE only: `/auth/callback?next=/sifre-yenile`.
   Do not enable implicit token-in-URL recovery links.
 
