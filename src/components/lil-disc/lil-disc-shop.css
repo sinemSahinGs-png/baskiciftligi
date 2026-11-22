@@ -167,7 +167,8 @@
   aspect-ratio: 1;
   width: 100%;
   object-fit: contain;
-  padding: 0.55rem;
+  object-position: center;
+  padding: 0.7rem;
   background: #efebe3;
 }
 
