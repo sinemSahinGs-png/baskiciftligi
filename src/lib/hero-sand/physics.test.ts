@@ -68,7 +68,7 @@ describe("octo sand physics helpers", () => {
   });
 
   it("keeps production host free of the debug overlay by default", () => {
-    expect(allowHeroDebug("baskiciftligi.com", "?heroDebug=1")).toBe(false);
+    expect(allowHeroDebug("octostudio.com.tr", "?heroDebug=1")).toBe(false);
     expect(allowHeroDebug("localhost", "?heroDebug=1")).toBe(true);
     expect(allowHeroDebug("localhost", "")).toBe(false);
   });

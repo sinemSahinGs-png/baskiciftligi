@@ -1,4 +1,6 @@
-export const PRODUCTION_SITE_URL = "https://baskiciftligi.com";
+import { PRODUCTION_SITE_URL } from "@/config/site";
+
+export { PRODUCTION_SITE_URL };
 
 export const mandatoryProductionEnv = ["NEXT_PUBLIC_SITE_URL"] as const;
 

@@ -137,7 +137,7 @@ export function listProviderStatusSnapshots(): ProviderStatusSnapshot[] {
           ? "https://www.thingiverse.com/developers"
           : entry.provider.source === "myminifactory"
             ? "https://www.myminifactory.com/pages/for-developers"
-            : "https://baskiciftligi.com/hazir-modeller",
+            : "https://octostudio.com.tr/hazir-modeller",
       legalNotes: isPrintables
         ? "Scrape / özel GraphQL yok. Sonuçlar Printables üzerinde açılır."
         : entry.provider.source === "thingiverse"

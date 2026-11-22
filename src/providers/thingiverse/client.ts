@@ -28,7 +28,7 @@ const jsonTimeoutMs = 15_000;
 const maxDownloadBytes = 100 * 1024 * 1024;
 const jsonHeaders = {
   Accept: "application/json",
-  "User-Agent": "BaskiCiftligi/1.0 (+https://baskiciftligi.com)",
+  "User-Agent": "OctoStudio/1.0 (+https://octostudio.com.tr)",
 };
 
 export class ThingiverseApiError extends Error {
@@ -87,7 +87,7 @@ function thingiverseEdgeProxyUrl(path: string) {
   const host =
     process.env.VERCEL_PROJECT_PRODUCTION_URL ||
     process.env.VERCEL_URL ||
-    "baskiciftligi.com";
+    "octostudio.com.tr";
   const origin = host.startsWith("http") ? host : `https://${host}`;
   const url = new URL("/api/internal/thingiverse-edge", origin);
   url.searchParams.set("path", path.startsWith("/") ? path : `/${path}`);

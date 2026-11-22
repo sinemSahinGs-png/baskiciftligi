@@ -1,5 +1,6 @@
 import "server-only";
 
+import { PRODUCTION_SITE_URL } from "@/config/site";
 import { parseStrictEnvBoolean } from "@/lib/env-boolean";
 import { serverEnv } from "@/lib/env.server";
 import type { PaytrCredentials } from "@/lib/wholesale/paytr";
@@ -39,7 +40,7 @@ export function siteOrigin(): string {
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
   if (fromEnv) return fromEnv;
   if (process.env.NODE_ENV === "production") {
-    return "https://baskiciftligi.com";
+    return PRODUCTION_SITE_URL;
   }
   return "http://localhost:3000";
 }

@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 
+import { PRODUCTION_SITE_URL } from "@/config/site";
 import { getCatalogSnapshot } from "@/domain/catalog/repository";
 import {
   catalogForCartPricing,
@@ -190,7 +191,7 @@ export async function createStoreCheckout(input: {
   }
 
   const origin = siteOrigin().includes("localhost")
-    ? "https://baskiciftligi.com"
+    ? PRODUCTION_SITE_URL
     : siteOrigin();
   const stub = isWholesalePaytrStubEnabled();
   if (stub) {

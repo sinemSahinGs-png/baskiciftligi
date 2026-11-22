@@ -21,8 +21,8 @@ support ekranına yazılmaz. Test ve production credential'ları ayrıdır.
 
 TLS kullanan canonical URL'ler ayrıca tanımlanır (ödeme henüz aktif değildir):
 
-- callback/webhook: `https://baskiciftligi.com/api/payments/paytr/callback`
-- kullanıcı dönüşü: `https://baskiciftligi.com/odeme/basarili` ve `https://baskiciftligi.com/odeme/basarisiz`
+- callback/webhook: `https://octostudio.com.tr/api/payments/paytr/callback`
+- kullanıcı dönüşü: `https://octostudio.com.tr/odeme/basarili` ve `https://octostudio.com.tr/odeme/basarisiz`
 
 Bunlar planlanan adreslerdir; route gerçekten deploy ve test edilmeden panelde
 canlı moda geçilmez. Browser'ın success URL'ine gelmesi ödeme kanıtı değildir;

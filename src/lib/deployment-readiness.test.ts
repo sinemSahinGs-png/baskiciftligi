@@ -10,8 +10,8 @@ import {
 
 describe("deployment readiness", () => {
   it("treats the apex domain as the only canonical production URL", () => {
-    expect(PRODUCTION_SITE_URL).toBe("https://baskiciftligi.com");
-    expect(classifySiteUrl("https://baskiciftligi.com")).toBe("canonical");
+    expect(PRODUCTION_SITE_URL).toBe("https://octostudio.com.tr");
+    expect(classifySiteUrl("https://octostudio.com.tr")).toBe("canonical");
     expect(classifySiteUrl("http://localhost:3000")).toBe("development");
     expect(classifySiteUrl(undefined)).toBe("missing");
   });

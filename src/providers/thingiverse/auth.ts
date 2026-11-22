@@ -6,7 +6,7 @@ export const THINGIVERSE_OAUTH_AUTHORIZE_URL =
 export const THINGIVERSE_OAUTH_TOKEN_URL =
   "https://www.thingiverse.com/login/oauth/access_token";
 export const DEFAULT_THINGIVERSE_REDIRECT_URI =
-  "https://baskiciftligi.com/api/auth/thingiverse/callback";
+  "https://octostudio.com.tr/api/auth/thingiverse/callback";
 
 export function sanitizeThingiverseToken(
   raw?: string | null,
@@ -44,7 +44,7 @@ export function resolveThingiverseRedirectUri(raw?: string | null): string {
   try {
     const url = new URL(raw.trim());
     if (url.protocol !== "https:") return DEFAULT_THINGIVERSE_REDIRECT_URI;
-    if (url.hostname.toLowerCase() !== "baskiciftligi.com") {
+    if (url.hostname.toLowerCase() !== "octostudio.com.tr") {
       return DEFAULT_THINGIVERSE_REDIRECT_URI;
     }
     if (url.pathname !== "/api/auth/thingiverse/callback") {

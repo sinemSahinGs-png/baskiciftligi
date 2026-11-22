@@ -11,14 +11,14 @@ export const PASSWORD_RECOVERY_COOKIE_MAX_AGE = 15 * 60;
 
 export const AUTH_REDIRECT_ORIGINS = [
   "http://localhost:3000",
-  "https://baskiciftligi.com",
-  "https://www.baskiciftligi.com",
+  "https://octostudio.com.tr",
+  "https://www.octostudio.com.tr",
 ] as const;
 
 export const AUTH_CALLBACK_PATHS = [
   "http://localhost:3000/auth/callback",
-  "https://baskiciftligi.com/auth/callback",
-  "https://www.baskiciftligi.com/auth/callback",
+  "https://octostudio.com.tr/auth/callback",
+  "https://www.octostudio.com.tr/auth/callback",
 ] as const;
 
 const FORBIDDEN_PARAM_KEYS = [
@@ -93,7 +93,7 @@ export function recoveryRedirectTo(origin: string): string {
     normalized,
   )
     ? normalized
-    : "https://baskiciftligi.com";
+    : "https://octostudio.com.tr";
   return `${allowed}/auth/callback?next=${PASSWORD_RECOVERY_PATH}`;
 }
 

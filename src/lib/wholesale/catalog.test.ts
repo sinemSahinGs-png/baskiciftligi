@@ -13,7 +13,7 @@ describe("wholesale catalog QR target", () => {
   it("uses a short production URL for printed business cards", () => {
     expect(WHOLESALE_CATALOG_SHORT_PATH).toBe("/katalog");
     expect(WHOLESALE_CATALOG_PATH).toBe("/toptan/katalog");
-    expect(wholesaleCatalogQrUrl()).toBe("https://baskiciftligi.com/katalog");
+    expect(wholesaleCatalogQrUrl()).toBe("https://octostudio.com.tr/katalog");
   });
 
   it("does not invent measures or leak configuration copy", () => {

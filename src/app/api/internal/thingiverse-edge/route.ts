@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
-      "User-Agent": "BaskiCiftligi/1.0 (+https://baskiciftligi.com)",
+      "User-Agent": "OctoStudio/1.0 (+https://octostudio.com.tr)",
     },
     cache: "no-store",
   });

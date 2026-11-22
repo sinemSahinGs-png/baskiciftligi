@@ -3,7 +3,7 @@ import "server-only";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
-import { siteConfig } from "@/config/site";
+import { PRODUCTION_SITE_URL, siteConfig } from "@/config/site";
 import { getDeploymentHealth } from "@/lib/deployment-health";
 import { isSupabaseConfigured, publicEnv } from "@/lib/env";
 import { serverEnv } from "@/lib/env.server";
@@ -152,7 +152,7 @@ export async function gatherLaunchReadiness(): Promise<LaunchReadinessSnapshot> 
     paytrConfigured: health.payment === "configured",
     paytrCallbackUrl:
       serverEnv.PAYTR_CALLBACK_URL ??
-      "https://baskiciftligi.com/api/payments/paytr/callback",
+      `${PRODUCTION_SITE_URL}/api/payments/paytr/callback`,
     emailProvider: Boolean(serverEnv.RESEND_API_KEY),
     emailFrom: Boolean(serverEnv.EMAIL_FROM),
     contactEmail: Boolean(publicEnv.NEXT_PUBLIC_CONTACT_EMAIL),
