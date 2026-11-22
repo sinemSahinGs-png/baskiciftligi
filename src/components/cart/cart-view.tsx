@@ -438,7 +438,11 @@ export function CartView() {
                     <p className="type-price">
                       {formatMoney(line.lineTotalMinor, result.currency)}
                     </p>
-                    {line.quantity > 1 ? (
+                    {line.lineTotalMinor !== line.unitPriceMinor * line.quantity ? (
+                      <p className="mt-1 text-xs text-ink-muted">
+                        {result.campaignLabel ?? "2. ürün %50 indirimli"}
+                      </p>
+                    ) : line.quantity > 1 ? (
                       <p className="tabular mt-1 text-xs text-ink-muted">
                         {formatMoney(line.unitPriceMinor, result.currency)} /
                         adet
@@ -525,9 +529,22 @@ export function CartView() {
           <div className="flex items-center justify-between gap-4">
             <dt className="text-ink-secondary">{t("commerce.subtotal")}</dt>
             <dd className="tabular font-medium">
-              {formatMoney(result.subtotalMinor, result.currency)}
+              {formatMoney(
+                result.subtotalMinor + (result.campaignDiscountMinor ?? 0),
+                result.currency,
+              )}
             </dd>
           </div>
+          {result.campaignDiscountMinor > 0 ? (
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-ink-secondary">
+                {result.campaignLabel ?? "2. ürün %50 indirimli"}
+              </dt>
+              <dd className="tabular font-medium">
+                −{formatMoney(result.campaignDiscountMinor, result.currency)}
+              </dd>
+            </div>
+          ) : null}
           <div className="flex items-center justify-between gap-4">
             <dt className="text-ink-secondary">{t("commerce.estimatedShipping")}</dt>
             <dd className="tabular font-medium">

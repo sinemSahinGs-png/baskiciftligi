@@ -12,6 +12,8 @@ type PricePayload = {
   totalMinor?: number;
   subtotalMinor?: number;
   estimatedShippingMinor?: number;
+  campaignDiscountMinor?: number;
+  campaignLabel?: string | null;
   hasUnavailableItems?: boolean;
   lines?: Array<{
     name: string;
@@ -249,8 +251,18 @@ export function StoreCheckout({
           <dl className="space-y-1 text-muted-foreground">
             <div className="flex justify-between">
               <dt>{t("commerce.subtotal")}</dt>
-              <dd>{formatMoney(totals.subtotalMinor ?? 0)}</dd>
+              <dd>
+                {formatMoney(
+                  (totals.subtotalMinor ?? 0) + (totals.campaignDiscountMinor ?? 0),
+                )}
+              </dd>
             </div>
+            {totals.campaignDiscountMinor ? (
+              <div className="flex justify-between">
+                <dt>{totals.campaignLabel ?? "2. ürün %50 indirimli"}</dt>
+                <dd>−{formatMoney(totals.campaignDiscountMinor)}</dd>
+              </div>
+            ) : null}
             <div className="flex justify-between">
               <dt>{t("commerce.shipping")}</dt>
               <dd>{formatMoney(totals.estimatedShippingMinor ?? 0)}</dd>

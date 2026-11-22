@@ -22,6 +22,7 @@ test.describe("LIL’ DISC shop", () => {
     await page.goto("/kategori/lil-disc");
 
     await expect(page.getByRole("heading", { name: "NFC özellikli mini CD anahtarlık" })).toBeVisible();
+    await expect(page.locator(".lil-hero-copy")).toContainText("2. ürün %50 indirimli");
     await page.getByRole("link", { name: "Albümleri keşfet" }).click();
     await expect(page.locator("#albumler")).toBeInViewport();
 

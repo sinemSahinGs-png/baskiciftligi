@@ -68,6 +68,8 @@ export interface CartPriceResult {
   currency: "TRY";
   lines: PricedCartLine[];
   subtotalMinor: number;
+  campaignDiscountMinor: number;
+  campaignLabel: string | null;
   estimatedShippingMinor: number;
   totalMinor: number;
   freeShippingThresholdMinor: number;
@@ -79,6 +81,7 @@ export interface CartPriceResult {
 export const FREE_SHIPPING_THRESHOLD_MINOR =
   COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor ?? 0;
 export const STANDARD_SHIPPING_MINOR = COMMERCE_SHIPPING_POLICY.standardShippingMinor;
+export const CEP_ALBUM_SECOND_HALF_LABEL = "2. ürün %50 indirimli";
 
 export function catalogForCartPricing(catalog: Product[]): Product[] {
   return [...catalog, ...listProjectCatalogProducts()];
@@ -152,7 +155,10 @@ export function priceCart(
       name: product.name,
       variantName: variant?.name ?? null,
       slug: product.slug,
-      imageUrl: product.media.find((item) => item.type === "image")?.url ?? null,
+      imageUrl:
+        product.media
+          .find((item) => item.type === "image")
+          ?.url.split("?")[0] ?? null,
       unitPriceMinor,
       lineTotalMinor: assertMinorUnits(unitPriceMinor * input.quantity),
       quantity: input.quantity,
@@ -166,25 +172,103 @@ export function priceCart(
     };
   });
 
-  const subtotalMinor = assertMinorUnits(
+  const pricedLines = applyCepAlbumSecondHalfOff(lines);
+  const grossSubtotalMinor = assertMinorUnits(
     lines.reduce(
       (total, line) => total + (line.isAvailable ? line.lineTotalMinor : 0),
       0,
     ),
   );
+  const subtotalMinor = assertMinorUnits(
+    pricedLines.reduce(
+      (total, line) => total + (line.isAvailable ? line.lineTotalMinor : 0),
+      0,
+    ),
+  );
+  const campaignDiscountMinor = assertMinorUnits(grossSubtotalMinor - subtotalMinor);
   const estimatedShippingMinor = computeCartShippingMinor(subtotalMinor);
 
   return {
     currency: "TRY",
-    lines,
+    lines: pricedLines,
     subtotalMinor,
+    campaignDiscountMinor,
+    campaignLabel: campaignDiscountMinor > 0 ? CEP_ALBUM_SECOND_HALF_LABEL : null,
     estimatedShippingMinor,
     totalMinor: assertMinorUnits(subtotalMinor + estimatedShippingMinor),
     freeShippingThresholdMinor: FREE_SHIPPING_THRESHOLD_MINOR,
-    hasUnavailableItems: lines.some((line) => !line.isAvailable),
+    hasUnavailableItems: pricedLines.some((line) => !line.isAvailable),
     pricedAt,
     shippingPolicy: publicShippingPolicyFields(),
   };
+}
+
+function applyCepAlbumSecondHalfOff(lines: PricedCartLine[]): PricedCartLine[] {
+  let unitIndex = 0;
+  return lines.map((line) => {
+    if (!line.isAvailable || line.projectSource !== "cep_album") {
+      return line;
+    }
+    let lineTotalMinor = 0;
+    for (let index = 0; index < line.quantity; index += 1) {
+      const halfOff = unitIndex % 2 === 1;
+      lineTotalMinor += halfOff
+        ? assertMinorUnits(Math.trunc(line.unitPriceMinor / 2))
+        : line.unitPriceMinor;
+      unitIndex += 1;
+    }
+    return { ...line, lineTotalMinor: assertMinorUnits(lineTotalMinor) };
+  });
+}
+
+export function splitLineForPayment(line: PricedCartLine): Array<{
+  name: string;
+  unitPriceMinor: number;
+  quantity: number;
+}> {
+  const grossMinor = line.unitPriceMinor * line.quantity;
+  const discountMinor = grossMinor - line.lineTotalMinor;
+  if (discountMinor <= 0 || line.quantity < 1) {
+    return [
+      {
+        name: line.name,
+        unitPriceMinor: line.unitPriceMinor,
+        quantity: line.quantity,
+      },
+    ];
+  }
+
+  const halfUnitMinor = Math.trunc(line.unitPriceMinor / 2);
+  const discountPerHalf = line.unitPriceMinor - halfUnitMinor;
+  if (discountPerHalf <= 0 || discountMinor % discountPerHalf !== 0) {
+    return [
+      {
+        name: line.name,
+        unitPriceMinor: line.lineTotalMinor,
+        quantity: 1,
+      },
+    ];
+  }
+
+  const halfCount = discountMinor / discountPerHalf;
+  const fullCount = line.quantity - halfCount;
+  const rows: Array<{ name: string; unitPriceMinor: number; quantity: number }> =
+    [];
+  if (fullCount > 0) {
+    rows.push({
+      name: line.name,
+      unitPriceMinor: line.unitPriceMinor,
+      quantity: fullCount,
+    });
+  }
+  if (halfCount > 0) {
+    rows.push({
+      name: `${line.name} · ${CEP_ALBUM_SECOND_HALF_LABEL}`,
+      unitPriceMinor: halfUnitMinor,
+      quantity: halfCount,
+    });
+  }
+  return rows;
 }
 
 function personalizationSatisfied(
