@@ -20,6 +20,8 @@ export type TrendyolRawProduct = {
   blacklisted?: boolean;
   productUrl?: string;
   vatRate?: number;
+  price?: { salePrice?: number; listPrice?: number };
+  stock?: { quantity?: number };
   variants?: TrendyolRawVariant[];
 };
 
