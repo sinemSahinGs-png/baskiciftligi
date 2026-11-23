@@ -9,7 +9,7 @@ import {
 } from "@/lib/catalog/storefront-category-image";
 
 describe("storefront category presentation images", () => {
-  it("maps every taxonomy category to its public PNG without catalogue media", () => {
+  it("maps every taxonomy category to its public artwork without catalogue media", () => {
     const resolved = resolveAllStorefrontCategoryImages();
     for (const category of storefrontCategories) {
       const absolute = storefrontCategoryAbsolutePath(category);

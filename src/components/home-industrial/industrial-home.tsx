@@ -1,3 +1,4 @@
+import { AtelierCave } from "@/components/home-industrial/atelier-cave";
 import { CompactFaq } from "@/components/home-industrial/compact-faq";
 import { HomeCategories } from "@/components/home-industrial/home-categories";
 import { HomeTrust } from "@/components/home-industrial/home-trust";
@@ -14,6 +15,7 @@ import type { Material, Product } from "@/domain/catalog/types";
 
 import "./home-industrial.css";
 import "./home-story.css";
+import "./atelier-story.css";
 import "./home-premium.css";
 
 export function IndustrialHome({
@@ -34,9 +36,11 @@ export function IndustrialHome({
       <ScrollThemeProvider />
       <IdeaCommand />
       <StartPath />
-      <ProductionStory />
-      <HomeCategories products={products} />
-      <OctoUniverse />
+      <AtelierCave>
+        <ProductionStory />
+        <HomeCategories products={products} />
+        <OctoUniverse />
+      </AtelierCave>
       <OctoProducts products={products} />
       <WholesaleBand />
       <HomeTrust />

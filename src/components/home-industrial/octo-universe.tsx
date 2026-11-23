@@ -33,7 +33,7 @@ export function OctoUniverse() {
               >
                 <CategoryArtwork
                   src={project.artwork}
-                  objectPosition="50% 42%"
+                  objectPosition="50% 50%"
                   sizes="(max-width: 767px) 92vw, 32vw"
                 />
                 {project.logo ? (

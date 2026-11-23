@@ -51,6 +51,20 @@ describe("storefront taxonomy overlay", () => {
     ).toBe(0);
   });
 
+  it("opens toy and fidget listings on the live storefront", () => {
+    const toys = storefrontCategories.find(
+      (item) => item.slug === "oyuncak-hareketli-modeller",
+    )!;
+    expect(toys.comingSoon).toBe(false);
+    expect(toys.sourceSlugs).toEqual(["oyuncak-hareketli-modeller"]);
+    expect(
+      countStorefrontProducts(
+        [{ categorySlugs: ["oyuncak-hareketli-modeller"] }],
+        toys,
+      ),
+    ).toBe(1);
+  });
+
   it("keeps redirects for replaced store URLs", () => {
     expect(
       STOREFRONT_CATEGORY_REDIRECTS.map((item) => item.source),
@@ -82,13 +96,13 @@ describe("storefront taxonomy overlay", () => {
     expect(
       storefrontCategories.map((item) => [item.slug, item.assetFile]),
     ).toEqual([
-      ["dekorasyon-yasam", "dekorasyon-yasam.png"],
-      ["figur-heykel", "figur-heykel.png"],
-      ["oyuncak-hareketli-modeller", "oyuncak-hareketli.png"],
+      ["dekorasyon-yasam", "dekorasyon-yasam.webp"],
+      ["figur-heykel", "figur-heykel.webp"],
+      ["oyuncak-hareketli-modeller", "oyuncak-hareketli.webp"],
       ["taraftara-ozel", "taraftara-ozel.png"],
-      ["anahtarlik-magnet", "anahtarlik-magnet.png"],
-      ["masaustu-fonksiyonel", "masaustu-fonksiyonel.png"],
-      ["kisiye-ozel", "kisiye-ozel.png"],
+      ["anahtarlik-magnet", "anahtarlik-magnet.webp"],
+      ["masaustu-fonksiyonel", "masaustu-fonksiyonel.webp"],
+      ["kisiye-ozel", "kisiye-ozel.webp"],
     ]);
   });
 });

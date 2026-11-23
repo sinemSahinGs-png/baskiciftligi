@@ -1,11 +1,11 @@
 import type { StorefrontCategorySlug } from "@/domain/catalog/storefront-taxonomy";
 
 export const CATEGORY_OBJECT_POSITION: Record<StorefrontCategorySlug, string> = {
-  "dekorasyon-yasam": "52% 38%",
-  "figur-heykel": "62% 34%",
-  "oyuncak-hareketli-modeller": "46% 48%",
+  "dekorasyon-yasam": "50% 50%",
+  "figur-heykel": "50% 48%",
+  "oyuncak-hareketli-modeller": "50% 52%",
   "taraftara-ozel": "50% 36%",
-  "anahtarlik-magnet": "50% 40%",
-  "masaustu-fonksiyonel": "48% 54%",
-  "kisiye-ozel": "40% 46%",
+  "anahtarlik-magnet": "50% 46%",
+  "masaustu-fonksiyonel": "50% 54%",
+  "kisiye-ozel": "48% 50%",
 };

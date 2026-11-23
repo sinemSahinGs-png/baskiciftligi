@@ -67,6 +67,14 @@ html[data-home-industrial][data-header-compact] header .shell {
   color: #f4ead8;
 }
 
+.atelier-cave-copy .octo-band-umber {
+  background: linear-gradient(180deg, rgb(58 40 24 / 0.42), rgb(26 17 12 / 0.55));
+}
+
+.atelier-cave-copy .octo-band-obsidian {
+  background: rgb(11 9 7 / 0.38);
+}
+
 .octo-band-void {
   background: var(--octo-void);
   color: #f4ead8;
