@@ -6,6 +6,7 @@ import { getPaytrCredentials } from "@/lib/wholesale/credentials";
 import { sendWholesaleEmail } from "@/lib/wholesale/email";
 import {
   parsePaytrTotalAmount,
+  verifyPaytrCallbackHash,
   type PaytrCallbackPayload,
 } from "@/lib/wholesale/paytr";
 import { getWholesaleStore } from "@/lib/wholesale/repository";
@@ -65,6 +66,10 @@ export async function POST(request: Request) {
     return new NextResponse("credentials", { status: 503 });
   }
 
+  if (!verifyPaytrCallbackHash(payload, credentials)) {
+    return okResponse();
+  }
+
   try {
     const store = await getWholesaleStore();
     const result = await handlePaytrCallback({
@@ -74,31 +79,8 @@ export async function POST(request: Request) {
       requestId,
     });
 
-    if (!result.ok && result.reason === "invalid_hash") {
-      console.info("[paytr-callback]", {
-        requestId,
-        merchantOid: payload.merchantOid,
-        result: "invalid_hash_probe",
-      });
-      return okResponse();
-    }
-
     if (!result.ok && result.reason === "unknown_order") {
-      let amountMinor = 0;
-      try {
-        amountMinor = parsePaytrTotalAmount(payload.totalAmount);
-      } catch {
-        return okResponse();
-      }
-      const storeResult = await applyStorePaytrCallback({
-        merchantOid: payload.merchantOid,
-        success: payload.status === "success",
-        amountMinor,
-      });
-      if (!storeResult.ok) {
-        return okResponse();
-      }
-      return okResponse();
+      return applyRetailCallback(payload);
     }
 
     if (!result.ok) {
@@ -124,8 +106,31 @@ export async function POST(request: Request) {
       paymentState: result.order.paymentState,
     });
     return okResponse();
-  } catch {
-    console.info("[paytr-callback]", { requestId, result: "error" });
-    return new NextResponse("error", { status: 500 });
+  } catch (error) {
+    console.info("[paytr-callback]", {
+      requestId,
+      result: "wholesale_store_skipped",
+    });
+    void error;
+    return applyRetailCallback(payload);
   }
+}
+
+async function applyRetailCallback(payload: PaytrCallbackPayload) {
+  let amountMinor = 0;
+  try {
+    amountMinor = parsePaytrTotalAmount(payload.totalAmount);
+  } catch {
+    return okResponse();
+  }
+  try {
+    await applyStorePaytrCallback({
+      merchantOid: payload.merchantOid,
+      success: payload.status === "success",
+      amountMinor,
+    });
+  } catch {
+    return okResponse();
+  }
+  return okResponse();
 }
