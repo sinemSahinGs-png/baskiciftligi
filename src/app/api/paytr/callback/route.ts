@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     testMode: formValue(form, "test_mode") || undefined,
   };
 
-  if (!payload.merchantOid) {
+  if (!payload.merchantOid || !payload.hash || !payload.status) {
     return okResponse();
   }
 
@@ -74,12 +74,21 @@ export async function POST(request: Request) {
       requestId,
     });
 
+    if (!result.ok && result.reason === "invalid_hash") {
+      console.info("[paytr-callback]", {
+        requestId,
+        merchantOid: payload.merchantOid,
+        result: "invalid_hash_probe",
+      });
+      return okResponse();
+    }
+
     if (!result.ok && result.reason === "unknown_order") {
       let amountMinor = 0;
       try {
         amountMinor = parsePaytrTotalAmount(payload.totalAmount);
       } catch {
-        return new NextResponse("invalid_amount", { status: 400 });
+        return okResponse();
       }
       const storeResult = await applyStorePaytrCallback({
         merchantOid: payload.merchantOid,
@@ -87,7 +96,7 @@ export async function POST(request: Request) {
         amountMinor,
       });
       if (!storeResult.ok) {
-        return new NextResponse(storeResult.reason, { status: 400 });
+        return okResponse();
       }
       return okResponse();
     }

@@ -87,6 +87,7 @@ export async function requestPaytrIframeToken(input: {
     no_installment: "1",
     max_installment: "0",
     currency: "TL",
+    iframe_v2: "1",
     paytr_token: paytrToken,
   });
 
@@ -110,6 +111,11 @@ export async function requestPaytrIframeToken(input: {
   }
 
   if (parsed.status !== "success" || !parsed.token) {
+    console.info("[paytr-token]", {
+      status: parsed.status ?? "none",
+      reason: parsed.reason ?? "no_reason",
+      merchantId: credentials.merchantId,
+    });
     throw new Error("PAYTR_TOKEN_DENIED");
   }
 
