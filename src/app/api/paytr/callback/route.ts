@@ -36,17 +36,12 @@ export async function HEAD() {
 
 export async function POST(request: Request) {
   const requestId = requestIdFrom(request);
-  const credentials = getPaytrCredentials();
-  if (!credentials) {
-    console.info("[paytr-callback]", { requestId, result: "unconfigured" });
-    return new NextResponse("credentials", { status: 503 });
-  }
 
   let form: FormData;
   try {
     form = await request.formData();
   } catch {
-    return new NextResponse("bad_request", { status: 400 });
+    return okResponse();
   }
 
   const payload: PaytrCallbackPayload = {
@@ -59,6 +54,16 @@ export async function POST(request: Request) {
     failedReasonMsg: formValue(form, "failed_reason_msg") || undefined,
     testMode: formValue(form, "test_mode") || undefined,
   };
+
+  if (!payload.merchantOid) {
+    return okResponse();
+  }
+
+  const credentials = getPaytrCredentials();
+  if (!credentials) {
+    console.info("[paytr-callback]", { requestId, result: "unconfigured" });
+    return new NextResponse("credentials", { status: 503 });
+  }
 
   try {
     const store = await getWholesaleStore();

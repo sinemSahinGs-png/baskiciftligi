@@ -1,6 +1,5 @@
 import { randomBytes } from "node:crypto";
 
-import { PRODUCTION_SITE_URL } from "@/config/site";
 import { getCatalogSnapshot } from "@/domain/catalog/repository";
 import { listPublishedLilDiscAlbums } from "@/domain/lil-disc/repository";
 import {
@@ -25,7 +24,7 @@ import {
   getPaytrCredentials,
   isPaytrTestMode,
   isWholesalePaytrStubEnabled,
-  siteOrigin,
+  paytrPublicOrigin,
 } from "@/lib/wholesale/credentials";
 import { createServiceRoleSupabaseClient } from "@/lib/supabase/admin";
 import { STORE_AGREEMENT_VERSIONS } from "@/lib/store-checkout/agreements";
@@ -198,9 +197,9 @@ export async function createStoreCheckout(input: {
     throw new StoreCheckoutError("DB", "Ödeme kaydı yazılamadı.");
   }
 
-  const origin = siteOrigin().includes("localhost")
-    ? PRODUCTION_SITE_URL
-    : siteOrigin();
+  const origin = paytrPublicOrigin().includes("localhost")
+    ? "https://www.octostudio.com.tr"
+    : paytrPublicOrigin();
   const stub = isWholesalePaytrStubEnabled();
   if (stub) {
     return {
