@@ -283,6 +283,21 @@ export async function createStoreCheckout(input: {
       reason: tokenJson?.reason ?? "no_reason",
       merchantId: credentials.merchantId,
     });
+    const now = new Date().toISOString();
+    await client
+      .from("payments")
+      .update({ status: "cancelled" })
+      .eq("order_id", order.id)
+      .eq("status", "pending");
+    await client
+      .from("orders")
+      .update({
+        status: "cancelled",
+        payment_status: "cancelled",
+        cancelled_at: now,
+        updated_at: now,
+      })
+      .eq("id", order.id);
     throw new StoreCheckoutError("PAYTR_TOKEN_DENIED", "Ödeme oturumu başlatılamadı.");
   }
 

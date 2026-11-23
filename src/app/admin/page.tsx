@@ -10,6 +10,7 @@ import {
 
 import { AdminPageHeader } from "@/components/admin/admin-page";
 import {
+  cancelUnpaidCheckoutOrdersSince,
   listAdminOrders,
   summarizeOrders,
 } from "@/domain/admin/order-board";
@@ -32,6 +33,7 @@ function channelLabel(channel: "lil_disc" | "store" | "mixed") {
 export default async function AdminDashboardPage() {
   const viewer = await requireAdmin();
   const lilOnly = isLilDiscOnlyStaff(viewer.role);
+  await cancelUnpaidCheckoutOrdersSince();
   const [today, recent, catalog, ops] = await Promise.all([
     listAdminOrders({ todayOnly: true, lilDiscOnly: lilOnly, limit: 80 }),
     listAdminOrders({ lilDiscOnly: lilOnly, limit: 12 }),
