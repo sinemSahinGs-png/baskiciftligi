@@ -4,7 +4,7 @@ import {
   getPaytrCredentials,
   isPaytrTestMode,
   isWholesalePaytrStubEnabled,
-  siteOrigin,
+  paytrPublicOrigin,
 } from "@/lib/wholesale/credentials";
 import {
   buildPaytrIframeToken,
@@ -65,7 +65,7 @@ export async function requestPaytrIframeToken(input: {
     testMode: testModeFlag as "0" | "1",
   };
   const paytrToken = buildPaytrIframeToken(tokenFields, credentials);
-  const origin = siteOrigin();
+  const origin = paytrPublicOrigin();
   const body = new URLSearchParams({
     merchant_id: credentials.merchantId,
     merchant_key: credentials.merchantKey,

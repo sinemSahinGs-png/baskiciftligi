@@ -33,7 +33,7 @@ export function paytrCallbackUrl(): string {
   if (serverEnv.PAYTR_CALLBACK_URL) {
     return serverEnv.PAYTR_CALLBACK_URL;
   }
-  return `${siteOrigin()}/api/paytr/callback`;
+  return `${paytrPublicOrigin()}/api/paytr/callback`;
 }
 
 export function siteOrigin(): string {
@@ -43,4 +43,12 @@ export function siteOrigin(): string {
     return PRODUCTION_SITE_URL;
   }
   return "http://localhost:3000";
+}
+
+export function paytrPublicOrigin(): string {
+  const origin = siteOrigin().replace(/\/$/, "");
+  if (origin === "https://octostudio.com.tr") {
+    return "https://www.octostudio.com.tr";
+  }
+  return origin;
 }
