@@ -2,129 +2,125 @@
 
 import type { Route } from "next";
 import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
 import { CategoryArtwork } from "@/components/catalog/category-artwork";
 import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
-import { WordReveal } from "@/components/motion/premium";
-import type { StorefrontCategorySlug } from "@/domain/catalog/storefront-taxonomy";
+import {
+  storefrontCategoryAsset,
+  storefrontFilterCategories,
+  type StorefrontCategorySlug,
+} from "@/domain/catalog/storefront-taxonomy";
 import type { Product } from "@/domain/catalog/types";
-import { homepageStageCategories } from "@/domain/project-destinations/stage";
-
-const STAGE_CATEGORIES = homepageStageCategories();
 
 export function HomeCategories({ products }: { products: Product[] }) {
   void products;
   const t = useTranslations();
-  const catName = (slug: string) => t(`categories.${slug}.name`);
-  const catDesc = (slug: string) => t(`categories.${slug}.description`);
-  const featured = STAGE_CATEGORIES.filter((item) => item.kind === "project");
-  const rest = STAGE_CATEGORIES.filter((item) => item.kind === "octo");
+  const reduce = useReducedMotion() === true;
+  const categories = storefrontFilterCategories();
+  const railRef = useRef<HTMLUListElement>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(true);
+
+  const sync = useCallback(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    setCanPrev(rail.scrollLeft > 6);
+    setCanNext(rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 6);
+  }, []);
+
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    sync();
+    rail.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
+    return () => {
+      rail.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+    };
+  }, [sync]);
+
+  function stride() {
+    const rail = railRef.current;
+    const item = rail?.querySelector("li");
+    if (!rail || !item) return 0;
+    const gap = Number.parseFloat(getComputedStyle(rail).columnGap || getComputedStyle(rail).gap) || 12;
+    return item.getBoundingClientRect().width + gap;
+  }
 
   return (
     <section
       id="kategoriler"
-      data-home-theme="abyss"
-      className="hi-section hi-cats atelier-panel atelier-cats"
+      data-home-theme="obsidian"
+      className="octo-band octo-band-obsidian"
       aria-labelledby="home-cats-heading"
     >
-      <div className="hi-shell">
-        <div className="hi-cats-head">
-          <div>
-            <p className="atelier-kicker">{t("home.catsKicker")}</p>
-            <WordReveal
-              as="h2"
-              id="home-cats-heading"
-              className="hi-title atelier-title"
-              text={t("home.catsTitle")}
-            />
+      <div className="hi-shell octo-band-shell">
+        <div className="octo-rail-head">
+          <h2 id="home-cats-heading" className="octo-band-title octo-band-title-light">
+            {t("home.makeTitle")}
+          </h2>
+          <div className="octo-rail-tools">
+            <div className="octo-rail-arrows">
+              <button
+                type="button"
+                className="octo-rail-arrow"
+                aria-label={t("home.prevCat")}
+                disabled={!canPrev}
+                onClick={() =>
+                  railRef.current?.scrollBy({
+                    left: -stride(),
+                    behavior: reduce ? "auto" : "smooth",
+                  })
+                }
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="octo-rail-arrow"
+                aria-label={t("home.nextCat")}
+                disabled={!canNext}
+                onClick={() =>
+                  railRef.current?.scrollBy({
+                    left: stride(),
+                    behavior: reduce ? "auto" : "smooth",
+                  })
+                }
+              >
+                ›
+              </button>
+            </div>
+            <Link href={"/magaza" as Route} className="octo-text-link">
+              {t("home.catsAll")}
+            </Link>
           </div>
-          <Link href={"/magaza" as Route} className="hi-link">
-            {t("home.catsAll")}
-          </Link>
         </div>
-
-        <div className="atelier-cat-wall" aria-label={t("home.catsIndex")}>
-          {featured.map((category, index) => {
-            const number = String(index + 1).padStart(2, "0");
-            return (
+        <ul ref={railRef} className="octo-equal-rail" data-category-rail="">
+          {categories.map((category) => (
+            <li key={category.slug}>
               <Link
-                key={category.slug}
                 href={category.href}
-                className="atelier-cat-feature hi-cats-index-item"
+                className="octo-equal-card"
                 data-category-slug={category.slug}
-                data-stage-kind={category.kind}
-                aria-label={catName(category.slug)}
               >
-                <CategoryArtwork
-                  src={category.artwork}
-                  objectPosition="50% 42%"
-                  sizes="(max-width: 767px) 92vw, 32vw"
-                />
-                {category.logo ? (
-                  <img className="atelier-cat-logo" src={category.logo} alt="" />
-                ) : null}
-                <span className="atelier-cat-copy">
-                  <span className="hi-cats-index-num">{number}</span>
-                  <span className="hi-cats-index-name">{catName(category.slug)}</span>
-                  <span className="atelier-cat-desc">{catDesc(category.slug)}</span>
+                <span className="octo-equal-media">
+                  <CategoryArtwork
+                    src={storefrontCategoryAsset(category.slug)}
+                    objectPosition={
+                      CATEGORY_OBJECT_POSITION[category.slug as StorefrontCategorySlug]
+                    }
+                    sizes="(max-width: 767px) 86vw, (max-width: 1023px) 42vw, 22vw"
+                  />
                 </span>
+                <span className="octo-equal-name">{t(`categories.${category.slug}.name`)}</span>
               </Link>
-            );
-          })}
-        </div>
-
-        <div className="atelier-cat-grid">
-          {rest.map((category, index) => {
-            const number = String(featured.length + index + 1).padStart(2, "0");
-            const label = category.comingSoon
-              ? `${catName(category.slug)}, ${t("common.comingSoon")}`
-              : catName(category.slug);
-            const inner = (
-              <>
-                <CategoryArtwork
-                  src={category.artwork}
-                  objectPosition={
-                    CATEGORY_OBJECT_POSITION[category.slug as StorefrontCategorySlug]
-                  }
-                  sizes="(max-width: 767px) 46vw, 18vw"
-                />
-                <span className="atelier-cat-copy">
-                  <span className="hi-cats-index-num">{number}</span>
-                  <span className="hi-cats-index-name">{catName(category.slug)}</span>
-                  {category.comingSoon ? (
-                    <span className="hi-cat-badge">{t("common.comingSoon")}</span>
-                  ) : null}
-                </span>
-              </>
-            );
-            if (category.comingSoon) {
-              return (
-                <button
-                  key={category.slug}
-                  type="button"
-                  className="atelier-cat-tile hi-cats-index-item"
-                  data-category-slug={category.slug}
-                  data-coming-soon="true"
-                  aria-label={label}
-                >
-                  {inner}
-                </button>
-              );
-            }
-            return (
-              <Link
-                key={category.slug}
-                href={category.href}
-                className="atelier-cat-tile hi-cats-index-item"
-                data-category-slug={category.slug}
-                aria-label={label}
-              >
-                {inner}
-              </Link>
-            );
-          })}
-        </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

@@ -168,10 +168,10 @@
 .octo-tv-content .hi-hero-display {
   max-width: 16ch;
   font-family: var(--font-display), var(--font-jakarta), sans-serif;
-  font-size: clamp(1.35rem, 2.7vw, 2.55rem);
-  font-weight: 600;
-  letter-spacing: 0.045em;
-  line-height: 0.96;
+  font-size: clamp(1.55rem, 3.1vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.02;
 }
 
 .octo-tv-content .hi-hero-lede {
@@ -213,7 +213,7 @@
 .octo-tv-content .octo-cta,
 .octo-tv-content .octo-cta-ghost,
 .octo-tv-content .hi-hero-go {
-  min-height: 2.85rem;
+  min-height: 2.75rem;
   padding: 0 1.25rem;
   border-radius: 999px;
   font-family: var(--font-jakarta), sans-serif;
@@ -483,7 +483,7 @@
   .hi-hero.octo-tv-hero,
   .octo-tv-hero,
   .octo-tv-stage {
-    min-height: 100svh;
+    min-height: 0;
     height: auto;
   }
 
@@ -491,7 +491,7 @@
     align-items: center;
     justify-content: flex-start;
     flex-direction: column;
-    padding: 0;
+    padding: 0.35rem 0 1.1rem;
     background-color: #c8a56e;
   }
 
@@ -508,8 +508,8 @@
   }
 
   .octo-tv-hero .octo-tv-frame {
-    width: 100%;
-    max-width: none;
+    width: 94%;
+    max-width: 26.5rem;
     min-width: 0;
     height: auto;
     aspect-ratio: 1080 / 1920;
@@ -535,12 +535,15 @@
   }
 
   .octo-tv-content .hi-hero-display {
-    font-size: clamp(1.12rem, 5.4vw, 1.42rem);
-    letter-spacing: 0.04em;
+    font-size: clamp(1.28rem, 6.4vw, 1.7rem);
+    letter-spacing: 0.035em;
+    line-height: 1.05;
   }
 
   .octo-tv-content .hi-hero-lede {
-    display: none;
+    display: block;
+    font-size: 0.84rem;
+    line-height: 1.35;
   }
 
   .octo-tv-content .hi-hero-search {
@@ -548,20 +551,20 @@
   }
 
   .octo-tv-content {
-    padding: 6% 7% 9%;
+    padding: 7% 8% 10%;
     justify-content: flex-end;
   }
 
   .octo-tv-content .octo-hero-actions {
-    width: min(15.5rem, 94%);
-    gap: 0.42rem;
+    width: min(16.5rem, 96%);
+    gap: 0.48rem;
   }
 
   .octo-tv-content .octo-cta,
   .octo-tv-content .octo-cta-ghost {
-    min-height: 2.55rem;
-    padding-inline: 0.9rem;
-    font-size: 0.64rem;
+    min-height: 2.75rem;
+    padding-inline: 0.95rem;
+    font-size: 0.72rem;
     letter-spacing: 0.1em;
   }
 

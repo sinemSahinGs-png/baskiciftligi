@@ -5,13 +5,13 @@ const shots = path.join("test-results", "home-industrial");
 
 const SECTION_SHOTS = [
   ["ne-uretmek-istiyorsun", "idea-command-390.png"],
+  ["nereden-baslamali", "start-path-390.png"],
   ["uc-uretim-yolu", "production-paths-390.png"],
-  ["sana-gore-hazir-modeller", "model-archive-390.png"],
-  ["one-cikan-urunler", "featured-product-390.png"],
-  ["nasil-calisir", "production-process-390.png"],
-  ["malzeme-secenekleri", "materials-390.png"],
-  ["kurumsal-uretim", "corporate-production-390.png"],
-  ["basla", "final-cta-390.png"],
+  ["kategoriler", "categories-390.png"],
+  ["octo-evreni", "universe-390.png"],
+  ["mevcut-urunler", "products-390.png"],
+  ["toptan-bayiler", "wholesale-390.png"],
+  ["sik-sorulanlar", "faq-390.png"],
 ] as const;
 
 async function readyHome(page: Page) {
@@ -24,68 +24,30 @@ async function readyHome(page: Page) {
 }
 
 test.describe("industrial homepage", () => {
-  test("typing an idea does not call the API until submit", async ({ page }) => {
-    let called = false;
-    await page.route("**/api/home/idea-search", async (route) => {
-      called = true;
-      await route.fulfill({ status: 500, body: "{}" });
-    });
+  test("hero keeps two CTAs and no idea search in the television", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     await readyHome(page);
-    await page.locator("#idea-command-input").fill("telefon standı");
-    await expect(page.locator("#idea-command-input")).toHaveValue("telefon standı");
-    expect(called).toBe(false);
-  });
-
-  test("search uses the idea-search endpoint", async ({ page }) => {
-    let used = false;
-    await page.route("**/api/home/idea-search", async (route) => {
-      used = true;
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          status: "ok",
-          items: [
-            {
-              externalId: "1",
-              title: "Stand",
-              creatorName: "x",
-              thumbnailUrl: null,
-              likeCount: 1,
-              collectCount: null,
-              source: "thingiverse",
-              detailPath: "/hazir-modeller/thingiverse/1",
-              pricingAllowed: true,
-              quoteAction: "verify",
-            },
-          ],
-          closest: false,
-        }),
-      });
-    });
-    await readyHome(page);
-    await page.locator("#idea-command-input").fill("telefon standı");
-    await page.locator("form.hi-hero-form button[type='submit']").click();
-    await expect(page.getByRole("link", { name: "Uygunluğu kontrol et" })).toBeVisible();
-    expect(used).toBe(true);
+    await expect(page.locator("#idea-command-input")).toHaveCount(0);
+    await expect(page.locator(".octo-tv-content .octo-cta")).toHaveAttribute("href", "/magaza");
+    await expect(page.locator(".octo-tv-content .octo-cta-ghost")).toHaveAttribute(
+      "href",
+      "/model-yukle",
+    );
   });
 
   test("upload CTAs go to /model-yukle", async ({ page }) => {
     await readyHome(page);
     await expect(
-      page.locator("#sana-gore-hazir-modeller").getByRole("link", { name: /Modelini yükle/i }),
+      page.locator("#nereden-baslamali").getByRole("link", { name: /MODELİNİ YÜKLE/i }),
     ).toHaveAttribute("href", "/model-yukle");
   });
 
-  test("sticky CTA hides near the footer", async ({ page }) => {
+  test("one header and one bottom nav on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await readyHome(page);
-    const sticky = page.locator(".hi-sticky-cta");
-    await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
-    await expect(sticky).toHaveAttribute("data-hidden", "false");
-    await expect(sticky).toBeVisible();
-    await page.locator("footer").scrollIntoViewIfNeeded();
-    await expect(sticky).toHaveAttribute("data-hidden", "true");
+    await expect(page.locator("header")).toHaveCount(1);
+    await expect(page.locator(".store-bottom-nav")).toHaveCount(1);
+    await expect(page.locator(".hi-sticky-cta")).toHaveCount(0);
   });
 
   for (const width of [320, 360, 390, 430, 768, 1440] as const) {

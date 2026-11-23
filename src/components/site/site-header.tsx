@@ -137,13 +137,21 @@ export function SiteHeader({
             ))}
           </nav>
 
-          <div className="ms-auto flex items-center gap-1">
-            <LanguageSwitcher inverted={inverted} />
+          <div className="ms-auto flex items-center gap-0.5">
+            <Link
+              href={"/magaza" as Route}
+              className="inline-flex min-h-11 items-center px-2 text-sm font-medium lg:hidden"
+            >
+              {t("common.shop")}
+            </Link>
+            <div className="hidden lg:block">
+              <LanguageSwitcher inverted={inverted} />
+            </div>
             <button
               type="button"
               aria-label={t("common.search")}
               onClick={() => setSearchOpen(true)}
-              className="inline-flex size-11 items-center justify-center"
+              className="hidden size-11 items-center justify-center lg:inline-flex"
             >
               <Search aria-hidden="true" className="size-5" />
             </button>
@@ -168,7 +176,7 @@ export function SiteHeader({
             <Link
               href={"/sepet" as Route}
               aria-label={cartHydrated ? `${t("common.cart")}, ${cartCount}` : t("common.cart")}
-              className="relative hidden size-11 items-center justify-center lg:inline-flex"
+              className="relative inline-flex size-11 items-center justify-center"
             >
               <ShoppingBag aria-hidden="true" className="size-5" />
               {cartHydrated && cartCount > 0 ? (
@@ -251,6 +259,17 @@ export function SiteHeader({
               ))}
             </ul>
             <div className="mt-8 grid gap-2">
+              <button
+                type="button"
+                className="flex min-h-12 items-center rounded-md bg-white/8 px-4 text-sm font-semibold"
+                onClick={() => {
+                  setMobileOpen(false);
+                  setSearchOpen(true);
+                }}
+              >
+                {t("common.search")}
+              </button>
+              <LanguageSwitcher inverted />
               <Link
                 href={"/hesabim" as Route}
                 className="flex min-h-12 items-center rounded-md bg-cobalt px-4 text-sm font-bold"

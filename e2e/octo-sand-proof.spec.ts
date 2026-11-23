@@ -119,7 +119,7 @@ test.describe("OCTO sand hero proof", () => {
     expect(Number(before.canvasOpacity)).toBeGreaterThanOrEqual(0.999);
     expect(before.pointerEvents).toBe("none");
     expect(before.ctaHit).toBe(true);
-    expect(before.inputHit).toBe(true);
+    expect(before.inputHit).toBe(false);
     expect(before.headerHit).toBe(true);
     expect(before.overflowX).toBeLessThanOrEqual(1);
     expect(before.debug).toContain("octo-sand-field.webp");
