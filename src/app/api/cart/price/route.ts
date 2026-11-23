@@ -8,7 +8,7 @@ import {
   priceCart,
   type PricedCartLine,
 } from "@/domain/commerce/cart-pricing";
-import { computeCartShippingMinor } from "@/domain/commerce/shipping-policy";
+import { computeCartShippingMinorForLines } from "@/domain/commerce/shipping-policy";
 import { pricedManufacturingLine } from "@/domain/commerce/manufacturing-cart";
 import { getManufacturingQuote, getQuoteRevocation } from "@/domain/manufacturing/repository";
 import { getManufacturingActor, ownsRecord } from "@/lib/manufacturing/session";
@@ -134,7 +134,10 @@ export async function POST(request: Request) {
       0,
     ),
   );
-  const estimatedShippingMinor = computeCartShippingMinor(subtotalMinor);
+  const estimatedShippingMinor = computeCartShippingMinorForLines(
+    subtotalMinor,
+    lines.filter((line) => line.isAvailable).map((line) => line.slug),
+  );
 
   return NextResponse.json(
     {

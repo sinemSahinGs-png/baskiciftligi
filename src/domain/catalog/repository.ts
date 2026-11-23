@@ -425,6 +425,7 @@ export async function listProducts(query: ProductQuery = {}): Promise<Product[]>
 
   return snapshot.products
     .filter((product) => query.includeDrafts || isPubliclyVisibleProduct(product))
+    .filter((product) => product.searchVisible !== false)
     .filter((product) =>
       productMatchesStorefrontCategory(product.categorySlugs, query.category),
     )

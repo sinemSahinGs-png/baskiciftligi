@@ -4,7 +4,9 @@ import { demoProducts } from "@/domain/catalog/demo-data";
 import { priceCart } from "@/domain/commerce/cart-pricing";
 import {
   COMMERCE_SHIPPING_POLICY,
+  PAYTR_INTEGRATION_TEST_SLUG,
   computeCartShippingMinor,
+  computeCartShippingMinorForLines,
   freeShippingThresholdDisabled,
   isUnverifiedFreeShippingMessage,
   publicCatalogAnnouncements,
@@ -23,6 +25,21 @@ describe("commerce shipping policy", () => {
 
   it("does not charge shipping on an empty subtotal", () => {
     expect(computeCartShippingMinor(0)).toBe(0);
+  });
+
+  it("prices a PayTR test SKU at 10 TL with no shipping", () => {
+    const product = structuredClone(demoProducts[0]);
+    product.slug = PAYTR_INTEGRATION_TEST_SLUG;
+    product.priceMinor = 1_000;
+    product.variants = [];
+    product.inventoryQuantity = 20;
+    product.publishedAt = new Date().toISOString();
+    product.status = "active";
+
+    const result = priceCart([{ productId: product.id, quantity: 1 }], [product]);
+    expect(result.subtotalMinor).toBe(1_000);
+    expect(result.estimatedShippingMinor).toBe(0);
+    expect(result.totalMinor).toBe(1_000);
   });
 
   it("prices store carts with the same 100 TL shipping once", () => {
@@ -63,5 +80,17 @@ describe("commerce shipping policy", () => {
         { message: "Ankara’dan Türkiye’nin her yerine üretim" },
       ]),
     ).toEqual([{ message: "Ankara’dan Türkiye’nin her yerine üretim" }]);
+  });
+
+  it("waives shipping for a cart that is only the PayTR integration test SKU", () => {
+    expect(computeCartShippingMinorForLines(1_000, [PAYTR_INTEGRATION_TEST_SLUG])).toBe(
+      0,
+    );
+    expect(
+      computeCartShippingMinorForLines(1_000, [
+        PAYTR_INTEGRATION_TEST_SLUG,
+        "ev-dekor",
+      ]),
+    ).toBe(10_000);
   });
 });
