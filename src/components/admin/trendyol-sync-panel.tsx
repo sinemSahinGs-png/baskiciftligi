@@ -23,35 +23,24 @@ export function TrendyolSyncPanel({
     <section className="space-y-5 rounded-3xl border border-white/10 bg-card p-6">
       <div>
         <p className="text-[0.65rem] font-bold tracking-[0.14em] text-muted-foreground uppercase">
-          Trendyol mağaza
+          Trendyol
         </p>
         <h2 className="mt-3 font-heading text-2xl font-medium">
-          Ürün ve fiyat çekimi
+          Ürün, fiyat ve stok çek
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Partner panelindeki API bilgileriyle satıştaki onaylı ürünler bu
-          mağazaya yazılır. SKU veya barkod eşleşirse fiyat ve stok güncellenir;
-          yeni ürün açılır. Anahtarları buraya yapıştırmayın — yalnızca Vercel
-          ortam değişkeni.
+          Satıştaki onaylı ürünler OCTO kataloğuna yazılır. SKU veya barkod
+          eşleşirse fiyat ve stok güncellenir. Her tıkta bir sayfa gelir;
+          ürün bitene kadar tekrar bas.
         </p>
       </div>
-
-      <ol className="grid gap-2 text-sm text-muted-foreground">
-        <li>1. Trendyol Satıcı Paneli → Entegrasyon → API bilgileri</li>
-        <li>2. Satıcı ID, API Key ve API Secret’i kopyala</li>
-        <li>
-          3. Vercel → baskiciftligi → Settings → Environment Variables →
-          Production
-        </li>
-        <li>4. Redeploy, sonra bu sayfada “Ürünleri çek”</li>
-      </ol>
 
       <ul className="grid gap-2 sm:grid-cols-3">
         {(
           [
-            ["TRENDYOL_SELLER_ID", flags.sellerId],
-            ["TRENDYOL_API_KEY", flags.apiKey],
-            ["TRENDYOL_API_SECRET", flags.apiSecret],
+            ["Satıcı ID", flags.sellerId],
+            ["API Key", flags.apiKey],
+            ["API Secret", flags.apiSecret],
           ] as const
         ).map(([name, present]) => (
           <li
@@ -81,6 +70,7 @@ export function TrendyolSyncPanel({
       ) : null}
 
       <form action={formAction}>
+        <input type="hidden" name="page" value={String(state.nextPage ?? 0)} />
         <button
           type="submit"
           disabled={pending || !configured}
@@ -91,7 +81,11 @@ export function TrendyolSyncPanel({
           ) : (
             <RefreshCw className="size-4" aria-hidden="true" />
           )}
-          {pending ? "Çekiliyor…" : "Ürünleri çek"}
+          {pending
+            ? "Çekiliyor…"
+            : state.hasMore
+              ? "Sonrakileri çek"
+              : "Ürünleri çek"}
         </button>
       </form>
     </section>

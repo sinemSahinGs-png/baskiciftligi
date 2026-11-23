@@ -89,10 +89,10 @@ export default async function AdminDashboardPage() {
                 LIL’ DISC
               </Link>
               <Link
-                href="/admin/urunler/hizli"
+                href="/admin/trendyol"
                 className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#f27a1a] px-5 text-sm font-bold text-white"
               >
-                Hızlı ürün
+                Trendyol çek
                 <Plus className="size-4" aria-hidden="true" />
               </Link>
             </>

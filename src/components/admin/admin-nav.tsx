@@ -4,31 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Boxes,
-  Calculator,
   CircleDot,
   ChartNoAxesCombined,
   ChevronRight,
-  CirclePercent,
-  ClipboardList,
-  FileBox,
-  FileText,
   GalleryVerticalEnd,
-  Layers3,
-  MessageSquareText,
   Package,
-  PlugZap,
-  Rocket,
-  Settings,
   ShoppingBag,
+  Store,
   Tags,
-  Users,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const navigationGroups = [
   {
-    label: "Çalışma alanı",
+    label: "Mağaza",
     items: [
       {
         href: "/admin",
@@ -36,45 +26,12 @@ const navigationGroups = [
         icon: ChartNoAxesCombined,
         exact: true,
       },
-      { href: "/admin/yayina-alma", label: "Yayına alma", icon: Rocket },
-      { href: "/admin/urunler", label: "Ürünler", icon: ShoppingBag },
-      { href: "/admin/lil-disc", label: "LIL’ DISC", icon: CircleDot },
-      { href: "/admin/urunler/hizli", label: "Hızlı ürün", icon: Package },
-      { href: "/admin/kategoriler", label: "Kategoriler", icon: Tags },
-      { href: "/admin/harici-modeller", label: "Harici modeller", icon: GalleryVerticalEnd },
-    ],
-  },
-  {
-    label: "Operasyon",
-    items: [
       { href: "/admin/siparisler", label: "Siparişler", icon: Package },
-      { href: "/admin/toptan-siparisler", label: "Toptan siparişler", icon: Package },
-      { href: "/admin/teklifler", label: "Teklifler", icon: FileText },
-      { href: "/admin/model-danisma", label: "Özel Sipariş ve Destek", icon: ClipboardList },
-      { href: "/admin/yazicilar", label: "Yazıcılar", icon: Boxes },
-      { href: "/admin/yuklemeler", label: "Yüklemeler", icon: FileBox },
-      { href: "/admin/musteriler", label: "Müşteriler", icon: Users },
-      { href: "/admin/yorumlar", label: "Yorumlar", icon: MessageSquareText },
-    ],
-  },
-  {
-    label: "Üretim ve büyüme",
-    items: [
-      { href: "/admin/malzemeler", label: "Malzemeler", icon: Layers3 },
-      {
-        href: "/admin/fiyatlandirma",
-        label: "Fiyatlandırma",
-        icon: Calculator,
-      },
-      { href: "/admin/indirimler", label: "İndirimler", icon: CirclePercent },
+      { href: "/admin/urunler", label: "Ürünler", icon: ShoppingBag },
+      { href: "/admin/trendyol", label: "Trendyol", icon: Store },
+      { href: "/admin/kategoriler", label: "Kategoriler", icon: Tags },
+      { href: "/admin/lil-disc", label: "LIL’ DISC", icon: CircleDot },
       { href: "/admin/icerik", label: "İçerik", icon: GalleryVerticalEnd },
-      {
-        href: "/admin/entegrasyonlar",
-        label: "Entegrasyonlar",
-        icon: PlugZap,
-      },
-      { href: "/admin/ekip", label: "Ekip", icon: Users },
-      { href: "/admin/ayarlar", label: "Ayarlar", icon: Settings },
     ],
   },
 ] as const;
