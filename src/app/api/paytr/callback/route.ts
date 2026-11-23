@@ -79,6 +79,15 @@ export async function POST(request: Request) {
       requestId,
     });
 
+    if (!result.ok && result.reason === "invalid_hash") {
+      console.info("[paytr-callback]", {
+        requestId,
+        merchantOid: payload.merchantOid,
+        result: "invalid_hash_probe",
+      });
+      return okResponse();
+    }
+
     if (!result.ok && result.reason === "unknown_order") {
       return applyRetailCallback(payload);
     }
@@ -106,12 +115,11 @@ export async function POST(request: Request) {
       paymentState: result.order.paymentState,
     });
     return okResponse();
-  } catch (error) {
+  } catch {
     console.info("[paytr-callback]", {
       requestId,
       result: "wholesale_store_skipped",
     });
-    void error;
     return applyRetailCallback(payload);
   }
 }
