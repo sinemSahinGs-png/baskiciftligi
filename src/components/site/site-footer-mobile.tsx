@@ -42,7 +42,6 @@ function useFooterGroups(): FooterGroup[] {
       label: t("common.corporate"),
       links: [
         { href: "/toptan", label: t("common.wholesale") },
-        { href: "/toptan/katalog", label: t("footer.wholesaleCatalog") },
         { href: "/kurumsal-uretim", label: t("footer.corporateProduction") },
         { href: "/malzemeler", label: t("common.materials") },
       ],

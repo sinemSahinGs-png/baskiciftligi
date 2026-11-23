@@ -13,9 +13,8 @@ const RISE_SELECTOR = [
   ".atelier-cta",
   ".atelier-cta-ghost",
   ".atelier-split-card",
-  ".atelier-trust li",
-  ".atelier-faq-item",
-  ".hi-cats-project",
+  ".atelier-cat-feature",
+  ".atelier-cat-tile",
   ".octo-curated-card",
 ].join(",");
 

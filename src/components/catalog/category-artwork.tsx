@@ -18,15 +18,16 @@ export function CategoryArtwork({
   objectPosition?: string;
   className?: string;
 }) {
+  const imageSrc = src?.split("?")[0] || src;
   const imageRef = useRef<HTMLImageElement | null>(null);
-  const [srcKey, setSrcKey] = useState(src);
+  const [srcKey, setSrcKey] = useState(imageSrc);
   const [ready, setReady] = useState(false);
-  const [failed, setFailed] = useState(!src);
+  const [failed, setFailed] = useState(!imageSrc);
 
-  if (src !== srcKey) {
-    setSrcKey(src);
+  if (imageSrc !== srcKey) {
+    setSrcKey(imageSrc);
     setReady(false);
-    setFailed(!src);
+    setFailed(!imageSrc);
   }
 
   const markReady = useCallback((image: HTMLImageElement) => {
@@ -36,11 +37,11 @@ export function CategoryArtwork({
 
   useEffect(() => {
     const image = imageRef.current;
-    if (!image || !src || failed) return;
+    if (!image || !imageSrc || failed) return;
     markReady(image);
-  }, [failed, markReady, src]);
+  }, [failed, markReady, imageSrc]);
 
-  const showImage = Boolean(src) && !failed;
+  const showImage = Boolean(imageSrc) && !failed;
 
   return (
     <>
@@ -50,7 +51,7 @@ export function CategoryArtwork({
       {showImage ? (
         <Image
           ref={imageRef}
-          src={src as string}
+          src={imageSrc as string}
           alt=""
           fill
           sizes={sizes}
@@ -58,7 +59,7 @@ export function CategoryArtwork({
           loading="eager"
           fetchPriority="auto"
           decoding="async"
-          data-category-artwork={src as string}
+          data-category-artwork={imageSrc as string}
           data-ready={ready ? "true" : "false"}
           style={{ objectPosition }}
           className={cn(

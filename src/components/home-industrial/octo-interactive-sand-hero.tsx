@@ -71,7 +71,7 @@ export function OctoInteractiveSandHero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<OctoSandEngine | null>(null);
   const lastPointer = useRef({ x: 0, y: 0, armed: false });
-  const [mode, setMode] = useState<FallbackMode>("poster");
+  const [mode, setMode] = useState<FallbackMode>("static-sand");
   const [reason, setReason] = useState<SandDebugReason | "pending">("pending");
   const [ready, setReady] = useState(false);
   const [live, setLive] = useState(false);

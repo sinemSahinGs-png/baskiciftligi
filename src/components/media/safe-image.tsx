@@ -25,11 +25,15 @@ interface SafeImageProps extends Omit<ImageProps, "src" | "alt"> {
 
 function resolveMediaSrc(src?: string | null) {
   if (!src) return src;
-  return publicThingiverseImageSrc(src) ?? src;
+  const proxied = publicThingiverseImageSrc(src) ?? src;
+  if (proxied.startsWith("/") && proxied.includes("?")) {
+    return proxied.split("?")[0];
+  }
+  return proxied;
 }
 
 function shouldUnoptimize(src: string) {
-  if (src.startsWith("/catalog-media/") || src.startsWith("/images/")) return true;
+  if (src.startsWith("/catalog-media/") || src.startsWith("/images/") || src.startsWith("/categories/")) return true;
   if (src.startsWith(`${THINGIVERSE_MEDIA_PROXY_PATH}?`)) return true;
   return src.startsWith("/demo/") && /\.svg(?:\?|$)/i.test(src);
 }

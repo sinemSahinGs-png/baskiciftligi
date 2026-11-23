@@ -20,11 +20,11 @@ export default async function WholesaleLayout({ children }: { children: ReactNod
           <Logo className="max-w-none" />
           <nav className="flex items-center gap-3 text-xs font-semibold">
             <LanguageSwitcher />
-            <Link href={"/siparis-takip" as Route} className="min-h-11 px-2 py-3">
-              {msg(messages, "wholesale.track")}
+            <Link href={"/magaza" as Route} className="min-h-11 px-2 py-3">
+              {msg(messages, "common.shop")}
             </Link>
-            <Link href={"/toptan/katalog" as Route} className="min-h-11 px-2 py-3">
-              {msg(messages, "wholesale.catalog")}
+            <Link href={"/iletisim" as Route} className="min-h-11 px-2 py-3">
+              {msg(messages, "common.contact")}
             </Link>
           </nav>
         </div>
