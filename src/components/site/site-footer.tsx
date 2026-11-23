@@ -27,9 +27,10 @@ export async function SiteFooter({
   return (
     <footer data-site-footer className="site-footer-brand octo-abyss-floor relative bg-deep-ink text-light-text">
       <div className="octo-seabed" aria-hidden="true">
-        <span className="octo-seabed-rock" />
-        <span className="octo-seabed-dune octo-seabed-dune-back" />
+        <span className="octo-seabed-wall" />
         <span className="octo-seabed-light" />
+        <span className="octo-seabed-dune octo-seabed-dune-back" />
+        <span className="octo-seabed-dune octo-seabed-dune-mid" />
         <span className="octo-seabed-tentacle" />
         <span className="octo-seabed-fossils" />
         <span className="octo-seabed-dune octo-seabed-dune-fore" />

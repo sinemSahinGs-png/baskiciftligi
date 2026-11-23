@@ -42,7 +42,8 @@ export function IndustrialHome({
       <ScrollThemeProvider />
       <IdeaCommand />
       <OctoSandDissolve />
-      <div id="atolye" className="octo-below-hero">
+      <div className="octo-below-hero">
+        <span id="atolye" className="octo-hash-anchor" />
         <OctoCaveAtmosphere />
         <OctoJourneyPath />
         <OctoDepthHud />

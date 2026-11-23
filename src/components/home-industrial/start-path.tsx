@@ -28,7 +28,7 @@ export function StartPath() {
           <article className="octo-chamber octo-chamber-sand" data-portal="file">
             <div className="octo-chamber-stage">
               <span className="octo-chamber-grid" aria-hidden="true" />
-              <span className="octo-chamber-object octo-chamber-wire" data-octo-portal-object="file">
+              <span className="octo-chamber-object octo-chamber-wire" data-portal-layer="wire">
                 <SlotImage
                   src={industrialAssets.heroWireframeVase}
                   alt=""
@@ -36,9 +36,10 @@ export function StartPath() {
                   sizes="(max-width: 767px) 88vw, 42vw"
                 />
               </span>
-              <span className="octo-chamber-object octo-chamber-solid" aria-hidden="true">
+              <span className="octo-chamber-material" data-portal-layer="material" aria-hidden="true" />
+              <span className="octo-chamber-object octo-chamber-finish" data-portal-layer="finish">
                 <SlotImage
-                  src={industrialAssets.pathReadyModel}
+                  src={industrialAssets.featuredProduct}
                   alt=""
                   fill
                   sizes="(max-width: 767px) 88vw, 42vw"

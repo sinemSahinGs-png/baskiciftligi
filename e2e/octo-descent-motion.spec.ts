@@ -5,6 +5,10 @@ import path from "node:path";
 const shots = path.join("qa-octo-ocean");
 const proofPath = path.join(shots, "descent-motion-proof.json");
 
+function windowInner(width: number) {
+  return width < 800 ? 844 : 900;
+}
+
 async function readProof(page: Page) {
   const node = page.locator("[data-octo-motion-proof]");
   await expect(node).not.toHaveText("", { timeout: 8_000 });
@@ -123,27 +127,53 @@ test.describe("OCTO descent motion proof", () => {
   });
 
   test("direct hash URLs show section content without an extra scroll", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
     const hashes = [
-      ["#nereden-baslamali", "#start-path-heading"],
-      ["#uc-uretim-yolu", "#story-heading"],
-      ["#kategoriler", "#home-cats-heading"],
-      ["#octo-evreni", "#universe-heading"],
-      ["#mevcut-urunler", "#curated-heading"],
-      ["#sik-sorulanlar", "#faq-heading"],
+      ["#nereden-baslamali", "nereden-baslamali", "#start-path-heading"],
+      ["#uc-uretim-yolu", "uc-uretim-yolu", "#story-heading"],
+      ["#kategoriler", "kategoriler", "#home-cats-heading"],
+      ["#octo-evreni", "octo-evreni", "#universe-heading"],
+      ["#mevcut-urunler", "mevcut-urunler", "#curated-heading"],
+      ["#toptan-bayiler", "toptan-bayiler", "#wholesale-heading"],
+      ["#sik-sorulanlar", "sik-sorulanlar", "#faq-heading"],
     ] as const;
-    for (const [hash, heading] of hashes) {
-      await page.goto(`/${hash}`, { waitUntil: "domcontentloaded" });
-      const title = page.locator(heading);
-      await expect(title).toBeVisible();
-      const inView = await title.evaluate((node) => {
-        const box = node.getBoundingClientRect();
-        return box.bottom > 64 && box.top < window.innerHeight - 24 && Number(getComputedStyle(node).opacity) > 0.9;
-      });
-      expect(inView, `${hash} opened blank`).toBe(true);
+    const report: unknown[] = [];
+    for (const width of [390, 1440] as const) {
+      await page.setViewportSize({ width, height: width < 800 ? 844 : 900 });
+      for (const [hash, id, heading] of hashes) {
+        await page.goto(`/${hash}`, { waitUntil: "load" });
+        await page.waitForTimeout(560);
+        const title = page.locator(heading);
+        await expect(title).toBeVisible();
+        const metrics = await page.evaluate(
+          ({ targetId, headingSel }) => {
+            const header = document.querySelector("header");
+            const headerH = header?.getBoundingClientRect().height ?? 56;
+            const target = document.getElementById(targetId);
+            const headingNode = document.querySelector(headingSel);
+            const box = (headingNode ?? target)?.getBoundingClientRect();
+            return {
+              hash: targetId,
+              top: box?.top ?? -1,
+              visible: Boolean(box && box.bottom > headerH && box.top < window.innerHeight),
+              heading: headingNode?.textContent?.trim() ?? "",
+              scrollY: window.scrollY,
+              depth: document.querySelector("[data-octo-depth-value]")?.textContent ?? "",
+              headerH,
+            };
+          },
+          { targetId: id, headingSel: heading },
+        );
+        report.push({ width, ...metrics });
+        expect(metrics.visible, `${hash} @${width}`).toBe(true);
+        expect(metrics.top).toBeGreaterThan(metrics.headerH - 8);
+        expect(metrics.top).toBeLessThan(windowInner(width) * 0.42);
+        await page.screenshot({
+          path: path.join(shots, `hash-${id}-${width}.png`),
+        });
+      }
     }
-    await page.goto("/#octo-evreni", { waitUntil: "domcontentloaded" });
-    await page.screenshot({ path: path.join(shots, "hash-octo-evreni-390.png") });
+    fs.mkdirSync(shots, { recursive: true });
+    fs.writeFileSync(path.join(shots, "hash-landing-proof.json"), JSON.stringify(report, null, 2));
   });
 
   test("portals stay inside their chambers and empty catalogue hides arrows", async ({ page }) => {
@@ -151,7 +181,7 @@ test.describe("OCTO descent motion proof", () => {
     await page.goto("/");
     const overflow = await page.evaluate(() => {
       const stage = document.querySelector("[data-portal='file'] .octo-chamber-stage");
-      const object = document.querySelector("[data-octo-portal-object='file']");
+      const object = document.querySelector("[data-portal-layer='wire']");
       if (!stage || !object) return 99;
       const a = stage.getBoundingClientRect();
       const b = object.getBoundingClientRect();
@@ -179,6 +209,114 @@ test.describe("OCTO descent motion proof", () => {
     await expect(page.locator(".octo-story-copy p").first()).toBeVisible();
   });
 
+  test("portal phases are exclusive and OCTO heading is plain text", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.locator("[data-portal='file']").scrollIntoViewIfNeeded();
+    const phases = [
+      ["0", "0"],
+      ["25", "0.25"],
+      ["50", "0.5"],
+      ["75", "0.75"],
+      ["100", "1"],
+    ] as const;
+    for (const [label, value] of phases) {
+      await page.evaluate((progress) => {
+        const p = Number(progress);
+        const wire = p <= 0.38 ? 1 : p >= 0.52 ? 0 : 1 - (p - 0.38) / 0.14;
+        const finish = p <= 0.58 ? 0 : Math.max(0, Math.min(1, (p - 0.58) / 0.42));
+        const world = document.querySelector<HTMLElement>(".octo-world");
+        const material = p > 0.22 && p < 0.62 ? 0.6 : 0;
+        world?.style.setProperty("--portal-wire", String(Math.max(0, Math.min(1, wire))));
+        world?.style.setProperty("--portal-finish", String(finish));
+        world?.style.setProperty("--portal-material", String(material));
+        world?.style.setProperty("--portal-wire-vis", wire > 0.04 ? "visible" : "hidden");
+        world?.style.setProperty("--portal-finish-vis", finish > 0.04 ? "visible" : "hidden");
+        world?.style.setProperty("--portal-material-vis", material > 0.04 ? "visible" : "hidden");
+      }, value);
+      const opacities = await page.evaluate(() => ({
+        wire: Number(getComputedStyle(document.querySelector("[data-portal-layer='wire']")!).opacity),
+        finish: Number(getComputedStyle(document.querySelector("[data-portal-layer='finish']")!).opacity),
+      }));
+      expect(opacities.wire > 0.4 && opacities.finish > 0.4).toBe(false);
+      await page.screenshot({ path: path.join(shots, `portal-file-${label}.png`) });
+    }
+    await page.evaluate(() => {
+      const world = document.querySelector<HTMLElement>(".octo-world");
+      world?.style.setProperty("--portal-wire", "0.45");
+      world?.style.setProperty("--portal-finish", "0");
+      world?.style.setProperty("--portal-material", "0.7");
+    });
+    await page.screenshot({ path: path.join(shots, "portal-file-reverse.png") });
+    const heading = page.locator("#universe-heading");
+    await heading.scrollIntoViewIfNeeded();
+    await expect(heading).toHaveText(/OCTO EVRENİ/i);
+    await expect(heading.locator("img")).toHaveCount(0);
+    const broken = await page.evaluate(() =>
+      [...document.querySelectorAll("#octo-evreni img")].filter((img) => {
+        const node = img as HTMLImageElement;
+        return node.naturalWidth === 0 && node.complete;
+      }).length,
+    );
+    expect(broken).toBe(0);
+    await page.screenshot({ path: path.join(shots, "universe-heading-390.png") });
+  });
+
+  test("section gaps stay under 24vh and HUD does not intersect cards", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    const gaps = await page.evaluate(() => {
+      const ids = [
+        "nereden-baslamali",
+        "uc-uretim-yolu",
+        "kategoriler",
+        "octo-evreni",
+        "mevcut-urunler",
+      ];
+      return ids.slice(0, -1).map((id, index) => {
+        const a = document.getElementById(id)?.getBoundingClientRect();
+        const b = document.getElementById(ids[index + 1])?.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const y = (box: DOMRect) => box.top + window.scrollY;
+        if (!a || !b) return 99;
+        return (y(b) - (y(a) + a.height)) / vh;
+      });
+    });
+    for (const gap of gaps) expect(gap).toBeLessThanOrEqual(0.24);
+    const targets = ["#kategoriler", "#octo-evreni", "#mevcut-urunler", "#sik-sorulanlar"];
+    for (const target of targets) {
+      await page.locator(target).scrollIntoViewIfNeeded();
+      const hit = await page.evaluate(() => {
+        const hudNode = document.querySelector(".octo-depth-hud");
+        const hud = hudNode?.getBoundingClientRect();
+        if (!hud) return true;
+        const samples = [
+          [hud.left + 4, hud.top + 8],
+          [hud.left + hud.width / 2, hud.top + hud.height / 2],
+          [hud.right - 4, hud.bottom - 8],
+        ] as const;
+        return samples.some(([x, y]) => {
+          const node = document.elementFromPoint(x, y);
+          if (!node || node === hudNode || hudNode.contains(node)) return false;
+          return Boolean(
+            node.closest("[data-chamber], [data-category-slug], .octo-empty, .hi-faq-item"),
+          );
+        });
+      });
+      expect(hit, `HUD intersects ${target}`).toBe(false);
+    }
+    await page.screenshot({ path: path.join(shots, "universe-hud-1440.png") });
+    await page.locator("[data-chamber='orbia']").screenshot({
+      path: path.join(shots, "universe-orbia-1440.png"),
+    });
+    await page.locator("[data-chamber='memoora']").screenshot({
+      path: path.join(shots, "universe-memoora-1440.png"),
+    });
+    await page.locator("[data-chamber='lil-disc']").screenshot({
+      path: path.join(shots, "universe-lil-disc-1440.png"),
+    });
+  });
+
   test("wholesale sand overlaps the chamber and footer links stay above sand", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
@@ -202,7 +340,11 @@ test.describe("OCTO descent motion proof", () => {
     await page.screenshot({ path: path.join(shots, "footer-complete-390.png") });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
-    await page.screenshot({ path: path.join(shots, "footer-complete-1440.png") });
+    await page.screenshot({ path: path.join(shots, "footer-complete-1440.png"), fullPage: false });
+    await page.screenshot({ path: path.join(shots, "fullpage-1440.png"), fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.screenshot({ path: path.join(shots, "fullpage-390.png"), fullPage: true });
     await page.locator(".octo-depth-hud").evaluate((node) => {
       const size = Number.parseFloat(getComputedStyle(node.querySelector(".octo-depth-value") ?? node).fontSize);
       if (size < 11) throw new Error(`depth HUD too small: ${size}`);
