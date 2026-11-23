@@ -28,9 +28,16 @@ function normalizedFreeShippingThresholdMinor(): number {
 }
 
 export const PAYTR_INTEGRATION_TEST_SLUG = "odeme-testi";
+export const PAYTR_INTEGRATION_TEST_SKU = "OCTO-PAYTR-TEST";
 
-export function isPaytrIntegrationTestSlug(slug: string | null | undefined): boolean {
-  return slug === PAYTR_INTEGRATION_TEST_SLUG;
+export function isPaytrIntegrationTestProduct(product: {
+  slug?: string | null;
+  sku?: string | null;
+}): boolean {
+  return (
+    product.slug === PAYTR_INTEGRATION_TEST_SLUG ||
+    product.sku === PAYTR_INTEGRATION_TEST_SKU
+  );
 }
 
 /** Cart-level shipping from server-calculated subtotal (integer minor units). */
@@ -50,13 +57,12 @@ export function computeCartShippingMinor(subtotalMinor: number): number {
 
 export function computeCartShippingMinorForLines(
   subtotalMinor: number,
-  slugs: readonly string[],
+  lines: readonly { slug?: string | null; sku?: string | null }[],
 ): number {
-  const billed = slugs.filter((slug) => slug.trim().length > 0);
-  if (
-    billed.length > 0 &&
-    billed.every((slug) => isPaytrIntegrationTestSlug(slug))
-  ) {
+  const billed = lines.filter(
+    (line) => Boolean(line.slug?.trim()) || Boolean(line.sku?.trim()),
+  );
+  if (billed.length > 0 && billed.every(isPaytrIntegrationTestProduct)) {
     return 0;
   }
   return computeCartShippingMinor(subtotalMinor);

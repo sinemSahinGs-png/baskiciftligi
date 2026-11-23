@@ -89,7 +89,7 @@ export async function priceStoreCart(lines: CartInputLine[]) {
   );
   const shippingMinor = computeCartShippingMinorForLines(
     subtotalMinor,
-    pricedLines.filter((line) => line.isAvailable).map((line) => line.slug),
+    pricedLines.filter((line) => line.isAvailable),
   );
   return {
     lines: pricedLines,
