@@ -11,7 +11,7 @@ export function CompactFaq() {
     <section
       id="sik-sorulanlar"
       data-home-theme="mono"
-      className="hi-section hi-faq"
+      className="hi-section hi-faq octo-band octo-band-void"
       aria-labelledby="faq-heading"
     >
       <div className="hi-shell">
@@ -23,7 +23,7 @@ export function CompactFaq() {
             <details key={item.id} className="hi-faq-item border-b border-[color:var(--bc-line)]">
               <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-3">
                 <span className="hi-mono w-8">{String(index + 1).padStart(2, "0")}</span>
-                <span className="flex-1 text-start text-sm font-semibold sm:text-base">
+                <span className="flex-1 text-start text-base font-semibold">
                   {t(`faq.${item.id}.q`)}
                 </span>
                 <span aria-hidden="true">+</span>

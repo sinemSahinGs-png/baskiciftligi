@@ -112,7 +112,7 @@ export const projectDestinations: readonly ProjectDestination[] = [
     description:
       "12 burca özel NFC anahtarlık. Telefonuna dokundurunca günlük gökyüzü deneyimi açılır.",
     href: "/kategori/orbia" as Route,
-    artwork: "/categories/orbia/product.webp",
+    artwork: "/images/categories/orbia.webp",
     logo: "/categories/orbia/logo.svg",
     heroVideoDesktop: "/categories/orbia/hero-desktop.mp4",
     heroVideoMobile: "/categories/orbia/hero-mobile.mp4",
@@ -140,7 +140,7 @@ export const projectDestinations: readonly ProjectDestination[] = [
     description:
       "NFC magnet veya anahtarlıkla açılan dijital düğün hatıra ağacı. 1 katkı = 1 yaprak.",
     href: "/kategori/memoora" as Route,
-    artwork: "/categories/memoora/poster.png",
+    artwork: "/images/categories/memoora.webp",
     logo: "/categories/memoora/logo.svg",
     heroVideoDesktop: "/categories/memoora/hero.mp4",
     heroVideoMobile: "/categories/memoora/hero.mp4",
@@ -166,7 +166,7 @@ export const projectDestinations: readonly ProjectDestination[] = [
     eyebrow: "Proje",
     description: "NFC özellikli mini CD anahtarlık. Telefonuna yaklaştır, albümü dinle.",
     href: "/kategori/lil-disc" as Route,
-    artwork: "/categories/lil-disc/poster.webp",
+    artwork: "/images/categories/lil-disc.webp",
     logo: "/categories/lil-disc/manifesto.webp",
     heroVideoDesktop: "/categories/lil-disc/hero.mp4",
     heroVideoMobile: "/categories/lil-disc/hero.mp4",

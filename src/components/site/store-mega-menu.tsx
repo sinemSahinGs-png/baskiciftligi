@@ -45,20 +45,22 @@ function megaCategories(
       artworkSrc: item.artwork,
       objectPosition: "50% 50%",
     }));
-  const octo = storefrontCategories.map((item) => ({
-    slug: item.slug,
-    href: item.href,
-    comingSoon: item.comingSoon,
-    artworkSrc: categoryArtwork[item.slug],
-    objectPosition: CATEGORY_OBJECT_POSITION[item.slug],
-  }));
+  const octo = storefrontCategories
+    .filter((item) => !item.comingSoon)
+    .map((item) => ({
+      slug: item.slug,
+      href: item.href,
+      comingSoon: false,
+      artworkSrc: categoryArtwork[item.slug],
+      objectPosition: CATEGORY_OBJECT_POSITION[item.slug],
+    }));
   return [...projects, ...octo];
 }
 
 const OPEN_DELAY = 80;
 const CLOSE_DELAY = 280;
 const VIEWPORT_GUTTER = 16;
-const MEGA_MAX_WIDTH = 880;
+const MEGA_MAX_WIDTH = 520;
 
 function subscribeNever() {
   return () => {};
@@ -101,23 +103,19 @@ export function StoreMegaMenu({
 
   function updatePlacement() {
     const node = panelRef.current;
-    const header = rootRef.current?.closest("header") ?? document.querySelector("header");
-    if (!node || !header) return;
+    const trigger = rootRef.current?.querySelector<HTMLElement>("[data-mega-trigger]");
+    if (!node || !trigger) return;
+    const box = trigger.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
-    const headerBox = header.getBoundingClientRect();
-    const shell = header.querySelector(".shell");
-    const shellBox = shell?.getBoundingClientRect();
     const width = Math.min(MEGA_MAX_WIDTH, viewportWidth - VIEWPORT_GUTTER * 2);
-    let right = VIEWPORT_GUTTER;
-    if (shellBox) {
-      right = Math.max(VIEWPORT_GUTTER, viewportWidth - shellBox.right);
+    let left = box.left;
+    if (left + width > viewportWidth - VIEWPORT_GUTTER) {
+      left = Math.max(VIEWPORT_GUTTER, viewportWidth - VIEWPORT_GUTTER - width);
     }
-    const left = viewportWidth - right - width;
-    if (left < VIEWPORT_GUTTER) {
-      right = Math.max(VIEWPORT_GUTTER, viewportWidth - VIEWPORT_GUTTER - width);
-    }
-    node.style.top = `${Math.round(headerBox.bottom)}px`;
-    node.style.right = `${Math.round(right)}px`;
+    node.style.top = `${Math.round(box.bottom)}px`;
+    node.style.left = `${Math.round(left)}px`;
+    node.style.right = "auto";
+    node.style.width = `${Math.round(width)}px`;
   }
 
   function clearTimers() {
@@ -422,7 +420,7 @@ function MegaItem({
       <span className="store-mega-art" aria-hidden="true">
         <CategoryArtwork
           src={category.artworkSrc}
-          sizes="80px"
+          sizes="40px"
           objectPosition={category.objectPosition}
         />
       </span>
@@ -452,7 +450,7 @@ function MegaSoonItem({
       <span className="store-mega-art" aria-hidden="true">
         <CategoryArtwork
           src={category.artworkSrc}
-          sizes="80px"
+          sizes="40px"
           objectPosition={category.objectPosition}
         />
       </span>

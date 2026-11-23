@@ -12,38 +12,32 @@ export function WholesaleBand() {
   return (
     <section
       id="toptan-bayiler"
-      data-home-theme="abyss"
-      className="atelier-panel atelier-split"
+      data-home-theme="void"
+      className="octo-band octo-band-void"
       aria-labelledby="wholesale-heading"
     >
-      <div className="hi-shell atelier-shell">
-        <p className="atelier-num">05</p>
-        <p className="atelier-kicker">{t("home.atelier05Kicker")}</p>
-        <h2 id="wholesale-heading" className="atelier-title">
-          {t("home.atelier05Title")}
-        </h2>
-        <div className="atelier-split-grid">
-          <article className="atelier-split-card">
-            <div className="atelier-object">
-              <SlotImage src={atelierMedia.personal} alt="" fill sizes="(max-width: 767px) 80vw, 420px" />
-            </div>
-            <h3>{t("home.personalTitle")}</h3>
-            <p>{t("home.personalCopy")}</p>
-            <HomeTrackLink event="upload_cta_clicked" href={"/model-yukle" as Route} className="atelier-cta">
-              {t("home.personalCta")}
+      <div className="hi-shell octo-band-shell">
+        <article className="octo-wholesale">
+          <span className="octo-wholesale-media" aria-hidden="true">
+            <SlotImage
+              src={atelierMedia.corporate}
+              alt=""
+              fill
+              sizes="(max-width: 767px) 100vw, 1100px"
+            />
+          </span>
+          <div className="octo-wholesale-copy">
+            <h2 id="wholesale-heading">{t("home.wholesalePlanTitle")}</h2>
+            <p>{t("home.wholesalePlanCopy")}</p>
+            <HomeTrackLink
+              event="corporate_cta_clicked"
+              href={"/toptan" as Route}
+              className="octo-start-cta"
+            >
+              {t("home.wholesalePlanCta")}
             </HomeTrackLink>
-          </article>
-          <article className="atelier-split-card">
-            <div className="atelier-object">
-              <SlotImage src={atelierMedia.corporate} alt="" fill sizes="(max-width: 767px) 80vw, 420px" />
-            </div>
-            <h3>{t("home.corpTitle")}</h3>
-            <p>{t("home.corpCopy")}</p>
-            <HomeTrackLink event="corporate_cta_clicked" href={"/toptan" as Route} className="atelier-cta-ghost">
-              {t("home.corpCta")}
-            </HomeTrackLink>
-          </article>
-        </div>
+          </div>
+        </article>
       </div>
     </section>
   );

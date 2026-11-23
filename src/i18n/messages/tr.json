@@ -50,7 +50,7 @@
   "home": {
     "heroKicker": "YARATICI ÜRETİM STÜDYOSU",
     "heroTitle": "FİKRİNİ DERİNLİKTEN ÇIKAR.",
-    "heroLede": "Modelini seç, dosyanı yükle veya fikrini anlat. Octo Studio onu gerçek bir ürüne dönüştürsün.",
+    "heroLede": "Modelini seç, dosyanı yükle veya fikrini anlat. Biz gerçeğe dönüştürelim.",
     "heroLabel": "Ne üretmek istediğinizi açıklayın",
     "heroSearch": "Ara",
     "heroMore": "Daha fazla göster",
@@ -217,7 +217,38 @@
     "petgUses": "Nem gören ve işlevsel ev parçaları",
     "tpuStrength": "Darbe sönümleme",
     "tpuFlex": "Yüksek esneklik",
-    "tpuUses": "Conta, tampon ve koruyucu elemanlar"
+    "tpuUses": "Conta, tampon ve koruyucu elemanlar",
+    "startPathTitle": "NEREDEN BAŞLAMAK İSTERSİN?",
+    "startFileTitle": "DOSYAM HAZIR",
+    "startFileCopy": "STL veya 3MF dosyanı yükle, üretim seçeneklerini belirle ve fiyatını gör.",
+    "startFileCta": "MODELİNİ YÜKLE",
+    "startFindTitle": "MODEL ARIYORUM",
+    "startFindCopy": "Hazır modelleri, dekor ürünlerini ve stüdyo seçkilerini keşfet.",
+    "startFindCta": "MODELLERİ KEŞFET",
+    "startIdeaLink": "Fikrimi anlatarak başlamak istiyorum",
+    "startWholesaleLink": "Toptan üretim istiyorum",
+    "storyTitle": "3 ADIMDA FİKİRDEN ÜRÜNE",
+    "story1Title": "DOSYANI YÜKLE",
+    "story1Copy": "Modelini yükle veya hazır bir tasarım seç.",
+    "story2Title": "FİYATINI GÖR",
+    "story2Copy": "Ölçü, malzeme ve üretim seçeneklerini belirle.",
+    "story3Title": "BİZ ÜRETELİM",
+    "story3Copy": "Modelin katman katman üretilsin ve gönderime hazırlansın.",
+    "makeTitle": "NE ÜRETELİM?",
+    "universeTitle": "OCTO EVRENİ",
+    "universeLede": "Stüdyodan doğan bağımsız ürün ve deneyim markaları.",
+    "wholesalePlanTitle": "TOPLU ÜRETİM Mİ PLANLIYORSUN?",
+    "wholesalePlanCopy": "Markalar, etkinlikler ve kurumsal projeler için ölçeklenebilir üretim.",
+    "wholesalePlanCta": "TOPTAN ÜRETİMİ İNCELE",
+    "trustAnkaraTitle": "ANKARA’DA ÜRETİM",
+    "trustAnkaraCopy": "Parçalar Ankara stüdyosunda, siparişe göre hazırlanır.",
+    "trustPriceTitle": "ÜRETİM ÖNCESİ NET FİYAT",
+    "trustPriceCopy": "Hazır üründe karttaki fiyat geçerlidir. Yüklenen modellerde fiyat üretim analizinden sonra gösterilir.",
+    "trustOrderTitle": "SİPARİŞE ÖZEL HAZIRLIK",
+    "trustOrderCopy": "Her parça siparişe göre üretilir; stok vaadi yoktur.",
+    "inStock": "Stokta",
+    "madeToOrder": "Siparişe göre",
+    "soldOut": "Tükendi"
   },
   "faq": {
     "hangi-dosyalar": {
@@ -233,7 +264,7 @@
       "a": "Hazır üründe karttaki fiyat geçerlidir. Yüklenen modellerde fiyat, üretim analizi ve imzalı formülden sonra gösterilir."
     },
     "toplu-uretim": {
-      "q": "Kurumsal üretim var mı?",
+      "q": "Kurumsal üretim yapıyor musunuz?",
       "a": "Numune ve tekrarlı işler kurumsal teklif formundan yürür. Kapasite iddiası, dosya veya brief incelenmeden verilmez."
     }
   },
