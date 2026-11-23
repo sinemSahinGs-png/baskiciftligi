@@ -42,7 +42,6 @@ export function AdminLoginForm({ nextPath }: { nextPath?: string }) {
           name="username"
           autoComplete="username"
           required
-          placeholder="ata veya kutaygulec"
           className="h-11 rounded-xl border-white/12 bg-black/20 px-3"
         />
       </div>

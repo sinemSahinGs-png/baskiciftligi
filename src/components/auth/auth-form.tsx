@@ -51,7 +51,7 @@ export function AuthForm({ mode, configured, nextPath }: AuthFormProps) {
         </h1>
         <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">
           {isLogin
-            ? "Yönetici paneli için ata veya kutaygulec, müşteri hesabı için e-posta kullanın."
+            ? "Sipariş, teklif ve model süreçlerinizi tek bir güvenli alandan takip edin."
             : "Siparişleriniz ve gelecekteki 3D baskı talepleriniz için güvenli hesabınızı oluşturun."}
         </p>
       </div>
@@ -115,7 +115,6 @@ export function AuthForm({ mode, configured, nextPath }: AuthFormProps) {
             maxLength={254}
             required
             disabled={!configured || pending}
-            placeholder={isLogin ? "ata, kutaygulec veya e-posta" : undefined}
             aria-invalid={Boolean(state.fields?.email)}
             aria-describedby={state.fields?.email ? "email-error" : undefined}
             className="h-12 px-4"
