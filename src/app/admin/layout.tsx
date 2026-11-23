@@ -10,6 +10,8 @@ import {
 
 import { adminLogoutAction } from "@/app/admin/giris/actions";
 import { AdminMark, AdminNav } from "@/components/admin/admin-nav";
+import { OpsAlerts } from "@/components/admin/ops-alerts";
+import { getOpsBoard } from "@/domain/admin/ops-board";
 import { siteConfig } from "@/config/site";
 import { isAdminLoginPath } from "@/lib/auth/admin-password";
 import { isLilDiscStaffPathAllowed, requireAdmin } from "@/lib/auth/session";
@@ -41,6 +43,9 @@ export default async function AdminLayout({
   if (isLilDiscOnlyStaff(viewer.role) && !isLilDiscStaffPathAllowed(pathname)) {
     redirect("/admin/lil-disc");
   }
+  const ops = isLilDiscOnlyStaff(viewer.role)
+    ? null
+    : await getOpsBoard().catch(() => null);
   const fixtureWarning = productionFixtureWarning(readProductionSafetyFlags());
   const logout = adminLogoutAction;
 
@@ -65,6 +70,7 @@ export default async function AdminLayout({
           </Link>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            {ops ? <OpsAlerts openCount={ops.openSite + ops.openGrowth} /> : null}
             <Link
               href="/"
               target="_blank"

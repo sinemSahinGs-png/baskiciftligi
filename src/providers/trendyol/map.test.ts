@@ -45,6 +45,22 @@ describe("trendyol mapper", () => {
     expect(mapTrendyolProduct({ title: "" })).toBeNull();
   });
 
+  it("builds a valid sku when stockCode is empty", () => {
+    const mapped = mapTrendyolProduct({
+      title: "Spiral Yildizi Fidget",
+      barcode: "869000000099",
+      stockCode: "",
+      salePrice: 89.9,
+      quantity: 3,
+      onSale: true,
+      images: [{ url: "https://cdn.dsmcdn.com/ty1/x.jpg" }],
+    });
+    expect(mapped?.sku.length).toBeGreaterThan(0);
+    expect(mapped?.sku.length).toBeLessThanOrEqual(80);
+    expect(mapped?.variants[0]?.sku).toBe(mapped?.sku);
+    expect(mapped?.media[0]?.url).toContain("cdn.dsmcdn.com");
+  });
+
   it("publishes priced on-sale products even with zero stock", () => {
     const mapped = mapTrendyolProduct({
       title: "Octo Kupa",

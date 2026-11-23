@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { LoaderCircle, RefreshCw } from "lucide-react";
 
 import { syncTrendyolAction } from "@/app/admin/entegrasyonlar/actions";
@@ -18,6 +18,16 @@ export function TrendyolSyncPanel({
     syncTrendyolAction,
     initialAdminActionState,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (!started.current) return;
+    if (pending) return;
+    if (state.status === "success" && state.hasMore) {
+      formRef.current?.requestSubmit();
+    }
+  }, [pending, state.hasMore, state.nextPage, state.status]);
 
   return (
     <section className="space-y-5 rounded-3xl border border-white/10 bg-card p-6">
@@ -26,12 +36,11 @@ export function TrendyolSyncPanel({
           Trendyol
         </p>
         <h2 className="mt-3 font-heading text-2xl font-medium">
-          Ürün, fiyat ve stok çek
+          Tüm ürünleri çek
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Satıştaki onaylı ürünler OCTO kataloğuna yazılır. SKU veya barkod
-          eşleşirse fiyat ve stok güncellenir. Her tıkta bir sayfa gelir;
-          ürün bitene kadar tekrar bas.
+          Bir kez bas; 95 ürün bitene kadar sayfalar kendiliğinden devam eder.
+          SKU ve görseller Trendyol’dan yazılır.
         </p>
       </div>
 
@@ -69,7 +78,13 @@ export function TrendyolSyncPanel({
         </p>
       ) : null}
 
-      <form action={formAction}>
+      <form
+        ref={formRef}
+        action={formAction}
+        onSubmit={() => {
+          started.current = true;
+        }}
+      >
         <input type="hidden" name="page" value={String(state.nextPage ?? 0)} />
         <button
           type="submit"
@@ -84,8 +99,8 @@ export function TrendyolSyncPanel({
           {pending
             ? "Çekiliyor…"
             : state.hasMore
-              ? "Sonrakileri çek"
-              : "Ürünleri çek"}
+              ? "Devam ediyor…"
+              : "Tümünü çek"}
         </button>
       </form>
     </section>

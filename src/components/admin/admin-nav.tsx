@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   Store,
   Tags,
+  Trophy,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ const navigationGroups = [
         icon: ChartNoAxesCombined,
         exact: true,
       },
+      { href: "/admin/gorevler", label: "Görevler", icon: Trophy },
       { href: "/admin/siparisler", label: "Siparişler", icon: Package },
       { href: "/admin/urunler", label: "Ürünler", icon: ShoppingBag },
       { href: "/admin/trendyol", label: "Trendyol", icon: Store },

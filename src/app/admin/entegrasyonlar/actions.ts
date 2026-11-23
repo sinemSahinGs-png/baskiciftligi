@@ -41,9 +41,7 @@ export async function syncTrendyolAction(
     const failNote = result.failed
       ? ` ${result.failed} kayıt atlandı.`
       : "";
-    const moreNote = result.hasMore
-      ? " Devam için tekrar Ürünleri çek."
-      : "";
+    const moreNote = result.hasMore ? " Sonraki sayfa çekiliyor…" : " Bitti.";
     const errorHint = result.errors[0] ? ` ${result.errors[0]}` : "";
     return {
       status: "success",

@@ -35,6 +35,7 @@ function resolveMediaSrc(src?: string | null) {
 function shouldUnoptimize(src: string) {
   if (src.startsWith("/catalog-media/") || src.startsWith("/images/") || src.startsWith("/categories/")) return true;
   if (src.startsWith(`${THINGIVERSE_MEDIA_PROXY_PATH}?`)) return true;
+  if (/dsmcdn\.com|trendyol\.com|mncdn\.com/i.test(src)) return true;
   return src.startsWith("/demo/") && /\.svg(?:\?|$)/i.test(src);
 }
 

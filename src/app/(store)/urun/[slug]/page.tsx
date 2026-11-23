@@ -26,6 +26,7 @@ import {
 } from "@/domain/catalog/repository";
 import { publicCategoryHref } from "@/domain/catalog/storefront-taxonomy";
 import { stageClass, stageForProduct } from "@/domain/visual/stages";
+import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 const badgeLabels = {
@@ -232,7 +233,7 @@ export default async function ProductPage(props: PageProps<"/urun/[slug]">) {
               </p>
             ) : null}
 
-            <div className="mt-7">
+            <div id="satin-al" className="mt-7 scroll-mt-24 pb-24 md:pb-0">
               <ProductConfigurator product={product} />
             </div>
           </div>
@@ -301,6 +302,13 @@ export default async function ProductPage(props: PageProps<"/urun/[slug]">) {
       <RecentlyViewed
         products={recentPool.filter((item) => item.id !== product.id)}
       />
+      <a
+        href="#satin-al"
+        className="fixed inset-x-3 bottom-3 z-30 flex min-h-12 items-center justify-between rounded-full bg-ink px-5 text-sm font-bold text-paper shadow-lg md:hidden"
+      >
+        <span>Satın al</span>
+        <span className="tabular">{formatMoney(product.priceMinor)}</span>
+      </a>
     </main>
   );
 }
