@@ -26,6 +26,14 @@ function okResponse() {
   });
 }
 
+export async function GET() {
+  return okResponse();
+}
+
+export async function HEAD() {
+  return new NextResponse(null, { status: 200 });
+}
+
 export async function POST(request: Request) {
   const requestId = requestIdFrom(request);
   const credentials = getPaytrCredentials();
