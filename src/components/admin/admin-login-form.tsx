@@ -27,10 +27,6 @@ export function AdminLoginForm({ nextPath }: { nextPath?: string }) {
         <h1 className="mt-3 font-heading text-3xl font-medium tracking-[-0.04em]">
           {siteConfig.name} paneli
         </h1>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Kullanıcı adı ve şifre ile girin. LIL’ DISC operatörü yalnızca albüm
-          ve siparişlerini görür.
-        </p>
       </div>
 
       {nextPath ? <input type="hidden" name="next" value={nextPath} /> : null}
