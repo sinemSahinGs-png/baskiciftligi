@@ -67,22 +67,39 @@ export function ProductionStory() {
   const shownStep = reduce ? 2 : step;
 
   useEffect(() => {
-    if (reduce) return;
     const root = rootRef.current;
     if (!root) return;
-    const nodes = [...root.querySelectorAll("[data-story-step]")];
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        const index = nodes.indexOf(visible?.target as Element);
-        if (index >= 0) setStep(index);
-      },
-      { threshold: [0.35, 0.55, 0.75], rootMargin: "-12% 0px -28% 0px" },
-    );
-    for (const node of nodes) observer.observe(node);
-    return () => observer.disconnect();
+    const nodes = [...root.querySelectorAll<HTMLElement>("[data-story-step]")];
+    const sync = () => {
+      if (reduce) {
+        setStep(2);
+        return;
+      }
+      const mid = window.innerHeight * 0.46;
+      let best = 0;
+      let bestDist = Number.POSITIVE_INFINITY;
+      nodes.forEach((node, index) => {
+        const box = node.getBoundingClientRect();
+        const center = box.top + box.height / 2;
+        const dist = Math.abs(center - mid);
+        if (box.bottom > 80 && box.top < window.innerHeight - 80 && dist < bestDist) {
+          best = index;
+          bestDist = dist;
+        }
+      });
+      setStep(best);
+    };
+    sync();
+    window.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
+    window.addEventListener("hashchange", sync);
+    window.addEventListener("pageshow", sync);
+    return () => {
+      window.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+      window.removeEventListener("hashchange", sync);
+      window.removeEventListener("pageshow", sync);
+    };
   }, [reduce]);
 
   return (
@@ -120,6 +137,7 @@ export function ProductionStory() {
               <li
                 key={item.key}
                 data-story-step=""
+                data-story-end={index === STEPS.length - 1 ? "" : undefined}
                 data-active={shownStep === index ? "true" : "false"}
               >
                 <div className="octo-story-mobile-visual">

@@ -68,16 +68,16 @@ export function ScrollThemeProvider() {
       if (progress > 0.78 || (footer && footer.getBoundingClientRect().top < vh * 0.72)) {
         depthLabel = "DİP";
         depthMeters = "−32 M";
-      } else if (universe && universe.getBoundingClientRect().top < vh * 0.55) {
+      } else if (
+        (universe && universe.getBoundingClientRect().top < vh * 0.55) ||
+        (cats && cats.getBoundingClientRect().top < vh * 0.55)
+      ) {
         depthLabel = "KOLEKSİYON";
         depthMeters = "−24 M";
-      } else if (cats && cats.getBoundingClientRect().top < vh * 0.55) {
-        depthLabel = "KOLEKSİYON";
-        depthMeters = "−24 M";
-      } else if (story && story.getBoundingClientRect().top < vh * 0.62) {
-        depthLabel = "ATÖLYE";
-        depthMeters = "−16 M";
-      } else if (portals && portals.getBoundingClientRect().top < vh * 0.78) {
+      } else if (
+        (story && story.getBoundingClientRect().top < vh * 0.72) ||
+        (portals && portals.getBoundingClientRect().top < vh * 0.78)
+      ) {
         depthLabel = "ATÖLYE";
         depthMeters = "−08 M";
       }
@@ -86,11 +86,13 @@ export function ScrollThemeProvider() {
         world.style.setProperty("--octo-depth", progress.toFixed(4));
         world.style.setProperty("--octo-portal-file", portalFile.toFixed(4));
         world.style.setProperty("--octo-portal-find", portalFind.toFixed(4));
-        world.style.setProperty("--octo-footer-rock", `${Math.round(progress * 6)}px`);
-        world.style.setProperty("--octo-footer-mid", `${Math.round(progress * 12)}px`);
-        world.style.setProperty("--octo-footer-fore", `${Math.round(progress * 19)}px`);
+        world.style.setProperty("--octo-footer-rock", `${Math.round(progress * 5)}px`);
+        world.style.setProperty("--octo-footer-mid", `${Math.round(progress * 10)}px`);
+        world.style.setProperty("--octo-footer-fore", `${Math.round(progress * 16)}px`);
         world.dataset.octoDepthLabel = depthLabel;
+        world.classList.add("octo-motion-ready");
       }
+      document.documentElement.classList.add("octo-motion-ready");
       document.querySelectorAll("[data-portal]").forEach((node) => {
         const box = node.getBoundingClientRect();
         const visible = box.top < vh * 0.72 && box.bottom > vh * 0.28;
@@ -106,7 +108,7 @@ export function ScrollThemeProvider() {
         };
         node.setAttribute("data-active", map[stop ?? ""] === depthLabel ? "true" : "false");
       });
-      if (depthValue) depthValue.textContent = depthMeters;
+      if (depthValue) depthValue.textContent = `${depthMeters} — ${depthLabel}`;
       if (path && pathLength && !reduce) {
         path.style.strokeDashoffset = String(pathOffset);
       }
@@ -123,9 +125,9 @@ export function ScrollThemeProvider() {
         pathDashOffset: Number(pathOffset.toFixed(2)),
         pathLength: Number(pathLength.toFixed(2)),
         categoryScrollLeft: Math.round(categoryRail?.scrollLeft ?? 0),
-        footerRock: Math.round(progress * 6),
-        footerMid: Math.round(progress * 12),
-        footerFore: Math.round(progress * 19),
+        footerRock: Math.round(progress * 5),
+        footerMid: Math.round(progress * 10),
+        footerFore: Math.round(progress * 16),
         reducedMotion: reduce,
       };
       if (proof) proof.textContent = JSON.stringify(proofState);
@@ -137,12 +139,24 @@ export function ScrollThemeProvider() {
     };
 
     update();
+    const raf = window.requestAnimationFrame(update);
+    const later = window.setTimeout(update, 80);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
+    window.addEventListener("hashchange", update);
+    window.addEventListener("pageshow", update);
+    window.addEventListener("popstate", update);
+    window.addEventListener("load", update);
     return () => {
       window.cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(raf);
+      window.clearTimeout(later);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      window.removeEventListener("hashchange", update);
+      window.removeEventListener("pageshow", update);
+      window.removeEventListener("popstate", update);
+      window.removeEventListener("load", update);
     };
   }, []);
 

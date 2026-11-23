@@ -13,11 +13,14 @@ export function WholesaleBand() {
     <section
       id="toptan-bayiler"
       data-home-theme="void"
+      data-octo-zone="commerce"
       className="octo-band octo-band-void"
       aria-labelledby="wholesale-heading"
     >
       <div className="hi-shell octo-band-shell">
-        <article className="octo-wholesale">
+        <article className="octo-wholesale octo-wholesale-chamber">
+          <span className="octo-wholesale-sand" aria-hidden="true" />
+          <span className="octo-wholesale-scale" aria-hidden="true" />
           <span className="octo-wholesale-media" aria-hidden="true">
             <SlotImage
               src={atelierMedia.corporate}

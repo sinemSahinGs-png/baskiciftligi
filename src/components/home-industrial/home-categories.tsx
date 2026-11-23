@@ -74,7 +74,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
             {t("home.makeTitle")}
           </h2>
           <div className="octo-rail-tools">
-            <div className="octo-rail-arrows">
+            <div className="octo-rail-arrows" hidden={!canPrev && !canNext}>
               <button
                 type="button"
                 className="octo-rail-arrow"

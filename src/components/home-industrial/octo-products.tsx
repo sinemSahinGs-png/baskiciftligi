@@ -72,7 +72,7 @@ export function OctoProducts({
     <section
       id="mevcut-urunler"
       data-home-theme="ivory"
-      data-octo-zone="floor"
+      data-octo-zone="commerce"
       data-catalog-status={catalogStatus}
       className="octo-band octo-band-island octo-shelf"
       aria-labelledby="curated-heading"
@@ -83,36 +83,38 @@ export function OctoProducts({
             {t("home.productsShopTitle")}
           </h2>
           <div className="octo-rail-tools">
-            <div className="octo-rail-arrows">
-              <button
-                type="button"
-                className="octo-rail-arrow octo-rail-arrow-dark"
-                aria-label={t("home.prevRail")}
-                disabled={!canPrev}
-                onClick={() =>
-                  railRef.current?.scrollBy({
-                    left: -stride(),
-                    behavior: reduce ? "auto" : "smooth",
-                  })
-                }
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                className="octo-rail-arrow octo-rail-arrow-dark"
-                aria-label={t("home.nextRail")}
-                disabled={!canNext}
-                onClick={() =>
-                  railRef.current?.scrollBy({
-                    left: stride(),
-                    behavior: reduce ? "auto" : "smooth",
-                  })
-                }
-              >
-                ›
-              </button>
-            </div>
+            {visible.length > 1 ? (
+              <div className="octo-rail-arrows">
+                <button
+                  type="button"
+                  className="octo-rail-arrow octo-rail-arrow-dark"
+                  aria-label={t("home.prevRail")}
+                  disabled={!canPrev}
+                  onClick={() =>
+                    railRef.current?.scrollBy({
+                      left: -stride(),
+                      behavior: reduce ? "auto" : "smooth",
+                    })
+                  }
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="octo-rail-arrow octo-rail-arrow-dark"
+                  aria-label={t("home.nextRail")}
+                  disabled={!canNext}
+                  onClick={() =>
+                    railRef.current?.scrollBy({
+                      left: stride(),
+                      behavior: reduce ? "auto" : "smooth",
+                    })
+                  }
+                >
+                  ›
+                </button>
+              </div>
+            ) : null}
             <Link href={"/magaza" as Route} className="octo-text-link octo-text-link-dark">
               {t("home.allProductsLink")}
             </Link>
@@ -120,14 +122,18 @@ export function OctoProducts({
         </div>
         {visible.length === 0 ? (
           <div className="octo-empty" data-empty-catalog={catalogStatus}>
+            <span className="octo-empty-mark" aria-hidden="true" />
+            <h3>{t("home.productsEmptyTitle")}</h3>
             <p>
               {catalogStatus === "empty-preview"
-                ? t("home.productsEmptyPreview")
-                : t("home.productsEmpty")}
+                ? t("home.productsEmptyPreviewBody")
+                : t("home.productsEmptyBody")}
             </p>
-            <p>{t("home.productsEmptyBody")}</p>
             <Link href={"/model-yukle" as Route} className="octo-start-cta">
               {t("home.emptyCta")}
+            </Link>
+            <Link href={"/hazir-modeller" as Route} className="octo-text-link octo-text-link-dark">
+              {t("home.emptyExplore")}
             </Link>
           </div>
         ) : (

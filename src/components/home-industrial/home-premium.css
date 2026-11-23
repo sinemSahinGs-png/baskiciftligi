@@ -951,14 +951,13 @@ html[data-home-industrial] [data-site-footer] [data-site-footer-mobile] {
   }
 
   .octo-story {
-    min-height: 210vh;
+    min-height: 0;
   }
 
   .octo-story-layout {
-    position: sticky;
-    top: 4.8rem;
-    min-height: calc(100svh - 6rem);
-    align-items: center;
+    position: relative;
+    min-height: 0;
+    align-items: start;
   }
 
   .octo-cinematic-rail > li:nth-child(odd) {

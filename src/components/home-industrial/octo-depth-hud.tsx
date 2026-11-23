@@ -9,7 +9,7 @@ export function OctoDepthHud() {
   return (
     <aside className="octo-depth-hud" aria-label="Derinlik göstergesi">
       <p className="octo-depth-value" data-octo-depth-value="">
-        0 M
+        0 M — YÜZEY
       </p>
       <ol className="octo-depth-stops">
         {STOPS.map((stop) => (

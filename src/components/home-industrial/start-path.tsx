@@ -27,21 +27,21 @@ export function StartPath() {
         <div className="octo-chambers">
           <article className="octo-chamber octo-chamber-sand" data-portal="file">
             <div className="octo-chamber-stage">
-              <span className="octo-chamber-cave" aria-hidden="true" />
-              <span className="octo-chamber-object" data-octo-portal-object="file">
+              <span className="octo-chamber-grid" aria-hidden="true" />
+              <span className="octo-chamber-object octo-chamber-wire" data-octo-portal-object="file">
                 <SlotImage
-                  src={storefrontCategoryAsset("kisiye-ozel")}
+                  src={industrialAssets.heroWireframeVase}
                   alt=""
                   fill
                   sizes="(max-width: 767px) 88vw, 42vw"
                 />
               </span>
-              <span className="octo-chamber-object octo-chamber-object-alt" aria-hidden="true">
+              <span className="octo-chamber-object octo-chamber-solid" aria-hidden="true">
                 <SlotImage
-                  src={industrialAssets.pathUploadObject}
+                  src={industrialAssets.pathReadyModel}
                   alt=""
                   fill
-                  sizes="(max-width: 767px) 50vw, 22vw"
+                  sizes="(max-width: 767px) 88vw, 42vw"
                 />
               </span>
               <span className="octo-chamber-sandbed" aria-hidden="true" />
@@ -62,7 +62,7 @@ export function StartPath() {
           <article className="octo-chamber octo-chamber-rock" data-portal="find">
             <div className="octo-chamber-stage">
               <span className="octo-chamber-mineral" aria-hidden="true" />
-              <span className="octo-chamber-object" data-octo-portal-object="find">
+              <span className="octo-chamber-object octo-chamber-find" data-octo-portal-object="find">
                 <SlotImage
                   src={storefrontCategoryAsset("dekorasyon-yasam")}
                   alt=""
@@ -70,7 +70,7 @@ export function StartPath() {
                   sizes="(max-width: 767px) 88vw, 42vw"
                 />
               </span>
-              <span className="octo-chamber-rim" aria-hidden="true" />
+              <span className="octo-chamber-sandbed octo-chamber-sandbed-thin" aria-hidden="true" />
               <span className="octo-chamber-veil octo-chamber-veil-mineral" data-octo-portal-veil="find" />
             </div>
             <div className="octo-chamber-copy">
