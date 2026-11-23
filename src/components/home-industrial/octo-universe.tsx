@@ -18,6 +18,7 @@ export function OctoUniverse() {
     <section
       id="octo-evreni"
       data-home-theme="obsidian"
+      data-octo-zone="collection"
       className="octo-band octo-band-obsidian octo-universe"
       aria-labelledby="universe-heading"
     >
@@ -26,26 +27,34 @@ export function OctoUniverse() {
           {t("home.universeTitle")}
         </h2>
         <p className="octo-band-lede">{t("home.universeLede")}</p>
-        <ul className="octo-universe-grid">
+        <ul className="octo-rooms">
           {projects.map((project) => (
             <li key={project.slug}>
               <Link
                 href={project.href}
-                className="octo-universe-card"
+                className="octo-room"
                 data-category-slug={project.slug}
                 data-chamber={project.slug}
                 data-stage-kind="project"
               >
-                <CategoryArtwork
-                  src={project.artwork}
-                  objectPosition="50% 50%"
-                  sizes="(max-width: 767px) 92vw, 32vw"
-                />
-                {project.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- destination marks are already static public assets
-                  <img className="octo-universe-logo" src={project.logo} alt="" />
-                ) : null}
-                <span className="octo-universe-copy">
+                <span className="octo-room-visual">
+                  <CategoryArtwork
+                    src={project.artwork}
+                    objectPosition={
+                      project.slug === "memoora"
+                        ? "50% 42%"
+                        : project.slug === "lil-disc"
+                          ? "50% 46%"
+                          : "50% 38%"
+                    }
+                    sizes="(max-width: 767px) 86vw, 32vw"
+                  />
+                </span>
+                <span className="octo-room-copy">
+                  {project.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- destination marks are already static public assets
+                    <img className="octo-universe-logo" src={project.logo} alt="" />
+                  ) : null}
                   <span className="octo-universe-name">
                     {t(`categories.${project.slug}.name`)}
                   </span>

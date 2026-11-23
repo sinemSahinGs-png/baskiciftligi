@@ -19,7 +19,13 @@ function stockLabel(product: Product, t: ReturnType<typeof useTranslations>) {
   return t("home.inStock");
 }
 
-export function OctoProducts({ products }: { products: Product[] }) {
+export function OctoProducts({
+  products,
+  catalogStatus = "empty",
+}: {
+  products: Product[];
+  catalogStatus?: "populated" | "empty-preview" | "empty";
+}) {
   const t = useTranslations();
   const reduce = useReducedMotion() === true;
   const visible = products.filter(
@@ -66,7 +72,9 @@ export function OctoProducts({ products }: { products: Product[] }) {
     <section
       id="mevcut-urunler"
       data-home-theme="ivory"
-      className="octo-band octo-band-island"
+      data-octo-zone="floor"
+      data-catalog-status={catalogStatus}
+      className="octo-band octo-band-island octo-shelf"
       aria-labelledby="curated-heading"
     >
       <div className="hi-shell octo-band-shell">
@@ -111,8 +119,12 @@ export function OctoProducts({ products }: { products: Product[] }) {
           </div>
         </div>
         {visible.length === 0 ? (
-          <div className="octo-empty" data-empty-catalog="">
-            <p>{t("home.productsEmpty")}</p>
+          <div className="octo-empty" data-empty-catalog={catalogStatus}>
+            <p>
+              {catalogStatus === "empty-preview"
+                ? t("home.productsEmptyPreview")
+                : t("home.productsEmpty")}
+            </p>
             <p>{t("home.productsEmptyBody")}</p>
             <Link href={"/model-yukle" as Route} className="octo-start-cta">
               {t("home.emptyCta")}

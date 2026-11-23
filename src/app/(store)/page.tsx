@@ -66,12 +66,20 @@ export default async function HomePage() {
     })),
   };
 
+  const catalogStatus =
+    products.length > 0
+      ? "populated"
+      : process.env.VERCEL_ENV === "preview"
+        ? "empty-preview"
+        : "empty";
+
   return (
     <main id="ana-icerik">
       <IndustrialHome
         products={products}
         materials={[]}
         readyModels={readyFallback}
+        catalogStatus={catalogStatus}
       />
       <script
         type="application/ld+json"

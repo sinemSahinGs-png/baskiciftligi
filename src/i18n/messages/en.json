@@ -78,6 +78,7 @@
     "quoteCta": "Upload your model →",
     "productsTitle": "SHOP",
     "productsEmpty": "No published products right now.",
+    "productsEmptyPreview": "Preview catalogue is empty. Product records were not copied from Production.",
     "productsEmptyBody": "Upload your own model to get a price immediately.",
     "inspect": "View",
     "featured": "FEATURED PRODUCT",

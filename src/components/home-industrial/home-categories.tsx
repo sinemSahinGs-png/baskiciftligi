@@ -23,13 +23,22 @@ export function HomeCategories({ products }: { products: Product[] }) {
   const railRef = useRef<HTMLUListElement>(null);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
+  const [page, setPage] = useState(1);
+  const drag = useRef<{ x: number; left: number; active: boolean }>({
+    x: 0,
+    left: 0,
+    active: false,
+  });
 
   const sync = useCallback(() => {
     const rail = railRef.current;
     if (!rail) return;
     setCanPrev(rail.scrollLeft > 6);
     setCanNext(rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 6);
-  }, []);
+    const item = rail.querySelector("li");
+    const width = item?.getBoundingClientRect().width ?? 1;
+    setPage(Math.min(categories.length, Math.floor(rail.scrollLeft / Math.max(1, width)) + 1));
+  }, [categories.length]);
 
   useEffect(() => {
     const rail = railRef.current;
@@ -55,12 +64,13 @@ export function HomeCategories({ products }: { products: Product[] }) {
     <section
       id="kategoriler"
       data-home-theme="obsidian"
+      data-octo-zone="collection"
       className="octo-band octo-band-obsidian"
       aria-labelledby="home-cats-heading"
     >
       <div className="hi-shell octo-band-shell">
         <div className="octo-rail-head">
-          <h2 id="home-cats-heading" className="octo-band-title octo-band-title-light">
+          <h2 id="home-cats-heading" className="octo-band-title octo-band-title-light hi-title">
             {t("home.makeTitle")}
           </h2>
           <div className="octo-rail-tools">
@@ -99,7 +109,25 @@ export function HomeCategories({ products }: { products: Product[] }) {
             </Link>
           </div>
         </div>
-        <ul ref={railRef} className="octo-equal-rail octo-cinematic-rail" data-category-rail="">
+        <ul
+          ref={railRef}
+          className="octo-equal-rail octo-cinematic-rail"
+          data-category-rail=""
+          onPointerDown={(event) => {
+            const rail = railRef.current;
+            if (!rail || event.pointerType === "touch") return;
+            drag.current = { x: event.clientX, left: rail.scrollLeft, active: true };
+            rail.setPointerCapture(event.pointerId);
+          }}
+          onPointerMove={(event) => {
+            const rail = railRef.current;
+            if (!rail || !drag.current.active) return;
+            rail.scrollLeft = drag.current.left - (event.clientX - drag.current.x);
+          }}
+          onPointerUp={() => {
+            drag.current.active = false;
+          }}
+        >
           {categories.map((category) => (
             <li key={category.slug}>
               <Link
@@ -117,10 +145,14 @@ export function HomeCategories({ products }: { products: Product[] }) {
                   />
                 </span>
                 <span className="octo-equal-name">{t(`categories.${category.slug}.name`)}</span>
+                <span className="octo-equal-cta">{t("home.goCollection")}</span>
               </Link>
             </li>
           ))}
         </ul>
+        <p className="octo-rail-page" data-category-page="">
+          {String(page).padStart(2, "0")} / {String(categories.length).padStart(2, "0")}
+        </p>
       </div>
     </section>
   );

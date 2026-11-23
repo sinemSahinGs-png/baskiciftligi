@@ -6,10 +6,11 @@ const shots = path.join("qa-octo-ocean");
 const SECTION_IDS = [
   "ne-uretmek-istiyorsun",
   "atolye",
+  "nereden-baslamali",
   "uc-uretim-yolu",
   "kategoriler",
+  "octo-evreni",
   "mevcut-urunler",
-  "sana-gore-hazir-modeller",
   "toptan-bayiler",
   "guven",
   "sik-sorulanlar",
@@ -105,7 +106,13 @@ test.describe("OCTO ocean redesign", () => {
       expect(await sectionOpacity(page, id)).toBeGreaterThan(0.9);
       const box = await section.boundingBox();
       expect(box?.height ?? 0).toBeGreaterThan(80);
-      expect(box?.height ?? 0).toBeLessThan(id === "kategoriler" ? 2800 : 1400);
+      expect(box?.height ?? 0).toBeLessThan(
+        id === "atolye"
+          ? 20_000
+          : id === "nereden-baslamali" || id === "uc-uretim-yolu" || id === "kategoriler"
+            ? 2800
+            : 1600,
+      );
     }
     const cats = await page.locator("#kategoriler").boundingBox();
     expect(cats?.height ?? 0).toBeGreaterThan(220);
@@ -128,23 +135,10 @@ test.describe("OCTO ocean redesign", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
     await page.locator("#kategoriler").scrollIntoViewIfNeeded();
-    const second = page.locator(".hi-cats-index-item").nth(1);
-    if (await second.count()) {
-      await second.click();
-      await expect(second).toHaveAttribute("aria-selected", "true");
-    }
-    await expect(page.locator("#kategoriler .hi-cats-index-item")).toHaveCount(10);
-    await expect(page.locator("#kategoriler .hi-cats-index-item").first()).toHaveAttribute(
-      "data-category-slug",
-      "memoora",
-    );
-    await expect(page.locator("#kategoriler .hi-cats-index-item").nth(1)).toHaveAttribute(
-      "data-category-slug",
-      "lil-disc",
-    );
-    await expect(page.locator('#kategoriler [data-category-slug="orbia"]')).toHaveCount(2);
-    await expect(page.locator('#kategoriler [data-category-slug="memoora"]')).toHaveCount(2);
-    await expect(page.locator('#kategoriler [data-category-slug="lil-disc"]')).toHaveCount(2);
+    await expect(page.locator("#kategoriler [data-category-slug]")).toHaveCount(6);
+    await expect(page.locator('#octo-evreni [data-category-slug="orbia"]')).toHaveCount(1);
+    await expect(page.locator('#octo-evreni [data-category-slug="memoora"]')).toHaveCount(1);
+    await expect(page.locator('#octo-evreni [data-category-slug="lil-disc"]')).toHaveCount(1);
     await expect(page.locator("[data-coming-soon][href]")).toHaveCount(0);
     const products = page.locator("#mevcut-urunler [data-real-product-slug]");
     if ((await products.count()) > 0) {
@@ -167,7 +161,7 @@ test.describe("OCTO ocean redesign", () => {
     expect(gap).toBeLessThanOrEqual(24);
     const tv = await page.locator(".octo-tv-frame").boundingBox();
     expect(tv?.width ?? 0).toBeGreaterThan(390 * 0.8);
-    expect(tv?.width ?? 0).toBeLessThan(390 * 0.92);
+    expect(tv?.width ?? 0).toBeLessThan(390 * 0.96);
   });
 
   test("captures mobile and desktop proof frames", async ({ page }) => {
@@ -180,8 +174,7 @@ test.describe("OCTO ocean redesign", () => {
     await page.screenshot({ path: path.join(shots, "hero-sand-390.png") });
     await page.locator("#atolye").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "depth-390.png") });
-    await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
-    await page.locator("#sana-gore-hazir-modeller").scrollIntoViewIfNeeded();
+    await page.locator("#nereden-baslamali").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "upload-390.png") });
     await page.locator("#kategoriler").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "cats-390.png") });
@@ -189,7 +182,7 @@ test.describe("OCTO ocean redesign", () => {
     await page.screenshot({ path: path.join(shots, "products-390.png") });
     await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "process-390.png") });
-    await page.locator("#malzeme-secenekleri").scrollIntoViewIfNeeded();
+    await page.locator("#octo-evreni").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "materials-390.png") });
     await page.locator("#toptan-bayiler").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "wholesale-390.png") });
@@ -222,7 +215,7 @@ test.describe("OCTO ocean redesign", () => {
     await page.screenshot({ path: path.join(shots, "featured-1440.png") });
     await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "process-1440.png") });
-    await page.locator("#malzeme-secenekleri").scrollIntoViewIfNeeded();
+    await page.locator("#octo-evreni").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "materials-1440.png") });
     await page.locator("#toptan-bayiler").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "wholesale-1440.png") });

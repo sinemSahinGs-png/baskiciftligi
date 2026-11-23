@@ -708,7 +708,7 @@ html[data-home-industrial][data-header-compact] header .shell {
   min-height: 22rem;
   border: 1px solid rgb(217 185 132 / 0.18);
   background: #1b110b;
-  clip-path: polygon(4% 0, 100% 3%, 97% 100%, 0 96%);
+  clip-path: none;
 }
 
 .octo-portal-media {
@@ -773,7 +773,7 @@ html[data-home-industrial][data-header-compact] header .shell {
     filter: saturate(0.6);
   }
   to {
-    clip-path: polygon(4% 0, 100% 3%, 97% 100%, 0 96%);
+    clip-path: none;
     filter: none;
   }
 }
@@ -844,7 +844,7 @@ html[data-home-industrial][data-header-compact] header .shell {
     linear-gradient(180deg, rgb(239 227 206 / 0.94), #efe3ce 40%, #e4d3b4),
     url("/images/home-atelier/cave-sand-bg.webp") center / cover;
   color: #1b110b;
-  clip-path: polygon(1.5% 6%, 97% 0, 100% 93%, 2% 100%);
+  clip-path: none;
   box-shadow: 0 24px 40px rgb(5 6 5 / 0.35);
 }
 

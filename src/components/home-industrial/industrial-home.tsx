@@ -1,14 +1,15 @@
-import { AtelierCave } from "@/components/home-industrial/atelier-cave";
 import { CompactFaq } from "@/components/home-industrial/compact-faq";
 import { HomeCategories } from "@/components/home-industrial/home-categories";
 import { HomeTrust } from "@/components/home-industrial/home-trust";
 import { IdeaCommand } from "@/components/home-industrial/idea-command";
 import { IndustrialHeaderEffects } from "@/components/home-industrial/industrial-header";
+import { OctoCaveAtmosphere } from "@/components/home-industrial/octo-cave-atmosphere";
+import { OctoDepthHud } from "@/components/home-industrial/octo-depth-hud";
 import { OctoJourneyPath } from "@/components/home-industrial/octo-journey-path";
 import { OctoProducts } from "@/components/home-industrial/octo-products";
+import { OctoSandDissolve } from "@/components/home-industrial/octo-sand-dissolve";
 import { OctoUniverse } from "@/components/home-industrial/octo-universe";
 import { ProductionStory } from "@/components/home-industrial/production-story";
-import { SandAbyssHandoff } from "@/components/home-industrial/sand-abyss-handoff";
 import { ScrollThemeProvider } from "@/components/home-industrial/scroll-theme-provider";
 import { StartPath } from "@/components/home-industrial/start-path";
 import { WholesaleBand } from "@/components/home-industrial/wholesale-band";
@@ -19,15 +20,18 @@ import "./home-industrial.css";
 import "./home-story.css";
 import "./atelier-story.css";
 import "./home-premium.css";
+import "./octo-descent.css";
 
 export function IndustrialHome({
   products,
   materials,
   readyModels,
+  catalogStatus,
 }: {
   products: Product[];
   materials: Material[];
   readyModels: ReadyModelCard[];
+  catalogStatus: "populated" | "empty-preview" | "empty";
 }) {
   void materials;
   void readyModels;
@@ -37,18 +41,20 @@ export function IndustrialHome({
       <IndustrialHeaderEffects />
       <ScrollThemeProvider />
       <IdeaCommand />
-      <SandAbyssHandoff />
-      <OctoJourneyPath />
-      <StartPath />
-      <AtelierCave>
+      <OctoSandDissolve />
+      <div id="atolye" className="octo-below-hero">
+        <OctoCaveAtmosphere />
+        <OctoJourneyPath />
+        <OctoDepthHud />
+        <StartPath />
         <ProductionStory />
         <HomeCategories products={products} />
         <OctoUniverse />
-      </AtelierCave>
-      <OctoProducts products={products} />
-      <WholesaleBand />
-      <HomeTrust />
-      <CompactFaq />
+        <OctoProducts products={products} catalogStatus={catalogStatus} />
+        <WholesaleBand />
+        <HomeTrust />
+        <CompactFaq />
+      </div>
     </div>
   );
 }

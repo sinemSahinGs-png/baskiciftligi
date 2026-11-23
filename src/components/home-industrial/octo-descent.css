@@ -1,0 +1,874 @@
+.octo-world {
+  --octo-depth: 0;
+  --octo-portal-file: 0;
+  --octo-portal-find: 0;
+  --octo-footer-rock: 0px;
+  --octo-footer-mid: 0px;
+  --octo-footer-fore: 0px;
+  --octo-sand: #c8a56e;
+  --octo-copper: #c08a4a;
+  --octo-ivory: #efe6d4;
+}
+
+.octo-sand-dissolve {
+  pointer-events: none;
+  position: relative;
+  z-index: 4;
+  height: 118px;
+  margin-top: -118px;
+  overflow: hidden;
+}
+
+.octo-sand-dissolve-lip {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(200 165 110 / 0.95) 0%,
+      rgb(176 128 70 / 0.72) 36%,
+      rgb(92 58 32 / 0.28) 68%,
+      transparent 100%
+    );
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 22%, rgb(0 0 0 / 0.45) 58%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 22%, rgb(0 0 0 / 0.45) 58%, transparent 100%);
+}
+
+.octo-sand-dissolve-fall {
+  position: absolute;
+  inset: 8% 8% auto;
+  height: 70%;
+  background-image:
+    radial-gradient(1.2px 1.2px at 18% 10%, rgb(239 227 206 / 0.7), transparent 2px),
+    radial-gradient(1.6px 1.6px at 42% 0%, rgb(200 165 110 / 0.65), transparent 2px),
+    radial-gradient(1px 1px at 71% 18%, rgb(166 108 63 / 0.55), transparent 2px);
+  animation: octo-sand-fall-once 2.6s ease-out 1 forwards;
+}
+
+.octo-sand-dissolve-glow {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 28%;
+  height: 90px;
+  background: radial-gradient(ellipse at 50% 0%, rgb(217 185 132 / 0.38), transparent 68%);
+  opacity: calc(0.85 - var(--octo-depth) * 2.4);
+}
+
+@keyframes octo-sand-fall-once {
+  from { transform: translateY(-6px); opacity: 0.7; }
+  to { transform: translateY(34px); opacity: 0; }
+}
+
+.octo-below-hero {
+  position: relative;
+  isolation: isolate;
+  padding-bottom: calc(var(--store-bottom-nav-h, 3.65rem) + 1.5rem + env(safe-area-inset-bottom, 0px));
+  background: #16100c;
+}
+
+.octo-cave-atmosphere {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.octo-cave-photo {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  background-repeat: no-repeat;
+  background-size: auto 100svh;
+  background-position: 52% 38%;
+  transform: translate3d(0, calc(var(--octo-depth) * 18px), 0);
+  opacity: 0.62;
+  filter: saturate(0.92) contrast(1.05);
+}
+
+.octo-cave-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgb(22 16 12 / 0.18) 0%, rgb(12 8 6 / 0.42) 38%, rgb(6 4 3 / 0.72) 100%),
+    radial-gradient(ellipse 70% 34% at 50% 8%, rgb(201 148 91 / 0.22), transparent 62%);
+}
+
+.octo-cave-sediment {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 28%;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgb(166 108 63 / 0.28), transparent 46%),
+    radial-gradient(ellipse at 78% 100%, rgb(92 58 32 / 0.32), transparent 50%);
+}
+
+.octo-cave-sediment-mid {
+  bottom: 18%;
+  opacity: 0.55;
+  transform: translateY(calc(var(--octo-depth) * 10px));
+}
+
+.octo-cave-sediment-fore {
+  bottom: 0;
+  height: 16%;
+  opacity: 0.7;
+  transform: translateY(calc(var(--octo-depth) * 16px));
+}
+
+.octo-cave-warm {
+  position: absolute;
+  inset: 0 auto auto;
+  height: 42vh;
+  left: 8%;
+  right: 8%;
+  background: radial-gradient(ellipse at 50% 0%, rgb(217 185 132 / 0.18), transparent 70%);
+  opacity: calc(0.9 - var(--octo-depth) * 1.6);
+}
+
+.octo-below-hero > *:not(.octo-cave-atmosphere):not(.octo-journey):not(.octo-depth-hud) {
+  position: relative;
+  z-index: 2;
+}
+
+.octo-depth-hud {
+  pointer-events: none;
+  position: fixed;
+  top: 38%;
+  right: 0.55rem;
+  z-index: 12;
+  display: grid;
+  gap: 0.55rem;
+  justify-items: end;
+  color: rgb(232 204 150 / 0.72);
+  font-family: var(--font-jakarta), sans-serif;
+}
+
+.octo-depth-value {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+}
+
+.octo-depth-stops {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  gap: 0.35rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+}
+
+.octo-depth-stops li[data-active="true"] {
+  color: #e8cc96;
+}
+
+.octo-journey {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  right: 6%;
+  bottom: 6rem;
+  left: auto;
+  z-index: 1;
+  width: min(92px, 18vw);
+  height: auto;
+  opacity: 0.46;
+}
+
+.octo-journey-stroke {
+  stroke: #c08a4a;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 8px rgb(192 138 74 / 0.28));
+}
+
+.octo-journey-node {
+  opacity: 0.55;
+}
+
+.octo-below-hero .octo-band {
+  padding: clamp(5rem, 12vw, 6.5rem) 0;
+  background: transparent;
+}
+
+.octo-below-hero .octo-band-shell {
+  width: min(72rem, calc(100% - 2.5rem));
+}
+
+.octo-below-hero .octo-band-title {
+  max-width: 18ch;
+  margin-bottom: 1.6rem;
+}
+
+.octo-chambers {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.octo-chamber {
+  display: grid;
+  overflow: hidden;
+  min-height: 66svh;
+  border: 1px solid #3a2718;
+  background: rgb(18 12 9 / 0.35);
+  outline: none;
+}
+
+.octo-chamber:focus-within,
+.octo-chamber:hover {
+  border-color: #c08a4a;
+  box-shadow: inset 0 0 0 1px rgb(217 185 132 / 0.28);
+}
+
+.octo-chamber-stage {
+  position: relative;
+  min-height: 42svh;
+  overflow: hidden;
+  background: #120c09;
+}
+
+.octo-chamber-cave,
+.octo-chamber-mineral {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgb(58 40 28 / 0.4), transparent 50%),
+    linear-gradient(180deg, #1a120c, #0d0907);
+}
+
+.octo-chamber-object {
+  position: absolute;
+  inset: 8% 12% 16%;
+  transform: translate3d(0, calc((1 - var(--octo-portal-file)) * 16px), 0);
+  filter: drop-shadow(0 0 0 transparent);
+  transition: filter 240ms ease;
+}
+
+.octo-chamber-rock .octo-chamber-object {
+  inset: 10% 6% 18% 22%;
+  transform: translate3d(calc((1 - var(--octo-portal-find)) * -18px), 0, 0);
+}
+
+.octo-chamber-object-alt {
+  inset: auto 8% 10% auto;
+  width: 38%;
+  height: 42%;
+  opacity: 0.72;
+}
+
+.octo-chamber:hover .octo-chamber-object,
+.octo-chamber:focus-within .octo-chamber-object {
+  filter: drop-shadow(0 0 14px rgb(232 204 150 / 0.35));
+}
+
+.octo-chamber-sandbed {
+  position: absolute;
+  inset: auto 0 0;
+  height: 18%;
+  background:
+    linear-gradient(180deg, transparent, rgb(176 128 70 / 0.92)),
+    repeating-linear-gradient(90deg, rgb(200 165 110 / 0.3) 0 6px, transparent 6px 11px);
+  transform: translateY(calc(var(--octo-portal-file) * -4px));
+}
+
+.octo-chamber-rim {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 28%;
+  background:
+    linear-gradient(90deg, #1a120c 0%, rgb(26 18 12 / 0.85) 55%, transparent 100%);
+}
+
+.octo-chamber-veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(200 165 110 / 0.92), rgb(166 118 62 / 0.55) 48%, transparent);
+  clip-path: inset(0 calc(var(--octo-portal-file) * 100%) 0 0);
+}
+
+.octo-chamber-veil-mineral {
+  background: linear-gradient(180deg, rgb(8 6 5 / 0.92), rgb(18 12 9 / 0.4) 60%, transparent);
+  clip-path: inset(0 0 calc(var(--octo-portal-find) * 100%) 0);
+}
+
+.octo-chamber-copy {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1.15rem 1.1rem 1.35rem;
+  background: rgb(12 9 7 / 0.72);
+}
+
+.octo-chamber-copy h3 {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.35rem, 5vw, 1.7rem);
+  letter-spacing: 0.05em;
+}
+
+.octo-chamber-copy p {
+  margin: 0;
+  max-width: 36ch;
+  font-family: var(--font-jakarta), sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: rgb(239 227 206 / 0.84);
+}
+
+.octo-start-cta {
+  min-height: 2.75rem;
+  transform: none;
+}
+
+.octo-chamber:hover .octo-start-cta,
+.octo-chamber:focus-within .octo-start-cta {
+  transform: translateY(-2px);
+}
+
+.octo-story-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.octo-story-index {
+  position: sticky;
+  top: 4.6rem;
+  z-index: 3;
+  margin: 0;
+  min-width: 4.4rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  color: #e8cc96;
+}
+
+.octo-story-layout {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.octo-story-stage {
+  display: none;
+}
+
+.octo-story-steps {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.octo-story-steps li {
+  display: grid;
+  gap: 0.85rem;
+  min-height: 58svh;
+  padding: 0;
+  border: 0;
+  opacity: 1;
+}
+
+.octo-story-mobile-visual {
+  min-height: 38svh;
+}
+
+.octo-story-visual {
+  position: relative;
+  overflow: hidden;
+  min-height: 38svh;
+  border: 1px solid rgb(192 138 74 / 0.22);
+  background:
+    linear-gradient(180deg, rgb(28 20 14 / 0.55), rgb(12 9 7 / 0.7)),
+    repeating-linear-gradient(0deg, rgb(232 204 150 / 0.08) 0 1px, transparent 1px 18px),
+    repeating-linear-gradient(90deg, rgb(232 204 150 / 0.06) 0 1px, transparent 1px 18px);
+}
+
+.octo-story-visual-object {
+  position: absolute;
+  inset: 8% 14% 12%;
+}
+
+.octo-story-upload,
+.octo-story-facts {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgb(232 204 150 / 0.35);
+  background: rgb(12 9 7 / 0.72);
+  color: #efe3ce;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+}
+
+.octo-story-upload {
+  top: 0.7rem;
+  left: 0.7rem;
+}
+
+.octo-story-facts {
+  right: 0.7rem;
+  bottom: 0.8rem;
+  list-style: none;
+  margin: 0;
+}
+
+.octo-story-sandcap {
+  position: absolute;
+  inset: auto 0 0;
+  height: 22%;
+  background: linear-gradient(180deg, transparent, rgb(176 128 70 / 0.88));
+}
+
+.octo-story-copy h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.octo-story-copy p,
+.octo-story-steps p {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.octo-story-num {
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  color: #d9b984;
+}
+
+.octo-cinematic-rail {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+  padding-bottom: 0.4rem;
+}
+
+.octo-cinematic-rail > li {
+  flex: 0 0 84vw;
+  scroll-snap-align: start;
+}
+
+.octo-equal-card {
+  display: grid;
+  gap: 0.7rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.octo-equal-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #2a1c12;
+}
+
+.octo-equal-media::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 22%;
+  z-index: 1;
+  background: linear-gradient(180deg, transparent, rgb(176 128 70 / 0.55));
+  mix-blend-mode: normal;
+  opacity: 0.9;
+}
+
+.octo-equal-name,
+.octo-equal-cta {
+  padding: 0 0.1rem;
+  font-family: var(--font-jakarta), sans-serif;
+}
+
+.octo-equal-cta {
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  color: #d9b984;
+}
+
+.octo-rail-page {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  color: rgb(232 204 150 / 0.7);
+}
+
+.octo-rail-arrow {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
+.octo-rooms {
+  display: flex;
+  gap: 0.9rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+}
+
+.octo-rooms > li {
+  flex: 0 0 86vw;
+  scroll-snap-align: start;
+}
+
+.octo-room {
+  display: grid;
+  min-height: 22rem;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid rgb(192 138 74 / 0.22);
+}
+
+.octo-room-visual {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  background: #120c09;
+}
+
+.octo-room-copy {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem 1rem 1.15rem;
+  background: rgb(10 8 7 / 0.82);
+}
+
+.octo-room[data-chamber="orbia"] {
+  background: #0d0a10;
+  box-shadow: inset 0 0 40px rgb(70 28 58 / 0.28);
+}
+
+.octo-room[data-chamber="memoora"] {
+  background: #efe3ce;
+  color: #1b110b;
+}
+
+.octo-room[data-chamber="memoora"] .octo-room-copy {
+  background: rgb(247 240 226 / 0.92);
+}
+
+.octo-room[data-chamber="lil-disc"] {
+  background: #c8945b;
+  color: #1b110b;
+}
+
+.octo-room[data-chamber="lil-disc"] .octo-room-copy {
+  background: rgb(232 204 150 / 0.9);
+}
+
+.octo-universe-name {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.2rem;
+}
+
+.octo-universe-desc {
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.octo-band-island,
+.octo-shelf {
+  clip-path: none !important;
+  margin: 0 0.85rem 1.6rem;
+  overflow: hidden;
+  border: 1px solid rgb(192 138 74 / 0.18);
+  background: linear-gradient(180deg, #f3ead8, #e8d8b8 58%, #deccaa);
+  color: #1b110b;
+  box-shadow: 0 24px 40px rgb(5 6 5 / 0.28);
+}
+
+.octo-product-rail-row {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.octo-product-rail-row > li {
+  flex: 0 0 84vw;
+  scroll-snap-align: start;
+}
+
+.octo-shop-card {
+  display: grid;
+  height: 100%;
+  background: #f7f0e2;
+}
+
+.octo-shop-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #d7c4a4;
+}
+
+.octo-shop-meta {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.85rem 0.9rem 1rem;
+}
+
+.octo-shop-meta h3 {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  min-height: 2.4em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+.octo-shop-cta {
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.octo-empty {
+  min-height: 12rem;
+  display: grid;
+  gap: 0.7rem;
+  align-content: center;
+  padding: 1.4rem 1rem;
+  border: 1px dashed rgb(110 63 36 / 0.35);
+  background: rgb(247 240 226 / 0.72);
+}
+
+html[data-home-industrial] .octo-seabed {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+html[data-home-industrial] .octo-seabed-rock {
+  position: absolute;
+  inset: auto 0 18%;
+  height: 42%;
+  background:
+    radial-gradient(ellipse at 18% 80%, #1a120c 0 34%, transparent 36%),
+    radial-gradient(ellipse at 82% 90%, #120c09 0 40%, transparent 42%);
+  transform: translateY(var(--octo-footer-rock, 4px));
+}
+
+html[data-home-industrial] .octo-seabed-dune-back {
+  position: absolute;
+  inset: auto 0 8%;
+  height: 28%;
+  background: radial-gradient(ellipse at 50% 100%, #8a6238 0 42%, transparent 44%);
+  clip-path: none;
+  transform: translateY(var(--octo-footer-mid, 10px));
+}
+
+html[data-home-industrial] .octo-seabed-dune-fore {
+  position: absolute;
+  inset: auto 0 0;
+  height: 22%;
+  background: linear-gradient(180deg, transparent, #c8a56e 55%, #a67a3f);
+  clip-path: none;
+  transform: translateY(var(--octo-footer-fore, 16px));
+}
+
+html[data-home-industrial] .octo-seabed-light {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 0;
+  height: 40%;
+  background: radial-gradient(ellipse at 50% 0%, rgb(232 204 150 / 0.28), transparent 70%);
+}
+
+html[data-home-industrial] .octo-seabed-tentacle {
+  position: absolute;
+  right: 8%;
+  bottom: 10%;
+  width: 42%;
+  height: 38%;
+  background:
+    radial-gradient(circle at 20% 30%, rgb(196 148 88 / 0.35), transparent 26%),
+    radial-gradient(ellipse at 70% 80%, rgb(70 44 28 / 0.7), transparent 42%);
+  transform: translateY(calc(var(--octo-footer-mid, 10px) * 0.4));
+}
+
+html[data-home-industrial] .octo-seabed-fossils {
+  position: absolute;
+  left: 8%;
+  bottom: 12%;
+  width: 28%;
+  height: 14%;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgb(232 204 150 / 0.18) 0 8%, transparent 10%),
+    radial-gradient(ellipse at 70% 40%, rgb(232 204 150 / 0.12) 0 10%, transparent 12%);
+}
+
+html[data-home-industrial] .octo-seabed-object {
+  position: absolute;
+  left: 38%;
+  bottom: 6%;
+  width: 16%;
+  height: 12%;
+  background: radial-gradient(circle at 50% 40%, #efe3ce, #6e3f24 62%);
+  opacity: 0.85;
+  clip-path: none;
+}
+
+html[data-home-industrial] .octo-seabed-grains {
+  position: absolute;
+  inset: auto 10% 8%;
+  height: 18%;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgb(239 227 206 / 0.55), transparent 2px),
+    radial-gradient(1.4px 1.4px at 60% 10%, rgb(200 165 110 / 0.5), transparent 2px);
+  animation: octo-sand-fall-once 2.8s ease-out 1 forwards;
+}
+
+html[data-home-industrial] [data-site-footer] {
+  position: relative;
+  padding-bottom: calc(var(--store-bottom-nav-h, 3.65rem) + 1.75rem + env(safe-area-inset-bottom, 0px));
+  background:
+    linear-gradient(180deg, rgb(12 9 7 / 0.2), rgb(8 6 5 / 0.72)),
+    #120c09;
+}
+
+@media (min-width: 768px) {
+  .octo-sand-dissolve {
+    height: 132px;
+    margin-top: -132px;
+  }
+
+  .octo-cave-photo {
+    background-position: 48% 42%;
+    background-size: cover;
+  }
+
+  .octo-depth-hud {
+    right: 1.1rem;
+  }
+
+  .octo-depth-stops {
+    display: grid;
+  }
+
+  .octo-chambers {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+
+  .octo-chamber {
+    min-height: 34rem;
+  }
+
+  .octo-chamber-sand .octo-chamber-copy {
+    align-content: end;
+  }
+
+  .octo-chamber-rock {
+    margin-top: 2.4rem;
+  }
+
+  .octo-story-layout {
+    grid-template-columns: 1.05fr 0.95fr;
+    min-height: 180vh;
+    align-items: start;
+  }
+
+  .octo-story-stage {
+    display: grid;
+    position: sticky;
+    top: 5.2rem;
+    min-height: 70vh;
+  }
+
+  .octo-story-stage .octo-story-visual {
+    grid-area: 1 / 1;
+    min-height: 70vh;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 320ms ease, transform 320ms ease;
+  }
+
+  .octo-story-stage .octo-story-visual[data-active="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .octo-story-mobile-visual {
+    display: none;
+  }
+
+  .octo-story-steps li {
+    min-height: 70vh;
+  }
+
+  .octo-cinematic-rail > li,
+  .octo-product-rail-row > li {
+    flex-basis: 23.5%;
+  }
+
+  .octo-rooms {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .octo-rooms > li {
+    flex: none;
+  }
+
+  .octo-journey {
+    width: 120px;
+    right: 3%;
+    opacity: 0.5;
+  }
+}
+
+@media (min-width: 1440px) {
+  .octo-cinematic-rail > li {
+    flex-basis: 22%;
+  }
+}
+
+@media (max-width: 767px) {
+  .octo-depth-hud {
+    top: auto;
+    bottom: calc(var(--store-bottom-nav-h, 3.65rem) + 0.55rem + env(safe-area-inset-bottom, 0px));
+    right: 0.7rem;
+  }
+
+  .octo-chamber.is-inview .octo-chamber-object,
+  .octo-chamber:focus-within .octo-chamber-object {
+    filter: drop-shadow(0 0 14px rgb(232 204 150 / 0.35));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .octo-sand-dissolve-fall,
+  .octo-seabed-grains,
+  .octo-cave-photo,
+  .octo-chamber-object,
+  .octo-chamber-veil,
+  .octo-story-visual {
+    animation: none;
+    transition: none;
+    transform: none;
+    clip-path: none;
+    opacity: 1;
+  }
+}

@@ -71,7 +71,10 @@ async function capture(width, suffix) {
   await page.close();
 }
 
+await capture(320, "320");
 await capture(390, "390");
+await capture(430, "430");
+await capture(768, "768");
 await capture(1440, "1440");
 
 const reduced = await browser.newPage({
