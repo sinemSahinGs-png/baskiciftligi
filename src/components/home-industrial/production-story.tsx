@@ -4,9 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
-import { industrialAssets } from "@/components/home-industrial/industrial-slots";
+import { ATELIER_CAVE_BG, industrialAssets } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
-import { OCTO_SAND_FIELD } from "@/lib/hero-sand/tv-screen";
 
 const STEPS = [
   { key: "story1" as const, image: industrialAssets.heroWireframeVase },
@@ -57,7 +56,7 @@ export function ProductionStory() {
         <div className="octo-story-layout">
           <div className="octo-story-stage" data-step={String(shownStep)} aria-hidden="true">
             <span className="octo-story-sand">
-              <SlotImage src={OCTO_SAND_FIELD} alt="" fill sizes="(max-width: 767px) 92vw, 520px" />
+              <SlotImage src={ATELIER_CAVE_BG} alt="" fill sizes="(max-width: 767px) 92vw, 520px" />
             </span>
             {STEPS.map((item, index) => (
               <span

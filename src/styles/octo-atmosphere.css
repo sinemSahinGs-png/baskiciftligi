@@ -2,14 +2,14 @@
   position: relative;
   isolation: isolate;
   background:
-    radial-gradient(120% 70% at 50% calc(var(--octo-depth, 0) * -18%), rgb(216 180 124 / 0.12), transparent 48%),
+    radial-gradient(120% 70% at 50% calc(var(--octo-depth, 0) * -18%), rgb(201 148 91 / 0.14), transparent 48%),
     linear-gradient(
       180deg,
-      #24170f 0%,
-      #140e0a 18%,
-      #0b1216 46%,
-      #071014 72%,
-      #020507 100%
+      #c8945b 0%,
+      #6e3f24 12%,
+      #1b110b 32%,
+      #0b0907 58%,
+      #050605 100%
     );
 }
 

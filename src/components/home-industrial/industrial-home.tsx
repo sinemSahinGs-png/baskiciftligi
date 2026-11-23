@@ -4,9 +4,11 @@ import { HomeCategories } from "@/components/home-industrial/home-categories";
 import { HomeTrust } from "@/components/home-industrial/home-trust";
 import { IdeaCommand } from "@/components/home-industrial/idea-command";
 import { IndustrialHeaderEffects } from "@/components/home-industrial/industrial-header";
+import { OctoJourneyPath } from "@/components/home-industrial/octo-journey-path";
 import { OctoProducts } from "@/components/home-industrial/octo-products";
 import { OctoUniverse } from "@/components/home-industrial/octo-universe";
 import { ProductionStory } from "@/components/home-industrial/production-story";
+import { SandAbyssHandoff } from "@/components/home-industrial/sand-abyss-handoff";
 import { ScrollThemeProvider } from "@/components/home-industrial/scroll-theme-provider";
 import { StartPath } from "@/components/home-industrial/start-path";
 import { WholesaleBand } from "@/components/home-industrial/wholesale-band";
@@ -35,6 +37,8 @@ export function IndustrialHome({
       <IndustrialHeaderEffects />
       <ScrollThemeProvider />
       <IdeaCommand />
+      <SandAbyssHandoff />
+      <OctoJourneyPath />
       <StartPath />
       <AtelierCave>
         <ProductionStory />

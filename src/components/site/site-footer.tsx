@@ -26,6 +26,12 @@ export async function SiteFooter({
 
   return (
     <footer data-site-footer className="site-footer-brand octo-abyss-floor relative bg-deep-ink text-light-text">
+      <div className="octo-seabed" aria-hidden="true">
+        <span className="octo-seabed-dune octo-seabed-dune-back" />
+        <span className="octo-seabed-rock" />
+        <span className="octo-seabed-dune octo-seabed-dune-fore" />
+        <span className="octo-seabed-object" />
+      </div>
       <SiteFooterMobile description={footerDescription} />
 
       <div className="shell relative hidden py-6 md:block">

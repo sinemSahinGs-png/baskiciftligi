@@ -99,7 +99,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
             </Link>
           </div>
         </div>
-        <ul ref={railRef} className="octo-equal-rail" data-category-rail="">
+        <ul ref={railRef} className="octo-equal-rail octo-cinematic-rail" data-category-rail="">
           {categories.map((category) => (
             <li key={category.slug}>
               <Link
@@ -107,7 +107,7 @@ export function HomeCategories({ products }: { products: Product[] }) {
                 className="octo-equal-card"
                 data-category-slug={category.slug}
               >
-                <span className="octo-equal-media">
+                <span className="octo-equal-media" data-depth-layer="fore">
                   <CategoryArtwork
                     src={storefrontCategoryAsset(category.slug)}
                     objectPosition={

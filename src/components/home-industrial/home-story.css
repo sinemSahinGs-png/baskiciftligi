@@ -441,8 +441,7 @@ html[data-home-industrial] {
 }
 
 @media (max-width: 767.98px) {
-  .hi-cats-handoff,
-  .octo-sand-abyss {
+  .hi-cats-handoff {
     display: none;
   }
 

@@ -4,8 +4,8 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-import { atelierMedia } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
+import { storefrontCategoryAsset } from "@/domain/catalog/storefront-taxonomy";
 import { HomeTrackLink } from "@/components/home/home-track-link";
 
 export function StartPath() {
@@ -14,26 +14,26 @@ export function StartPath() {
   return (
     <section
       id="nereden-baslamali"
-      data-home-theme="ivory"
-      className="octo-band octo-band-ivory"
+      data-home-theme="copper"
+      className="octo-band octo-band-copper"
       aria-labelledby="start-path-heading"
     >
       <div className="hi-shell octo-band-shell">
-        <h2 id="start-path-heading" className="octo-band-title">
+        <h2 id="start-path-heading" className="octo-band-title octo-band-title-light">
           {t("home.startPathTitle")}
         </h2>
-        <ul className="octo-start-grid">
+        <ul className="octo-portal-grid">
           <li>
-            <article className="octo-start-card">
-              <span className="octo-start-media" aria-hidden="true">
+            <article className="octo-portal" data-reveal="sand-wipe">
+              <span className="octo-portal-media" aria-hidden="true">
                 <SlotImage
-                  src={atelierMedia.startUpload}
+                  src={storefrontCategoryAsset("kisiye-ozel")}
                   alt=""
                   fill
-                  sizes="(max-width: 767px) 92vw, 420px"
+                  sizes="(max-width: 767px) 92vw, 46vw"
                 />
               </span>
-              <div className="octo-start-copy">
+              <div className="octo-portal-copy">
                 <h3>{t("home.startFileTitle")}</h3>
                 <p>{t("home.startFileCopy")}</p>
                 <HomeTrackLink
@@ -47,16 +47,16 @@ export function StartPath() {
             </article>
           </li>
           <li>
-            <article className="octo-start-card">
-              <span className="octo-start-media" aria-hidden="true">
+            <article className="octo-portal" data-reveal="mineral">
+              <span className="octo-portal-media" aria-hidden="true">
                 <SlotImage
-                  src={atelierMedia.startReady}
+                  src={storefrontCategoryAsset("dekorasyon-yasam")}
                   alt=""
                   fill
-                  sizes="(max-width: 767px) 92vw, 420px"
+                  sizes="(max-width: 767px) 92vw, 46vw"
                 />
               </span>
-              <div className="octo-start-copy">
+              <div className="octo-portal-copy">
                 <h3>{t("home.startFindTitle")}</h3>
                 <p>{t("home.startFindCopy")}</p>
                 <Link href={"/hazir-modeller" as Route} className="octo-start-cta octo-start-cta-ghost">

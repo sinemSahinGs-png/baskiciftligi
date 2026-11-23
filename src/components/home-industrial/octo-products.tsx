@@ -66,7 +66,7 @@ export function OctoProducts({ products }: { products: Product[] }) {
     <section
       id="mevcut-urunler"
       data-home-theme="ivory"
-      className="octo-band octo-band-ivory"
+      className="octo-band octo-band-island"
       aria-labelledby="curated-heading"
     >
       <div className="hi-shell octo-band-shell">

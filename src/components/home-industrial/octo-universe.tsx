@@ -6,9 +6,13 @@ import { useTranslations } from "next-intl";
 import { CategoryArtwork } from "@/components/catalog/category-artwork";
 import { homepageStageCategories } from "@/domain/project-destinations/stage";
 
+const CHAMBER_ORDER = ["orbia", "memoora", "lil-disc"] as const;
+
 export function OctoUniverse() {
   const t = useTranslations();
-  const projects = homepageStageCategories().filter((item) => item.kind === "project");
+  const projects = CHAMBER_ORDER.flatMap((slug) =>
+    homepageStageCategories().filter((item) => item.kind === "project" && item.slug === slug),
+  );
 
   return (
     <section
@@ -29,6 +33,7 @@ export function OctoUniverse() {
                 href={project.href}
                 className="octo-universe-card"
                 data-category-slug={project.slug}
+                data-chamber={project.slug}
                 data-stage-kind="project"
               >
                 <CategoryArtwork
