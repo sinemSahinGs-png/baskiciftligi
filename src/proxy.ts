@@ -38,7 +38,21 @@ function withLocaleHeader(request: NextRequest, locale: AppLocale, pathname: str
   return headers;
 }
 
+function isPaytrCallbackPath(pathname: string) {
+  return (
+    pathname === "/api/paytr/callback" ||
+    pathname === "/api/paytr/callback/" ||
+    pathname === "/rest/V1/paytr/callback" ||
+    pathname === "/rest/V1/paytr/callback/"
+  );
+}
+
 export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  if (isPaytrCallbackPath(pathname) || isPaytrCallbackPath(splitLocalePath(pathname).pathname)) {
+    return NextResponse.next();
+  }
+
   const { response, user } = await refreshSupabaseSession(request);
   const url = request.nextUrl;
   const { locale: pathLocale, pathname: stripped } = splitLocalePath(url.pathname);
