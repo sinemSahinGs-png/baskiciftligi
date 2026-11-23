@@ -2,10 +2,15 @@ import { Suspense } from "react";
 
 import { ManufacturingAdmin } from "@/components/admin/manufacturing-admin";
 import { ThingiverseStatusPanel } from "@/components/admin/thingiverse-status-panel";
+import { TrendyolSyncPanel } from "@/components/admin/trendyol-sync-panel";
 import { requireAdmin } from "@/lib/auth/session";
 import { serverEnv } from "@/lib/env.server";
 import { hydrateThingiverseOauthToken } from "@/providers/thingiverse/oauth-store";
 import { getThingiverseConfigStatus } from "@/providers/thingiverse/provider";
+import {
+  isTrendyolConfigured,
+  trendyolConfigFlags,
+} from "@/providers/trendyol/client";
 
 export default async function IntegrationsAdminPage() {
   await requireAdmin();
@@ -15,6 +20,10 @@ export default async function IntegrationsAdminPage() {
   return (
     <>
       <ManufacturingAdmin title="Entegrasyonlar" mode="integrations" />
+      <TrendyolSyncPanel
+        configured={isTrendyolConfigured()}
+        flags={trendyolConfigFlags()}
+      />
       <Suspense fallback={null}>
         <ThingiverseStatusPanel
           initialStatus={status}

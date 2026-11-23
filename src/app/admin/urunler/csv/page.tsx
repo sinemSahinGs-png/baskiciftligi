@@ -34,7 +34,7 @@ export default async function CatalogCsvPage() {
       <AdminPageHeader
         eyebrow="Katalog / Ürünler"
         title="CSV içe / dışa aktarma"
-        description="Upsert yalnızca SKU ile yapılır. İsim eşleşmesi ürünün üzerine yazmaz. Trendyol senkronizasyonu bu fazda yoktur."
+        description="Upsert yalnızca SKU ile yapılır. İsim eşleşmesi ürünün üzerine yazmaz. Trendyol çekimi Entegrasyonlar sayfasındadır."
         actions={
           <Link
             href="/admin/urunler"
