@@ -16,8 +16,13 @@ export type AdminOrderRow = {
 };
 
 function startOfTodayIso() {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const day = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Istanbul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  return `${day}T00:00:00+03:00`;
 }
 
 function isLilDiscSku(sku: string | null | undefined, options: unknown) {
@@ -48,6 +53,7 @@ export async function listAdminOrders(input?: {
     .select(
       "id, order_number, status, payment_status, total_minor, customer_snapshot, placed_at, order_items(product_name_snapshot, sku_snapshot, options_snapshot)",
     )
+    .neq("status", "cancelled")
     .order("placed_at", { ascending: false })
     .limit(input?.limit ?? 80);
 
@@ -90,6 +96,41 @@ export async function listAdminOrders(input?: {
     return rows.filter((row) => row.channel !== "store");
   }
   return rows;
+}
+
+/** Commercial rows cannot be deleted; unpaid PayTR attempts are cancelled instead. */
+export async function cancelUnpaidCheckoutOrdersSince(sinceIso?: string) {
+  const client = createServiceRoleSupabaseClient();
+  if (!client) return { cancelled: 0 };
+  const since = sinceIso ?? startOfTodayIso();
+  const { data: orders } = await client
+    .from("orders")
+    .select("id")
+    .gte("placed_at", since)
+    .eq("status", "pending")
+    .in("payment_status", ["pending", "failed"]);
+  const ids = (orders ?? []).map((row) => String(row.id));
+  if (ids.length === 0) return { cancelled: 0 };
+  const now = new Date().toISOString();
+  await client
+    .from("payments")
+    .update({ status: "cancelled" })
+    .in("order_id", ids)
+    .in("status", ["pending", "failed"]);
+  const { error } = await client
+    .from("orders")
+    .update({
+      status: "cancelled",
+      payment_status: "cancelled",
+      cancelled_at: now,
+      updated_at: now,
+    })
+    .in("id", ids);
+  if (error) {
+    console.info("[admin-orders] cancel unpaid failed", error.message);
+    return { cancelled: 0 };
+  }
+  return { cancelled: ids.length };
 }
 
 export function summarizeOrders(rows: AdminOrderRow[]) {
