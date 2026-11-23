@@ -136,7 +136,7 @@ export async function POST(request: Request) {
   );
   const estimatedShippingMinor = computeCartShippingMinorForLines(
     subtotalMinor,
-    lines.filter((line) => line.isAvailable).map((line) => line.slug),
+    lines.filter((line) => line.isAvailable),
   );
 
   return NextResponse.json(

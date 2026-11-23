@@ -32,6 +32,7 @@ export interface PricedCartLine {
   name: string;
   variantName: string | null;
   slug: string;
+  sku?: string | null;
   imageUrl: string | null;
   unitPriceMinor: number;
   lineTotalMinor: number;
@@ -114,6 +115,7 @@ export function priceCart(
         name: "Satışta olmayan ürün",
         variantName: null,
         slug: "",
+        sku: null,
         imageUrl: null,
         unitPriceMinor: 0,
         lineTotalMinor: 0,
@@ -159,6 +161,7 @@ export function priceCart(
       name: product.name,
       variantName: variant?.name ?? null,
       slug: product.slug,
+      sku: product.sku,
       imageUrl:
         product.media
           .find((item) => item.type === "image")
@@ -192,7 +195,7 @@ export function priceCart(
   const campaignDiscountMinor = assertMinorUnits(grossSubtotalMinor - subtotalMinor);
   const estimatedShippingMinor = computeCartShippingMinorForLines(
     subtotalMinor,
-    pricedLines.filter((line) => line.isAvailable).map((line) => line.slug),
+    pricedLines.filter((line) => line.isAvailable),
   );
 
   return {

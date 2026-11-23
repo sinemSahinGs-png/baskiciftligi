@@ -26,6 +26,7 @@ import {
 } from "@/domain/catalog/repository";
 import { publicCategoryHref } from "@/domain/catalog/storefront-taxonomy";
 import { stageClass, stageForProduct } from "@/domain/visual/stages";
+import { isPaytrIntegrationTestProduct } from "@/domain/commerce/shipping-policy";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -275,8 +276,9 @@ export default async function ProductPage(props: PageProps<"/urun/[slug]">) {
               <div>
                 <p className="text-sm font-semibold">Teslimat</p>
                 <p className="mt-1 text-sm leading-6 text-ink-secondary">
-                  Kargo tahmini sepet özetinde hesaplanır. Sahte kargo süresi
-                  gösterilmez.
+                  {isPaytrIntegrationTestProduct(product)
+                    ? "Kargo alınmaz. Ödeme yalnızca PayTR test işlemi içindir."
+                    : "Kargo tahmini sepet özetinde hesaplanır. Sahte kargo süresi gösterilmez."}
                 </p>
               </div>
             </li>

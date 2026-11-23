@@ -83,13 +83,15 @@ describe("commerce shipping policy", () => {
   });
 
   it("waives shipping for a cart that is only the PayTR integration test SKU", () => {
-    expect(computeCartShippingMinorForLines(1_000, [PAYTR_INTEGRATION_TEST_SLUG])).toBe(
-      0,
-    );
     expect(
       computeCartShippingMinorForLines(1_000, [
-        PAYTR_INTEGRATION_TEST_SLUG,
-        "ev-dekor",
+        { slug: PAYTR_INTEGRATION_TEST_SLUG, sku: "OCTO-PAYTR-TEST" },
+      ]),
+    ).toBe(0);
+    expect(
+      computeCartShippingMinorForLines(1_000, [
+        { slug: PAYTR_INTEGRATION_TEST_SLUG },
+        { slug: "ev-dekor" },
       ]),
     ).toBe(10_000);
   });

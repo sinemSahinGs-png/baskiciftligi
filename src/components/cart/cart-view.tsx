@@ -491,7 +491,7 @@ export function CartView() {
           {t("checkout.summary")}
         </h2>
 
-        {result.freeShippingThresholdMinor > 0 ? (
+        {result.estimatedShippingMinor === 0 ? null : result.freeShippingThresholdMinor > 0 ? (
           <div className="mt-5 rounded-lg bg-porcelain p-4">
             <div className="flex items-center gap-2 text-sm font-semibold">
               <Truck aria-hidden="true" className="size-4" />
@@ -545,12 +545,14 @@ export function CartView() {
               </dd>
             </div>
           ) : null}
+          {result.estimatedShippingMinor > 0 ? (
           <div className="flex items-center justify-between gap-4">
             <dt className="text-ink-secondary">{t("commerce.estimatedShipping")}</dt>
             <dd className="tabular font-medium">
               {formatMoney(result.estimatedShippingMinor, result.currency)}
             </dd>
           </div>
+          ) : null}
           <div className="flex items-center justify-between gap-4">
             <dt className="text-ink-secondary">{t("commerce.vat")}</dt>
             <dd className="text-ink-muted">{t("commerce.vatIncluded")}</dd>

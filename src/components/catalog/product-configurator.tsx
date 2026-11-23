@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { FormSignal } from "@/components/brand/form-signal";
 import type { Product } from "@/domain/catalog/types";
 import { isPersonalizableProduct } from "@/domain/catalog/presentation";
+import { isPaytrIntegrationTestProduct } from "@/domain/commerce/shipping-policy";
 import { announceStatus } from "@/lib/motion";
 import { formatMoney } from "@/lib/money";
 import { useCartStore } from "@/stores/cart-store";
@@ -285,9 +286,9 @@ export function ProductConfigurator({ product }: { product: Product }) {
       </div>
 
       <p className="text-sm leading-6 text-ink-secondary">
-        Fiyat seçili varyanta göre gösterilir. Sepetteki güncel fiyat ve
-        uygunluk, sunucuda yeniden doğrulanır. Kargo tahmini sepet özetinde
-        hesaplanır.
+        {isPaytrIntegrationTestProduct(product)
+          ? "PayTR test kaydı. Toplam 10 TL’dir; kargo eklenmez."
+          : "Fiyat seçili varyanta göre gösterilir. Sepetteki güncel fiyat ve uygunluk, sunucuda yeniden doğrulanır. Kargo tahmini sepet özetinde hesaplanır."}
       </p>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[color:var(--store-line-dark)] bg-[color:var(--store-paper)]/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm lg:hidden">

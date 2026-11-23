@@ -263,10 +263,12 @@ export function StoreCheckout({
                 <dd>−{formatMoney(totals.campaignDiscountMinor)}</dd>
               </div>
             ) : null}
+            {(totals.estimatedShippingMinor ?? 0) > 0 ? (
             <div className="flex justify-between">
               <dt>{t("commerce.shipping")}</dt>
               <dd>{formatMoney(totals.estimatedShippingMinor ?? 0)}</dd>
             </div>
+            ) : null}
             <div className="flex justify-between font-semibold text-foreground">
               <dt>{t("commerce.total")}</dt>
               <dd>{formatMoney(totals.totalMinor ?? 0)}</dd>

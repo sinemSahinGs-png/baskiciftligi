@@ -1,5 +1,6 @@
 import type { Product } from "@/domain/catalog/types";
 import { isPersonalizableProduct } from "@/domain/catalog/presentation";
+import { isPaytrIntegrationTestProduct } from "@/domain/commerce/shipping-policy";
 
 export function ProductInfo({ product }: { product: Product }) {
   const personalizable = isPersonalizableProduct(product);
@@ -38,7 +39,10 @@ export function ProductInfo({ product }: { product: Product }) {
     {
       id: "teslimat",
       title: "Teslimat",
-      body: "Kargo bedeli sepet özetinde, güncel ara toplama göre hesaplanır. Teslim tarihi, en uzun hazırlık süresine göre planlanır.",
+      body:
+        isPaytrIntegrationTestProduct(product)
+          ? "Bu kayıt test ödemesi içindir. Kargo ücreti alınmaz, üretim ve gönderim yapılmaz."
+          : "Kargo bedeli sepet özetinde, güncel ara toplama göre hesaplanır. Teslim tarihi, en uzun hazırlık süresine göre planlanır.",
     },
     {
       id: "iade",
