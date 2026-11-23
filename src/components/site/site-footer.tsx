@@ -2,6 +2,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { AtSign, Mail, Phone, Play } from "lucide-react";
 
+import { OctoSeabedScene } from "@/components/home-industrial/octo-seabed-scene";
 import { Logo } from "@/components/site/logo";
 import { SiteFooterMobile } from "@/components/site/site-footer-mobile";
 import { siteConfig } from "@/config/site";
@@ -29,17 +30,11 @@ export async function SiteFooter({
       <div className="octo-seabed" aria-hidden="true">
         <span className="octo-seabed-wall" />
         <span className="octo-seabed-light" />
-        <span className="octo-seabed-dune octo-seabed-dune-back" />
-        <span className="octo-seabed-dune octo-seabed-dune-mid" />
-        <span className="octo-seabed-tentacle" />
-        <span className="octo-seabed-fossils" />
-        <span className="octo-seabed-dune octo-seabed-dune-fore" />
-        <span className="octo-seabed-object" />
-        <span className="octo-seabed-grains" />
+        <OctoSeabedScene />
       </div>
       <SiteFooterMobile description={footerDescription} />
 
-      <div className="shell relative hidden py-6 md:block">
+      <div className="shell octo-footer-panel relative hidden py-6 md:block">
         <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
           <Logo inverted />
           <p className="max-w-sm text-sm font-semibold leading-6">{footerHeading}</p>

@@ -113,6 +113,8 @@ test.describe("OCTO descent motion proof", () => {
     await page.screenshot({ path: path.join(shots, "story-release-390.png") });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
+    await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "story-section-1440.png") });
     await page.locator("[data-story-end]").scrollIntoViewIfNeeded();
     const desktopGap = await page.evaluate(() => {
       const storyEnd = document.querySelector("[data-story-end]");
@@ -207,6 +209,10 @@ test.describe("OCTO descent motion proof", () => {
     expect(proof.portalFile).toBe(1);
     await expect(page.locator(".octo-chamber")).toHaveCount(2);
     await expect(page.locator(".octo-story-copy p").first()).toBeVisible();
+    await page.locator("[data-portal='file']").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "portal-reduced-390.png") });
+    await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shots, "footer-reduced-390.png") });
   });
 
   test("portal phases are exclusive and OCTO heading is plain text", async ({ page }) => {
@@ -246,6 +252,9 @@ test.describe("OCTO descent motion proof", () => {
       world?.style.setProperty("--portal-wire", "0.45");
       world?.style.setProperty("--portal-finish", "0");
       world?.style.setProperty("--portal-material", "0.7");
+      world?.style.setProperty("--portal-wire-vis", "visible");
+      world?.style.setProperty("--portal-finish-vis", "hidden");
+      world?.style.setProperty("--portal-material-vis", "visible");
     });
     await page.screenshot({ path: path.join(shots, "portal-file-reverse.png") });
     const heading = page.locator("#universe-heading");
@@ -259,6 +268,8 @@ test.describe("OCTO descent motion proof", () => {
       }).length,
     );
     expect(broken).toBe(0);
+    await expect(page.locator("#octo-evreni .octo-universe-logo")).toHaveCount(0);
+    await expect(page.locator("#octo-evreni .octo-mark")).toHaveCount(3);
     await page.screenshot({ path: path.join(shots, "universe-heading-390.png") });
   });
 
@@ -288,8 +299,8 @@ test.describe("OCTO descent motion proof", () => {
       await page.locator(target).scrollIntoViewIfNeeded();
       const hit = await page.evaluate(() => {
         const hudNode = document.querySelector(".octo-depth-hud");
-        const hud = hudNode?.getBoundingClientRect();
-        if (!hud) return true;
+        if (!hudNode) return true;
+        const hud = hudNode.getBoundingClientRect();
         const samples = [
           [hud.left + 4, hud.top + 8],
           [hud.left + hud.width / 2, hud.top + hud.height / 2],
@@ -322,21 +333,37 @@ test.describe("OCTO descent motion proof", () => {
     await page.goto("/");
     await page.locator("#toptan-bayiler").scrollIntoViewIfNeeded();
     await expect(page.locator(".octo-wholesale-sand")).toBeVisible();
+    await expect(page.locator("[data-wholesale-dragon]")).toBeVisible();
     await page.screenshot({ path: path.join(shots, "wholesale-chamber-390.png") });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.locator("#toptan-bayiler").scrollIntoViewIfNeeded();
+    const dragonShare = await page.evaluate(() => {
+      const banner = document.querySelector(".octo-wholesale-chamber");
+      const dragon = document.querySelector("[data-wholesale-dragon]");
+      if (!banner || !dragon) return 99;
+      return dragon.getBoundingClientRect().width / banner.getBoundingClientRect().width;
+    });
+    expect(dragonShare).toBeGreaterThanOrEqual(0.2);
+    expect(dragonShare).toBeLessThanOrEqual(0.3);
+    await page.screenshot({ path: path.join(shots, "wholesale-chamber-1440.png") });
     await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
+    await expect(page.locator(".octo-seabed-scene")).toBeVisible();
     const covered = await page.evaluate(() => {
-      const sand = document.querySelector(".octo-seabed-dune-fore");
+      const panel = document.querySelector(".octo-footer-panel, [data-site-footer-mobile]");
       const link = document.querySelector("[data-site-footer] a");
-      if (!sand || !link) return true;
-      const sandZ = Number(getComputedStyle(sand.parentElement ?? sand).zIndex) || 0;
-      const linkZ = Number(getComputedStyle(link).zIndex) || Number(getComputedStyle(link.closest("[data-site-footer-mobile], .shell") ?? link).zIndex) || 0;
-      return sandZ > linkZ && link.getBoundingClientRect().bottom > sand.getBoundingClientRect().top + 8;
+      if (!panel || !link) return true;
+      const panelZ = Number(getComputedStyle(panel).zIndex) || 0;
+      const sceneZ = Number(getComputedStyle(document.querySelector(".octo-seabed")!).zIndex) || 0;
+      return sceneZ > panelZ;
     });
     expect(covered).toBe(false);
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - window.innerWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(2);
+    for (const width of [320, 390, 430, 768, 1440]) {
+      await page.setViewportSize({ width, height: width < 800 ? 844 : 900 });
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
+      expect(overflow, `overflow @${width}`).toBeLessThanOrEqual(2);
+    }
     await page.screenshot({ path: path.join(shots, "footer-complete-390.png") });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();

@@ -8,6 +8,19 @@ import { homepageStageCategories } from "@/domain/project-destinations/stage";
 
 const CHAMBER_ORDER = ["orbia", "memoora", "lil-disc"] as const;
 
+function OctoMark() {
+  return (
+    <svg className="octo-mark" viewBox="0 0 16 16" aria-hidden="true">
+      <polygon
+        points="8,1.2 14.2,4.6 14.2,11.4 8,14.8 1.8,11.4 1.8,4.6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.35"
+      />
+    </svg>
+  );
+}
+
 export function OctoUniverse() {
   const t = useTranslations();
   const projects = CHAMBER_ORDER.flatMap((slug) =>
@@ -51,10 +64,7 @@ export function OctoUniverse() {
                   />
                 </span>
                 <span className="octo-room-copy">
-                  {project.logo?.endsWith(".svg") ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- destination marks are already static public assets
-                    <img className="octo-universe-logo" src={project.logo} alt="" />
-                  ) : null}
+                  <OctoMark />
                   <span className="octo-universe-name">
                     {t(`categories.${project.slug}.name`)}
                   </span>

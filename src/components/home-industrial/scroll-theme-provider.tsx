@@ -102,6 +102,7 @@ export function ScrollThemeProvider() {
       const cats = document.getElementById("kategoriler");
       const universe = document.getElementById("octo-evreni");
       const footer = document.querySelector("[data-site-footer]");
+      const wholesale = document.getElementById("toptan-bayiler");
       const filePortal = document.querySelector("[data-portal='file']");
       const portalFile = reduce ? 1 : sectionProgress(filePortal ?? portals, vh);
       const phases = portalPhases(portalFile, reduce);
@@ -139,8 +140,13 @@ export function ScrollThemeProvider() {
         world.style.setProperty("--portal-material-vis", vis(phases.material));
         world.style.setProperty("--portal-finish-vis", vis(phases.finish));
         world.style.setProperty("--octo-portal-find", portalFind.toFixed(4));
-        world.style.setProperty("--octo-footer-rock", `${Math.round(progress * 5)}px`);
-        world.style.setProperty("--octo-footer-mid", `${Math.round(progress * 8.5)}px`);
+        world.style.setProperty("--universe-rise", sectionProgress(universe, vh).toFixed(4));
+        world.style.setProperty(
+          "--wholesale-shift",
+          `${Math.round(sectionProgress(wholesale, vh) * 16)}px`,
+        );
+        world.style.setProperty("--octo-footer-rock", `${Math.round(progress * 6)}px`);
+        world.style.setProperty("--octo-footer-mid", `${Math.round(progress * 10)}px`);
         world.style.setProperty("--octo-footer-fore", `${Math.round(progress * 14)}px`);
         world.dataset.octoDepthLabel = depthLabel;
         world.classList.add("octo-motion-ready");

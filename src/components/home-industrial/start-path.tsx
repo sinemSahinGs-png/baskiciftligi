@@ -27,26 +27,36 @@ export function StartPath() {
         <div className="octo-chambers">
           <article className="octo-chamber octo-chamber-sand" data-portal="file">
             <div className="octo-chamber-stage">
-              <span className="octo-chamber-grid" aria-hidden="true" />
+              <span className="octo-chamber-cave" aria-hidden="true" />
               <span className="octo-chamber-object octo-chamber-wire" data-portal-layer="wire">
                 <SlotImage
                   src={industrialAssets.heroWireframeVase}
                   alt=""
                   fill
+                  className="object-contain"
                   sizes="(max-width: 767px) 88vw, 42vw"
                 />
               </span>
-              <span className="octo-chamber-material" data-portal-layer="material" aria-hidden="true" />
+              <span className="octo-chamber-object octo-chamber-material" data-portal-layer="material">
+                <SlotImage
+                  src={industrialAssets.heroWireframeVase}
+                  alt=""
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 767px) 88vw, 42vw"
+                />
+              </span>
               <span className="octo-chamber-object octo-chamber-finish" data-portal-layer="finish">
                 <SlotImage
                   src={industrialAssets.featuredProduct}
                   alt=""
                   fill
+                  className="object-contain"
                   sizes="(max-width: 767px) 88vw, 42vw"
                 />
               </span>
+              <span className="octo-chamber-contact" aria-hidden="true" />
               <span className="octo-chamber-sandbed" aria-hidden="true" />
-              <span className="octo-chamber-veil" data-octo-portal-veil="file" />
             </div>
             <div className="octo-chamber-copy">
               <h3>{t("home.startFileTitle")}</h3>
@@ -62,17 +72,16 @@ export function StartPath() {
           </article>
           <article className="octo-chamber octo-chamber-rock" data-portal="find">
             <div className="octo-chamber-stage">
-              <span className="octo-chamber-mineral" aria-hidden="true" />
               <span className="octo-chamber-object octo-chamber-find" data-octo-portal-object="find">
                 <SlotImage
                   src={storefrontCategoryAsset("dekorasyon-yasam")}
                   alt=""
                   fill
+                  className="object-cover"
                   sizes="(max-width: 767px) 88vw, 42vw"
                 />
               </span>
               <span className="octo-chamber-sandbed octo-chamber-sandbed-thin" aria-hidden="true" />
-              <span className="octo-chamber-veil octo-chamber-veil-mineral" data-octo-portal-veil="find" />
             </div>
             <div className="octo-chamber-copy">
               <h3>{t("home.startFindTitle")}</h3>
