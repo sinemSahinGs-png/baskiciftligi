@@ -15,14 +15,21 @@ export type TrendyolSyncResult = {
   skipped: number;
   failed: number;
   errors: string[];
+  page: number;
+  hasMore: boolean;
+  total: number;
 };
 
 function key(value: string | undefined | null): string {
   return (value ?? "").trim().toLocaleLowerCase("tr-TR");
 }
 
-export async function syncTrendyolCatalog(): Promise<TrendyolSyncResult> {
-  const { products: raw } = await fetchTrendyolApprovedProducts();
+export async function syncTrendyolCatalog(options?: {
+  page?: number;
+}): Promise<TrendyolSyncResult> {
+  const page = options?.page ?? 0;
+  const { products: raw, size, total, totalPages } =
+    await fetchTrendyolApprovedProducts({ page, size: 8 });
   const existing = await listAdminProducts();
   const bySku = new Map(existing.map((product) => [key(product.sku), product]));
   const byBarcode = new Map(
@@ -39,6 +46,9 @@ export async function syncTrendyolCatalog(): Promise<TrendyolSyncResult> {
     skipped: 0,
     failed: 0,
     errors: [],
+    page,
+    hasMore: totalPages > 0 ? page + 1 < totalPages : raw.length >= size,
+    total,
   };
 
   for (const item of raw) {

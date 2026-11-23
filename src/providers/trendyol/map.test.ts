@@ -44,4 +44,17 @@ describe("trendyol mapper", () => {
     expect(mapTrendyolProduct({ title: "X", archived: true })).toBeNull();
     expect(mapTrendyolProduct({ title: "" })).toBeNull();
   });
+
+  it("publishes priced on-sale products even with zero stock", () => {
+    const mapped = mapTrendyolProduct({
+      title: "Octo Kupa",
+      barcode: "869000000002",
+      stockCode: "OCTO-KUPA",
+      salePrice: 120,
+      quantity: 0,
+      onSale: true,
+    });
+    expect(mapped?.status).toBe("active");
+    expect(mapped?.priceMinor).toBe(12000);
+  });
 });

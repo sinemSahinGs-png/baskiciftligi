@@ -26,7 +26,10 @@ export async function syncTrendyolAction(
   }
 
   try {
-    const result = await syncTrendyolCatalog();
+    const page = Number(_formData.get("page") ?? 0);
+    const result = await syncTrendyolCatalog({
+      page: Number.isFinite(page) && page > 0 ? Math.trunc(page) : 0,
+    });
     revalidateTag(CATALOG_CACHE_TAG, "max");
     revalidateTag(CATALOG_FEATURED_CACHE_TAG, "max");
     revalidateTag(CATALOG_CATEGORIES_CACHE_TAG, "max");
@@ -34,12 +37,19 @@ export async function syncTrendyolAction(
     revalidatePath("/magaza", "layout");
     revalidatePath("/admin/urunler");
     revalidatePath("/admin/entegrasyonlar");
+    revalidatePath("/admin/trendyol");
     const failNote = result.failed
       ? ` ${result.failed} kayıt atlandı.`
       : "";
+    const moreNote = result.hasMore
+      ? " Devam için tekrar Ürünleri çek."
+      : "";
+    const errorHint = result.errors[0] ? ` ${result.errors[0]}` : "";
     return {
       status: "success",
-      message: `Trendyol: ${result.fetched} ürün okundu, ${result.created} yeni, ${result.updated} güncellendi.${failNote}`,
+      message: `Trendyol: ${result.fetched}/${result.total || result.fetched} okundu, ${result.created} yeni, ${result.updated} güncellendi.${failNote}${moreNote}${errorHint}`,
+      nextPage: result.hasMore ? result.page + 1 : 0,
+      hasMore: result.hasMore,
     };
   } catch (error) {
     return {

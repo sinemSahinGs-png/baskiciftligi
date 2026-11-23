@@ -11,7 +11,7 @@ import { isTrendyolConfigured } from "@/providers/trendyol/client";
 import { syncTrendyolCatalog } from "@/domain/catalog/trendyol-import";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 10;
 
 function authorized(request: Request): boolean {
   const secret = serverEnv.CRON_SECRET;

@@ -145,7 +145,8 @@ export function mapTrendyolProduct(raw: TrendyolRawProduct): MappedTrendyolProdu
   const base = priced[0] ?? mappedVariants[0];
   if (!base) return null;
 
-  const onSale = mappedVariants.some((item) => item.onSale && item.inventoryQuantity > 0);
+  const onSale =
+    base.saleMinor > 0 && mappedVariants.some((item) => item.onSale);
   const contentId = String(raw.contentId ?? raw.productMainId ?? raw.id ?? base.barcode);
   const slugBase = slugifyTurkish(title) || `trendyol-${contentId}`.toLowerCase();
   const slug = `${slugBase}`.slice(0, 160);

@@ -1,40 +1,5 @@
-import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
-import { ManufacturingAdmin } from "@/components/admin/manufacturing-admin";
-import { ThingiverseStatusPanel } from "@/components/admin/thingiverse-status-panel";
-import { TrendyolSyncPanel } from "@/components/admin/trendyol-sync-panel";
-import { requireAdmin } from "@/lib/auth/session";
-import { serverEnv } from "@/lib/env.server";
-import { hydrateThingiverseOauthToken } from "@/providers/thingiverse/oauth-store";
-import { getThingiverseConfigStatus } from "@/providers/thingiverse/provider";
-import {
-  isTrendyolConfigured,
-  trendyolConfigFlags,
-} from "@/providers/trendyol/client";
-
-export default async function IntegrationsAdminPage() {
-  await requireAdmin();
-  await hydrateThingiverseOauthToken();
-  const status = getThingiverseConfigStatus();
-
-  return (
-    <>
-      <ManufacturingAdmin title="Entegrasyonlar" mode="integrations" />
-      <TrendyolSyncPanel
-        configured={isTrendyolConfigured()}
-        flags={trendyolConfigFlags()}
-      />
-      <Suspense fallback={null}>
-        <ThingiverseStatusPanel
-          initialStatus={status}
-          envFlags={{
-            clientId: Boolean(serverEnv.THINGIVERSE_CLIENT_ID),
-            clientSecret: Boolean(serverEnv.THINGIVERSE_CLIENT_SECRET),
-            accessToken: Boolean(serverEnv.THINGIVERSE_ACCESS_TOKEN),
-            redirectUri: Boolean(serverEnv.THINGIVERSE_REDIRECT_URI),
-          }}
-        />
-      </Suspense>
-    </>
-  );
+export default function IntegrationsAdminPage() {
+  redirect("/admin/trendyol");
 }
