@@ -63,11 +63,40 @@ export function trendyolImageUrl(url: string): string {
   return `https://cdn.dsmcdn.com${path}`;
 }
 
-function imageList(raw: TrendyolRawProduct): string[] {
-  return (raw.images ?? [])
-    .map((item) => (typeof item === "string" ? item : item.url ?? ""))
-    .map(trendyolImageUrl)
-    .filter((url) => url.startsWith("https://"));
+function collectImageCandidates(raw: TrendyolRawProduct): string[] {
+  const bags: unknown[] = [
+    raw.images,
+    (raw as { imageUrls?: unknown }).imageUrls,
+    (raw as { productImages?: unknown }).productImages,
+    (raw as { pictures?: unknown }).pictures,
+  ];
+  const urls: string[] = [];
+  for (const bag of bags) {
+    if (!Array.isArray(bag)) continue;
+    for (const item of bag) {
+      if (typeof item === "string") urls.push(item);
+      else if (item && typeof item === "object") {
+        const record = item as { url?: string; imageUrl?: string };
+        urls.push(record.url ?? record.imageUrl ?? "");
+      }
+    }
+  }
+  return [...new Set(urls.map(trendyolImageUrl).filter((url) => url.startsWith("https://")))];
+}
+
+export function sanitizeCatalogSku(raw: string, seed: string): string {
+  const cleaned = raw
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 72);
+  if (cleaned.length >= 1) return cleaned;
+  const fallback = `TY-${seed}`
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+  return fallback.length >= 1 ? fallback : "TY-ITEM";
 }
 
 export function tryToMinor(value: unknown): number {
@@ -102,7 +131,7 @@ export function mapTrendyolProduct(raw: TrendyolRawProduct): MappedTrendyolProdu
   const variantsRaw = (raw.variants?.length ? raw.variants : [raw]).filter(usableVariant);
   if (variantsRaw.length === 0) return null;
 
-  const images = imageList(raw);
+  const images = collectImageCandidates(raw);
   const descriptionSource = stripHtml(raw.description ?? title);
   const description =
     descriptionSource.length >= 20 ? descriptionSource.slice(0, 20_000) : `${title} — OCTO STUDIO Trendyol ürünü.`;
@@ -116,12 +145,14 @@ export function mapTrendyolProduct(raw: TrendyolRawProduct): MappedTrendyolProdu
     const list = variant.price?.listPrice ?? variant.listPrice ?? raw.listPrice ?? sale;
     const qty = variant.stock?.quantity ?? variant.quantity ?? raw.quantity ?? 0;
     const barcode = String(variant.barcode ?? raw.barcode ?? "").trim();
-    let sku = String(variant.stockCode ?? (barcode || `TY-${index + 1}`))
-      .trim()
-      .slice(0, 80);
+    const seed = barcode || String(raw.contentId ?? raw.productMainId ?? raw.id ?? index + 1);
+    let sku = sanitizeCatalogSku(
+      String(variant.stockCode || barcode || ""),
+      seed,
+    );
     const skuKey = sku.toLocaleLowerCase("tr-TR");
     if (usedSkus.has(skuKey)) {
-      sku = `${sku.slice(0, 70)}-${index + 1}`.slice(0, 80);
+      sku = sanitizeCatalogSku(`${sku}-${index + 1}`, `${seed}-${index + 1}`);
     }
     usedSkus.add(sku.toLocaleLowerCase("tr-TR"));
     return {

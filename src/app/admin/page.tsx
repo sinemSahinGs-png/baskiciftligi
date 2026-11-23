@@ -13,6 +13,7 @@ import {
   listAdminOrders,
   summarizeOrders,
 } from "@/domain/admin/order-board";
+import { getOpsBoard } from "@/domain/admin/ops-board";
 import { getAdminCatalogSummary } from "@/domain/catalog/admin-repository";
 import { requireAdmin } from "@/lib/auth/session";
 import { isLilDiscOnlyStaff } from "@/lib/catalog/authorization";
@@ -31,10 +32,11 @@ function channelLabel(channel: "lil_disc" | "store" | "mixed") {
 export default async function AdminDashboardPage() {
   const viewer = await requireAdmin();
   const lilOnly = isLilDiscOnlyStaff(viewer.role);
-  const [today, recent, catalog] = await Promise.all([
+  const [today, recent, catalog, ops] = await Promise.all([
     listAdminOrders({ todayOnly: true, lilDiscOnly: lilOnly, limit: 80 }),
     listAdminOrders({ lilDiscOnly: lilOnly, limit: 12 }),
     lilOnly ? Promise.resolve(null) : getAdminCatalogSummary(),
+    lilOnly ? Promise.resolve(null) : getOpsBoard(),
   ]);
   const todayStats = summarizeOrders(today);
 
@@ -99,6 +101,23 @@ export default async function AdminDashboardPage() {
           )
         }
       />
+
+      {ops ? (
+        <Link
+          href="/admin/gorevler"
+          className="mb-6 flex items-center justify-between rounded-2xl border border-cyan/20 bg-cyan/5 px-5 py-4"
+        >
+          <span>
+            <span className="block text-[0.65rem] font-bold tracking-[0.14em] text-cyan uppercase">
+              Görevler
+            </span>
+            <span className="mt-1 block text-sm">
+              {ops.openSite + ops.openGrowth} açık · {ops.xp} XP
+            </span>
+          </span>
+          <ArrowRight className="size-4 text-cyan" />
+        </Link>
+      ) : null}
 
       <section aria-label="Bugün" className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
         {metrics.map(({ label, value, detail, icon: Icon }) => (
