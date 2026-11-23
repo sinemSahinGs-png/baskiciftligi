@@ -686,7 +686,6 @@ export async function saveQuickProductAction(
     values.media = [
       {
         id: crypto.randomUUID(),
-        type: "image",
         url: image,
         alt: name,
         position: 0,
