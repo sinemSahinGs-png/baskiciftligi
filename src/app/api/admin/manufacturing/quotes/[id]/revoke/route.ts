@@ -6,7 +6,7 @@ import {
   getManufacturingQuote,
   revokeManufacturingQuote,
 } from "@/domain/manufacturing/repository";
-import { getViewer } from "@/lib/auth/session";
+import { getAdminSessionViewer } from "@/lib/auth/session";
 import { canRevokeManufacturingQuotes } from "@/lib/catalog/authorization";
 
 const bodySchema = z.object({
@@ -17,7 +17,7 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const viewer = await getViewer();
+  const viewer = await getAdminSessionViewer();
   if (!viewer || !canRevokeManufacturingQuotes(viewer.role)) {
     return NextResponse.json({ error: "Yetkisiz." }, { status: 403 });
   }

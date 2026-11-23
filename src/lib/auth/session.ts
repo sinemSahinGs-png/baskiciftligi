@@ -116,6 +116,37 @@ export async function requireViewer(): Promise<Viewer> {
   return viewer;
 }
 
+/** Password, LIL DISC staff cookie, or Supabase admin — not store customers. */
+export async function getAdminSessionViewer(): Promise<Viewer | null> {
+  const staff = await getStaffSessionViewer();
+  if (staff) {
+    const gate = resolveAdminAccess({
+      role: staff.role,
+      isActive: staff.isActive,
+    });
+    return gate.allowed ? staff : null;
+  }
+
+  const passwordOwner = await getOwnerPasswordViewer();
+  if (passwordOwner) {
+    const gate = resolveAdminAccess({
+      role: passwordOwner.role,
+      isActive: passwordOwner.isActive,
+    });
+    return gate.allowed ? passwordOwner : null;
+  }
+
+  const viewer = await getViewer();
+  if (!viewer) {
+    return null;
+  }
+  const gate = resolveAdminAccess({
+    role: viewer.role,
+    isActive: viewer.isActive,
+  });
+  return gate.allowed ? viewer : null;
+}
+
 export async function requireAdmin(): Promise<Viewer> {
   const staff = await getStaffSessionViewer();
   if (staff) {

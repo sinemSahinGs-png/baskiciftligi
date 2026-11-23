@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 
 import { adminQuoteCostBreakdown } from "@/domain/manufacturing/admin-dto";
 import { getManufacturingQuote } from "@/domain/manufacturing/repository";
-import { getViewer } from "@/lib/auth/session";
+import { getAdminSessionViewer } from "@/lib/auth/session";
 import { canViewInternalCost } from "@/lib/catalog/authorization";
 
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const viewer = await getViewer();
+  const viewer = await getAdminSessionViewer();
   if (!viewer || !canViewInternalCost(viewer.role)) {
     return NextResponse.json({ error: "Yetkisiz." }, { status: 403 });
   }
