@@ -266,6 +266,7 @@ export async function createStoreCheckout(input: {
     no_installment: "1",
     max_installment: "0",
     currency: "TL",
+    iframe_v2: "1",
     paytr_token: token,
   });
   const tokenRes = await fetch("https://www.paytr.com/odeme/api/get-token", {
@@ -274,9 +275,14 @@ export async function createStoreCheckout(input: {
     body,
   });
   const tokenJson = (await tokenRes.json().catch(() => null)) as
-    | { status?: string; token?: string }
+    | { status?: string; token?: string; reason?: string }
     | null;
   if (!tokenJson?.token || tokenJson.status !== "success") {
+    console.info("[paytr-token]", {
+      status: tokenJson?.status ?? "none",
+      reason: tokenJson?.reason ?? "no_reason",
+      merchantId: credentials.merchantId,
+    });
     throw new StoreCheckoutError("PAYTR_TOKEN_DENIED", "Ödeme oturumu başlatılamadı.");
   }
 
