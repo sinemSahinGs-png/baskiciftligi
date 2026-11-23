@@ -8,14 +8,14 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import { logoutAction } from "@/app/(auth)/actions";
 import { adminLogoutAction } from "@/app/admin/giris/actions";
 import { AdminMark, AdminNav } from "@/components/admin/admin-nav";
 import { siteConfig } from "@/config/site";
 import { isAdminLoginPath } from "@/lib/auth/admin-password";
-import { isLocalAdminPasswordEnabled } from "@/lib/auth/admin-session";
-import { requireAdmin } from "@/lib/auth/session";
+import { isLilDiscStaffPathAllowed, requireAdmin } from "@/lib/auth/session";
 import { staffRoleLabel } from "@/lib/auth/staff-role";
+import { isLilDiscOnlyStaff } from "@/lib/catalog/authorization";
+import { redirect } from "next/navigation";
 import {
   productionFixtureWarning,
   readProductionSafetyFlags,
@@ -38,10 +38,11 @@ export default async function AdminLayout({
   }
 
   const viewer = await requireAdmin();
+  if (isLilDiscOnlyStaff(viewer.role) && !isLilDiscStaffPathAllowed(pathname)) {
+    redirect("/admin/lil-disc");
+  }
   const fixtureWarning = productionFixtureWarning(readProductionSafetyFlags());
-  const logout = isLocalAdminPasswordEnabled()
-    ? adminLogoutAction
-    : logoutAction;
+  const logout = adminLogoutAction;
 
   return (
     <div className="dark min-h-screen bg-[#090b0e] text-[#F6F3EC]">
@@ -120,7 +121,7 @@ export default async function AdminLayout({
       <div className="mx-auto grid max-w-[110rem] lg:grid-cols-[17.5rem_minmax(0,1fr)]">
         <aside className="hidden min-h-[calc(100vh-4.5rem)] border-r border-white/10 p-4 lg:block">
           <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1">
-            <AdminNav />
+            <AdminNav scope={isLilDiscOnlyStaff(viewer.role) ? "lil_disc" : "full"} />
           </div>
         </aside>
 
@@ -131,7 +132,7 @@ export default async function AdminLayout({
               Yönetim menüsü
             </summary>
             <div className="mt-4 max-h-[65vh] overflow-y-auto rounded-2xl border border-white/10 bg-card p-3">
-              <AdminNav />
+              <AdminNav scope={isLilDiscOnlyStaff(viewer.role) ? "lil_disc" : "full"} />
             </div>
           </details>
           <main id="ana-icerik" className="p-4 sm:p-6 xl:p-8">

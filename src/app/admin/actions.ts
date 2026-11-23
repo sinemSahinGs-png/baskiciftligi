@@ -42,7 +42,10 @@ import { syncCanonicalCategories } from "@/lib/catalog/sync-categories";
 import { applyPublicationInput } from "@/lib/catalog/publication";
 import { isSupabaseConfigured, allowProductionDemoImport } from "@/lib/env";
 import { createServiceRoleSupabaseClient } from "@/lib/supabase/admin";
+import { createEmptyProductForm } from "@/domain/catalog/admin-form";
 import { minorUnitsFromClientNumber } from "@/lib/catalog/money-input";
+import { slugifyTurkish } from "@/lib/catalog/slug";
+import { parseTryToMinor } from "@/lib/money";
 import { saveSiteContent } from "@/domain/site/content-repository";
 import { mergeSiteContent } from "@/domain/site/content";
 import {
@@ -656,4 +659,40 @@ export async function importDemoProductsAction(
       message: expectedErrorMessage(error, "Demo ürünler içe aktarılamadı."),
     };
   }
+}
+
+export async function saveQuickProductAction(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const name = String(formData.get("name") ?? "").trim();
+  const price = parseTryToMinor(String(formData.get("price") ?? ""));
+  const category = String(formData.get("category") ?? "").trim();
+  const image = String(formData.get("image") ?? "").trim();
+  const publish = formData.get("publish") === "on";
+  if (!name || price == null) {
+    return { status: "error", message: "Ürün adı ve fiyat gerekli." };
+  }
+  const values = createEmptyProductForm();
+  values.name = name;
+  values.slug = slugifyTurkish(name);
+  values.shortDescription = name.length >= 10 ? name : `${name} — OCTO STUDIO`;
+  values.description = String(formData.get("description") ?? "").trim() || name;
+  values.sku = `OCTO-${values.slug}`.slice(0, 80);
+  values.priceMinor = price;
+  values.categorySlugs = category ? [category] : [];
+  values.status = publish ? "active" : "draft";
+  if (image) {
+    values.media = [
+      {
+        id: crypto.randomUUID(),
+        type: "image",
+        url: image,
+        alt: name,
+        position: 0,
+        role: "primary",
+      },
+    ];
+  }
+  return saveProductAction(values, { intent: publish ? "publish" : "draft" });
 }

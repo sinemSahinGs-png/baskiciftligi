@@ -35,6 +35,17 @@ describe("authoritative profile role", () => {
     expect(resolveAdminAccess(viewer).allowed).toBe(true);
   });
 
+  it("lets a LIL DISC operator into admin without catalog publish", () => {
+    const viewer = resolveAuthoritativeViewer({
+      authUserId: EDITOR_ID,
+      profile: { id: EDITOR_ID, role: "lil_disc", is_active: true },
+    });
+    expect(viewer?.role).toBe("lil_disc");
+    expect(staffRoleLabel(viewer!.role)).toBe("LIL’ DISC");
+    expect(canPublishCatalog(viewer!.role)).toBe(false);
+    expect(resolveAdminAccess(viewer).allowed).toBe(true);
+  });
+
   it("blocks customers from admin", () => {
     const viewer = resolveAuthoritativeViewer({
       authUserId: OWNER_ID,

@@ -3,6 +3,7 @@ export const APP_ROLES = [
   "viewer",
   "editor",
   "catalog_manager",
+  "lil_disc",
   "admin",
   "owner",
 ] as const;
@@ -29,6 +30,8 @@ export function staffRoleLabel(role: AppRole): string {
       return "Katalog yöneticisi";
     case "editor":
       return "Editör";
+    case "lil_disc":
+      return "LIL’ DISC";
     case "viewer":
       return "İzleyici";
     default:

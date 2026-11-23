@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getCatalogSnapshot } from "@/domain/catalog/repository";
+import { listPublishedLilDiscAlbums } from "@/domain/lil-disc/repository";
 import {
   catalogForCartPricing,
   priceCart,
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
   const snapshot = await getCatalogSnapshot();
   const catalogResult = priceCart(
     catalogLines,
-    catalogForCartPricing(snapshot.products),
+    catalogForCartPricing(snapshot.products, await listPublishedLilDiscAlbums()),
   );
 
   const manufacturingPriced: PricedCartLine[] = [];

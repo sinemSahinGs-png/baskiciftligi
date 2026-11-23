@@ -4,6 +4,7 @@ export const catalogRoles = [
   "catalog_manager",
   "editor",
   "viewer",
+  "lil_disc",
   "customer",
 ] as const;
 
@@ -15,8 +16,17 @@ export function canViewAdminCatalog(role: string | null | undefined): boolean {
     role === "admin" ||
     role === "catalog_manager" ||
     role === "editor" ||
-    role === "viewer"
+    role === "viewer" ||
+    role === "lil_disc"
   );
+}
+
+export function canManageLilDisc(role: string | null | undefined): boolean {
+  return role === "owner" || role === "admin" || role === "lil_disc";
+}
+
+export function isLilDiscOnlyStaff(role: string | null | undefined): boolean {
+  return role === "lil_disc";
 }
 
 export function canManageCatalog(role: string | null | undefined): boolean {

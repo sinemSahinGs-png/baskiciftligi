@@ -5,6 +5,7 @@ import {
   canAccessLaunchCenter,
   canCalibratePricing,
   canManageCatalog,
+  canManageLilDisc,
   canPublishCatalog,
   canRevokeManufacturingQuotes,
   canViewAdminCatalog,
@@ -20,8 +21,13 @@ describe("catalog authorization", () => {
     expect(canPublishCatalog("admin")).toBe(true);
     expect(canAccessLaunchCenter("admin")).toBe(true);
     expect(canAccessLaunchCenter("owner")).toBe(true);
+    expect(canAccessLaunchCenter("lil_disc")).toBe(false);
     expect(canAccessLaunchCenter("editor")).toBe(false);
     expect(canAccessLaunchCenter("viewer")).toBe(false);
+    expect(canViewAdminCatalog("lil_disc")).toBe(true);
+    expect(canManageLilDisc("lil_disc")).toBe(true);
+    expect(canManageLilDisc("editor")).toBe(false);
+    expect(canManageCatalog("lil_disc")).toBe(false);
     expect(canManageCatalog("customer")).toBe(false);
     expect(canManageCatalog(null)).toBe(false);
   });

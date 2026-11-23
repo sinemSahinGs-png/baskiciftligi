@@ -9,9 +9,9 @@ import {
   LIL_DISC_HERO_VIDEO,
   LIL_DISC_HERO_VIDEO_FALLBACK,
   LIL_DISC_INSTAGRAM_URL,
-  listProjectDisplayProducts,
   type ProjectDestination,
 } from "@/domain/project-destinations/catalog";
+import type { Product } from "@/domain/catalog/types";
 import { selectCartCount, useCartStore } from "@/stores/cart-store";
 import "./lil-disc-shop.css";
 
@@ -19,8 +19,13 @@ function priceLabel(priceMinor: number) {
   return `${Math.round(priceMinor / 100)} TL`;
 }
 
-export function LilDiscShop({ destination }: { destination: ProjectDestination }) {
-  const albums = listProjectDisplayProducts("lil-disc");
+export function LilDiscShop({
+  destination,
+  albums,
+}: {
+  destination: ProjectDestination;
+  albums: Product[];
+}) {
   const addLine = useCartStore((state) => state.addLine);
   const cartCount = useCartStore(selectCartCount);
   const cartHydrated = useCartStore((state) => state.hasHydrated);

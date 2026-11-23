@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 
 import { PRODUCTION_SITE_URL } from "@/config/site";
 import { getCatalogSnapshot } from "@/domain/catalog/repository";
+import { listPublishedLilDiscAlbums } from "@/domain/lil-disc/repository";
 import {
   catalogForCartPricing,
   priceCart,
@@ -64,7 +65,7 @@ export async function priceStoreCart(lines: CartInputLine[]) {
   const snapshot = await getCatalogSnapshot();
   const catalogResult = priceCart(
     catalogLines,
-    catalogForCartPricing(snapshot.products),
+    catalogForCartPricing(snapshot.products, await listPublishedLilDiscAlbums()),
   );
   const manufacturing = [];
   for (const line of quoteLines) {

@@ -51,7 +51,7 @@ export function AuthForm({ mode, configured, nextPath }: AuthFormProps) {
         </h1>
         <p className="mt-4 max-w-md text-base leading-7 text-muted-foreground">
           {isLogin
-            ? "Sipariş, teklif ve model süreçlerinizi tek bir güvenli alandan takip edin."
+            ? "Yönetici paneli için ata veya kutaygulec, müşteri hesabı için e-posta kullanın."
             : "Siparişleriniz ve gelecekteki 3D baskı talepleriniz için güvenli hesabınızı oluşturun."}
         </p>
       </div>
@@ -103,16 +103,19 @@ export function AuthForm({ mode, configured, nextPath }: AuthFormProps) {
         ) : null}
 
         <div className="space-y-2">
-          <Label htmlFor="email">E-posta adresi</Label>
+          <Label htmlFor="email">
+            {isLogin ? "E-posta veya kullanıcı adı" : "E-posta adresi"}
+          </Label>
           <Input
             id="email"
             name="email"
-            type="email"
-            autoComplete="email"
-            inputMode="email"
+            type={isLogin ? "text" : "email"}
+            autoComplete={isLogin ? "username" : "email"}
+            inputMode={isLogin ? "text" : "email"}
             maxLength={254}
             required
             disabled={!configured || pending}
+            placeholder={isLogin ? "ata, kutaygulec veya e-posta" : undefined}
             aria-invalid={Boolean(state.fields?.email)}
             aria-describedby={state.fields?.email ? "email-error" : undefined}
             className="h-12 px-4"

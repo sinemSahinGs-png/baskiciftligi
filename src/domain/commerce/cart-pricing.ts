@@ -12,6 +12,7 @@ import type { Product, ProductKind } from "@/domain/catalog/types";
 import {
   listProjectCatalogProducts,
   projectSourceFromProduct,
+  type LilDiscAlbumInput,
   type ProjectSource,
 } from "@/domain/project-destinations/catalog";
 import { assertMinorUnits } from "@/lib/money";
@@ -83,8 +84,11 @@ export const FREE_SHIPPING_THRESHOLD_MINOR =
 export const STANDARD_SHIPPING_MINOR = COMMERCE_SHIPPING_POLICY.standardShippingMinor;
 export const CEP_ALBUM_SECOND_HALF_LABEL = "2. ürün %50 indirimli";
 
-export function catalogForCartPricing(catalog: Product[]): Product[] {
-  return [...catalog, ...listProjectCatalogProducts()];
+export function catalogForCartPricing(
+  catalog: Product[],
+  lilDiscAlbums?: LilDiscAlbumInput[],
+): Product[] {
+  return [...catalog, ...listProjectCatalogProducts(lilDiscAlbums)];
 }
 
 export function priceCart(
