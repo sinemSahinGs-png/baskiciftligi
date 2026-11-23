@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Route } from "next";
 import Link from "next/link";
 import { Check, Lock, Sparkles } from "lucide-react";
 
@@ -89,7 +90,7 @@ function Lane({
                 </span>
               ) : quest.auto ? (
                 <Link
-                  href={quest.href}
+                  href={quest.href as Route}
                   className="inline-flex min-h-10 items-center rounded-full bg-cyan px-4 text-sm font-bold text-ink"
                 >
                   {quest.cta}
