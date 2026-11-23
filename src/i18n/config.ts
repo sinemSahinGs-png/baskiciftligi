@@ -51,6 +51,7 @@ export function localePath(locale: AppLocale, pathname: string, search = ""): st
 export function isLocaleExemptPath(pathname: string): boolean {
   return (
     pathname.startsWith("/api") ||
+    pathname.startsWith("/rest") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/auth")
   );
