@@ -104,11 +104,6 @@ export async function SiteFooter({
                 </Link>
               </li>
               <li>
-                <Link href={"/toptan/katalog" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
-                  {msg(messages, "footer.wholesaleCatalog")}
-                </Link>
-              </li>
-              <li>
                 <Link href={"/kurumsal-uretim" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
                   {msg(messages, "footer.corporateProduction")}
                 </Link>

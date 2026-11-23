@@ -3,10 +3,7 @@ import type { Metadata } from "next";
 import { IndustrialHome } from "@/components/home-industrial/industrial-home";
 import { faqItems } from "@/components/home/faq-data";
 import { siteConfig } from "@/config/site";
-import {
-  listMaterials,
-  listProducts,
-} from "@/domain/catalog/repository";
+import { listProducts } from "@/domain/catalog/repository";
 import { listPublishedCuratedModels } from "@/domain/curated-models/repository";
 import { platformLabel } from "@/domain/curated-models/types";
 import { homepagePrintLibrary } from "@/domain/home/homepage";
@@ -25,9 +22,8 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [products, materials, curatedModels] = await Promise.all([
-    listProducts(),
-    listMaterials(),
+  const [products, curatedModels] = await Promise.all([
+    listProducts({ limit: 8 }),
     listPublishedCuratedModels(4, "curated_external"),
   ]);
 
@@ -74,7 +70,7 @@ export default async function HomePage() {
     <main id="ana-icerik">
       <IndustrialHome
         products={products}
-        materials={materials}
+        materials={[]}
         readyModels={readyFallback}
       />
       <script

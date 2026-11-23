@@ -25,6 +25,11 @@
   background: var(--octo-tv-sand);
 }
 
+.octo-tv-stage > .octo-sand-layer {
+  z-index: 0;
+  pointer-events: auto;
+}
+
 .octo-tv-hero .octo-tv-frame {
   position: relative;
   z-index: 1;
@@ -32,6 +37,14 @@
   aspect-ratio: 1830 / 872;
   width: auto;
   min-width: 100%;
+  pointer-events: none;
+}
+
+.octo-tv-hero .octo-tv-frame .octo-tv-content,
+.octo-tv-hero .octo-tv-frame a,
+.octo-tv-hero .octo-tv-frame button,
+.octo-tv-hero .octo-tv-frame input {
+  pointer-events: auto;
 }
 
 .octo-tv-shell-picture {
@@ -362,7 +375,12 @@
 
 .octo-sand-layer[data-octo-sand-mode="static-sand"] .octo-sand-static,
 .octo-sand-layer[data-octo-sand-mode="poster"] .octo-sand-static {
-  opacity: 0;
+  opacity: 1;
+}
+
+.octo-sand-layer[data-octo-sand-mode="static-sand"] .octo-sand-grain,
+.octo-sand-layer[data-octo-sand-mode="poster"] .octo-sand-grain {
+  opacity: 0.28;
 }
 
 .octo-sand-layer[data-octo-sand-ready="true"][data-octo-sand-mode="interactive"] .octo-sand-static,

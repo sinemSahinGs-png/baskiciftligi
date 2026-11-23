@@ -13,7 +13,7 @@ import { listHomepageCuratedCards } from "@/domain/project-destinations/curated"
 
 export function CuratedCollection({ products }: { products: Product[] }) {
   const t = useTranslations();
-  const cards = listHomepageCuratedCards(products);
+  const cards = listHomepageCuratedCards(products).filter((card) => card.image);
   const reduce = useReducedMotion() === true;
   const railRef = useRef<HTMLUListElement>(null);
   const dragRef = useRef({

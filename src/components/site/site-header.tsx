@@ -116,17 +116,17 @@ export function SiteHeader({
             : "border-[color:var(--octo-border)] bg-[color:rgb(2_7_11_/_0.72)] backdrop-blur-md",
         )}
       >
-        <div className="shell flex h-14 items-center gap-2 sm:h-16 md:gap-3" data-scrolled={scrolled ? "true" : "false"}>
-          <Logo inverted={darkShell} className="me-auto" />
+        <div className="shell flex h-14 items-center gap-3 sm:h-16" data-scrolled={scrolled ? "true" : "false"}>
+          <Logo inverted={darkShell} />
 
-          <nav aria-label={t("nav.main")} className="hidden h-full items-center gap-1 self-stretch lg:flex">
+          <nav aria-label={t("nav.main")} className="hidden h-full items-center gap-0 self-stretch lg:flex">
             <StoreMegaMenu inverted={inverted} categoryArtwork={categoryArtwork} />
             {siteConfig.primaryNavigation.slice(1).map((item) => (
               <Link
                 key={item.href}
                 href={item.href as Route}
                 data-active={pathname.startsWith(item.href) ? "true" : undefined}
-                className="nav-signal inline-flex min-h-11 items-center px-3 text-sm font-medium"
+                className="nav-signal inline-flex min-h-11 items-center px-2.5 text-sm font-medium"
               >
                 {item.href === "/model-yukle"
                   ? t("common.upload")
@@ -137,7 +137,7 @@ export function SiteHeader({
             ))}
           </nav>
 
-          <div className="flex items-center gap-1">
+          <div className="ms-auto flex items-center gap-1">
             <LanguageSwitcher inverted={inverted} />
             <button
               type="button"

@@ -1,6 +1,5 @@
 import { AtelierCave } from "@/components/home-industrial/atelier-cave";
 import { AtelierScrollMotion } from "@/components/home-industrial/atelier-scroll";
-import { CompactClose } from "@/components/home-industrial/compact-close";
 import { CompactUpload } from "@/components/home-industrial/compact-upload";
 import { CuratedCollection } from "@/components/home-industrial/curated-collection";
 import { HomeCategories } from "@/components/home-industrial/home-categories";
@@ -49,7 +48,6 @@ export function IndustrialHome({
         <CuratedCollection products={products} />
         <CompactUpload />
         <WholesaleBand />
-        <CompactClose />
       </AtelierCave>
       <MobileStickyCta />
     </div>

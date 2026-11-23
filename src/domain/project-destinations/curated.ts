@@ -30,7 +30,7 @@ function projectCards(): HomepageCuratedCard[] {
     cards.push({
       id: product.id,
       name: product.name,
-      image: product.media[0]?.url ?? memoora.artwork,
+      image: mediaUrl(product.media[0]?.url, memoora.artwork),
       href: memoora.href,
       label: memoora.name,
       priceMinor: product.priceMinor,
@@ -42,7 +42,7 @@ function projectCards(): HomepageCuratedCard[] {
     cards.push({
       id: product.id,
       name: product.name,
-      image: product.media[0]?.url ?? disc.artwork,
+      image: mediaUrl(product.media[0]?.url, disc.artwork),
       href: disc.href,
       label: disc.name,
       priceMinor: product.priceMinor,
@@ -53,7 +53,7 @@ function projectCards(): HomepageCuratedCard[] {
     cards.push({
       id: orbiaProduct.id,
       name: orbiaProduct.name,
-      image: orbiaProduct.media[0]?.url ?? orbia.artwork,
+      image: mediaUrl(orbiaProduct.media[0]?.url, orbia.artwork),
       href: orbia.href,
       label: orbia.name,
       priceMinor: null,
@@ -63,15 +63,25 @@ function projectCards(): HomepageCuratedCard[] {
   return cards;
 }
 
+function mediaUrl(url: string | undefined, fallback: string): string {
+  const raw = url?.trim() || fallback;
+  return raw.replace(/\?.*$/, "");
+}
+
 export function listHomepageCuratedCards(octoProducts: Product[]): HomepageCuratedCard[] {
   const projects = projectCards();
   const octo = octoProducts
-    .filter((product) => !product.categorySlugs.some((slug) => slug.startsWith("project:")))
+    .filter(
+      (product) =>
+        Boolean(product.media[0]?.url) &&
+        !product.name.startsWith("Guided UI") &&
+        !product.categorySlugs.some((slug) => slug.startsWith("project:")),
+    )
     .slice(0, 4)
     .map((product): HomepageCuratedCard => ({
       id: product.id,
       name: product.name,
-      image: product.media[0]?.url ?? "",
+      image: mediaUrl(product.media[0]?.url, ""),
       href: `/urun/${product.slug}` as Route,
       label: "OCTO STUDIO",
       priceMinor: product.priceMinor,
