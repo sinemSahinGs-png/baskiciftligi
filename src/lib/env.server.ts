@@ -54,6 +54,9 @@ const serverEnvSchema = z.object({
     z.string().optional(),
   ),
   ADMIN_PANEL_PASSWORD: optionalSecret,
+  ADMIN_PANEL_USERNAME: optionalSecret,
+  LIL_DISC_STAFF_USERNAME: optionalSecret,
+  LIL_DISC_STAFF_PASSWORD: optionalSecret,
 });
 
 const parsed = serverEnvSchema.safeParse({
@@ -83,6 +86,9 @@ const parsed = serverEnvSchema.safeParse({
   ALLOW_DEMO_ADMIN_MUTATIONS: process.env.ALLOW_DEMO_ADMIN_MUTATIONS,
   ALLOW_PRODUCTION_DEMO_IMPORT: process.env.ALLOW_PRODUCTION_DEMO_IMPORT,
   ADMIN_PANEL_PASSWORD: process.env.ADMIN_PANEL_PASSWORD,
+  ADMIN_PANEL_USERNAME: process.env.ADMIN_PANEL_USERNAME,
+  LIL_DISC_STAFF_USERNAME: process.env.LIL_DISC_STAFF_USERNAME,
+  LIL_DISC_STAFF_PASSWORD: process.env.LIL_DISC_STAFF_PASSWORD,
 });
 
 if (!parsed.success) {

@@ -28,15 +28,26 @@ export function AdminLoginForm({ nextPath }: { nextPath?: string }) {
           {siteConfig.name} paneli
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Kategori görselleri, yazılar ve vitrin metinlerini düzenlemek için
-          yönetici şifresini girin.
+          Kullanıcı adı ve şifre ile girin. LIL’ DISC operatörü yalnızca albüm
+          ve siparişlerini görür.
         </p>
       </div>
 
       {nextPath ? <input type="hidden" name="next" value={nextPath} /> : null}
 
       <div className="space-y-2">
-        <Label htmlFor="admin-password">Yönetici şifresi</Label>
+        <Label htmlFor="admin-username">Kullanıcı adı</Label>
+        <Input
+          id="admin-username"
+          name="username"
+          autoComplete="username"
+          required
+          placeholder="ata veya kutaygulec"
+          className="h-11 rounded-xl border-white/12 bg-black/20 px-3"
+        />
+      </div>
+      <div className="mt-4 space-y-2">
+        <Label htmlFor="admin-password">Şifre</Label>
         <Input
           id="admin-password"
           name="password"
@@ -68,6 +79,13 @@ export function AdminLoginForm({ nextPath }: { nextPath?: string }) {
         )}
         {pending ? "Kontrol ediliyor…" : "Panele gir"}
       </button>
+      <p className="mt-4 text-center text-xs text-muted-foreground">
+        Mağaza sahibi e-posta ile giriyorsa{" "}
+        <a href="/giris?next=/admin" className="underline">
+          burayı kullan
+        </a>
+        .
+      </p>
     </form>
   );
 }

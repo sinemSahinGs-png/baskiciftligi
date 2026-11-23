@@ -16,9 +16,11 @@ import { listProducts } from "@/domain/catalog/repository";
 import {
   getProjectDestination,
   isProjectDestinationSlug,
+  listProjectDisplayProducts,
   projectDestinations,
 } from "@/domain/project-destinations/catalog";
 import { LilDiscShop } from "@/components/lil-disc/lil-disc-shop";
+import { listPublishedLilDiscAlbums } from "@/domain/lil-disc/repository";
 import { ProjectPurchasePage } from "@/components/project-destinations/project-purchase-page";
 import { JsonLd } from "@/components/seo/json-ld";
 
@@ -83,7 +85,13 @@ export default async function StorefrontCategoryPage(
           }}
         />
         {project.slug === "lil-disc" ? (
-          <LilDiscShop destination={project} />
+          <LilDiscShop
+            destination={project}
+            albums={listProjectDisplayProducts(
+              "lil-disc",
+              await listPublishedLilDiscAlbums(),
+            )}
+          />
         ) : (
           <ProjectPurchasePage destination={project} />
         )}

@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
-import {
-  hasAdminPasswordSession,
-  isLocalAdminPasswordEnabled,
-} from "@/lib/auth/admin-session";
+import { getOwnerPasswordViewer } from "@/lib/auth/admin-session";
+import { getStaffSessionViewer } from "@/lib/auth/staff-session";
 
 export const metadata: Metadata = {
   title: "Yönetici girişi",
@@ -29,7 +27,10 @@ export default async function AdminLoginPage({
 }: {
   searchParams: Promise<{ next?: string | string[] }>;
 }) {
-  if (!isLocalAdminPasswordEnabled() || (await hasAdminPasswordSession())) {
+  if (await getStaffSessionViewer()) {
+    redirect("/admin/lil-disc");
+  }
+  if (await getOwnerPasswordViewer()) {
     redirect("/admin");
   }
 

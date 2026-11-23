@@ -12,12 +12,11 @@ import {
   canAccessLaunchCenter,
   canCalibratePricing,
   canManageCatalog,
+  canManageLilDisc,
   canPublishCatalog,
 } from "@/lib/catalog/authorization";
-import {
-  hasAdminPasswordSession,
-  isLocalAdminPasswordEnabled,
-} from "@/lib/auth/admin-session";
+import { getOwnerPasswordViewer } from "@/lib/auth/admin-session";
+import { getStaffSessionViewer } from "@/lib/auth/staff-session";
 import { isDevelopmentDemoMode, isSupabaseConfigured } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -118,8 +117,25 @@ export async function requireViewer(): Promise<Viewer> {
 }
 
 export async function requireAdmin(): Promise<Viewer> {
-  if (isLocalAdminPasswordEnabled() && !(await hasAdminPasswordSession())) {
-    redirect("/admin/giris");
+  const staff = await getStaffSessionViewer();
+  if (staff) {
+    const gate = resolveAdminAccess({ role: staff.role, isActive: staff.isActive });
+    if (!gate.allowed) {
+      redirect(gate.redirectTo);
+    }
+    return staff;
+  }
+
+  const passwordOwner = await getOwnerPasswordViewer();
+  if (passwordOwner) {
+    const gate = resolveAdminAccess({
+      role: passwordOwner.role,
+      isActive: passwordOwner.isActive,
+    });
+    if (!gate.allowed) {
+      redirect(gate.redirectTo);
+    }
+    return passwordOwner;
   }
 
   const viewer = await getViewer();
@@ -134,6 +150,22 @@ export async function requireAdmin(): Promise<Viewer> {
   }
 
   return viewer as Viewer;
+}
+
+export async function requireLilDiscManager(): Promise<Viewer> {
+  const viewer = await requireAdmin();
+  if (!canManageLilDisc(viewer.role)) {
+    redirect("/admin");
+  }
+  return viewer;
+}
+
+export function isLilDiscStaffPathAllowed(pathname: string): boolean {
+  return (
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/lil-disc") ||
+    pathname.startsWith("/admin/siparisler")
+  );
 }
 
 export async function requireLaunchOperator(): Promise<Viewer> {

@@ -1,15 +1,13 @@
 import "server-only";
 
 import { resolveAdminAccess } from "@/lib/auth/admin-access";
-import {
-  hasAdminPasswordSession,
-  isLocalAdminPasswordEnabled,
-} from "@/lib/auth/admin-session";
+import { getOwnerPasswordViewer } from "@/lib/auth/admin-session";
 import { getViewer } from "@/lib/auth/session";
 
 export async function requireWholesaleAdminApi() {
-  if (isLocalAdminPasswordEnabled() && !(await hasAdminPasswordSession())) {
-    return { ok: false as const, status: 401 as const, viewer: null };
+  const passwordOwner = await getOwnerPasswordViewer();
+  if (passwordOwner) {
+    return { ok: true as const, viewer: passwordOwner };
   }
   const viewer = await getViewer();
   const gate = resolveAdminAccess(

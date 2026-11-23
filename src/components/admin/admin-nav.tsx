@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Boxes,
   Calculator,
+  CircleDot,
   ChartNoAxesCombined,
   ChevronRight,
   CirclePercent,
@@ -37,6 +38,8 @@ const navigationGroups = [
       },
       { href: "/admin/yayina-alma", label: "Yayına alma", icon: Rocket },
       { href: "/admin/urunler", label: "Ürünler", icon: ShoppingBag },
+      { href: "/admin/lil-disc", label: "LIL’ DISC", icon: CircleDot },
+      { href: "/admin/urunler/hizli", label: "Hızlı ürün", icon: Package },
       { href: "/admin/kategoriler", label: "Kategoriler", icon: Tags },
       { href: "/admin/harici-modeller", label: "Harici modeller", icon: GalleryVerticalEnd },
     ],
@@ -70,17 +73,35 @@ const navigationGroups = [
         label: "Entegrasyonlar",
         icon: PlugZap,
       },
+      { href: "/admin/ekip", label: "Ekip", icon: Users },
       { href: "/admin/ayarlar", label: "Ayarlar", icon: Settings },
     ],
   },
 ] as const;
 
-export function AdminNav() {
+const lilDiscNav = [
+  {
+    label: "LIL’ DISC",
+    items: [
+      {
+        href: "/admin",
+        label: "Günlük siparişler",
+        icon: ChartNoAxesCombined,
+        exact: true,
+      },
+      { href: "/admin/lil-disc", label: "Albümler", icon: ShoppingBag },
+      { href: "/admin/siparisler", label: "Siparişler", icon: Package },
+    ],
+  },
+] as const;
+
+export function AdminNav({ scope = "full" }: { scope?: "full" | "lil_disc" }) {
   const pathname = usePathname();
+  const groups = scope === "lil_disc" ? lilDiscNav : navigationGroups;
 
   return (
     <nav aria-label="Yönetim menüsü" className="space-y-7">
-      {navigationGroups.map((group) => (
+      {groups.map((group) => (
         <section key={group.label}>
           <h2 className="mb-2 px-3 text-[0.65rem] font-bold tracking-[0.16em] text-muted-foreground uppercase">
             {group.label}

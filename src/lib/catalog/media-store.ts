@@ -18,6 +18,7 @@ import {
 } from "@/lib/catalog/media-url";
 import { categoryCoverPublicPath } from "@/lib/catalog/category-cover";
 import { assertCuratedCoverDimensions } from "@/lib/curated-models/image-dimensions";
+import { createServiceRoleSupabaseClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export interface StoredCatalogMedia {
@@ -37,6 +38,7 @@ export async function storeCatalogMediaFile(input: {
   bytes: Uint8Array;
   filename: string;
   declaredMime?: string | null;
+  serviceRole?: boolean;
 }): Promise<StoredCatalogMedia> {
   const detected = assertAllowedCatalogUpload({
     bytes: input.bytes,
@@ -60,7 +62,9 @@ export async function storeCatalogMediaFile(input: {
     : catalogObjectPath(input.productId!, mediaId, filename);
 
   if (isSupabaseConfigured) {
-    const supabase = await createServerSupabaseClient();
+    const supabase = input.serviceRole
+      ? createServiceRoleSupabaseClient()
+      : await createServerSupabaseClient();
     if (!supabase) {
       throw new Error("Supabase depolama oturumu açılamadı.");
     }

@@ -5,24 +5,38 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { siteConfig } from "@/config/site";
+import {
+  createAdminPasswordSession,
+  isAdminPasswordAuthEnabled,
+  isOwnerPasswordUsername,
+  verifyAdminPasswordAttempt,
+} from "@/lib/auth/admin-session";
+import {
+  authenticateStaff,
+  createStaffSession,
+} from "@/lib/auth/staff-session";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { AuthActionState } from "./auth-state";
 
 const loginSchema = z.object({
-  email: z.email("Geçerli bir e-posta adresi girin.").max(254),
+  email: z
+    .string()
+    .trim()
+    .min(2, "Kullanıcı adı veya e-posta girin.")
+    .max(254),
   password: z.string().min(8, "Şifre en az 8 karakter olmalıdır.").max(128),
   next: z.string().max(200).optional(),
 });
 
-const registerSchema = loginSchema
-  .omit({ next: true })
-  .extend({
-    displayName: z.string().trim().min(2, "Adınızı girin.").max(80),
-    consent: z.literal("on", {
-      error: "Gizlilik bildirimini kabul etmelisiniz.",
-    }),
-  });
+const registerSchema = z.object({
+  email: z.email("Geçerli bir e-posta adresi girin.").max(254),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalıdır.").max(128),
+  displayName: z.string().trim().min(2, "Adınızı girin.").max(80),
+  consent: z.literal("on", {
+    error: "Gizlilik bildirimini kabul etmelisiniz.",
+  }),
+});
 
 function safeNextPath(value: string | undefined): string {
   if (!value) {
@@ -47,14 +61,6 @@ export async function loginAction(
   _previousState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
-  if (!isSupabaseConfigured) {
-    return {
-      status: "error",
-      message:
-        "Giriş için Supabase yapılandırması gerekiyor. Yerel demo yönetimi yalnızca /admin altında aktiftir.",
-    };
-  }
-
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -69,9 +75,52 @@ export async function loginAction(
     };
   }
 
+  const identifier = parsed.data.email;
+  const staff = await authenticateStaff(identifier, parsed.data.password);
+  if (staff) {
+    await createStaffSession(staff);
+    redirect("/admin/lil-disc" as Route);
+  }
+
+  if (
+    isAdminPasswordAuthEnabled() &&
+    isOwnerPasswordUsername(identifier)
+  ) {
+    const result = verifyAdminPasswordAttempt(parsed.data.password, identifier);
+    if (result.ok) {
+      await createAdminPasswordSession();
+      redirect("/admin" as Route);
+    }
+  }
+
+  if (!identifier.includes("@")) {
+    return {
+      status: "error",
+      message: "Kullanıcı adı veya şifre hatalı.",
+      fields: { email: ["Kullanıcı adı veya e-posta girin."] },
+    };
+  }
+
+  if (!isSupabaseConfigured) {
+    return {
+      status: "error",
+      message:
+        "Giriş için Supabase yapılandırması gerekiyor. Yerel demo yönetimi yalnızca /admin altında aktiftir.",
+    };
+  }
+
+  const emailParsed = z.email("Geçerli bir e-posta adresi girin.").safeParse(identifier);
+  if (!emailParsed.success) {
+    return {
+      status: "error",
+      message: "Bilgileri kontrol edin.",
+      fields: { email: ["Geçerli bir e-posta adresi girin."] },
+    };
+  }
+
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase!.auth.signInWithPassword({
-    email: parsed.data.email,
+    email: emailParsed.data,
     password: parsed.data.password,
   });
 

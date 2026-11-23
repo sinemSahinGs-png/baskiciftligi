@@ -187,48 +187,63 @@ export const projectDestinations: readonly ProjectDestination[] = [
   },
 ] as const;
 
+export interface LilDiscAlbumInput {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  priceMinor: number;
+}
+
 const CEP_SINGLES = [
   {
     id: "gece-dansi",
     name: "Manifesto",
     description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/lil-disc/manifesto.webp?v=2",
+    priceMinor: 20_000,
   },
   {
     id: "nevermind",
     name: "Nevermind",
     description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/lil-disc/nevermind.webp?v=2",
+    priceMinor: 20_000,
   },
   {
     id: "master-of-puppets",
     name: "Master of Puppets",
     description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/lil-disc/master-of-puppets.webp?v=2",
+    priceMinor: 20_000,
   },
   {
     id: "gecelerin-sarkisi",
     name: "Kadın",
     description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/lil-disc/kadin.webp?v=2",
+    priceMinor: 20_000,
   },
   {
     id: "fallen",
     name: "Fallen",
     description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/lil-disc/fallen.webp?v=2",
+    priceMinor: 20_000,
   },
   {
     id: "beton-beat",
     name: "17",
     description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/lil-disc/17.webp?v=2",
+    priceMinor: 20_000,
   },
   {
     id: "deri-ceket",
     name: "Şehrimin Tadı",
     description: "NFC özellikli mini CD anahtarlık.",
     image: "/categories/lil-disc/sehrimin-tadi.webp?v=2",
+    priceMinor: 20_000,
   },
 ] as const;
 
@@ -260,18 +275,30 @@ function memooraProducts(): Product[] {
   ];
 }
 
-function cepAlbumProducts(): Product[] {
-  return CEP_SINGLES.map((item) =>
-    product({
-      id: `proj-cep-album-${item.id}`,
-      slug: `cep-album-${item.id}`,
-      name: item.name,
-      description: item.description,
-      priceMinor: 20_000,
-      image: item.image,
-      source: "cep_album",
-    }),
-  );
+export function defaultLilDiscAlbums(): LilDiscAlbumInput[] {
+  return CEP_SINGLES.map((item) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    image: item.image,
+    priceMinor: item.priceMinor,
+  }));
+}
+
+export function lilDiscProductFromAlbum(item: LilDiscAlbumInput): Product {
+  return product({
+    id: `proj-cep-album-${item.id}`,
+    slug: `cep-album-${item.id}`,
+    name: item.name,
+    description: item.description,
+    priceMinor: item.priceMinor,
+    image: item.image,
+    source: "cep_album",
+  });
+}
+
+export function cepAlbumProducts(albums?: LilDiscAlbumInput[]): Product[] {
+  return (albums ?? defaultLilDiscAlbums()).map(lilDiscProductFromAlbum);
 }
 
 function orbiaDisplayProduct(): Product {
@@ -308,14 +335,19 @@ export function projectSourceFromProduct(product: Product): ProjectSource | null
   return null;
 }
 
-export function listProjectCatalogProducts(): Product[] {
-  return [...memooraProducts(), ...cepAlbumProducts()];
+export function listProjectCatalogProducts(
+  lilDiscAlbums?: LilDiscAlbumInput[],
+): Product[] {
+  return [...memooraProducts(), ...cepAlbumProducts(lilDiscAlbums)];
 }
 
-export function listProjectDisplayProducts(slug: ProjectDestinationSlug): Product[] {
+export function listProjectDisplayProducts(
+  slug: ProjectDestinationSlug,
+  lilDiscAlbums?: LilDiscAlbumInput[],
+): Product[] {
   if (slug === "orbia") return [orbiaDisplayProduct()];
   if (slug === "memoora") return memooraProducts();
-  return cepAlbumProducts();
+  return cepAlbumProducts(lilDiscAlbums);
 }
 
 export function findProjectCatalogProduct(id: string): Product | undefined {
