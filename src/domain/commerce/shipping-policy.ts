@@ -27,6 +27,12 @@ function normalizedFreeShippingThresholdMinor(): number {
   return COMMERCE_SHIPPING_POLICY.freeShippingThresholdMinor ?? 0;
 }
 
+export const PAYTR_INTEGRATION_TEST_SLUG = "odeme-testi";
+
+export function isPaytrIntegrationTestSlug(slug: string | null | undefined): boolean {
+  return slug === PAYTR_INTEGRATION_TEST_SLUG;
+}
+
 /** Cart-level shipping from server-calculated subtotal (integer minor units). */
 export function computeCartShippingMinor(subtotalMinor: number): number {
   if (!Number.isSafeInteger(subtotalMinor) || subtotalMinor < 0) {
@@ -40,6 +46,20 @@ export function computeCartShippingMinor(subtotalMinor: number): number {
     return 0;
   }
   return COMMERCE_SHIPPING_POLICY.standardShippingMinor;
+}
+
+export function computeCartShippingMinorForLines(
+  subtotalMinor: number,
+  slugs: readonly string[],
+): number {
+  const billed = slugs.filter((slug) => slug.trim().length > 0);
+  if (
+    billed.length > 0 &&
+    billed.every((slug) => isPaytrIntegrationTestSlug(slug))
+  ) {
+    return 0;
+  }
+  return computeCartShippingMinor(subtotalMinor);
 }
 
 /** True when copy claims a free-shipping threshold the server policy does not prove. */

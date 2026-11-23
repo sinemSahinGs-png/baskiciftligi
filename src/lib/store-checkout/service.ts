@@ -9,7 +9,7 @@ import {
   splitLineForPayment,
   type CartInputLine,
 } from "@/domain/commerce/cart-pricing";
-import { computeCartShippingMinor } from "@/domain/commerce/shipping-policy";
+import { computeCartShippingMinorForLines } from "@/domain/commerce/shipping-policy";
 import { pricedManufacturingLine } from "@/domain/commerce/manufacturing-cart";
 import {
   getManufacturingQuote,
@@ -87,7 +87,10 @@ export async function priceStoreCart(lines: CartInputLine[]) {
   const subtotalMinor = assertMinorUnits(
     pricedLines.reduce((sum, line) => sum + line.lineTotalMinor, 0),
   );
-  const shippingMinor = computeCartShippingMinor(subtotalMinor);
+  const shippingMinor = computeCartShippingMinorForLines(
+    subtotalMinor,
+    pricedLines.filter((line) => line.isAvailable).map((line) => line.slug),
+  );
   return {
     lines: pricedLines,
     subtotalMinor,

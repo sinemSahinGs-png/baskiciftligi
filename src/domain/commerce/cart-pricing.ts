@@ -4,7 +4,7 @@ import {
 } from "@/domain/catalog/presentation";
 import {
   COMMERCE_SHIPPING_POLICY,
-  computeCartShippingMinor,
+  computeCartShippingMinorForLines,
   publicShippingPolicyFields,
 } from "@/domain/commerce/shipping-policy";
 import { isPubliclyVisibleProduct } from "@/lib/catalog/visibility";
@@ -190,7 +190,10 @@ export function priceCart(
     ),
   );
   const campaignDiscountMinor = assertMinorUnits(grossSubtotalMinor - subtotalMinor);
-  const estimatedShippingMinor = computeCartShippingMinor(subtotalMinor);
+  const estimatedShippingMinor = computeCartShippingMinorForLines(
+    subtotalMinor,
+    pricedLines.filter((line) => line.isAvailable).map((line) => line.slug),
+  );
 
   return {
     currency: "TRY",
