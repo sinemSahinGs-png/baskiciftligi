@@ -7,14 +7,14 @@ import {
   updateConsultationRequest,
 } from "@/domain/consultation/repository";
 import { CONSULTATION_STATUSES } from "@/domain/consultation/types";
-import { getViewer } from "@/lib/auth/session";
+import { getAdminSessionViewer } from "@/lib/auth/session";
 import { canViewAdminCatalog } from "@/lib/catalog/authorization";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const viewer = await getViewer();
+  const viewer = await getAdminSessionViewer();
   if (!viewer || !canViewAdminCatalog(viewer.role)) {
     return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
   }
@@ -30,7 +30,7 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(request: Request) {
-  const viewer = await getViewer();
+  const viewer = await getAdminSessionViewer();
   if (!viewer || !canViewAdminCatalog(viewer.role)) {
     return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
   }

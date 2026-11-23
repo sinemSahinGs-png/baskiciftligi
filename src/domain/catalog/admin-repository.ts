@@ -33,7 +33,7 @@ import {
   upsertDemoCategory,
   upsertDemoProduct,
 } from "@/lib/demo/catalog-store";
-import { getViewer } from "@/lib/auth/session";
+import { getAdminSessionViewer } from "@/lib/auth/session";
 import type {
   CategoryFormInput,
   ProductFormInput,
@@ -294,7 +294,7 @@ function mapDatabaseProduct(row: AdminProductRow): Product {
 }
 
 async function requiredSupabase() {
-  const viewer = await getViewer();
+  const viewer = await getAdminSessionViewer();
   if (!viewer || !canViewAdminCatalog(viewer.role)) {
     throw new Error("Katalog yönetimi için yetkili oturum gerekir.");
   }
@@ -744,7 +744,7 @@ async function writeCatalogAudit(
 async function saveSupabaseProduct(input: ProductFormInput): Promise<Product> {
   const priceMinor = input.priceMinor ?? 0;
   const supabase = await requiredSupabase();
-  const viewer = await getViewer();
+  const viewer = await getAdminSessionViewer();
   const actorId =
     viewer?.id &&
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(

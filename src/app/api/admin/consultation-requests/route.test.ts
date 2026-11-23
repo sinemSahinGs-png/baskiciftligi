@@ -32,7 +32,7 @@ const sampleRequest = {
 };
 
 vi.mock("@/lib/auth/session", () => ({
-  getViewer: vi.fn(),
+  getAdminSessionViewer: vi.fn(),
 }));
 
 vi.mock("@/domain/consultation/repository", () => ({
@@ -51,7 +51,7 @@ vi.mock("@/domain/consultation/repository", () => ({
   })),
 }));
 
-import { getViewer } from "@/lib/auth/session";
+import { getAdminSessionViewer } from "@/lib/auth/session";
 import { updateConsultationRequest } from "@/domain/consultation/repository";
 
 describe("admin consultation-requests API", () => {
@@ -60,13 +60,13 @@ describe("admin consultation-requests API", () => {
   });
 
   it("rejects unauthenticated GET", async () => {
-    vi.mocked(getViewer).mockResolvedValue(null);
+    vi.mocked(getAdminSessionViewer).mockResolvedValue(null);
     const response = await GET();
     expect(response.status).toBe(401);
   });
 
   it("allows admin GET", async () => {
-    vi.mocked(getViewer).mockResolvedValue({ id: "admin", role: "admin" } as never);
+    vi.mocked(getAdminSessionViewer).mockResolvedValue({ id: "admin", role: "admin" } as never);
     const response = await GET();
     expect(response.status).toBe(200);
     const body = (await response.json()) as { requests: unknown[] };
@@ -74,7 +74,7 @@ describe("admin consultation-requests API", () => {
   });
 
   it("allows admin PATCH status and final quote", async () => {
-    vi.mocked(getViewer).mockResolvedValue({ id: "admin", role: "admin" } as never);
+    vi.mocked(getAdminSessionViewer).mockResolvedValue({ id: "admin", role: "admin" } as never);
     const response = await PATCH(
       new Request("http://localhost/api/admin/consultation-requests", {
         method: "PATCH",

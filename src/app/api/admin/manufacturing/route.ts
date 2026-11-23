@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getViewer } from "@/lib/auth/session";
+import { getAdminSessionViewer } from "@/lib/auth/session";
 import {
   canCalibratePricing,
   canViewAdminCatalog,
@@ -39,7 +39,7 @@ import {
 } from "@/lib/manufacturing/worker-ops";
 
 export async function GET() {
-  const viewer = await getViewer();
+  const viewer = await getAdminSessionViewer();
   if (!viewer || !canViewAdminCatalog(viewer.role)) {
     return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
   }
@@ -147,7 +147,7 @@ const retryBodySchema = z.object({
 });
 
 export async function PATCH(request: Request) {
-  const viewer = await getViewer();
+  const viewer = await getAdminSessionViewer();
   if (!viewer || !canViewAdminCatalog(viewer.role)) {
     return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
   }
@@ -180,7 +180,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const viewer = await getViewer();
+  const viewer = await getAdminSessionViewer();
   if (!viewer || !canCalibratePricing(viewer.role, viewer.isDemo)) {
     return NextResponse.json({ error: "Yetkisiz." }, { status: 403 });
   }

@@ -5,7 +5,7 @@ import { AdminPageHeader } from "@/components/admin/admin-page";
 import { CategoryManager } from "@/components/admin/category-manager";
 import { CategorySyncRecovery } from "@/components/admin/category-sync-recovery";
 import { getAdminCatalogOverview } from "@/domain/catalog/admin-repository";
-import { getViewer } from "@/lib/auth/session";
+import { getAdminSessionViewer } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "Kategori yönetimi",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function CategoriesPage() {
   const [catalog, viewer] = await Promise.all([
     getAdminCatalogOverview(),
-    getViewer(),
+    getAdminSessionViewer(),
   ]);
   const showCategorySyncRecovery = viewer?.role === "owner";
 
