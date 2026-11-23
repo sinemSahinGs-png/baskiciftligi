@@ -1,7 +1,10 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { isAdminLoginPath } from "@/lib/auth/admin-password";
+import {
+  ADMIN_SESSION_COOKIE,
+  isAdminLoginPath,
+} from "@/lib/auth/admin-password";
 import { isDevelopmentDemoMode } from "@/lib/env";
 import {
   isAppLocale,
@@ -89,13 +92,31 @@ function finishAuth(
   pathname: string,
   locale: AppLocale,
 ) {
-  const requiresSession =
-    pathname.startsWith("/hesabim") ||
-    (pathname.startsWith("/admin") && !isAdminLoginPath(pathname));
+  const hasPanelSession =
+    Boolean(request.cookies.get(ADMIN_SESSION_COOKIE)?.value) ||
+    Boolean(request.cookies.get("octo_staff_session")?.value);
+  const requiresCustomerSession = pathname.startsWith("/hesabim");
+  const requiresAdminSession =
+    pathname.startsWith("/admin") && !isAdminLoginPath(pathname);
 
-  if (requiresSession && !user && !isDevelopmentDemoMode) {
+  if (requiresCustomerSession && !user && !isDevelopmentDemoMode) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = localePath(locale, "/giris");
+    loginUrl.search = "";
+    loginUrl.searchParams.set("next", localePath(locale, pathname));
+    const redirectResponse = NextResponse.redirect(loginUrl);
+    copyCookies(response, redirectResponse);
+    return redirectResponse;
+  }
+
+  if (
+    requiresAdminSession &&
+    !user &&
+    !hasPanelSession &&
+    !isDevelopmentDemoMode
+  ) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = localePath(locale, "/admin/giris");
     loginUrl.search = "";
     loginUrl.searchParams.set("next", localePath(locale, pathname));
     const redirectResponse = NextResponse.redirect(loginUrl);
