@@ -57,6 +57,11 @@ const serverEnvSchema = z.object({
   ADMIN_PANEL_USERNAME: optionalSecret,
   LIL_DISC_STAFF_USERNAME: optionalSecret,
   LIL_DISC_STAFF_PASSWORD: optionalSecret,
+  TRENDYOL_SELLER_ID: optionalSecret,
+  TRENDYOL_API_KEY: optionalSecret,
+  TRENDYOL_API_SECRET: optionalSecret,
+  TRENDYOL_STOREFRONT: optionalSecret,
+  CRON_SECRET: optionalSecret,
 });
 
 const parsed = serverEnvSchema.safeParse({
@@ -89,6 +94,11 @@ const parsed = serverEnvSchema.safeParse({
   ADMIN_PANEL_USERNAME: process.env.ADMIN_PANEL_USERNAME,
   LIL_DISC_STAFF_USERNAME: process.env.LIL_DISC_STAFF_USERNAME,
   LIL_DISC_STAFF_PASSWORD: process.env.LIL_DISC_STAFF_PASSWORD,
+  TRENDYOL_SELLER_ID: process.env.TRENDYOL_SELLER_ID,
+  TRENDYOL_API_KEY: process.env.TRENDYOL_API_KEY,
+  TRENDYOL_API_SECRET: process.env.TRENDYOL_API_SECRET,
+  TRENDYOL_STOREFRONT: process.env.TRENDYOL_STOREFRONT,
+  CRON_SECRET: process.env.CRON_SECRET,
 });
 
 if (!parsed.success) {

@@ -10,7 +10,7 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""} https://www.paytr.com`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.supabase.co https://cdn.thingiverse.com https://resize.thingiverse.com https://www.thingiverse.com https://www.paytr.com",
+  "img-src 'self' data: blob: https://*.supabase.co https://cdn.thingiverse.com https://resize.thingiverse.com https://www.thingiverse.com https://www.paytr.com https://cdn.dsmcdn.com https://*.dsmcdn.com",
   "font-src 'self' data:",
   "media-src 'self' blob: https://*.supabase.co",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.paytr.com",
@@ -56,6 +56,14 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "www.thingiverse.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.dsmcdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.dsmcdn.com",
       },
     ],
   },
