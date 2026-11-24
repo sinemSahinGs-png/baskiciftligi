@@ -53,13 +53,7 @@ export function OctoUniverse() {
                 <span className="octo-room-visual">
                   <CategoryArtwork
                     src={project.artwork}
-                    objectPosition={
-                      project.slug === "memoora"
-                        ? "50% 42%"
-                        : project.slug === "lil-disc"
-                          ? "50% 46%"
-                          : "50% 38%"
-                    }
+                    objectPosition="50% 50%"
                     sizes="(max-width: 767px) 86vw, 32vw"
                   />
                 </span>

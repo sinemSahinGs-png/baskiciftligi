@@ -7,7 +7,6 @@ import { useTranslations } from "next-intl";
 import { mineralCutouts } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { HomeTrackLink } from "@/components/home/home-track-link";
-import { storefrontCategoryAsset } from "@/domain/catalog/storefront-taxonomy";
 
 export function StartPath() {
   const t = useTranslations();
@@ -39,7 +38,7 @@ export function StartPath() {
               </span>
               <span className="octo-chamber-object octo-chamber-material" data-portal-layer="material">
                 <SlotImage
-                  src={mineralCutouts.portalVaseWire}
+                  src={mineralCutouts.portalVaseFinish}
                   alt=""
                   fill
                   className="object-contain"
@@ -56,7 +55,6 @@ export function StartPath() {
                 />
               </span>
               <span className="octo-chamber-contact" aria-hidden="true" />
-              <span className="octo-chamber-sandbed" aria-hidden="true" />
             </div>
             <div className="octo-chamber-copy">
               <h3>{t("home.startFileTitle")}</h3>
@@ -74,14 +72,13 @@ export function StartPath() {
             <div className="octo-chamber-stage">
               <span className="octo-chamber-object octo-chamber-find" data-octo-portal-object="find">
                 <SlotImage
-                  src={storefrontCategoryAsset("dekorasyon-yasam")}
+                  src={mineralCutouts.pathReadyModel}
                   alt=""
                   fill
                   className="object-cover"
                   sizes="(max-width: 767px) 88vw, 42vw"
                 />
               </span>
-              <span className="octo-chamber-sandbed octo-chamber-sandbed-thin" aria-hidden="true" />
             </div>
             <div className="octo-chamber-copy">
               <h3>{t("home.startFindTitle")}</h3>

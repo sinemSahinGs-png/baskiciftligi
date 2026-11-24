@@ -16,11 +16,12 @@
 }
 
 .octo-sand-dissolve {
+  display: none;
   pointer-events: none;
   position: relative;
   z-index: 4;
-  height: 118px;
-  margin-top: -118px;
+  height: 0;
+  margin-top: 0;
   overflow: hidden;
 }
 
@@ -132,12 +133,16 @@
   opacity: calc(0.9 - var(--octo-depth) * 1.6);
 }
 
-.octo-below-hero > *:not(.octo-cave-atmosphere):not(.octo-journey):not(.octo-depth-hud) {
+.octo-below-hero > *:not(.octo-cave-atmosphere):not(.octo-journey) {
   position: relative;
   z-index: 2;
 }
 
 .octo-depth-hud {
+  display: none !important;
+}
+
+.octo-depth-hud-legacy {
   pointer-events: none;
   position: fixed;
   top: auto;
@@ -212,14 +217,14 @@
 }
 
 .octo-below-hero .octo-band {
-  padding: 2.1rem 0 1.7rem;
-  background: rgb(14 10 8 / 0.55);
+  padding: clamp(3.2rem, 8vw, 6.5rem) 0;
+  background: rgb(10 8 6 / 0.42);
   scroll-margin-top: calc(4.75rem + 8vh);
   overflow: visible;
 }
 
 .octo-below-hero .octo-band + .octo-band {
-  margin-top: -1.15rem;
+  margin-top: 0;
 }
 
 #start-path-heading,
@@ -232,9 +237,12 @@
   scroll-margin-top: calc(4.75rem + 12vh);
 }
 
-.octo-story.octo-band {
+.octo-story.octo-band,
+.octo-order-film.octo-band {
   min-height: 0;
-  padding-bottom: 1rem;
+  padding-bottom: 1.4rem;
+  background: transparent;
+  background-image: none;
 }
 
 #kategoriler.octo-band {
@@ -277,8 +285,8 @@
 }
 
 .octo-below-hero .octo-band-title {
-  max-width: 18ch;
-  margin-bottom: 1.6rem;
+  max-width: 14ch;
+  margin-bottom: 2.1rem;
 }
 
 .octo-universe-heading.octo-band-title {
@@ -311,8 +319,7 @@
   min-height: 0;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 50% 18%, rgb(201 148 91 / 0.18), transparent 50%),
-    url("/images/home-atelier/cave-sand-bg.webp") 52% 42% / cover,
+    radial-gradient(ellipse at 50% 18%, rgb(201 148 91 / 0.12), transparent 50%),
     #120c09;
 }
 
@@ -335,9 +342,10 @@
 
 .octo-chamber-sand .octo-chamber-object img {
   object-fit: contain !important;
-  object-position: 50% 100%;
+  object-position: 50% 54%;
   mix-blend-mode: normal !important;
   background: transparent !important;
+  filter: none !important;
 }
 
 .octo-chamber-wire {
@@ -346,7 +354,7 @@
 }
 
 .octo-chamber-wire img {
-  filter: sepia(0.18) saturate(0.85) contrast(1.06);
+  filter: none;
 }
 
 .octo-chamber-material {
@@ -356,7 +364,7 @@
 }
 
 .octo-chamber-material img {
-  filter: sepia(0.72) saturate(1.15) hue-rotate(-8deg) contrast(1.04);
+  filter: none;
 }
 
 .octo-chamber-finish {
@@ -365,7 +373,7 @@
 }
 
 .octo-chamber-finish img {
-  filter: sepia(0.28) saturate(0.78) contrast(1.06) brightness(0.96);
+  filter: none;
 }
 
 .octo-chamber-rock .octo-chamber-object {
@@ -375,18 +383,13 @@
 
 .octo-chamber-rock .octo-chamber-object img {
   object-fit: cover !important;
-  object-position: 50% 42%;
-  filter: sepia(0.18) saturate(0.9) contrast(1.04);
+  object-position: 50% 50%;
+  filter: none;
+  mix-blend-mode: normal;
 }
 
 .octo-chamber-contact {
-  position: absolute;
-  left: 28%;
-  right: 28%;
-  bottom: 9%;
-  z-index: 5;
-  height: 16px;
-  background: radial-gradient(ellipse at 50% 50%, rgb(8 6 5 / 0.58), transparent 70%);
+  display: none;
 }
 
 .octo-chamber-sandbed {
@@ -596,41 +599,61 @@
 }
 
 .octo-equal-card {
-  display: grid;
-  gap: 0.7rem;
-  color: inherit;
+  position: relative;
+  display: block;
+  min-height: 26rem;
+  overflow: hidden;
+  color: #f4ead8;
   text-decoration: none;
+  border: 1px solid rgb(192 138 74 / 0.18);
 }
 
 .octo-equal-media {
-  position: relative;
+  position: absolute;
+  inset: 0;
   display: block;
-  aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: #2a1c12;
+  background: #120c09;
 }
 
 .octo-equal-media::before {
   content: "";
   position: absolute;
-  inset: auto 0 0;
-  height: 22%;
+  inset: 0;
   z-index: 1;
-  background: linear-gradient(180deg, transparent, rgb(176 128 70 / 0.55));
+  background: linear-gradient(180deg, transparent 48%, rgb(8 6 4 / 0.55) 78%, rgb(8 6 4 / 0.92) 100%);
   mix-blend-mode: normal;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .octo-equal-name,
 .octo-equal-cta {
-  padding: 0 0.1rem;
-  font-family: var(--font-jakarta), sans-serif;
+  position: absolute;
+  left: 1.05rem;
+  right: 1.05rem;
+  z-index: 2;
+  padding: 0;
+  font-family: var(--font-display), var(--font-jakarta), sans-serif;
+}
+
+.octo-equal-name {
+  bottom: 2.55rem;
+  font-size: clamp(1.05rem, 2.4vw, 1.28rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  text-transform: uppercase;
 }
 
 .octo-equal-cta {
-  min-height: 2.75rem;
+  bottom: 0.85rem;
+  min-height: 0;
   display: inline-flex;
   align-items: center;
+  font-family: var(--font-jakarta), sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: #d9b984;
 }
 
@@ -665,25 +688,40 @@
 .octo-room {
   position: relative;
   display: grid;
-  min-height: 22rem;
+  min-height: 28rem;
   overflow: hidden;
-  color: inherit;
+  color: #f4ead8;
   text-decoration: none;
   border: 1px solid rgb(192 138 74 / 0.22);
 }
 
 .octo-room-visual {
-  position: relative;
+  position: absolute;
+  inset: 0;
   display: block;
-  aspect-ratio: 4 / 3;
   background: #120c09;
 }
 
+.octo-room-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.octo-room:hover .octo-room-visual img,
+.octo-room:focus-visible .octo-room-visual img {
+  transform: scale(1.06);
+}
+
 .octo-room-copy {
+  position: relative;
+  z-index: 2;
   display: grid;
   gap: 0.45rem;
-  padding: 1rem 1rem 1.15rem;
-  background: rgb(10 8 7 / 0.82);
+  align-self: end;
+  padding: 5rem 1.15rem 1.25rem;
+  background: linear-gradient(180deg, transparent, rgb(8 6 4 / 0.9) 72%);
 }
 
 .octo-room[data-chamber="orbia"] {
@@ -698,7 +736,7 @@
 }
 
 .octo-room[data-chamber="memoora"] .octo-room-copy {
-  background: rgb(247 240 226 / 0.96);
+  background: linear-gradient(180deg, transparent, rgb(8 6 4 / 0.88) 74%);
 }
 
 .octo-room[data-chamber="lil-disc"] {
@@ -707,7 +745,7 @@
 }
 
 .octo-room[data-chamber="lil-disc"] .octo-room-copy {
-  background: rgb(244 234 214 / 0.96);
+  background: linear-gradient(180deg, transparent, rgb(8 6 4 / 0.88) 74%);
 }
 
 .octo-room .octo-universe-logo {
@@ -727,21 +765,12 @@
 }
 
 .octo-world.octo-motion-ready .octo-room {
-  transform: translate3d(0, calc((1 - var(--universe-rise, 1)) * 16px), 0);
-  -webkit-mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.55), #000 18%, #000);
-  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.55), #000 18%, #000);
+  transform: translate3d(0, calc((1 - var(--universe-rise, 1)) * 18px), 0);
 }
 
-.octo-room[data-chamber="orbia"] .octo-universe-name,
-.octo-room[data-chamber="orbia"] .octo-universe-desc {
+.octo-room .octo-universe-name,
+.octo-room .octo-universe-desc {
   color: #f4ead8;
-}
-
-.octo-room[data-chamber="memoora"] .octo-universe-name,
-.octo-room[data-chamber="memoora"] .octo-universe-desc,
-.octo-room[data-chamber="lil-disc"] .octo-universe-name,
-.octo-room[data-chamber="lil-disc"] .octo-universe-desc {
-  color: #1a120c;
 }
 
 .octo-universe-name {
@@ -786,7 +815,7 @@
 .octo-shop-media {
   position: relative;
   display: block;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   background: #d7c4a4;
 }
@@ -943,8 +972,9 @@ html[data-home-industrial] .octo-abyss-floor::before {
 
 @media (min-width: 768px) {
   .octo-sand-dissolve {
-    height: 132px;
-    margin-top: -132px;
+    display: none;
+    height: 0;
+    margin-top: 0;
   }
 
   .octo-cave-photo {
@@ -1018,6 +1048,11 @@ html[data-home-industrial] .octo-abyss-floor::before {
     display: none;
   }
 
+  .octo-order-film .octo-story-mobile-visual,
+  .octo-order-frame {
+    display: block !important;
+  }
+
   .octo-story-steps li:not(:last-child) {
     min-height: 0;
   }
@@ -1050,18 +1085,6 @@ html[data-home-industrial] .octo-abyss-floor::before {
 }
 
 @media (min-width: 1200px) {
-  .octo-below-hero {
-    padding-right: 5.75rem;
-  }
-
-  .octo-depth-hud {
-    top: 32%;
-    bottom: auto;
-    right: 0.35rem;
-    width: 4.85rem;
-    max-width: 4.85rem;
-  }
-
   .octo-depth-stops {
     display: grid;
     font-size: 0.58rem;
@@ -1092,11 +1115,9 @@ html[data-home-industrial] .octo-abyss-floor::before {
   }
 
   .octo-wholesale-chamber .octo-wholesale-media {
-    top: auto;
-    right: 4%;
-    width: 25.2%;
-    height: 48%;
-    bottom: 7%;
+    inset: 0 0 0 32%;
+    width: auto;
+    height: auto;
     opacity: 1;
   }
 
@@ -1105,16 +1126,23 @@ html[data-home-industrial] .octo-abyss-floor::before {
   }
 }
 
-.octo-portals {
-  background-image: radial-gradient(ellipse 90% 50% at 50% 0%, rgb(201 148 91 / 0.16), transparent 60%);
+.octo-portals.octo-band {
+  padding-top: clamp(4.2rem, 9vw, 6.25rem);
 }
 
-.octo-story {
+.octo-portals {  background-image: radial-gradient(ellipse 90% 50% at 50% 0%, rgb(201 148 91 / 0.16), transparent 60%);
+}
+
+.octo-story,
+.octo-order-film.octo-story {
   overflow: visible;
-  background-image:
-    linear-gradient(180deg, rgb(12 8 6 / 0.72), rgb(8 6 5 / 0.78)),
-    linear-gradient(90deg, rgb(232 204 150 / 0.035) 1px, transparent 1px);
-  background-size: auto, 36px 36px;
+  background: transparent;
+  background-image: none;
+}
+
+#uc-uretim-yolu.octo-order-film .octo-band-shell {
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 #kategoriler {
@@ -1130,16 +1158,14 @@ html[data-home-industrial] .octo-abyss-floor::before {
   overflow: hidden;
   min-height: 20rem;
   border: 1px solid rgb(110 63 36 / 0.45);
-  background:
-    radial-gradient(ellipse at 18% 0%, rgb(201 148 91 / 0.16), transparent 46%),
-    url("/images/home-atelier/cave-sand-bg.webp") 62% 40% / cover,
-    #120c09;
+  background: #0b0907;
 }
 
-.octo-wholesale-cave {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgb(8 6 5 / 0.78) 0%, rgb(8 6 5 / 0.18) 46%, transparent 68%);
+.octo-wholesale-cave,
+.octo-wholesale-shadow,
+.octo-wholesale-sand,
+.octo-wholesale-ridge {
+  display: none;
 }
 
 .octo-wholesale-chamber .octo-wholesale-media,
@@ -1153,13 +1179,10 @@ html[data-home-industrial] .octo-abyss-floor::before {
 
 .octo-wholesale-chamber .octo-wholesale-media {
   position: absolute;
-  top: auto;
-  right: 8%;
-  bottom: 5%;
-  left: auto;
+  inset: 0 0 0 28%;
   z-index: 1;
-  width: 23.4%;
-  height: 68%;
+  width: auto;
+  height: auto;
   opacity: 1;
   visibility: visible;
   background: transparent !important;
@@ -1170,25 +1193,15 @@ html[data-home-industrial] .octo-abyss-floor::before {
 }
 
 .octo-world.octo-motion-ready .octo-wholesale-chamber .octo-wholesale-media {
-  transform: translate3d(0, calc(var(--wholesale-shift, 0px) * -1), 0);
+  transform: none;
 }
 
 .octo-wholesale-chamber .octo-wholesale-media img {
   object-fit: contain !important;
-  object-position: 50% 100%;
+  object-position: 100% 50%;
   mix-blend-mode: normal !important;
   background: transparent !important;
-  filter: sepia(0.32) saturate(0.88) contrast(0.98) brightness(0.93) hue-rotate(-6deg);
-}
-
-.octo-wholesale-shadow {
-  position: absolute;
-  right: 12%;
-  bottom: 9.5%;
-  z-index: 2;
-  width: 11%;
-  height: 0.38rem;
-  background: radial-gradient(ellipse 70% 55% at 50% 40%, rgb(18 12 8 / 0.38), transparent 74%);
+  filter: none;
 }
 
 .octo-wholesale-copy {
@@ -1224,19 +1237,49 @@ html[data-home-industrial] .octo-abyss-floor::before {
   filter: brightness(0.82) saturate(0.9);
 }
 
+body:has(.octo-world) .octo-footer-panel,
+body:has(.octo-world) [data-site-footer-mobile],
 html[data-home-industrial] .octo-footer-panel,
 html[data-home-industrial] [data-site-footer-mobile] {
   position: relative;
   z-index: 3;
-  margin: 0.75rem auto 0;
-  max-width: 72rem;
-  background: rgb(8 6 5 / 0.78);
-  box-shadow: 0 0 0 1px rgb(12 9 7 / 0.45);
+  margin: 1.75rem auto 1.25rem;
+  width: min(72rem, calc(100% - 1.5rem));
+  padding: 1.6rem 1.7rem 1.35rem;
+  overflow: hidden;
+  border: 1px solid rgb(232 204 150 / 0.28);
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(180deg, rgb(48 34 22 / 0.72), rgb(10 8 7 / 0.92)),
+    rgb(12 9 7 / 0.88);
+  box-shadow:
+    0 28px 64px rgb(0 0 0 / 0.45),
+    inset 0 1px 0 rgb(255 236 196 / 0.16);
+  backdrop-filter: blur(18px);
+  color: #f4ead8;
 }
 
+body:has(.octo-world) .octo-footer-panel::before,
+html[data-home-industrial] .octo-footer-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, #c08a4a 22%, #e8cc96 50%, #c08a4a 78%, transparent);
+}
+
+body:has(.octo-world) [data-site-footer-mobile],
 html[data-home-industrial] [data-site-footer-mobile] {
-  margin: 0 0.75rem;
-  padding-bottom: 0.5rem;
+  margin: 1rem 0.75rem 0;
+  padding: 1.1rem 1rem 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+body:has(.octo-world) [data-site-footer],
+html[data-home-industrial] [data-site-footer] {
+  min-height: 28rem;
+  padding-bottom: calc(var(--store-bottom-nav-h, 3.65rem) + 4.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 body:has(.octo-world) [data-site-footer] > .octo-seabed,
@@ -1277,5 +1320,885 @@ html[data-home-industrial] [data-site-footer] > .octo-seabed {
   .octo-chamber-finish {
     opacity: 1 !important;
     visibility: visible !important;
+  }
+
+  .octo-below-hero .octo-band .octo-band-shell,
+  .octo-below-hero .octo-band-title,
+  .octo-below-hero .octo-chamber,
+  .octo-below-hero .octo-equal-card,
+  .octo-below-hero .octo-room,
+  .octo-below-hero .octo-shop-card,
+  .octo-reviews-track,
+  .octo-tv-content {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+
+.octo-world.octo-motion-ready .octo-below-hero .octo-band:not(#toptan-bayiler):not(#uc-uretim-yolu):not(.is-revealed) .octo-band-shell {
+  opacity: 0;
+  transform: translate3d(0, 56px, 0);
+}
+
+.octo-below-hero .octo-band .octo-band-shell {
+  transition:
+    opacity 1100ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1100ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.octo-below-hero .octo-band.is-revealed .octo-band-shell {
+  opacity: 1;
+  transform: none;
+}
+
+.octo-world.octo-motion-ready .octo-below-hero .octo-band:not(.is-revealed) .octo-band-title,
+.octo-world.octo-motion-ready .octo-below-hero .octo-band:not(.is-revealed) .octo-band-lede,
+.octo-world.octo-motion-ready .octo-below-hero .octo-band:not(.is-revealed) .octo-chamber,
+.octo-world.octo-motion-ready .octo-below-hero .octo-band:not(.is-revealed) .octo-equal-card,
+.octo-world.octo-motion-ready .octo-below-hero .octo-band:not(.is-revealed) .octo-room,
+.octo-world.octo-motion-ready .octo-below-hero .octo-band:not(.is-revealed) .octo-shop-card,
+.octo-world.octo-motion-ready .octo-below-hero .octo-band:not(.is-revealed) .octo-story-steps li,
+.octo-world.octo-motion-ready .octo-below-hero .octo-band:not(.is-revealed) .octo-wholesale,
+.octo-world.octo-motion-ready .octo-below-hero .octo-band:not(.is-revealed) .octo-reviews {
+  opacity: 0;
+  transform: translate3d(0, 40px, 0);
+}
+
+.octo-below-hero .octo-band-title,
+.octo-below-hero .octo-band-lede,
+.octo-below-hero .octo-chamber,
+.octo-below-hero .octo-equal-card,
+.octo-below-hero .octo-room,
+.octo-below-hero .octo-shop-card,
+.octo-below-hero .octo-story-steps li,
+.octo-below-hero .octo-wholesale,
+.octo-below-hero .octo-reviews {
+  transition:
+    opacity 1000ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.octo-below-hero .octo-band.is-revealed .octo-band-title,
+.octo-below-hero .octo-band.is-revealed .octo-band-lede,
+.octo-below-hero .octo-band.is-revealed .octo-chamber,
+.octo-below-hero .octo-band.is-revealed .octo-equal-card,
+.octo-below-hero .octo-band.is-revealed .octo-room,
+.octo-below-hero .octo-band.is-revealed .octo-shop-card,
+.octo-below-hero .octo-band.is-revealed .octo-story-steps li,
+.octo-below-hero .octo-band.is-revealed .octo-wholesale,
+.octo-below-hero .octo-band.is-revealed .octo-reviews {
+  opacity: 1;
+  transform: none;
+}
+
+.octo-below-hero .octo-band.is-revealed .octo-chamber:nth-child(2),
+.octo-below-hero .octo-band.is-revealed .octo-cinematic-rail > li:nth-child(2) .octo-equal-card,
+.octo-below-hero .octo-band.is-revealed .octo-rooms > li:nth-child(2) .octo-room,
+.octo-below-hero .octo-band.is-revealed .octo-story-steps li:nth-child(2) {
+  transition-delay: 140ms;
+}
+
+.octo-below-hero .octo-band.is-revealed .octo-cinematic-rail > li:nth-child(3) .octo-equal-card,
+.octo-below-hero .octo-band.is-revealed .octo-rooms > li:nth-child(3) .octo-room,
+.octo-below-hero .octo-band.is-revealed .octo-story-steps li:nth-child(3) {
+  transition-delay: 240ms;
+}
+
+.octo-below-hero .octo-band.is-revealed .octo-cinematic-rail > li:nth-child(n + 4) .octo-equal-card {
+  transition-delay: 300ms;
+}
+
+.octo-world.octo-motion-ready #toptan-bayiler:not(.is-revealed) .octo-reviews {
+  opacity: 0;
+  transform: translate3d(24px, 0, 0);
+}
+
+#toptan-bayiler.is-revealed .octo-reviews {
+  opacity: 1;
+  transform: none;
+  transition: opacity 640ms ease, transform 640ms ease;
+}
+
+.octo-reviews {
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 1.15rem;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.octo-reviews-track {
+  display: flex;
+  width: max-content;
+  gap: 0.75rem;
+  animation: octo-review-rtl 42s linear infinite;
+  will-change: transform;
+}
+
+.octo-reviews:hover .octo-reviews-track {
+  animation-play-state: paused;
+}
+
+.octo-review-card {
+  flex: 0 0 min(18.5rem, 78vw);
+  padding: 0.9rem 1rem;
+  border: 1px solid rgb(232 204 150 / 0.16);
+  border-radius: 1rem;
+  background: rgb(18 13 10 / 0.78);
+  color: #f4ead8;
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.22);
+}
+
+.octo-review-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  margin-bottom: 0.55rem;
+}
+
+.octo-review-avatar {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: #4285f4;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.octo-review-name {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.octo-review-meta {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: rgb(232 204 150 / 0.7);
+}
+
+.octo-review-stars {
+  display: inline-flex;
+  gap: 0.08rem;
+}
+
+.octo-review-card p:last-child {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgb(244 234 216 / 0.88);
+}
+
+@keyframes octo-review-rtl {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+.octo-world.octo-motion-ready [data-site-footer]:not(.is-revealed) .octo-footer-panel,
+.octo-world.octo-motion-ready [data-site-footer]:not(.is-revealed) [data-site-footer-mobile] {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+}
+
+body:has(.octo-world) .octo-footer-panel,
+body:has(.octo-world) [data-site-footer-mobile] {
+  transition: opacity 820ms ease, transform 820ms ease;
+}
+
+[data-site-footer].is-revealed .octo-footer-panel,
+[data-site-footer].is-revealed [data-site-footer-mobile] {
+  opacity: 1;
+  transform: none;
+}
+
+.octo-below-hero #uc-uretim-yolu.octo-band {
+  background: transparent;
+  background-image: none;
+}
+
+.octo-order-film-lede {
+  max-width: 42ch;
+  margin: 0.35rem 0 0.85rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: rgb(241 232 214 / 0.78);
+}
+
+.octo-order-film .octo-story-mobile-visual,
+.octo-order-frame {
+  display: block !important;
+  min-height: 0 !important;
+}
+
+.octo-order-stage.octo-story-visual {
+  position: relative;
+  display: grid;
+  min-height: 0 !important;
+  place-items: center;
+  overflow: visible;
+  border: 0;
+  background: none;
+}
+
+.octo-story-beats-stage.octo-story-visual {
+  position: relative;
+  min-height: 18rem;
+  overflow: hidden;
+  border: 0;
+  background: #100c09;
+}
+
+.octo-story-beat-art {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 520ms ease;
+}
+
+.octo-story-beat-art[data-active="true"] {
+  opacity: 1;
+}
+
+@media (min-width: 900px) {
+  .octo-story-beats-stage.octo-story-visual {
+    min-height: 24rem;
+  }
+}
+
+.octo-film-screen {
+  position: relative;
+  width: min(64rem, 100%);
+  min-height: 28rem;
+  overflow: hidden;
+  border: 1px solid rgb(80 140 150 / 0.28);
+  border-radius: 0.55rem;
+  background: #0b1016;
+  box-shadow: 0 30px 70px rgb(0 0 0 / 0.45);
+  color: #e8eef2;
+}
+
+.octo-film-bar {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 0.7rem;
+  min-height: 2.15rem;
+  padding: 0 0.8rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.octo-film-dots {
+  grid-column: 1;
+  grid-row: 1;
+  width: 2.4rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #c08a4a 0 0.55rem, #d9b984 0.85rem 1.4rem, #8a6a45 1.7rem 2.25rem);
+}
+
+.octo-film-url {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: rgb(232 204 150 / 0.78);
+}
+
+.octo-film-url-app,
+.octo-film-filename,
+.octo-film-meta,
+.octo-film-chip,
+.octo-film-model,
+.octo-film-axis,
+.octo-film-pricebox,
+.octo-film-cart,
+.octo-film-buy,
+.octo-film-toast,
+.octo-film-fileline,
+.octo-film-foot-price {
+  opacity: 0;
+}
+
+.octo-film-home {
+  position: absolute;
+  inset: 2.15rem 0 0;
+  z-index: 6;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0.55rem;
+  padding: 1.4rem;
+  background: rgb(8 10 14 / 0.72);
+}
+
+.octo-film-home-kicker,
+.octo-film-side-label {
+  margin: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: rgb(217 185 132 / 0.72);
+}
+
+.octo-film-home-title {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.2rem, 3vw, 1.7rem);
+  letter-spacing: 0.06em;
+}
+
+.octo-film-home-cta,
+.octo-film-calc,
+.octo-film-cart,
+.octo-film-buy {
+  display: inline-flex;
+  min-height: 2.15rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.95rem;
+  border-radius: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.octo-film-home-cta,
+.octo-film-calc,
+.octo-film-buy {
+  background: #c08a4a;
+  color: #140e09;
+}
+
+.octo-film-studio {
+  position: absolute;
+  inset: 2.15rem 0 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: #0d131b;
+}
+
+.octo-film-appbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  font-size: 0.72rem;
+}
+
+.octo-film-appbar-actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.octo-film-appbar-actions span {
+  padding: 0 0.45rem;
+  color: rgb(180 200 210 / 0.78);
+  font-size: 0.68rem;
+}
+
+.octo-film-appbar-actions .octo-film-calc {
+  min-height: 1.9rem;
+  background: #c08a4a;
+  color: #140e09;
+}
+
+.octo-film-body {
+  display: grid;
+  grid-template-columns: 3.4rem minmax(0, 1fr) 13.2rem;
+  min-height: 0;
+}
+
+.octo-film-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.35rem 0.25rem;
+  border-right: 1px solid rgb(255 255 255 / 0.1);
+  background: #101820;
+}
+
+.octo-film-tools span {
+  display: grid;
+  min-height: 2.15rem;
+  place-items: center;
+  border-radius: 0.3rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  color: rgb(160 184 196 / 0.85);
+}
+
+.octo-film-tools span[data-active="true"] {
+  background: rgb(56 180 196 / 0.18);
+  color: #7ee0ea;
+}
+
+.octo-film-viewer {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgb(40 70 82 / 0.35), transparent 55%),
+    #0b1016;
+}
+
+.octo-film-plate {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 7%;
+  height: 46%;
+  border: 1px solid #1f4f5c;
+  background:
+    linear-gradient(rgb(31 79 92 / 0.55) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(90deg, rgb(23 52 61 / 0.7) 1px, transparent 1px) 0 0 / 16px 16px,
+    #141a22;
+  box-shadow: 0 18px 36px rgb(0 0 0 / 0.45);
+  transform: perspective(520px) rotateX(62deg);
+  transform-origin: 50% 100%;
+}
+
+.octo-film-axis {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  font-size: 0.62rem;
+  color: rgb(126 224 234 / 0.8);
+}
+
+.octo-film-axis-x { top: 12%; left: 10%; }
+.octo-film-axis-y { top: 12%; right: 10%; }
+.octo-film-axis-z { bottom: 14%; right: 10%; }
+
+.octo-film-gizmo {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.7rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  background:
+    conic-gradient(#e24b4b 0 120deg, #3ecf5a 0 240deg, #3b82f6 0);
+  opacity: 0.85;
+}
+
+.octo-film-drop {
+  position: relative;
+  z-index: 2;
+  margin: 2.4rem 0 0;
+  text-align: center;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  color: rgb(150 200 210 / 0.78);
+}
+
+.octo-film-chip {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  z-index: 3;
+  padding: 0.35rem 0.7rem;
+  border: 1px dashed rgb(80 180 190 / 0.55);
+  border-radius: 0.4rem;
+  background: rgb(12 18 24 / 0.82);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.octo-film-model {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 16%;
+  width: min(20rem, 58%);
+  height: 68%;
+  transform: translateX(-50%);
+  mix-blend-mode: lighten;
+  filter: drop-shadow(0 10px 18px rgb(0 0 0 / 0.45));
+}
+
+.octo-film-side {
+  display: grid;
+  align-content: start;
+  gap: 0.32rem;
+  padding: 0.55rem 0.65rem 0.7rem;
+  border-left: 1px solid rgb(255 255 255 / 0.1);
+  background: #101820;
+  overflow: hidden;
+}
+
+.octo-film-side-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.octo-film-upload {
+  display: grid;
+  min-height: 2.4rem;
+  place-items: center;
+  border: 1px dashed rgb(80 180 190 / 0.45);
+  border-radius: 0.55rem;
+  font-size: 0.62rem;
+  color: #7ee0ea;
+}
+
+.octo-film-fileline,
+.octo-film-qty {
+  margin: 0;
+  font-size: 0.68rem;
+  color: rgb(180 200 210 / 0.82);
+}
+
+.octo-film-rights {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.62rem;
+  color: rgb(180 200 210 / 0.82);
+}
+
+.octo-film-rights span {
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 1px solid #7ee0ea;
+  background: rgb(56 180 196 / 0.35);
+}
+
+.octo-film-swatches,
+.octo-film-quality {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem;
+}
+
+.octo-film-swatches span,
+.octo-film-quality span {
+  display: grid;
+  min-height: 1.7rem;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 0.28rem;
+  font-size: 0.58rem;
+}
+
+.octo-film-swatches span[data-on="true"],
+.octo-film-quality span[data-on="true"] {
+  border-color: #7ee0ea;
+  background: rgb(56 180 196 / 0.18);
+}
+
+.octo-film-quality {
+  grid-template-columns: 1fr;
+}
+
+.octo-film-pricebox {
+  display: grid;
+  gap: 0.12rem;
+  margin: 0;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid #c8a36a;
+  background: #f4ead8;
+  color: #140e09;
+  font-size: 0.62rem;
+}
+
+.octo-film-pricebox strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.15rem;
+}
+
+.octo-film-cart {
+  border: 1px solid rgb(126 224 234 / 0.55);
+  color: #7ee0ea;
+}
+
+.octo-film-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  min-height: 1.85rem;
+  padding: 0 0.75rem;
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  background: #101820;
+  font-size: 0.62rem;
+  color: rgb(180 200 210 / 0.82);
+}
+
+.octo-film-foot p {
+  margin: 0;
+  align-self: center;
+}
+
+.octo-film-toast {
+  position: absolute;
+  right: 0.85rem;
+  bottom: 0.75rem;
+  z-index: 4;
+  margin: 0;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: #c08a4a;
+  color: #140e09;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.octo-order-cursor {
+  pointer-events: none;
+  position: absolute;
+  z-index: 5;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #f4ead8;
+  border-radius: 999px;
+  background: rgb(192 138 74 / 0.9);
+  box-shadow: 0 0 0 6px rgb(192 138 74 / 0.18);
+  opacity: 0;
+}
+
+.octo-order-film[data-order-film="play"] .octo-film-home {
+  animation: octoFilmHome 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-url-home {
+  animation: octoFilmUrlHome 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-url-app {
+  animation: octoFilmUrlApp 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-drop {
+  animation: octoFilmDrop 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-axis,
+.octo-order-film[data-order-film="play"] .octo-film-meta,
+.octo-order-film[data-order-film="play"] .octo-film-fileline,
+.octo-order-film[data-order-film="play"] .octo-film-foot-price {
+  animation: octoFilmName 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-chip {
+  animation: octoFilmChip 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-filename {
+  animation: octoFilmName 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-model {
+  animation: octoFilmModel 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-home-cta {
+  animation: octoFilmPulse 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-calc {
+  animation: octoFilmCalc 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-pricebox {
+  animation: octoFilmPrice 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-cart {
+  animation: octoFilmCart 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-buy {
+  animation: octoFilmBuy 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-film-toast {
+  animation: octoFilmToast 16s ease-in-out infinite;
+}
+.octo-order-film[data-order-film="play"] .octo-order-cursor {
+  animation: octoFilmCursor 16s ease-in-out infinite;
+}
+
+.octo-order-film[data-order-film="static"] .octo-film-home,
+.octo-order-film[data-order-film="static"] .octo-film-url-home,
+.octo-order-film[data-order-film="static"] .octo-film-drop,
+.octo-order-film[data-order-film="static"] .octo-film-chip,
+.octo-order-film[data-order-film="static"] .octo-order-cursor {
+  display: none;
+}
+
+.octo-order-film[data-order-film="static"] .octo-film-url-app,
+.octo-order-film[data-order-film="static"] .octo-film-filename,
+.octo-order-film[data-order-film="static"] .octo-film-meta,
+.octo-order-film[data-order-film="static"] .octo-film-model,
+.octo-order-film[data-order-film="static"] .octo-film-axis,
+.octo-order-film[data-order-film="static"] .octo-film-fileline,
+.octo-order-film[data-order-film="static"] .octo-film-pricebox,
+.octo-order-film[data-order-film="static"] .octo-film-cart,
+.octo-order-film[data-order-film="static"] .octo-film-buy,
+.octo-order-film[data-order-film="static"] .octo-film-toast,
+.octo-order-film[data-order-film="static"] .octo-film-foot-price {
+  opacity: 1;
+}
+
+.octo-order-beats {
+  display: grid;
+  gap: 0.85rem;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.octo-order-beats li {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  gap: 0.65rem;
+  align-items: start;
+  opacity: 0.42;
+}
+
+.octo-order-beats li[data-active="true"] {
+  opacity: 1;
+}
+
+.octo-order-beats li > span {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: #d9b984;
+}
+
+.octo-order-film-cta {
+  margin-top: 1.35rem;
+}
+
+@keyframes octoFilmHome {
+  0%, 12% { opacity: 1; }
+  18%, 100% { opacity: 0; pointer-events: none; }
+}
+@keyframes octoFilmUrlHome {
+  0%, 14% { opacity: 1; }
+  20%, 100% { opacity: 0; }
+}
+@keyframes octoFilmUrlApp {
+  0%, 14% { opacity: 0; }
+  20%, 100% { opacity: 1; }
+}
+@keyframes octoFilmStudio {
+  0%, 100% { opacity: 1; }
+}
+@keyframes octoFilmDrop {
+  0%, 18% { opacity: 0; }
+  22%, 34% { opacity: 1; }
+  40%, 100% { opacity: 0; }
+}
+@keyframes octoFilmChip {
+  0%, 24% { opacity: 0; transform: translate(-50%, -48px); }
+  32% { opacity: 1; transform: translate(-50%, 0); }
+  42%, 100% { opacity: 0; }
+}
+@keyframes octoFilmName {
+  0%, 32% { opacity: 0.35; }
+  38%, 100% { opacity: 1; }
+}
+@keyframes octoFilmModel {
+  0%, 34% { opacity: 0; transform: translateX(-50%) scale(0.86) translateY(18px); }
+  42%, 100% { opacity: 1; transform: translateX(-50%); }
+}
+@keyframes octoFilmPulse {
+  0%, 6% { transform: scale(1); }
+  10% { transform: scale(0.94); }
+  14%, 100% { transform: scale(1); }
+}
+@keyframes octoFilmCalc {
+  0%, 48% { transform: scale(1); filter: none; }
+  54% { transform: scale(0.94); filter: brightness(1.15); }
+  60%, 100% { transform: scale(1); }
+}
+@keyframes octoFilmPrice {
+  0%, 56% { opacity: 0; transform: translateY(8px); }
+  64%, 100% { opacity: 1; transform: none; }
+}
+@keyframes octoFilmCart {
+  0%, 68% { opacity: 0; }
+  74%, 100% { opacity: 1; }
+}
+@keyframes octoFilmBuy {
+  0%, 80% { opacity: 0; }
+  86%, 100% { opacity: 1; }
+}
+@keyframes octoFilmToast {
+  0%, 88% { opacity: 0; transform: translateY(8px); }
+  94%, 100% { opacity: 1; transform: none; }
+}
+@keyframes octoFilmCursor {
+  0% { opacity: 0; left: 18%; top: 58%; transform: scale(1); }
+  6% { opacity: 1; left: 18%; top: 64%; }
+  10% { transform: scale(0.82); left: 18%; top: 64%; }
+  16% { opacity: 0; left: 18%; top: 64%; }
+  22% { opacity: 1; left: 38%; top: 36%; }
+  30% { left: 46%; top: 48%; transform: scale(0.82); }
+  38% { opacity: 0; left: 46%; top: 48%; }
+  50% { opacity: 1; left: 72%; top: 16%; }
+  54% { transform: scale(0.82); left: 78%; top: 16%; }
+  62% { opacity: 0.2; left: 78%; top: 16%; }
+  72% { opacity: 1; left: 86%; top: 68%; }
+  76% { transform: scale(0.82); }
+  82% { left: 86%; top: 78%; }
+  86% { transform: scale(0.82); }
+  94%, 100% { opacity: 0; left: 86%; top: 78%; }
+}
+
+@media (min-width: 900px) {
+  .octo-order-beats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.2rem;
+  }
+
+  .octo-film-screen {
+    min-height: 32rem;
+  }
+
+  .octo-film-model {
+    width: 22rem;
+    height: 72%;
+  }
+}
+
+@media (max-width: 639.98px) {
+  .octo-film-body {
+    grid-template-columns: 1fr;
+  }
+
+  .octo-film-tools,
+  .octo-film-gizmo {
+    display: none;
+  }
+
+  .octo-film-side {
+    border-left: 0;
+    border-top: 1px solid rgb(255 255 255 / 0.1);
+  }
+
+  .octo-film-screen {
+    min-height: 34rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .octo-order-film[data-order-film="play"] .octo-film-home,
+  .octo-order-film[data-order-film="play"] .octo-film-url-home,
+  .octo-order-film[data-order-film="play"] .octo-film-url-app,
+  .octo-order-film[data-order-film="play"] .octo-film-drop,
+  .octo-order-film[data-order-film="play"] .octo-film-chip,
+  .octo-order-film[data-order-film="play"] .octo-film-filename,
+  .octo-order-film[data-order-film="play"] .octo-film-model,
+  .octo-order-film[data-order-film="play"] .octo-film-home-cta,
+  .octo-order-film[data-order-film="play"] .octo-film-calc,
+  .octo-order-film[data-order-film="play"] .octo-film-pricebox,
+  .octo-order-film[data-order-film="play"] .octo-film-cart,
+  .octo-order-film[data-order-film="play"] .octo-film-buy,
+  .octo-order-film[data-order-film="play"] .octo-film-toast,
+  .octo-order-film[data-order-film="play"] .octo-order-cursor {
+    animation: none !important;
   }
 }
