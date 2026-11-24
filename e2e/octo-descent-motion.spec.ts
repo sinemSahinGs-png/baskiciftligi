@@ -448,6 +448,74 @@ test.describe("OCTO descent motion proof", () => {
     }
   });
 
+  test("footer seabed does not flash a black rectangle during fast entry", async ({ page }) => {
+    test.setTimeout(60_000);
+    fs.mkdirSync(shots, { recursive: true });
+    const session = await page.context().newCDPSession(page);
+    await session.send("Network.setCacheDisabled", { cacheDisabled: true });
+    await session.send("Emulation.setCPUThrottlingRate", { rate: 6 });
+
+    for (const width of [1440, 390] as const) {
+      await page.setViewportSize({ width, height: width < 800 ? 844 : 900 });
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await page.evaluate(() => window.scrollTo(0, 0));
+      const metrics = await page.evaluate(() => {
+        const scene = document.querySelector(".octo-seabed-scene") as SVGElement | null;
+        const wrap = document.querySelector("[data-site-footer] > .octo-seabed") as HTMLElement | null;
+        if (!scene || !wrap) return null;
+        const sceneStyle = getComputedStyle(scene);
+        const wrapStyle = getComputedStyle(wrap);
+        return {
+          sceneOverflow: `${sceneStyle.overflow} ${sceneStyle.overflowX} ${sceneStyle.overflowY}`,
+          wrapOverflow: `${wrapStyle.overflow} ${wrapStyle.overflowX} ${wrapStyle.overflowY}`,
+          sceneHeight: sceneStyle.height,
+          wrapContain: wrapStyle.contain,
+          transform: getComputedStyle(document.querySelector(".octo-seabed-layer-back")!).transform,
+        };
+      });
+      expect(metrics?.sceneOverflow, "scene overflow").toMatch(/clip|hidden/);
+      expect(metrics?.wrapOverflow, "wrap overflow").toMatch(/clip|hidden/);
+      expect(metrics?.sceneHeight).not.toBe("auto");
+      expect(metrics?.transform === "none" || metrics?.transform.includes("matrix")).toBe(true);
+
+      const prefix = width === 1440 ? "footer-entry-1440" : "footer-entry-390";
+      await page.screenshot({ path: path.join(shots, `${prefix}-00-top.png`) });
+      await page.mouse.wheel(0, 2400);
+      await page.screenshot({ path: path.join(shots, `${prefix}-01-wheel.png`) });
+      await page.keyboard.press("End");
+      await page.screenshot({ path: path.join(shots, `${prefix}-02-end.png`) });
+      const flash = await page.evaluate(() => {
+        const footer = document.querySelector("[data-site-footer]") as HTMLElement | null;
+        const scene = document.querySelector(".octo-seabed-scene") as SVGElement | null;
+        const wrap = document.querySelector("[data-site-footer] > .octo-seabed") as HTMLElement | null;
+        const panel = document.querySelector(".octo-footer-panel, [data-site-footer-mobile]") as HTMLElement | null;
+        if (!footer || !scene || !wrap || !panel) return { overflow: 99, taller: true };
+        const footerBox = footer.getBoundingClientRect();
+        const sceneBox = scene.getBoundingClientRect();
+        const wrapBox = wrap.getBoundingClientRect();
+        const panelBox = panel.getBoundingClientRect();
+        return {
+          sceneWider: sceneBox.width - wrapBox.width,
+          sceneTaller: sceneBox.height - wrapBox.height,
+          sceneAboveFooter: wrapBox.top - footerBox.top,
+          panelOutside: panelBox.left < footerBox.left - 2 || panelBox.right > footerBox.right + 2,
+          sceneOverflow: getComputedStyle(scene).overflow,
+        };
+      });
+      expect(flash.sceneWider, `scene wider @${width}`).toBeLessThanOrEqual(2);
+      expect(flash.sceneTaller, `scene taller @${width}`).toBeLessThanOrEqual(2);
+      expect(flash.panelOutside, `panel overflow @${width}`).toBe(false);
+      await page.goto("/#", { waitUntil: "domcontentloaded" });
+      await page.evaluate(() => {
+        window.scrollTo(0, document.documentElement.scrollHeight);
+      });
+      await page.screenshot({ path: path.join(shots, `${prefix}-03-hash-end.png`) });
+      await page.mouse.wheel(0, -1800);
+      await page.screenshot({ path: path.join(shots, `${prefix}-04-reverse.png`) });
+    }
+    await session.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+  });
+
   test("End key lands on a readable footer rather than an empty cave", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");

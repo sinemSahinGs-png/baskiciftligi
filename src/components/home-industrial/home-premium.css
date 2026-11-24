@@ -865,11 +865,13 @@ html[data-home-industrial][data-header-compact] header .shell {
   transition: transform 380ms ease;
 }
 
-html[data-home-industrial] .octo-seabed {
+body:has(.octo-world) [data-site-footer] > .octo-seabed,
+html[data-home-industrial] [data-site-footer] > .octo-seabed {
   pointer-events: none;
   position: absolute;
   inset: 0;
   overflow: hidden;
+  contain: paint;
 }
 
 html[data-home-industrial] .octo-seabed-dune {

@@ -5,7 +5,10 @@ export function OctoSeabedScene() {
     <svg
       className="octo-seabed-scene"
       viewBox="0 0 1440 420"
+      width="1440"
+      height="420"
       preserveAspectRatio="xMidYMax slice"
+      overflow="hidden"
       aria-hidden="true"
     >
       <defs>
@@ -18,19 +21,40 @@ export function OctoSeabedScene() {
         <pattern id="octo-sand-fore" patternUnits="userSpaceOnUse" width="1440" height="420">
           <image href={SAND} x="-80" y="40" width="1600" height="480" preserveAspectRatio="xMidYMax slice" />
         </pattern>
-        <filter id="octo-dune-back-grade">
+        <filter
+          id="octo-dune-back-grade"
+          x="0"
+          y="0"
+          width="1"
+          height="1"
+          filterUnits="objectBoundingBox"
+        >
           <feColorMatrix
             type="matrix"
             values="0.22 0 0 0 0.02  0 0.14 0 0 0.01  0 0 0.10 0 0.01  0 0 0 1 0"
           />
         </filter>
-        <filter id="octo-dune-mid-grade">
+        <filter
+          id="octo-dune-mid-grade"
+          x="0"
+          y="0"
+          width="1"
+          height="1"
+          filterUnits="objectBoundingBox"
+        >
           <feColorMatrix
             type="matrix"
             values="0.55 0 0 0 0.04  0 0.34 0 0 0.02  0 0 0.18 0 0.01  0 0 0 1 0"
           />
         </filter>
-        <filter id="octo-dune-fore-grade">
+        <filter
+          id="octo-dune-fore-grade"
+          x="0"
+          y="0"
+          width="1"
+          height="1"
+          filterUnits="objectBoundingBox"
+        >
           <feColorMatrix
             type="matrix"
             values="0.92 0 0 0 0.06  0 0.62 0 0 0.03  0 0 0.28 0 0.01  0 0 0 1 0"
@@ -56,7 +80,14 @@ export function OctoSeabedScene() {
         <pattern id="octo-tentacle-grain" patternUnits="userSpaceOnUse" width="48" height="28">
           <image href={SAND} x="-20" y="0" width="90" height="40" preserveAspectRatio="xMidYMid slice" />
         </pattern>
-        <filter id="octo-soft-shadow" x="-35%" y="-25%" width="170%" height="170%">
+        <filter
+          id="octo-soft-shadow"
+          x="-0.08"
+          y="-0.08"
+          width="1.2"
+          height="1.24"
+          filterUnits="objectBoundingBox"
+        >
           <feDropShadow dx="6" dy="10" stdDeviation="6" floodColor="#050302" floodOpacity="0.72" />
         </filter>
         <linearGradient id="octo-ivory-print" x1="0.15" y1="0" x2="0.9" y2="1">
@@ -74,19 +105,32 @@ export function OctoSeabedScene() {
         </linearGradient>
       </defs>
       <rect width="1440" height="420" fill="url(#octo-cave-fall)" />
-      <g className="octo-seabed-layer octo-seabed-layer-back" filter="url(#octo-dune-back-grade)">
+      <g className="octo-seabed-layer octo-seabed-layer-back">
         <path
-          fill="url(#octo-sand-back)"
+          fill="#1a110c"
           d="M0 248 C 180 168, 340 228, 520 176 C 720 118, 940 210, 1180 150 C 1320 118, 1400 168, 1440 158 L 1440 420 L 0 420 Z"
         />
+        <g filter="url(#octo-dune-back-grade)">
+          <path
+            fill="url(#octo-sand-back)"
+            d="M0 248 C 180 168, 340 228, 520 176 C 720 118, 940 210, 1180 150 C 1320 118, 1400 168, 1440 158 L 1440 420 L 0 420 Z"
+          />
+        </g>
       </g>
-      <g className="octo-seabed-layer octo-seabed-layer-mid" filter="url(#octo-dune-mid-grade)">
+      <g className="octo-seabed-layer octo-seabed-layer-mid">
         <path
-          fill="url(#octo-sand-mid)"
+          fill="#4a2e18"
           d="M0 292 C 220 214, 410 276, 620 232 C 840 184, 1040 268, 1260 214 C 1360 192, 1420 228, 1440 222 L 1440 420 L 0 420 Z"
         />
+        <g filter="url(#octo-dune-mid-grade)">
+          <path
+            fill="url(#octo-sand-mid)"
+            d="M0 292 C 220 214, 410 276, 620 232 C 840 184, 1040 268, 1260 214 C 1360 192, 1420 228, 1440 222 L 1440 420 L 0 420 Z"
+          />
+        </g>
       </g>
-      <g className="octo-seabed-layer octo-seabed-layer-tentacle" filter="url(#octo-soft-shadow)">
+      <g className="octo-seabed-layer octo-seabed-layer-tentacle">
+        <g filter="url(#octo-soft-shadow)">
         <ellipse cx="62" cy="392" rx="78" ry="16" fill="#050302" opacity="0.58" />
         <path
           fill="url(#octo-tentacle-body)"
@@ -114,12 +158,19 @@ export function OctoSeabedScene() {
           <ellipse cx="70" cy="348" rx="1.8" ry="1.2" transform="rotate(-20 70 348)" />
           <ellipse cx="58" cy="364" rx="1.6" ry="1.05" transform="rotate(-14 58 364)" />
         </g>
+        </g>
       </g>
-      <g className="octo-seabed-layer octo-seabed-layer-fore" filter="url(#octo-dune-fore-grade)">
+      <g className="octo-seabed-layer octo-seabed-layer-fore">
         <path
-          fill="url(#octo-sand-fore)"
+          fill="#8a5a32"
           d="M0 348 C 160 300, 310 360, 490 318 C 690 272, 880 352, 1100 308 C 1260 280, 1380 330, 1440 318 L 1440 420 L 0 420 Z"
         />
+        <g filter="url(#octo-dune-fore-grade)">
+          <path
+            fill="url(#octo-sand-fore)"
+            d="M0 348 C 160 300, 310 360, 490 318 C 690 272, 880 352, 1100 308 C 1260 280, 1380 330, 1440 318 L 1440 420 L 0 420 Z"
+          />
+        </g>
       </g>
       <g className="octo-seabed-layer octo-seabed-layer-detail">
         <ellipse cx="268" cy="388" rx="36" ry="8" fill="#080604" opacity="0.28" />
