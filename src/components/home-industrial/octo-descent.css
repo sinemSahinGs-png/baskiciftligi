@@ -1079,9 +1079,9 @@ html[data-home-industrial] .octo-abyss-floor::before {
   .octo-wholesale-chamber .octo-wholesale-media {
     top: auto;
     right: 4%;
-    width: 28%;
+    width: 25.2%;
     height: 48%;
-    bottom: 8%;
+    bottom: 7%;
     opacity: 1;
   }
 
@@ -1138,12 +1138,13 @@ html[data-home-industrial] .octo-abyss-floor::before {
 
 .octo-wholesale-chamber .octo-wholesale-media {
   position: absolute;
-  top: 10%;
-  right: 7%;
-  bottom: 8%;
+  top: auto;
+  right: 8%;
+  bottom: 5%;
   left: auto;
   z-index: 1;
-  width: 26%;
+  width: 23.4%;
+  height: 68%;
   opacity: 1;
   visibility: visible;
   background: transparent !important;
@@ -1162,17 +1163,17 @@ html[data-home-industrial] .octo-abyss-floor::before {
   object-position: 50% 100%;
   mix-blend-mode: normal !important;
   background: transparent !important;
-  filter: sepia(0.34) saturate(0.62) contrast(1.04) brightness(0.97);
+  filter: sepia(0.32) saturate(0.88) contrast(0.98) brightness(0.93) hue-rotate(-6deg);
 }
 
 .octo-wholesale-shadow {
   position: absolute;
-  right: 11%;
-  bottom: 7%;
+  right: 12%;
+  bottom: 9.5%;
   z-index: 2;
-  width: 16%;
-  height: 1.15rem;
-  background: radial-gradient(ellipse at 50% 50%, rgb(8 6 5 / 0.5), transparent 72%);
+  width: 11%;
+  height: 0.38rem;
+  background: radial-gradient(ellipse 70% 55% at 50% 40%, rgb(18 12 8 / 0.38), transparent 74%);
 }
 
 .octo-wholesale-copy {
@@ -1186,14 +1187,26 @@ html[data-home-industrial] .octo-abyss-floor::before {
 
 .octo-wholesale-sand {
   position: absolute;
-  inset: auto 0 -8%;
+  inset: auto 0 -3%;
   z-index: 3;
-  height: 32%;
+  height: 15%;
   background:
-    radial-gradient(ellipse 50% 90% at 12% 100%, #c8a56e 0 44%, transparent 46%),
-    radial-gradient(ellipse 60% 110% at 78% 120%, #8a6238 0 50%, transparent 52%),
-    linear-gradient(180deg, transparent 18%, rgb(61 40 22 / 0.92) 100%);
-  clip-path: polygon(0% 52%, 14% 38%, 32% 50%, 48% 30%, 68% 46%, 86% 28%, 100% 42%, 100% 100%, 0% 100%);
+    linear-gradient(180deg, rgb(18 12 8 / 0.04) 0%, rgb(18 12 8 / 0.16) 100%),
+    url("/images/home-atelier/cave-sand-bg.webp") 18% 92% / 140% auto;
+  clip-path: polygon(0% 58%, 14% 42%, 32% 54%, 48% 34%, 68% 48%, 82% 38%, 100% 46%, 100% 100%, 0% 100%);
+}
+
+.octo-wholesale-ridge {
+  position: absolute;
+  right: 10%;
+  bottom: 9%;
+  z-index: 3;
+  width: 16%;
+  height: 0.85rem;
+  pointer-events: none;
+  background: url("/images/home-atelier/cave-sand-bg.webp") 22% 94% / 160% auto;
+  clip-path: polygon(4% 78%, 18% 42%, 42% 18%, 68% 36%, 88% 58%, 100% 100%, 0 100%);
+  filter: brightness(0.82) saturate(0.9);
 }
 
 html[data-home-industrial] .octo-footer-panel,

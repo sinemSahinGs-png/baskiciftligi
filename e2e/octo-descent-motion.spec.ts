@@ -347,12 +347,16 @@ test.describe("OCTO descent motion proof", () => {
   });
 
   test("wholesale sand overlaps the chamber and footer links stay above sand", async ({ page }) => {
+    test.setTimeout(60_000);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     await page.locator("#toptan-bayiler").scrollIntoViewIfNeeded();
     await expect(page.locator(".octo-wholesale-sand")).toBeVisible();
     await expect(page.locator("[data-wholesale-dragon]")).toBeVisible();
     await page.screenshot({ path: path.join(shots, "wholesale-chamber-390.png") });
+    await page.locator("#toptan-bayiler").screenshot({
+      path: path.join(shots, "wholesale-final-390.png"),
+    });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.locator("#toptan-bayiler").scrollIntoViewIfNeeded();
     const dragonShare = await page.evaluate(() => {
@@ -361,9 +365,12 @@ test.describe("OCTO descent motion proof", () => {
       if (!banner || !dragon) return 99;
       return dragon.getBoundingClientRect().width / banner.getBoundingClientRect().width;
     });
-    expect(dragonShare).toBeGreaterThanOrEqual(0.2);
-    expect(dragonShare).toBeLessThanOrEqual(0.3);
+    expect(dragonShare).toBeGreaterThanOrEqual(0.21);
+    expect(dragonShare).toBeLessThanOrEqual(0.26);
     await page.screenshot({ path: path.join(shots, "wholesale-chamber-1440.png") });
+    await page.locator("#toptan-bayiler").screenshot({
+      path: path.join(shots, "wholesale-final-1440.png"),
+    });
     await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
     await expect(page.locator(".octo-seabed-scene")).toBeVisible();
     const covered = await page.evaluate(() => {
@@ -382,10 +389,18 @@ test.describe("OCTO descent motion proof", () => {
       );
       expect(overflow, `overflow @${width}`).toBeLessThanOrEqual(2);
     }
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "footer-complete-390.png") });
+    await page.locator("[data-site-footer]").screenshot({
+      path: path.join(shots, "footer-final-390.png"),
+    });
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "footer-complete-1440.png"), fullPage: false });
+    await page.locator("[data-site-footer]").screenshot({
+      path: path.join(shots, "footer-final-1440.png"),
+    });
     await page.screenshot({ path: path.join(shots, "fullpage-1440.png"), fullPage: true });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
@@ -406,6 +421,8 @@ test.describe("OCTO descent motion proof", () => {
         const img = document.querySelector("[data-wholesale-dragon] img") as HTMLImageElement | null;
         return Boolean(img && img.complete && img.naturalWidth > 8);
       });
+      const src = await page.locator("[data-wholesale-dragon] img").getAttribute("src");
+      expect(src, `dragon src @${width}`).toContain("wholesale-dragon-embed");
       const metrics = await dragon.evaluate((node) => {
         const style = getComputedStyle(node);
         const box = node.getBoundingClientRect();

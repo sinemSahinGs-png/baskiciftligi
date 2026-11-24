@@ -36,19 +36,37 @@ export function OctoSeabedScene() {
             values="0.92 0 0 0 0.06  0 0.62 0 0 0.03  0 0 0.28 0 0.01  0 0 0 1 0"
           />
         </filter>
-        <linearGradient id="octo-tentacle-body" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#d9b984" />
-          <stop offset="38%" stopColor="#8a6238" />
-          <stop offset="100%" stopColor="#3d2416" />
+        <linearGradient id="octo-tentacle-body" x1="0.12" y1="0.05" x2="0.9" y2="1">
+          <stop offset="0%" stopColor="#6a3a22" />
+          <stop offset="28%" stopColor="#3a1c12" />
+          <stop offset="62%" stopColor="#1a0d0a" />
+          <stop offset="100%" stopColor="#0c0706" />
         </linearGradient>
-        <radialGradient id="octo-sucker" cx="50%" cy="40%" r="55%">
-          <stop offset="0%" stopColor="#efe3ce" stopOpacity="0.85" />
-          <stop offset="55%" stopColor="#8a6238" />
-          <stop offset="100%" stopColor="#2a1a10" />
+        <linearGradient id="octo-tentacle-rim" x1="0" y1="0" x2="0.2" y2="1">
+          <stop offset="0%" stopColor="#c48a52" stopOpacity="0.7" />
+          <stop offset="55%" stopColor="#8a4e28" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#1a0d0a" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="octo-sucker" cx="42%" cy="38%" r="62%">
+          <stop offset="0%" stopColor="#1a0e0a" />
+          <stop offset="45%" stopColor="#3d2216" />
+          <stop offset="78%" stopColor="#6a3a22" />
+          <stop offset="100%" stopColor="#120a08" />
         </radialGradient>
-        <filter id="octo-soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="6" stdDeviation="5" floodColor="#080604" floodOpacity="0.55" />
+        <pattern id="octo-tentacle-grain" patternUnits="userSpaceOnUse" width="48" height="28">
+          <image href={SAND} x="-20" y="0" width="90" height="40" preserveAspectRatio="xMidYMid slice" />
+        </pattern>
+        <filter id="octo-soft-shadow" x="-35%" y="-25%" width="170%" height="170%">
+          <feDropShadow dx="6" dy="10" stdDeviation="6" floodColor="#050302" floodOpacity="0.72" />
         </filter>
+        <linearGradient id="octo-ivory-print" x1="0.15" y1="0" x2="0.9" y2="1">
+          <stop offset="0%" stopColor="#d7c09a" />
+          <stop offset="48%" stopColor="#c4a574" />
+          <stop offset="100%" stopColor="#8a6238" />
+        </linearGradient>
+        <clipPath id="octo-print-bury">
+          <path d="M968 352 L 1008 344 L 1024 358 L 1002 368 L 966 362 Z" />
+        </clipPath>
         <linearGradient id="octo-cave-fall" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#24180f" stopOpacity="0" />
           <stop offset="55%" stopColor="#120c09" stopOpacity="0.72" />
@@ -69,21 +87,33 @@ export function OctoSeabedScene() {
         />
       </g>
       <g className="octo-seabed-layer octo-seabed-layer-tentacle" filter="url(#octo-soft-shadow)">
+        <ellipse cx="62" cy="392" rx="78" ry="16" fill="#050302" opacity="0.58" />
         <path
           fill="url(#octo-tentacle-body)"
-          d="M-10 392 C 28 350, 48 300, 86 252 C 118 214, 156 188, 198 214 C 226 232, 198 258, 164 248 C 132 238, 112 278, 96 318 C 82 352, 108 372, 76 386 C 42 400, 8 396, -10 392 Z"
+          d="M-22 408 C 6 386, 24 352, 46 324 C 64 302, 90 288, 114 306 C 132 320, 122 338, 98 330 C 80 324, 68 340, 58 360 C 48 380, 22 398, -22 408 Z"
         />
         <path
-          fill="none"
-          stroke="#efe3ce"
-          strokeOpacity="0.35"
-          strokeWidth="3"
-          d="M18 360 C 52 318, 78 274, 118 246"
+          fill="url(#octo-tentacle-grain)"
+          opacity="0.16"
+          style={{ mixBlendMode: "multiply" }}
+          d="M-22 408 C 6 386, 24 352, 46 324 C 64 302, 90 288, 114 306 C 132 320, 122 338, 98 330 C 80 324, 68 340, 58 360 C 48 380, 22 398, -22 408 Z"
         />
-        <ellipse cx="72" cy="348" rx="9" ry="7" fill="url(#octo-sucker)" />
-        <ellipse cx="58" cy="368" rx="8" ry="6" fill="url(#octo-sucker)" />
-        <ellipse cx="92" cy="328" rx="7" ry="6" fill="url(#octo-sucker)" />
-        <ellipse cx="108" cy="304" rx="6" ry="5" fill="url(#octo-sucker)" />
+        <path
+          fill="url(#octo-tentacle-rim)"
+          d="M-10 396 C 16 372, 36 342, 58 318 C 74 304, 92 298, 106 310 C 92 312, 74 328, 62 348 C 50 368, 24 388, -10 396 Z"
+        />
+        <g fill="url(#octo-sucker)" opacity="0.95">
+          <ellipse cx="96" cy="318" rx="5.6" ry="4.3" transform="rotate(-32 96 318)" />
+          <ellipse cx="82" cy="332" rx="5.2" ry="4" transform="rotate(-26 82 332)" />
+          <ellipse cx="70" cy="348" rx="4.8" ry="3.6" transform="rotate(-20 70 348)" />
+          <ellipse cx="58" cy="364" rx="4.3" ry="3.2" transform="rotate(-14 58 364)" />
+        </g>
+        <g fill="none" stroke="#0a0604" strokeWidth="1.2" opacity="0.75">
+          <ellipse cx="96" cy="318" rx="2.2" ry="1.5" transform="rotate(-32 96 318)" />
+          <ellipse cx="82" cy="332" rx="2" ry="1.35" transform="rotate(-26 82 332)" />
+          <ellipse cx="70" cy="348" rx="1.8" ry="1.2" transform="rotate(-20 70 348)" />
+          <ellipse cx="58" cy="364" rx="1.6" ry="1.05" transform="rotate(-14 58 364)" />
+        </g>
       </g>
       <g className="octo-seabed-layer octo-seabed-layer-fore" filter="url(#octo-dune-fore-grade)">
         <path
@@ -92,18 +122,32 @@ export function OctoSeabedScene() {
         />
       </g>
       <g className="octo-seabed-layer octo-seabed-layer-detail">
-        <ellipse cx="268" cy="384" rx="38" ry="10" fill="#080604" opacity="0.4" />
-        <ellipse cx="268" cy="372" rx="28" ry="9" fill="#d9b984" opacity="0.38" />
+        <ellipse cx="268" cy="388" rx="36" ry="8" fill="#080604" opacity="0.28" />
+        <g opacity="0.34">
+          <ellipse cx="268" cy="376" rx="26" ry="8" fill="#8a6238" />
+          <path
+            fill="none"
+            stroke="#c4a574"
+            strokeOpacity="0.55"
+            strokeWidth="1.4"
+            d="M248 374 C 258 364, 278 364, 288 376 C 278 384, 256 384, 248 374"
+          />
+        </g>
         <path
-          fill="none"
-          stroke="#efe3ce"
-          strokeOpacity="0.55"
-          strokeWidth="2.2"
-          d="M246 370 C 258 356, 278 356, 290 372 C 278 382, 256 382, 246 370"
+          fill="url(#octo-sand-fore)"
+          opacity="0.72"
+          d="M236 372 C 250 360, 270 358, 292 370 C 286 390, 258 398, 238 388 Z"
         />
-        <ellipse cx="996" cy="394" rx="34" ry="9" fill="#080604" opacity="0.45" />
-        <path fill="#c8a56e" d="M972 360 L 1006 348 L 1022 372 L 998 386 L 968 376 Z" />
-        <path fill="#efe3ce" opacity="0.28" d="M980 358 L 1004 350 L 1008 362 Z" />
+        <ellipse cx="996" cy="392" rx="30" ry="7" fill="#080604" opacity="0.32" />
+        <g clipPath="url(#octo-print-bury)">
+          <path fill="url(#octo-ivory-print)" d="M972 360 L 1006 348 L 1022 372 L 998 386 L 968 376 Z" />
+          <path fill="#efe3ce" opacity="0.22" d="M980 358 L 1004 350 L 1008 362 Z" />
+        </g>
+        <path
+          fill="url(#octo-sand-fore)"
+          opacity="0.8"
+          d="M960 368 C 984 356, 1014 360, 1028 378 C 1012 396, 980 402, 958 388 Z"
+        />
       </g>
     </svg>
   );

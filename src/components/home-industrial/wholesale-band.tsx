@@ -25,12 +25,14 @@ export function WholesaleBand() {
               src={mineralCutouts.wholesaleDragon}
               alt=""
               fill
+              priority
               className="object-contain"
-              sizes="(max-width: 767px) 52vw, 28vw"
+              sizes="(max-width: 767px) 48vw, 24vw"
             />
           </span>
           <span className="octo-wholesale-shadow" aria-hidden="true" />
           <span className="octo-wholesale-sand" aria-hidden="true" />
+          <span className="octo-wholesale-ridge" aria-hidden="true" />
           <div className="octo-wholesale-copy">
             <h2 id="wholesale-heading">{t("home.wholesalePlanTitle")}</h2>
             <p>{t("home.wholesalePlanCopy")}</p>
