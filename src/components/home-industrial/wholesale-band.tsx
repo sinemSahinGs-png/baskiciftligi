@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import { useTranslations } from "next-intl";
 
-import { industrialAssets } from "@/components/home-industrial/industrial-slots";
+import { mineralCutouts } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { HomeTrackLink } from "@/components/home/home-track-link";
 
@@ -22,7 +22,7 @@ export function WholesaleBand() {
           <span className="octo-wholesale-cave" aria-hidden="true" />
           <span className="octo-wholesale-media" data-wholesale-dragon="" aria-hidden="true">
             <SlotImage
-              src={industrialAssets.archiveMain}
+              src={mineralCutouts.wholesaleDragon}
               alt=""
               fill
               className="object-contain"

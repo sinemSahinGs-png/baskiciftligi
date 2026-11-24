@@ -4,7 +4,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-import { industrialAssets } from "@/components/home-industrial/industrial-slots";
+import { mineralCutouts } from "@/components/home-industrial/industrial-slots";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { HomeTrackLink } from "@/components/home/home-track-link";
 import { storefrontCategoryAsset } from "@/domain/catalog/storefront-taxonomy";
@@ -30,7 +30,7 @@ export function StartPath() {
               <span className="octo-chamber-cave" aria-hidden="true" />
               <span className="octo-chamber-object octo-chamber-wire" data-portal-layer="wire">
                 <SlotImage
-                  src={industrialAssets.heroWireframeVase}
+                  src={mineralCutouts.portalVaseWire}
                   alt=""
                   fill
                   className="object-contain"
@@ -39,7 +39,7 @@ export function StartPath() {
               </span>
               <span className="octo-chamber-object octo-chamber-material" data-portal-layer="material">
                 <SlotImage
-                  src={industrialAssets.heroWireframeVase}
+                  src={mineralCutouts.portalVaseWire}
                   alt=""
                   fill
                   className="object-contain"
@@ -48,7 +48,7 @@ export function StartPath() {
               </span>
               <span className="octo-chamber-object octo-chamber-finish" data-portal-layer="finish">
                 <SlotImage
-                  src={industrialAssets.featuredProduct}
+                  src={mineralCutouts.portalVaseFinish}
                   alt=""
                   fill
                   className="object-contain"

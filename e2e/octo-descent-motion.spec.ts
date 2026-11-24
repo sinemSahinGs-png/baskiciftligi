@@ -216,7 +216,7 @@ test.describe("OCTO descent motion proof", () => {
   });
 
   test("portal phases are exclusive and OCTO heading is plain text", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
     await page.locator("[data-portal='file']").scrollIntoViewIfNeeded();
     const phases = [
@@ -257,6 +257,24 @@ test.describe("OCTO descent motion proof", () => {
       world?.style.setProperty("--portal-material-vis", "visible");
     });
     await page.screenshot({ path: path.join(shots, "portal-file-reverse.png") });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator("[data-portal='file']").scrollIntoViewIfNeeded();
+    for (const [label, value] of [
+      ["0", "0"],
+      ["50", "0.5"],
+      ["100", "1"],
+    ] as const) {
+      await page.evaluate((progress) => {
+        const p = Number(progress);
+        const wire = p <= 0.38 ? 1 : p >= 0.52 ? 0 : 1 - (p - 0.38) / 0.14;
+        const finish = p <= 0.58 ? 0 : Math.max(0, Math.min(1, (p - 0.58) / 0.42));
+        const world = document.querySelector<HTMLElement>(".octo-world");
+        world?.style.setProperty("--portal-wire", String(Math.max(0, Math.min(1, wire))));
+        world?.style.setProperty("--portal-finish", String(finish));
+        world?.style.setProperty("--portal-material", p > 0.22 && p < 0.62 ? "0.6" : "0");
+      }, value);
+      await page.screenshot({ path: path.join(shots, `portal-file-${label}-390.png`) });
+    }
     const heading = page.locator("#universe-heading");
     await heading.scrollIntoViewIfNeeded();
     await expect(heading).toHaveText(/OCTO EVRENİ/i);
@@ -376,5 +394,69 @@ test.describe("OCTO descent motion proof", () => {
       const size = Number.parseFloat(getComputedStyle(node.querySelector(".octo-depth-value") ?? node).fontSize);
       if (size < 11) throw new Error(`depth HUD too small: ${size}`);
     });
+  });
+
+  test("wholesale dragon is visible on a fresh direct hash", async ({ page }) => {
+    for (const width of [1440, 390] as const) {
+      await page.setViewportSize({ width, height: width < 800 ? 844 : 900 });
+      await page.goto("/#toptan-bayiler", { waitUntil: "domcontentloaded" });
+      const dragon = page.locator("[data-wholesale-dragon]");
+      await expect(dragon).toBeVisible();
+      await page.waitForFunction(() => {
+        const img = document.querySelector("[data-wholesale-dragon] img") as HTMLImageElement | null;
+        return Boolean(img && img.complete && img.naturalWidth > 8);
+      });
+      const metrics = await dragon.evaluate((node) => {
+        const style = getComputedStyle(node);
+        const box = node.getBoundingClientRect();
+        return {
+          opacity: Number(style.opacity),
+          mix: style.mixBlendMode,
+          mask: style.webkitMaskImage || style.maskImage,
+          bg: style.backgroundImage,
+          width: box.width,
+          height: box.height,
+        };
+      });
+      expect(metrics.opacity, `dragon opacity @${width}`).toBe(1);
+      expect(metrics.width).toBeGreaterThan(40);
+      expect(metrics.height).toBeGreaterThan(40);
+      expect(metrics.mix).toBe("normal");
+      expect(metrics.mask === "none" || metrics.mask === "").toBe(true);
+      const shot = width === 1440 ? "wholesale-direct-hash-first-paint.png" : "wholesale-direct-hash-first-paint-390.png";
+      await page.screenshot({ path: path.join(shots, shot) });
+      await page.waitForTimeout(400);
+      const settled = width === 1440 ? "wholesale-settled.png" : "wholesale-settled-390.png";
+      await page.screenshot({ path: path.join(shots, settled) });
+    }
+  });
+
+  test("End key lands on a readable footer rather than an empty cave", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await page.locator("body").click({ position: { x: 24, y: 80 } });
+    await page.keyboard.press("End");
+    await page.waitForTimeout(120);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await expect(page.locator(".octo-footer-panel")).toBeVisible();
+    await expect(page.locator('.octo-footer-panel a[href="/toptan"]')).toBeVisible();
+    await page.screenshot({ path: path.join(shots, "end-key-settled.png") });
+    await page.locator("[data-site-footer]").screenshot({
+      path: path.join(shots, "footer-top.png"),
+    });
+    await page.screenshot({ path: path.join(shots, "footer-bottom.png") });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.locator("body").click({ position: { x: 24, y: 80 } });
+    await page.keyboard.press("End");
+    await page.waitForTimeout(120);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await expect(page.locator("[data-site-footer-mobile]")).toBeVisible();
+    await expect(page.locator("[data-site-footer-mobile] button").first()).toBeVisible();
+    await page.screenshot({ path: path.join(shots, "end-key-settled-390.png") });
+    await page.locator("[data-site-footer]").screenshot({
+      path: path.join(shots, "footer-top-390.png"),
+    });
+    await page.screenshot({ path: path.join(shots, "footer-bottom-390.png") });
   });
 });

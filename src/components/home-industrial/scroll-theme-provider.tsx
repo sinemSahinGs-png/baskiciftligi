@@ -57,10 +57,6 @@ const HASH_HEADINGS: Record<string, string> = {
   atolye: "start-path-heading",
 };
 
-function vis(value: number) {
-  return value > 0.04 ? "visible" : "hidden";
-}
-
 function alignHash() {
   const id = window.location.hash.replace("#", "");
   if (!id) return;
@@ -136,9 +132,6 @@ export function ScrollThemeProvider() {
         world.style.setProperty("--portal-wire", phases.wire.toFixed(4));
         world.style.setProperty("--portal-material", phases.material.toFixed(4));
         world.style.setProperty("--portal-finish", phases.finish.toFixed(4));
-        world.style.setProperty("--portal-wire-vis", vis(phases.wire));
-        world.style.setProperty("--portal-material-vis", vis(phases.material));
-        world.style.setProperty("--portal-finish-vis", vis(phases.finish));
         world.style.setProperty("--octo-portal-find", portalFind.toFixed(4));
         world.style.setProperty("--universe-rise", sectionProgress(universe, vh).toFixed(4));
         world.style.setProperty(

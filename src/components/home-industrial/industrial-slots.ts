@@ -14,6 +14,12 @@ export const industrialAssets = {
   printerFarm: "/images/home-industrial/printer-farm.png",
 } as const;
 
+export const mineralCutouts = {
+  portalVaseWire: "/images/home-industrial/portal-vase-wire.webp",
+  portalVaseFinish: "/images/home-industrial/portal-vase-finish.webp",
+  wholesaleDragon: "/images/home-industrial/wholesale-dragon-cutout.webp",
+} as const;
+
 export const RESIN_SPECIMEN_SRC = "/images/home-industrial/material-resin.png";
 
 export type IndustrialAssetPath =
