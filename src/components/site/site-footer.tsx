@@ -2,7 +2,6 @@ import type { Route } from "next";
 import Link from "next/link";
 import { AtSign, Mail, Phone, Play } from "lucide-react";
 
-import { OctoSeabedScene } from "@/components/home-industrial/octo-seabed-scene";
 import { Logo } from "@/components/site/logo";
 import { SiteFooterMobile } from "@/components/site/site-footer-mobile";
 import { siteConfig } from "@/config/site";
@@ -33,11 +32,6 @@ export async function SiteFooter({
           alt=""
           className="octo-footer-scene-photo"
         />
-      <div className="octo-seabed" aria-hidden="true">
-        <span className="octo-seabed-wall" />
-        <span className="octo-seabed-light" />
-        <OctoSeabedScene />
-      </div>
       <SiteFooterMobile description={footerDescription} />
 
       <div className="octo-footer-panel hidden md:block">
