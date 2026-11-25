@@ -1,26 +1,22 @@
 "use client";
 
-import {
-  type ElementType,
-  type HTMLAttributes,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { createElement, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 function splitWords(value: string) {
   return value.trim().split(/\s+/).filter(Boolean);
 }
 
+type ScrollTag = "h2" | "h3" | "p" | "span";
+
 export function ScrollWords({
   text,
-  as: Tag = "span",
+  as = "span",
   className,
   id,
 }: {
   text: string;
-  as?: ElementType;
+  as?: ScrollTag;
   className?: string;
   id?: string;
 }) {
@@ -52,20 +48,20 @@ export function ScrollWords({
     };
   }, [reduce, words.length]);
 
-  return (
-    <Tag ref={rootRef} id={id} className={className}>
-      {words.map((word, index) => (
-        <span
-          key={`${word}-${index}`}
-          className="octo-film-word"
-          data-on={shown > index ? "true" : "false"}
-        >
-          {word}
-          {index < words.length - 1 ? " " : ""}
-        </span>
-      ))}
-    </Tag>
+  return createElement(
+    as,
+    { ref: rootRef, id, className },
+    words.map((word, index) =>
+      createElement(
+        "span",
+        {
+          key: `${word}-${index}`,
+          className: "octo-film-word",
+          "data-on": shown > index ? "true" : "false",
+        },
+        word,
+        index < words.length - 1 ? " " : "",
+      ),
+    ),
   );
 }
-
-export type ScrollWordsProps = HTMLAttributes<HTMLElement>;
