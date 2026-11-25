@@ -1281,7 +1281,7 @@ html[data-home-industrial] [data-site-footer] [data-site-footer-mobile] {
   bottom: 34.5%;
   margin: 0;
   width: auto;
-  padding: 1.05rem 1.35rem 1.1rem;
+  padding: 0.7rem 1.15rem 0.75rem;
   overflow: hidden;
   border: 0;
   border-radius: 0;
@@ -1338,10 +1338,10 @@ html[data-home-industrial] .octo-footer-grid {
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   body:has(.octo-world) .octo-footer-grid,
   html[data-home-industrial] .octo-footer-grid {
-    grid-template-columns: 1.3fr 1fr 1fr 1fr;
+    grid-template-columns: 1.35fr 0.9fr 0.9fr 0.9fr;
   }
 }
 
@@ -1366,8 +1366,8 @@ html[data-home-industrial] .octo-footer-copy {
   margin: 0;
   max-width: 36ch;
   font-family: var(--font-jakarta), sans-serif;
-  font-size: 0.82rem;
-  line-height: 1.4;
+  font-size: 0.74rem;
+  line-height: 1.35;
   color: rgb(244 234 216 / 0.82);
 }
 
@@ -1390,8 +1390,8 @@ html[data-home-industrial] .octo-footer-links {
 
 body:has(.octo-world) .octo-footer-links a,
 html[data-home-industrial] .octo-footer-links a {
-  min-height: 1.7rem;
-  font-size: 0.82rem;
+  min-height: 1.35rem;
+  font-size: 0.74rem;
   letter-spacing: 0.02em;
   color: rgb(244 234 216 / 0.86);
 }
