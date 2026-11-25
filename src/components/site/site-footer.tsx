@@ -27,6 +27,12 @@ export async function SiteFooter({
 
   return (
     <footer data-site-footer className="site-footer-brand octo-abyss-floor relative bg-deep-ink text-light-text">
+      <div className="octo-footer-scene">
+        <img
+          src="/images/home-industrial/footer-sand-panel.jpg"
+          alt=""
+          className="octo-footer-scene-photo"
+        />
       <div className="octo-seabed" aria-hidden="true">
         <span className="octo-seabed-wall" />
         <span className="octo-seabed-light" />
@@ -34,7 +40,7 @@ export async function SiteFooter({
       </div>
       <SiteFooterMobile description={footerDescription} />
 
-      <div className="shell octo-footer-panel relative hidden py-6 md:block">
+      <div className="octo-footer-panel hidden md:block">
         <div className="octo-footer-top">
           <Logo inverted />
           <p className="octo-footer-heading">{footerHeading}</p>
@@ -162,6 +168,7 @@ export async function SiteFooter({
             ) : null}
           </div>
         </div>
+      </div>
       </div>
     </footer>
   );
