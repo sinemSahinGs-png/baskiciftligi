@@ -66,7 +66,7 @@ test.describe("storefront category navigation", () => {
     const widths = [1024, 1280, 1363, 1440];
     const sections = [
       { name: "hero", selector: null },
-      { name: "categories", selector: "#kategoriler" },
+      { name: "categories", selector: "#octo-evreni" },
       { name: "laboratory", selector: "#sana-gore-hazir-modeller" },
     ];
 

@@ -4,7 +4,6 @@ import path from "node:path";
 const SECTION_IDS = [
   "ne-uretmek-istiyorsun",
   "uc-uretim-yolu",
-  "kategoriler",
   "sana-gore-hazir-modeller",
   "mevcut-urunler",
   "one-cikan-urunler",
@@ -12,15 +11,12 @@ const SECTION_IDS = [
   "malzeme-secenekleri",
   "toptan-bayiler",
   "kurumsal-uretim",
-  "guven",
-  "sik-sorulanlar",
   "basla",
 ] as const;
 
 const HEADINGS = [
   /FİKRİNİ DERİNLİKTEN ÇIKAR/,
   "Üç üretim yolu",
-  "KATEGORİLER",
   /MODELİNİ YÜKLE/,
   "MAĞAZA ÜRÜNLERİ",
   "ÖNE ÇIKAN ÜRÜN",
@@ -28,8 +24,6 @@ const HEADINGS = [
   "MALZEMELER",
   /RAFINDA HIZLI SATILACAK/,
   /ÖLÇEKLENEBİLİR ÜRETİM/,
-  "Güven unsurları",
-  "KISA SSS",
   /FİKRİN HAZIR MI/,
 ] as const;
 

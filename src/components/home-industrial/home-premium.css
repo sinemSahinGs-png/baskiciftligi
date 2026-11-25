@@ -29,13 +29,15 @@ html[data-home-industrial][data-header-compact] header .shell {
 }
 
 .octo-band-title {
-  margin: 0;
-  max-width: 16ch;
+  margin: 0 auto;
+  max-width: 18ch;
+  text-align: center;
   font-family: var(--font-display), var(--font-jakarta), sans-serif;
-  font-size: clamp(1.9rem, 6vw, 2.6rem);
+  font-size: clamp(1.85rem, 5.4vw, 2.85rem);
   font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1.08;
+  letter-spacing: 0.045em;
+  line-height: 0.98;
+  text-transform: uppercase;
   color: var(--octo-ivory-ink);
 }
 
@@ -45,7 +47,8 @@ html[data-home-industrial][data-header-compact] header .shell {
 
 .octo-band-lede {
   max-width: 38ch;
-  margin: 0.7rem 0 0;
+  margin: 0.7rem auto 0;
+  text-align: center;
   font-size: 1rem;
   line-height: 1.5;
   color: rgb(241 236 227 / 0.78);
@@ -146,9 +149,100 @@ html[data-home-industrial][data-header-compact] header .shell {
   color: var(--octo-ivory-ink);
 }
 
+.octo-idea-ticket {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  width: min(34rem, 100%);
+  margin: 1.5rem auto 0;
+  padding: 1.2rem 1.35rem 1.3rem;
+  border: 1px solid rgb(232 204 150 / 0.32);
+  border-radius: 1.15rem;
+  background:
+    linear-gradient(180deg, rgb(48 32 20 / 0.94), rgb(16 11 8 / 0.96));
+  box-shadow: 0 18px 40px rgb(0 0 0 / 0.28);
+  color: inherit;
+  text-align: center;
+  text-decoration: none;
+  animation: octo-idea-in 780ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.octo-idea-stamp {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #c08a4a;
+}
+
+.octo-idea-type {
+  display: block;
+  overflow: hidden;
+  width: 0;
+  margin: 0 auto;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.2rem, 3.4vw, 1.7rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  border-right: 2px solid #c08a4a;
+  animation: octo-idea-type 4.6s steps(24) infinite;
+}
+
+.octo-idea-cta {
+  display: inline-flex;
+  min-height: 2.4rem;
+  align-items: center;
+  padding: 0 1rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #edd4a8 0%, #c4844e 50%, #8d5426 100%);
+  color: #16100b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+@keyframes octo-idea-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes octo-idea-type {
+  0%,
+  8% {
+    width: 0;
+  }
+  42%,
+  78% {
+    width: 26ch;
+  }
+  100% {
+    width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .octo-idea-ticket,
+  .octo-idea-type {
+    animation: none;
+  }
+
+  .octo-idea-type {
+    width: auto;
+    border-right: 0;
+    white-space: normal;
+  }
+}
+
 .octo-start-links {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.85rem 1.4rem;
   margin: 1.15rem 0 0;
   font-size: 0.98rem;
@@ -281,15 +375,19 @@ html[data-home-industrial][data-header-compact] header .shell {
 }
 
 .octo-rail-head {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: end;
-  justify-content: space-between;
+  justify-content: center;
   gap: 0.8rem;
   margin-bottom: 1.1rem;
 }
 
 .octo-rail-tools {
+  position: absolute;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   gap: 0.7rem;
@@ -504,9 +602,11 @@ html[data-home-industrial][data-header-compact] header .shell {
   position: relative;
   z-index: 1;
   display: grid;
+  justify-items: center;
   gap: 0.7rem;
   max-width: 28rem;
   padding: 1.5rem 1.2rem;
+  text-align: center;
 }
 
 .octo-wholesale-copy h2 {
@@ -792,25 +892,13 @@ html[data-home-industrial][data-header-compact] header .shell {
   flex-basis: 88%;
 }
 
-.octo-equal-card:hover [data-depth-layer="fore"],
-.octo-equal-card:focus-visible [data-depth-layer="fore"] {
-  transform: translateY(-10px);
+.octo-equal-card:hover .octo-equal-media img,
+.octo-equal-card:focus-visible .octo-equal-media img {
+  transform: scale(1.07);
 }
 
-.octo-equal-media {
-  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.octo-equal-media::before {
-  content: "";
-  position: absolute;
-  inset: auto 0 0;
-  height: 38%;
-  z-index: 1;
-  background: url("/images/home-atelier/cave-sand-bg.webp") center / cover;
-  opacity: 0.28;
-  mix-blend-mode: multiply;
-  transform: translateY(4px);
+.octo-equal-media img {
+  transition: transform 1.15s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .octo-universe-card[data-chamber="orbia"] {
@@ -972,6 +1060,12 @@ html[data-home-industrial] [data-site-footer] [data-site-footer-mobile] {
 }
 
 @media (max-width: 767.98px) {
+  .octo-rail-tools {
+    position: static;
+    width: 100%;
+    justify-content: center;
+  }
+
   .octo-band-shell {
     width: min(72rem, calc(100% - 2.5rem));
   }

@@ -35,13 +35,13 @@ export async function SiteFooter({
       <SiteFooterMobile description={footerDescription} />
 
       <div className="shell octo-footer-panel relative hidden py-6 md:block">
-        <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
+        <div className="octo-footer-top">
           <Logo inverted />
-          <p className="max-w-sm text-sm font-semibold leading-6">{footerHeading}</p>
+          <p className="octo-footer-heading">{footerHeading}</p>
         </div>
-        <div className="mt-5 grid gap-6 lg:grid-cols-4">
-          <div className="max-w-xs">
-            <p className="max-w-xs text-sm leading-6 text-muted-light">{footerDescription}</p>
+        <div className="octo-footer-grid">
+          <div className="octo-footer-blurb">
+            <p className="octo-footer-copy">{footerDescription}</p>
             {siteConfig.contact.email || siteConfig.contact.phone ? (
             <div className="mt-3 space-y-1.5 text-sm text-muted-light">
               {siteConfig.contact.email ? (
@@ -62,8 +62,8 @@ export async function SiteFooter({
             ) : null}
           </div>
           <nav aria-label={msg(messages, "footer.store")}>
-            <p className="text-sm font-semibold">{msg(messages, "footer.store")}</p>
-            <ul className="mt-2 space-y-0.5 text-sm text-muted-light">
+            <p className="octo-footer-nav-title">{msg(messages, "footer.store")}</p>
+            <ul className="octo-footer-links">
               <li>
                 <Link href={"/magaza" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
                   {msg(messages, "common.allProducts")}
@@ -82,8 +82,8 @@ export async function SiteFooter({
             </ul>
           </nav>
           <nav aria-label={msg(messages, "common.help")}>
-            <p className="text-sm font-semibold">{msg(messages, "common.help")}</p>
-            <ul className="mt-2 space-y-0.5 text-sm text-muted-light">
+            <p className="octo-footer-nav-title">{msg(messages, "common.help")}</p>
+            <ul className="octo-footer-links">
               <li>
                 <Link href={"/siparis-takip" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
                   {msg(messages, "common.track")}
@@ -102,8 +102,8 @@ export async function SiteFooter({
             </ul>
           </nav>
           <nav aria-label={msg(messages, "common.corporate")}>
-            <p className="text-sm font-semibold">{msg(messages, "common.corporate")}</p>
-            <ul className="mt-2 space-y-0.5 text-sm text-muted-light">
+            <p className="octo-footer-nav-title">{msg(messages, "common.corporate")}</p>
+            <ul className="octo-footer-links">
               <li>
                 <Link href={"/toptan" as Route} className="inline-flex min-h-8 items-center hover:text-light-text">
                   {msg(messages, "common.wholesale")}
@@ -123,7 +123,7 @@ export async function SiteFooter({
           </nav>
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-4 text-xs text-muted-light sm:flex-row sm:items-center sm:justify-between">
+        <div className="octo-footer-legal">
           <p>
             © {new Date().getFullYear()} {siteConfig.name}
           </p>

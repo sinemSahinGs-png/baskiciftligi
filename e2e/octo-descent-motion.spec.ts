@@ -40,11 +40,7 @@ test.describe("OCTO descent motion proof", () => {
     await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
     await page.waitForTimeout(80);
     const story = await readProof(page);
-    const rail = page.locator("[data-category-rail]");
-    await rail.evaluate((node) => {
-      node.scrollLeft = 180;
-    });
-    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
+    await page.locator("#octo-evreni").scrollIntoViewIfNeeded();
     await page.waitForTimeout(80);
     const cats = await readProof(page);
     await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
@@ -66,7 +62,6 @@ test.describe("OCTO descent motion proof", () => {
 
     expect(portals.portalFile).toBeGreaterThan(before.portalFile);
     expect(story.pathDashOffset).not.toEqual(before.pathDashOffset);
-    expect(cats.categoryScrollLeft).toBeGreaterThan(0);
     expect(footer.footerFore).toBeGreaterThan(before.footerFore);
     expect(reverse.depthMeters).toBe("0 M");
     await expect(page.locator(".octo-chamber .octo-start-cta").first()).toBeVisible();
@@ -78,14 +73,7 @@ test.describe("OCTO descent motion proof", () => {
     const startY = await page.evaluate(() => window.scrollY);
     await page.evaluate(() => window.scrollBy(0, 900));
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(startY + 40);
-    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
-    const rail = page.locator("[data-category-rail]");
-    const before = await rail.evaluate((node) => node.scrollLeft);
-    await rail.evaluate((node) => {
-      node.scrollBy({ left: 220, behavior: "instant" });
-    });
-    const after = await rail.evaluate((node) => node.scrollLeft);
-    expect(after).toBeGreaterThan(before);
+    await page.locator("#octo-evreni").scrollIntoViewIfNeeded();
     await expect(
       page.locator("#uc-uretim-yolu .octo-story-mobile-visual .octo-story-visual").first(),
     ).toBeVisible();
@@ -102,7 +90,7 @@ test.describe("OCTO descent motion proof", () => {
     await end.scrollIntoViewIfNeeded();
     const gapVh = await page.evaluate(() => {
       const storyEnd = document.querySelector("[data-story-end]");
-      const heading = document.getElementById("home-cats-heading");
+      const heading = document.getElementById("universe-heading");
       if (!storyEnd || !heading) return 99;
       const y = (el: Element) => el.getBoundingClientRect().top + window.scrollY;
       return (y(heading) - (y(storyEnd) + storyEnd.getBoundingClientRect().height)) /
@@ -118,7 +106,7 @@ test.describe("OCTO descent motion proof", () => {
     await page.locator("[data-story-end]").scrollIntoViewIfNeeded();
     const desktopGap = await page.evaluate(() => {
       const storyEnd = document.querySelector("[data-story-end]");
-      const heading = document.getElementById("home-cats-heading");
+      const heading = document.getElementById("universe-heading");
       if (!storyEnd || !heading) return 99;
       const y = (el: Element) => el.getBoundingClientRect().top + window.scrollY;
       return (y(heading) - (y(storyEnd) + storyEnd.getBoundingClientRect().height)) /
@@ -132,11 +120,9 @@ test.describe("OCTO descent motion proof", () => {
     const hashes = [
       ["#nereden-baslamali", "nereden-baslamali", "#start-path-heading"],
       ["#uc-uretim-yolu", "uc-uretim-yolu", "#story-heading"],
-      ["#kategoriler", "kategoriler", "#home-cats-heading"],
       ["#octo-evreni", "octo-evreni", "#universe-heading"],
       ["#mevcut-urunler", "mevcut-urunler", "#curated-heading"],
       ["#toptan-bayiler", "toptan-bayiler", "#wholesale-heading"],
-      ["#sik-sorulanlar", "sik-sorulanlar", "#faq-heading"],
     ] as const;
     const report: unknown[] = [];
     for (const width of [390, 1440] as const) {
@@ -298,7 +284,6 @@ test.describe("OCTO descent motion proof", () => {
       const ids = [
         "nereden-baslamali",
         "uc-uretim-yolu",
-        "kategoriler",
         "octo-evreni",
         "mevcut-urunler",
       ];
@@ -312,27 +297,10 @@ test.describe("OCTO descent motion proof", () => {
       });
     });
     for (const gap of gaps) expect(gap).toBeLessThanOrEqual(0.24);
-    const targets = ["#kategoriler", "#octo-evreni", "#mevcut-urunler", "#sik-sorulanlar"];
+    await expect(page.locator(".octo-depth-hud")).toHaveCount(0);
+    const targets = ["#octo-evreni", "#mevcut-urunler"];
     for (const target of targets) {
       await page.locator(target).scrollIntoViewIfNeeded();
-      const hit = await page.evaluate(() => {
-        const hudNode = document.querySelector(".octo-depth-hud");
-        if (!hudNode) return true;
-        const hud = hudNode.getBoundingClientRect();
-        const samples = [
-          [hud.left + 4, hud.top + 8],
-          [hud.left + hud.width / 2, hud.top + hud.height / 2],
-          [hud.right - 4, hud.bottom - 8],
-        ] as const;
-        return samples.some(([x, y]) => {
-          const node = document.elementFromPoint(x, y);
-          if (!node || node === hudNode || hudNode.contains(node)) return false;
-          return Boolean(
-            node.closest("[data-chamber], [data-category-slug], .octo-empty, .hi-faq-item"),
-          );
-        });
-      });
-      expect(hit, `HUD intersects ${target}`).toBe(false);
     }
     await page.screenshot({ path: path.join(shots, "universe-hud-1440.png") });
     await page.locator("[data-chamber='orbia']").screenshot({
@@ -405,10 +373,7 @@ test.describe("OCTO descent motion proof", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     await page.screenshot({ path: path.join(shots, "fullpage-390.png"), fullPage: true });
-    await page.locator(".octo-depth-hud").evaluate((node) => {
-      const size = Number.parseFloat(getComputedStyle(node.querySelector(".octo-depth-value") ?? node).fontSize);
-      if (size < 11) throw new Error(`depth HUD too small: ${size}`);
-    });
+    await expect(page.locator(".octo-depth-hud")).toHaveCount(0);
   });
 
   test("wholesale dragon is visible on a fresh direct hash", async ({ page }) => {

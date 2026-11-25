@@ -19,6 +19,8 @@ export const mineralCutouts = {
   portalVaseFinish: "/images/home-industrial/portal-vase-finish.webp",
   wholesaleDragon: "/images/home-industrial/wholesale-dragon-embed.webp",
   pathReadyModel: "/images/home-industrial/path-ready-model.webp",
+  filmStlPreview: "/images/home-industrial/film-stl-preview.png",
+  filmMonitor: "/images/home-industrial/film-monitor.png",
 } as const;
 
 export const RESIN_SPECIMEN_SRC = "/images/home-industrial/material-resin.png";

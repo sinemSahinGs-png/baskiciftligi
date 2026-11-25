@@ -8,16 +8,11 @@ async function overflowX(page: Page) {
 }
 
 async function selectHomepageCategory(page: Page, slug: string) {
-  await page.locator("#kategoriler").scrollIntoViewIfNeeded();
-  const tab = page.locator(`#kategoriler .hi-cats-index-item[data-category-slug="${slug}"]`);
-  if (await tab.count()) {
-    await tab.click();
-  } else {
-    await page.locator(`#kategoriler .hi-cats-slide[data-category-slug="${slug}"]`).scrollIntoViewIfNeeded();
-  }
-  const slide = page.locator(`#kategoriler .hi-cats-slide[data-category-slug="${slug}"]`);
-  await expect(slide).toHaveAttribute("data-active", "true");
-  await expect(slide.locator("img").first()).toBeVisible();
+  await page.locator("#octo-evreni").scrollIntoViewIfNeeded();
+  const card = page.locator(`#octo-evreni [data-category-slug="${slug}"]`).first();
+  await card.scrollIntoViewIfNeeded();
+  await expect(card).toBeVisible();
+  await expect(card.locator("img").first()).toBeVisible();
 }
 
 test.describe("project category destinations", () => {
@@ -26,12 +21,10 @@ test.describe("project category destinations", () => {
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
-    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
-    const index = page.locator("#kategoriler .hi-cats-index-item");
-    await expect(index).toHaveCount(10);
-    await expect(page.locator('#kategoriler [data-category-slug="orbia"]')).toHaveCount(2);
-    await expect(page.locator('#kategoriler [data-category-slug="memoora"]')).toHaveCount(2);
-    await expect(page.locator('#kategoriler [data-category-slug="lil-disc"]')).toHaveCount(2);
+    await page.locator("#octo-evreni").scrollIntoViewIfNeeded();
+    await expect(page.locator('#octo-evreni [data-category-slug="orbia"]')).toHaveCount(1);
+    await expect(page.locator('#octo-evreni [data-category-slug="memoora"]')).toHaveCount(1);
+    await expect(page.locator('#octo-evreni [data-category-slug="lil-disc"]')).toHaveCount(1);
     const header = page.getByRole("navigation", { name: "Ana menü" });
     await expect(header.getByRole("link", { name: "ORBIA" })).toHaveCount(0);
     await expect(header.getByRole("link", { name: "MEMOORA" })).toHaveCount(0);
@@ -53,13 +46,12 @@ test.describe("project category destinations", () => {
     await page.goto("/");
     for (const slug of ["orbia", "memoora", "lil-disc"] as const) {
       await selectHomepageCategory(page, slug);
-      await expect(page.locator(`#kategoriler [data-category-slug="${slug}"]`).first()).toHaveAttribute(
-        "data-active",
-        "true",
-      );
+      await expect(page.locator(`#octo-evreni [data-category-slug="${slug}"]`).first()).toBeVisible();
       const titles = { orbia: "ORBIA", memoora: "MEMOORA", "lil-disc": "LIL’ DISC" } as const;
-      await expect(page.locator("#kategoriler .hi-cats-meta-title")).toHaveText(titles[slug]);
-      await page.locator("#kategoriler").screenshot({
+      await expect(page.locator(`#octo-evreni [data-category-slug="${slug}"]`).first()).toContainText(
+        titles[slug],
+      );
+      await page.locator("#octo-evreni").screenshot({
         path: path.join(shots, `home-cat-${slug}-1440.png`),
         animations: "disabled",
       });
@@ -75,9 +67,9 @@ test.describe("project category destinations", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     for (const slug of ["orbia", "memoora", "lil-disc"] as const) {
-      const slide = page.locator(`#kategoriler .hi-cats-slide[data-category-slug="${slug}"]`);
+      const slide = page.locator(`#octo-evreni [data-category-slug="${slug}"]`);
       await slide.scrollIntoViewIfNeeded();
-      await page.locator("#kategoriler").screenshot({
+      await page.locator("#octo-evreni").screenshot({
         path: path.join(shots, `home-cat-${slug}-390.png`),
         animations: "disabled",
       });
@@ -276,11 +268,10 @@ test.describe("project category destinations", () => {
         "ne-uretmek-istiyorsun",
         "atolye",
         "uc-uretim-yolu",
-        "kategoriler",
         "mevcut-urunler",
         "sana-gore-hazir-modeller",
         "toptan-bayiler",
-        "guven",
+        "octo-evreni",
       ];
       return ids.map((id) => {
         const node = document.getElementById(id);

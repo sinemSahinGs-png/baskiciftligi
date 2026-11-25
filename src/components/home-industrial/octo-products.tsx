@@ -8,9 +8,35 @@ import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
 import { PriceDisplay } from "@/components/commerce/price-display";
+import { ScrollWords } from "@/components/home-industrial/scroll-words";
 import { SafeImage } from "@/components/media/safe-image";
 import type { Product } from "@/domain/catalog/types";
 import { useFavoritesStore } from "@/stores/favorites-store";
+
+function shopTitle(name: string) {
+  const cleaned = name
+    .split(/\s+[—–-]\s+(?:Demo|Kopya)\b/i)[0]
+    .replace(/\s+[—–-]\s+K\s*$/i, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return cleaned || name;
+}
+
+function uniqueShopProducts(products: Product[]) {
+  const seen = new Set<string>();
+  const next: Product[] = [];
+  for (const product of products) {
+    if (!product.media[0]?.url) continue;
+    if (product.name.startsWith("Guided UI")) continue;
+    if (product.categorySlugs.some((slug) => slug.startsWith("project:"))) continue;
+    const key = shopTitle(product.name).toLocaleLowerCase("tr");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    next.push(product);
+    if (next.length >= 8) break;
+  }
+  return next;
+}
 
 function stockLabel(product: Product, t: ReturnType<typeof useTranslations>) {
   const qty = product.inventoryQuantity;
@@ -28,12 +54,7 @@ export function OctoProducts({
 }) {
   const t = useTranslations();
   const reduce = useReducedMotion() === true;
-  const visible = products.filter(
-    (product) =>
-      Boolean(product.media[0]?.url) &&
-      !product.name.startsWith("Guided UI") &&
-      !product.categorySlugs.some((slug) => slug.startsWith("project:")),
-  );
+  const visible = uniqueShopProducts(products);
   const railRef = useRef<HTMLUListElement>(null);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(visible.length > 1);
@@ -79,9 +100,12 @@ export function OctoProducts({
     >
       <div className="hi-shell octo-band-shell">
         <div className="octo-rail-head">
-          <h2 id="curated-heading" className="octo-band-title">
-            {t("home.productsShopTitle")}
-          </h2>
+          <ScrollWords
+            as="h2"
+            id="curated-heading"
+            className="octo-band-title"
+            text={t("home.productsShopTitle")}
+          />
           <div className="octo-rail-tools">
             {visible.length > 1 ? (
               <div className="octo-rail-arrows">
@@ -140,6 +164,7 @@ export function OctoProducts({
           <ul ref={railRef} className="octo-equal-rail octo-product-rail-row" data-curated-rail="">
             {visible.map((product) => {
               const isFavorite = favoritesHydrated && favoriteIds.includes(product.id);
+              const title = shopTitle(product.name);
               return (
                 <li key={product.id}>
                   <article className="octo-shop-card">
@@ -148,8 +173,8 @@ export function OctoProducts({
                       className="octo-shop-fav"
                       aria-label={
                         isFavorite
-                          ? `${product.name} ürününü favorilerden çıkar`
-                          : `${product.name} ürününü favorilere ekle`
+                          ? `${title} ürününü favorilerden çıkar`
+                          : `${title} ürününü favorilere ekle`
                       }
                       aria-pressed={isFavorite}
                       disabled={!favoritesHydrated}
@@ -164,14 +189,14 @@ export function OctoProducts({
                     >
                       <SafeImage
                         src={product.media[0]?.url ?? ""}
-                        alt={product.name}
+                        alt={title}
                         fill
                         sizes="(max-width: 767px) 86vw, (max-width: 1023px) 42vw, 22vw"
                         className="object-cover"
                       />
                     </Link>
                     <div className="octo-shop-meta">
-                      <h3>{product.name}</h3>
+                      <h3>{title}</h3>
                       <PriceDisplay priceMinor={product.priceMinor} className="octo-shop-price" />
                       <p className="octo-shop-stock">{stockLabel(product, t)}</p>
                       <Link href={`/urun/${product.slug}` as Route} className="octo-shop-cta">

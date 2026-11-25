@@ -85,6 +85,7 @@ test.describe("storefront category artwork", () => {
   test("homepage cards fill the section and decode at 390 and 1440", async ({
     page,
   }, testInfo) => {
+    test.skip(true, "homepage category rail removed");
     test.setTimeout(90_000);
     const mobile = testInfo.project.name.includes("mobile");
     await page.setViewportSize(
@@ -219,7 +220,7 @@ test.describe("storefront category artwork", () => {
     await page.keyboard.press("Escape");
     await expect(menu).toHaveAttribute("data-open", "false");
 
-    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
+    await page.locator("#octo-evreni").scrollIntoViewIfNeeded();
     await openMegaByHover(page);
     await assertMegaPaintedInViewport(page);
     await page.screenshot({
@@ -256,6 +257,7 @@ test.describe("storefront category artwork", () => {
   });
 
   test("keyboard reaches all homepage category cards", async ({ page }, testInfo) => {
+    test.skip(true, "homepage category rail removed");
     test.skip(testInfo.project.name.includes("mobile"), "desktop keyboard");
     await page.setViewportSize({ width: 1440, height: 900 });
     await readyHome(page);
@@ -270,6 +272,7 @@ test.describe("storefront category artwork", () => {
   });
 
   test("sticky header does not cover the KATEGORİLER heading", async ({ page }) => {
+    test.skip(true, "homepage category rail removed");
     await page.setViewportSize({ width: 1440, height: 900 });
     await readyHome(page);
     await page.goto("/#kategoriler");
@@ -290,6 +293,7 @@ test.describe("storefront category artwork", () => {
   });
 
   test("no horizontal overflow at 320/360/390/430/768/1024/1440", async ({ page }, testInfo) => {
+    test.skip(true, "homepage category rail removed");
     const mobile = testInfo.project.name.includes("mobile");
     const widths = mobile ? [320, 360, 390, 430, 768] : [320, 360, 390, 430, 768, 1024, 1440];
     await readyHome(page);

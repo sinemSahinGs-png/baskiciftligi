@@ -1,10 +1,6 @@
-import { CompactFaq } from "@/components/home-industrial/compact-faq";
-import { HomeCategories } from "@/components/home-industrial/home-categories";
-import { HomeTrust } from "@/components/home-industrial/home-trust";
 import { IdeaCommand } from "@/components/home-industrial/idea-command";
 import { IndustrialHeaderEffects } from "@/components/home-industrial/industrial-header";
 import { OctoCaveAtmosphere } from "@/components/home-industrial/octo-cave-atmosphere";
-import { OctoDepthHud } from "@/components/home-industrial/octo-depth-hud";
 import { OctoJourneyPath } from "@/components/home-industrial/octo-journey-path";
 import { OctoProducts } from "@/components/home-industrial/octo-products";
 import { OctoSandDissolve } from "@/components/home-industrial/octo-sand-dissolve";
@@ -46,15 +42,11 @@ export function IndustrialHome({
         <span id="atolye" className="octo-hash-anchor" />
         <OctoCaveAtmosphere />
         <OctoJourneyPath />
-        <OctoDepthHud />
         <StartPath />
         <ProductionStory />
-        <HomeCategories products={products} />
         <OctoUniverse />
         <OctoProducts products={products} catalogStatus={catalogStatus} />
         <WholesaleBand />
-        <HomeTrust />
-        <CompactFaq />
       </div>
     </div>
   );

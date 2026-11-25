@@ -7,11 +7,9 @@ const SECTION_SHOTS = [
   ["ne-uretmek-istiyorsun", "idea-command-390.png"],
   ["nereden-baslamali", "start-path-390.png"],
   ["uc-uretim-yolu", "production-paths-390.png"],
-  ["kategoriler", "categories-390.png"],
   ["octo-evreni", "universe-390.png"],
   ["mevcut-urunler", "products-390.png"],
   ["toptan-bayiler", "wholesale-390.png"],
-  ["sik-sorulanlar", "faq-390.png"],
 ] as const;
 
 async function readyHome(page: Page) {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { CategoryArtwork } from "@/components/catalog/category-artwork";
+import { ScrollWords } from "@/components/home-industrial/scroll-words";
 import { homepageStageCategories } from "@/domain/project-destinations/stage";
 
 const CHAMBER_ORDER = ["orbia", "memoora", "lil-disc"] as const;
@@ -36,10 +37,13 @@ export function OctoUniverse() {
       aria-labelledby="universe-heading"
     >
       <div className="hi-shell octo-band-shell">
-        <h2 id="universe-heading" className="octo-band-title octo-band-title-light octo-universe-heading">
-          {t("home.universeTitle")}
-        </h2>
-        <p className="octo-band-lede">{t("home.universeLede")}</p>
+        <ScrollWords
+          as="h2"
+          id="universe-heading"
+          className="octo-band-title octo-band-title-light octo-universe-heading"
+          text={t("home.universeTitle")}
+        />
+        <ScrollWords as="p" className="octo-band-lede" text={t("home.universeLede")} />
         <ul className="octo-rooms">
           {projects.map((project) => (
             <li key={project.slug}>

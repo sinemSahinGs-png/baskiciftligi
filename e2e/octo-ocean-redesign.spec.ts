@@ -8,12 +8,9 @@ const SECTION_IDS = [
   "atolye",
   "nereden-baslamali",
   "uc-uretim-yolu",
-  "kategoriler",
   "octo-evreni",
   "mevcut-urunler",
   "toptan-bayiler",
-  "guven",
-  "sik-sorulanlar",
 ] as const;
 
 async function overflowX(page: Page) {
@@ -109,13 +106,13 @@ test.describe("OCTO ocean redesign", () => {
       expect(box?.height ?? 0).toBeLessThan(
         id === "atolye"
           ? 20_000
-          : id === "nereden-baslamali" || id === "uc-uretim-yolu" || id === "kategoriler"
+          : id === "nereden-baslamali" || id === "uc-uretim-yolu"
             ? 2800
             : 1600,
       );
     }
-    const cats = await page.locator("#kategoriler").boundingBox();
-    expect(cats?.height ?? 0).toBeGreaterThan(220);
+    const universe = await page.locator("#octo-evreni").boundingBox();
+    expect(universe?.height ?? 0).toBeGreaterThan(220);
     await page.mouse.wheel(0, 700);
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(40);
     await expect.poll(() => overflowX(page)).toBeLessThanOrEqual(1);
@@ -127,15 +124,15 @@ test.describe("OCTO ocean redesign", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /FİKRİNİ DERİNLİKTEN ÇIKAR/i })).toBeVisible();
     await expect(page.getByRole("button", { name: "Kumu sıfırla" })).toHaveCount(0);
-    await expect(page.locator("#kategoriler .hi-title")).toBeVisible();
+    await expect(page.locator("#octo-evreni .octo-band-title")).toBeVisible();
     await expect(page.locator("#mevcut-urunler")).toBeVisible();
   });
 
   test("category navigation and live product images", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
-    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
-    await expect(page.locator("#kategoriler [data-category-slug]")).toHaveCount(6);
+    await page.locator("#octo-evreni").scrollIntoViewIfNeeded();
+    await expect(page.locator("#octo-evreni [data-category-slug]")).toHaveCount(3);
     await expect(page.locator('#octo-evreni [data-category-slug="orbia"]')).toHaveCount(1);
     await expect(page.locator('#octo-evreni [data-category-slug="memoora"]')).toHaveCount(1);
     await expect(page.locator('#octo-evreni [data-category-slug="lil-disc"]')).toHaveCount(1);
@@ -176,7 +173,7 @@ test.describe("OCTO ocean redesign", () => {
     await page.screenshot({ path: path.join(shots, "depth-390.png") });
     await page.locator("#nereden-baslamali").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "upload-390.png") });
-    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
+    await page.locator("#octo-evreni").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "cats-390.png") });
     await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "products-390.png") });
@@ -186,8 +183,8 @@ test.describe("OCTO ocean redesign", () => {
     await page.screenshot({ path: path.join(shots, "materials-390.png") });
     await page.locator("#toptan-bayiler").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "wholesale-390.png") });
-    await page.locator("#sik-sorulanlar").scrollIntoViewIfNeeded();
-    await page.screenshot({ path: path.join(shots, "faq-390.png") });
+    await expect(page.locator(".octo-review-card").first()).toBeVisible();
+    await page.locator("[data-site-footer]").scrollIntoViewIfNeeded();
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: path.join(shots, "full-390.png"), fullPage: true });
     await page.locator("button[aria-label*='Menü'], button[aria-label*='menu']").first().click({ timeout: 3000 }).catch(() => undefined);
@@ -207,7 +204,7 @@ test.describe("OCTO ocean redesign", () => {
     await page.locator("#atolye").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "depth-1440.png") });
     await page.locator("#uc-uretim-yolu").scrollIntoViewIfNeeded();
-    await page.locator("#kategoriler").scrollIntoViewIfNeeded();
+    await page.locator("#octo-evreni").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "cats-1440.png") });
     await page.locator("#mevcut-urunler").scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(shots, "products-1440.png") });

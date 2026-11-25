@@ -3,8 +3,8 @@
 import type { Route } from "next";
 import { useTranslations } from "next-intl";
 
-import { GoogleReviews } from "@/components/home-industrial/google-reviews";
 import { mineralCutouts } from "@/components/home-industrial/industrial-slots";
+import { ScrollWords } from "@/components/home-industrial/scroll-words";
 import { SlotImage } from "@/components/home-industrial/slot-image";
 import { HomeTrackLink } from "@/components/home/home-track-link";
 
@@ -31,8 +31,13 @@ export function WholesaleBand() {
             />
           </span>
           <div className="octo-wholesale-copy">
-            <h2 id="wholesale-heading">{t("home.wholesalePlanTitle")}</h2>
-            <p>{t("home.wholesalePlanCopy")}</p>
+            <ScrollWords
+              as="h2"
+              id="wholesale-heading"
+              className="octo-band-title octo-band-title-light"
+              text={t("home.wholesalePlanTitle")}
+            />
+            <ScrollWords as="p" className="octo-band-lede" text={t("home.wholesalePlanCopy")} />
             <HomeTrackLink
               event="corporate_cta_clicked"
               href={"/toptan" as Route}
@@ -42,7 +47,6 @@ export function WholesaleBand() {
             </HomeTrackLink>
           </div>
         </article>
-        <GoogleReviews />
       </div>
     </section>
   );

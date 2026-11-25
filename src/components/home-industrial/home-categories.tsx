@@ -7,6 +7,7 @@ import { useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 
 import { CategoryArtwork } from "@/components/catalog/category-artwork";
+import { ScrollWords } from "@/components/home-industrial/scroll-words";
 import { CATEGORY_OBJECT_POSITION } from "@/components/home-industrial/category-crops";
 import {
   storefrontCategoryAsset,
@@ -70,9 +71,12 @@ export function HomeCategories({ products }: { products: Product[] }) {
     >
       <div className="hi-shell octo-band-shell">
         <div className="octo-rail-head">
-          <h2 id="home-cats-heading" className="octo-band-title octo-band-title-light hi-title">
-            {t("home.makeTitle")}
-          </h2>
+          <ScrollWords
+            as="h2"
+            id="home-cats-heading"
+            className="octo-band-title octo-band-title-light hi-title"
+            text={t("home.makeTitle")}
+          />
           <div className="octo-rail-tools">
             <div className="octo-rail-arrows" hidden={!canPrev && !canNext}>
               <button

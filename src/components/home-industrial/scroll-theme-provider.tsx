@@ -49,11 +49,10 @@ function portalPhases(progress: number, reduce: boolean) {
 const HASH_HEADINGS: Record<string, string> = {
   "nereden-baslamali": "start-path-heading",
   "uc-uretim-yolu": "story-heading",
-  kategoriler: "home-cats-heading",
+  kategoriler: "universe-heading",
   "octo-evreni": "universe-heading",
   "mevcut-urunler": "curated-heading",
   "toptan-bayiler": "wholesale-heading",
-  "sik-sorulanlar": "faq-heading",
   atolye: "start-path-heading",
 };
 
@@ -86,6 +85,23 @@ export function ScrollThemeProvider() {
       } catch {
         pathLength = 0;
       }
+    }
+
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) entry.target.classList.add("is-revealed");
+        }
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -18% 0px" },
+    );
+    const revealNodes = [
+      ...document.querySelectorAll(".octo-below-hero .octo-band"),
+      document.querySelector("[data-site-footer]"),
+    ].filter((node): node is HTMLElement => node instanceof HTMLElement);
+    for (const node of revealNodes) {
+      if (reduce) node.classList.add("is-revealed");
+      else revealObserver.observe(node);
     }
 
     let frame = 0;
@@ -126,7 +142,15 @@ export function ScrollThemeProvider() {
         depthMeters = "−08 M";
       }
 
+      const hero = document.querySelector(".octo-tv-hero");
+      let heroFade = 1;
+      if (hero && !reduce) {
+        const box = hero.getBoundingClientRect();
+        heroFade = clamp01(1 + box.top / Math.max(1, box.height * 0.72));
+      }
+
       if (world) {
+        world.style.setProperty("--hero-fade", heroFade.toFixed(4));
         world.style.setProperty("--octo-depth", progress.toFixed(4));
         world.style.setProperty("--octo-portal-file", phases.progress.toFixed(4));
         world.style.setProperty("--portal-wire", phases.wire.toFixed(4));
@@ -208,6 +232,7 @@ export function ScrollThemeProvider() {
     window.addEventListener("popstate", syncHash);
     window.addEventListener("load", syncHash);
     return () => {
+      revealObserver.disconnect();
       window.cancelAnimationFrame(frame);
       window.cancelAnimationFrame(raf);
       window.clearTimeout(later);
