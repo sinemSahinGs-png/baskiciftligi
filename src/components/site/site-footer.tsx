@@ -2,6 +2,8 @@ import type { Route } from "next";
 import Link from "next/link";
 import { AtSign, Mail, Phone, Play } from "lucide-react";
 
+import "@/components/site/footer-plate.css";
+
 import { Logo } from "@/components/site/logo";
 import { SiteFooterMobile } from "@/components/site/site-footer-mobile";
 import { siteConfig } from "@/config/site";
@@ -32,6 +34,7 @@ export async function SiteFooter({
           alt=""
           className="octo-footer-scene-photo"
         />
+        <span className="octo-footer-light" aria-hidden="true" />
       <SiteFooterMobile description={footerDescription} />
 
       <div className="octo-footer-panel hidden md:block">
