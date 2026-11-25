@@ -1326,6 +1326,18 @@ html[data-home-industrial] .octo-footer-grid {
   margin-top: 0.7rem;
 }
 
+@media (min-width: 768px) {
+  body:has(.octo-world) [data-site-footer-mobile],
+  html[data-home-industrial] [data-site-footer-mobile] {
+    display: none !important;
+  }
+
+  body:has(.octo-world) .octo-footer-panel,
+  html[data-home-industrial] .octo-footer-panel {
+    display: block !important;
+  }
+}
+
 @media (min-width: 900px) {
   body:has(.octo-world) .octo-footer-grid,
   html[data-home-industrial] .octo-footer-grid {
@@ -1334,6 +1346,11 @@ html[data-home-industrial] .octo-footer-grid {
 }
 
 @media (max-width: 767.98px) {
+  body:has(.octo-world) .octo-footer-panel,
+  html[data-home-industrial] .octo-footer-panel {
+    display: none !important;
+  }
+
   body:has(.octo-world) [data-site-footer-mobile] .max-w-none {
     padding: 0;
   }
